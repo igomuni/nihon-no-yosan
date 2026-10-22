@@ -27,7 +27,7 @@ npm run check      # 型チェック（tsc -b）・lint・テスト（vitest）
 
 - 原本（`data/`）は git に入れない。方針は `docs/guides/data.md`。
 - データセットは、利用条件を確かめるまで公開しない。
-- `data/download/` の原本（PDF・zip・CSV など）は Read しない（`.claude/settings.json` で禁止）。中身を見るときは `head` や集計のスクリプトで必要な部分だけ読む。
+- `data/` の原本は大きい（PDF・zip は GB 級）。中身を見るときは `head` や集計のスクリプトで必要な部分だけ読み、全体を読み込まない。
 
 ## 作業の進め方
 
