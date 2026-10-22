@@ -27,3 +27,11 @@ npm run check      # 型チェック（tsc -b）・lint・テスト（vitest）
 
 - 原本（`data/`）は git に入れない。方針は `docs/guides/data.md`。
 - データセットは、利用条件を確かめるまで公開しない。
+- `data/download/` の原本（PDF・zip・CSV など）は Read しない（`.claude/settings.json` で禁止）。中身を見るときは `head` や集計のスクリプトで必要な部分だけ読む。
+
+## 作業の進め方
+
+- `main` に直接 push しない。作業はブランチで行う。
+- 実装と `npm run check` が済んだら、draft PR を作ってよい（`gh pr create --draft`）。PR の説明は、レビューにそのまま渡せる形で書く。
+- ready 化とマージはユーザーが行う。マージは merge commit（squash しない）。別の PR に依存するブランチは、その PR のブランチを merge して積んでよい。依存は PR の説明に書く。
+- データの処理では、便宜的な仮定や「初期は簡易版で」を置かない。データで判定できるならそちらを使う。
