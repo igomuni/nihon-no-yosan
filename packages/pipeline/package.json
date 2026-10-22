@@ -1,0 +1,11 @@
+{
+  "name": "@nihon-no-yosan/pipeline",
+  "version": "0.0.0",
+  "private": true,
+  "description": "データを作る CLI（取得・抽出・構築・公開）。core を使う",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "@nihon-no-yosan/core": "*"
+  }
+}
