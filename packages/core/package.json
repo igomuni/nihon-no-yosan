@@ -1,0 +1,11 @@
+{
+  "name": "@nihon-no-yosan/core",
+  "version": "0.0.0",
+  "private": true,
+  "description": "純粋な関数と型（表記の揃え方・鍵・突合・検算）。React と Node の fs を使わない",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}

@@ -1,0 +1,6 @@
+node_modules/
+dist/
+*.tsbuildinfo
+.DS_Store
+# 原本・作業ファイル（git に入れない。docs/guides/data.md）
+data/
