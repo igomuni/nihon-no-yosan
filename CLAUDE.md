@@ -11,7 +11,7 @@ npm run check      # 型チェック（tsc -b）・lint・テスト（vitest）
 ## 構成と依存
 
 - `packages/core`: 純粋な関数と型。React と Node の fs を使わない。
-- `packages/pipeline`（予定）: データを作る。core を使う。
+- `packages/pipeline`: データを作る（基準データの凍結・照合など）。core を使う。
 - `apps/web`（予定）: 画面。core を使う。pipeline は import しない。
 - 構成の理由は `docs/decisions/0001-repository.md`。
 
