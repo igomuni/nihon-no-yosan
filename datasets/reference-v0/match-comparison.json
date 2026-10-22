@@ -1,0 +1,314 @@
+{
+ "comparedWith": {
+  "repository": "igomuni/marumie-rssystem",
+  "commit": "3aef2de9d0f08a438c94efd32a3c0bc2ae33af19",
+  "path": "tests/fixtures/mof-budget-request-match/{版}/"
+ },
+ "manifest": {
+  "path": "datasets/reference-v0/manifest.json",
+  "sha256": "9d4ac635577461e5acff4c9163fc5056ec7ba2d52d9644b7a1b60c07059642ee"
+ },
+ "pairs": {
+  "2023→2023": {
+   "inputSha256": "082385c16b871e8d0bd06373508776c999d7acde2f62dcfc7b51dc6a052c7d6f",
+   "files": {
+    "m0-entities.csv": {
+     "sha256": "ab4e7f66548f9564b7f03253cdc8f1e0f78e1abaf5fa869dc8ec8eca5d7a2192",
+     "bytes": 30770,
+     "equal": true
+    },
+    "m1-kou.csv": {
+     "sha256": "2bc3f36b5421c0554d88158c525c2096e811237724d72eb23af5fa19df35bc27",
+     "bytes": 236865,
+     "equal": true
+    },
+    "m2-jikou.csv": {
+     "sha256": "412a73b547c353efbc851174ccc8c9fd557435a700e6f6ba510c3d22916e6d76",
+     "bytes": 388681,
+     "equal": true
+    },
+    "m3-moku.csv": {
+     "sha256": "7833afaf2e23261acebea9d2170a48ccb800f09815d5418c72fb416a0c9d4bba",
+     "bytes": 1289716,
+     "equal": true
+    },
+    "request-kou.csv": {
+     "sha256": "9e59bf7b335684af8ccc04b39f144650fabf92af9d8f7f7f925f0252a47166e5",
+     "bytes": 176802,
+     "equal": true
+    },
+    "request-no-toc.csv": {
+     "sha256": "70758bc40e9f4f4c831f23dfec98baa90c294aac5a3fdbeeddc3a8c402cf0cce",
+     "bytes": 57,
+     "equal": true
+    },
+    "sets.csv": {
+     "sha256": "e537acdf3a6c3de97ba4238be03b166da8519bffd045700b9d0b4c4c673c40a1",
+     "bytes": 5603,
+     "equal": true
+    },
+    "summary.json": {
+     "sha256": "f52dec6ab4c3ab7e5a56521e6141a7ea4916e67258438acf0aac07544685776a",
+     "bytes": 1224,
+     "equal": true
+    },
+    "unmatched-mof-jikou.csv": {
+     "sha256": "2450b07633a4b32b8abeb827390c69306e351d357d74e0c87760959a1109803d",
+     "bytes": 39009,
+     "equal": true
+    },
+    "unmatched-mof-kou.csv": {
+     "sha256": "160fe7b31690efd8f351518d49b75560f2b0f7af39f2216bb7a2e95c6894de3f",
+     "bytes": 10373,
+     "equal": true
+    },
+    "unmatched-mof-moku.csv": {
+     "sha256": "a3d783d44034b4e5e340ca183a0b5977ff2139a1cef68499120319d3d171e698",
+     "bytes": 163790,
+     "equal": true
+    }
+   }
+  },
+  "2024→2024": {
+   "inputSha256": "1584e793670e9173f769f70b525b97eba4bd26a22ec332c21772d436b7c18204",
+   "files": {
+    "m0-entities.csv": {
+     "sha256": "ad9e4b6b08d862cf32b0eff4f48be831ce1c4b977f6a7a555fbe0c0b62907e35",
+     "bytes": 29534,
+     "equal": true
+    },
+    "m1-kou.csv": {
+     "sha256": "2f0deb8e230221a95feb72e6ab8f3aaa8bd3da7a50b7f726bc18d1027032072b",
+     "bytes": 238820,
+     "equal": true
+    },
+    "m2-jikou.csv": {
+     "sha256": "9c621174ad0c42f90888608aad5f6edf62cf6ac3e2bb4e1624ad41a9008f43bd",
+     "bytes": 382583,
+     "equal": true
+    },
+    "m3-moku.csv": {
+     "sha256": "a9038617f2e164fec6ba632296790b28f79b35b1fc565295b33fecc59748b289",
+     "bytes": 1267336,
+     "equal": true
+    },
+    "request-kou.csv": {
+     "sha256": "f1c57f9cfe3373398cb00ab2bba53e11f33614afcf6f99fe1862ad64e17187f9",
+     "bytes": 177275,
+     "equal": true
+    },
+    "request-no-toc.csv": {
+     "sha256": "70758bc40e9f4f4c831f23dfec98baa90c294aac5a3fdbeeddc3a8c402cf0cce",
+     "bytes": 57,
+     "equal": true
+    },
+    "sets.csv": {
+     "sha256": "fdce10b94b5a16499bdb0606a5088f4acd93df7c845c6b03f4bb51f2849c9311",
+     "bytes": 5509,
+     "equal": true
+    },
+    "summary.json": {
+     "sha256": "b7229b560e78f8ad89c2e25f6f3e3f8b9fb1679e6a8214f91880cc7f881cffa6",
+     "bytes": 1183,
+     "equal": true
+    },
+    "unmatched-mof-jikou.csv": {
+     "sha256": "953e60b9547e8e1b573259b9bd14cb19723d85acf6296c1fabab1488189c1991",
+     "bytes": 29568,
+     "equal": true
+    },
+    "unmatched-mof-kou.csv": {
+     "sha256": "6d3f86da236dc728559e4cb433a764b131ea00d7a3b28dc1e9672694392de879",
+     "bytes": 7787,
+     "equal": true
+    },
+    "unmatched-mof-moku.csv": {
+     "sha256": "5dff29ccfad1ccc6fdb076957bb9af6166a285362112a9818492927a3d26b669",
+     "bytes": 127681,
+     "equal": true
+    }
+   }
+  },
+  "2025→2025": {
+   "inputSha256": "96f2e6a122b4a55578ecbb9f5ea699eb54ca72af6effa0ccdeb90c48abf233ef",
+   "files": {
+    "m0-entities.csv": {
+     "sha256": "b722d502a0f5d2e3ab943b33381996e84319e7f0ac6cb2cdc2db8c052b9aa000",
+     "bytes": 32753,
+     "equal": true
+    },
+    "m1-kou.csv": {
+     "sha256": "57658d8b637e9f134b065fc4b7246f193c12ec2e4b38ba699f49287c05cd893f",
+     "bytes": 251378,
+     "equal": true
+    },
+    "m2-jikou.csv": {
+     "sha256": "c1b1b2f895cd20e0d19321ae4325f583bb38d01d48ac2de4c201f7faa0b4e218",
+     "bytes": 401176,
+     "equal": true
+    },
+    "m3-moku.csv": {
+     "sha256": "62999c512ff394d68e031eb1be168d5e7ef8f9f645c314150be2f4c2b8ff0d5e",
+     "bytes": 1329705,
+     "equal": true
+    },
+    "request-kou.csv": {
+     "sha256": "4fc6c14367184ae5c383b24acb3cd958e93127f5b1c551165eb0f03ca2f48a80",
+     "bytes": 186430,
+     "equal": true
+    },
+    "request-no-toc.csv": {
+     "sha256": "70758bc40e9f4f4c831f23dfec98baa90c294aac5a3fdbeeddc3a8c402cf0cce",
+     "bytes": 57,
+     "equal": true
+    },
+    "sets.csv": {
+     "sha256": "d5087dd242e4970c1cd1e34d35c3a08d4d3448e9066bdec0c7fca1048e78734e",
+     "bytes": 5505,
+     "equal": true
+    },
+    "summary.json": {
+     "sha256": "a4b48c1f0285e2f4b437c8246ce87e8232f5fb1c1cb8fd9151b17674f4c02d63",
+     "bytes": 1184,
+     "equal": true
+    },
+    "unmatched-mof-jikou.csv": {
+     "sha256": "d616d86340c8bd971ecf787bfb12890a27993c8f2691f8f39bf1b95dbafd74a9",
+     "bytes": 28970,
+     "equal": true
+    },
+    "unmatched-mof-kou.csv": {
+     "sha256": "0c3583c99a1d0f57b388ef7556a2a4b23d8e1832394c1961f6f964242ff66003",
+     "bytes": 6940,
+     "equal": true
+    },
+    "unmatched-mof-moku.csv": {
+     "sha256": "702061804777afc653182049abdf90fa53be325cc26f4c1161fea9522fd769a3",
+     "bytes": 109960,
+     "equal": true
+    }
+   }
+  },
+  "2025→2025_teishutsu": {
+   "inputSha256": "b6dd6d48bcdf69b0df2fe2935d2fab47c568d3d57b4eab17af200cf51d2ca63a",
+   "files": {
+    "m0-entities.csv": {
+     "sha256": "b722d502a0f5d2e3ab943b33381996e84319e7f0ac6cb2cdc2db8c052b9aa000",
+     "bytes": 32753,
+     "equal": true
+    },
+    "m1-kou.csv": {
+     "sha256": "d4a6926dc4d4c1b66e9c8084023a0f317680cd9366e23c0b49875eefcb8ba6c9",
+     "bytes": 251356,
+     "equal": true
+    },
+    "m2-jikou.csv": {
+     "sha256": "2c1bf68b12570b79c2076d22c040423f686412f4615d30968258b162dc22483c",
+     "bytes": 401151,
+     "equal": true
+    },
+    "m3-moku.csv": {
+     "sha256": "d6a08ca052d393e98f6fa8ad22ad7db16113ea19b88cb93a9064daf1270ef897",
+     "bytes": 1329675,
+     "equal": true
+    },
+    "request-kou.csv": {
+     "sha256": "4fc6c14367184ae5c383b24acb3cd958e93127f5b1c551165eb0f03ca2f48a80",
+     "bytes": 186430,
+     "equal": true
+    },
+    "request-no-toc.csv": {
+     "sha256": "70758bc40e9f4f4c831f23dfec98baa90c294aac5a3fdbeeddc3a8c402cf0cce",
+     "bytes": 57,
+     "equal": true
+    },
+    "sets.csv": {
+     "sha256": "d5087dd242e4970c1cd1e34d35c3a08d4d3448e9066bdec0c7fca1048e78734e",
+     "bytes": 5505,
+     "equal": true
+    },
+    "summary.json": {
+     "sha256": "20d78d9c47727a456cd011fc6ce672ec024c395e802bd9b789e54cedb251140f",
+     "bytes": 1194,
+     "equal": true
+    },
+    "unmatched-mof-jikou.csv": {
+     "sha256": "d616d86340c8bd971ecf787bfb12890a27993c8f2691f8f39bf1b95dbafd74a9",
+     "bytes": 28970,
+     "equal": true
+    },
+    "unmatched-mof-kou.csv": {
+     "sha256": "0c3583c99a1d0f57b388ef7556a2a4b23d8e1832394c1961f6f964242ff66003",
+     "bytes": 6940,
+     "equal": true
+    },
+    "unmatched-mof-moku.csv": {
+     "sha256": "702061804777afc653182049abdf90fa53be325cc26f4c1161fea9522fd769a3",
+     "bytes": 109960,
+     "equal": true
+    }
+   }
+  },
+  "2026→2026": {
+   "inputSha256": "fe19c0059f09222ef6a6a5dec4335024e05189209bfb0a97cfdc3618951d03ed",
+   "files": {
+    "m0-entities.csv": {
+     "sha256": "7867b03de78f323b9ec56e44bb0ca109ef79bd2f2bf2d99e74d872e0479b2dba",
+     "bytes": 32916,
+     "equal": true
+    },
+    "m1-kou.csv": {
+     "sha256": "b09c22d3df011899472fe74a9c9244bbad2e2bb145c7b2859679a4934f214bc0",
+     "bytes": 257458,
+     "equal": true
+    },
+    "m2-jikou.csv": {
+     "sha256": "d7579d7cee572b3fb79290d2fadba36bde38d6021db4a760bb4e973696f63b35",
+     "bytes": 406186,
+     "equal": true
+    },
+    "m3-moku.csv": {
+     "sha256": "14d85914dec92fe1d273e864b1a122947edc842f733a10a8cb31d24765509fca",
+     "bytes": 1352672,
+     "equal": true
+    },
+    "request-kou.csv": {
+     "sha256": "72ce15b6143466735bde0b20f8a89e653da3ce73714ceb570ad3653ed2c08303",
+     "bytes": 190923,
+     "equal": true
+    },
+    "request-no-toc.csv": {
+     "sha256": "70758bc40e9f4f4c831f23dfec98baa90c294aac5a3fdbeeddc3a8c402cf0cce",
+     "bytes": 57,
+     "equal": true
+    },
+    "sets.csv": {
+     "sha256": "3b061f74dcd0beebb17f50b9dc2f71fbf62eebde9a33a964bca5464b47757880",
+     "bytes": 5810,
+     "equal": true
+    },
+    "summary.json": {
+     "sha256": "a02343dc81e219adfccdac8bb15a7a8585fc59dc4346b4be33041942dcbe2f6f",
+     "bytes": 1204,
+     "equal": true
+    },
+    "unmatched-mof-jikou.csv": {
+     "sha256": "22efff09cd7d0f3d43339cbddf82668cff867e9a0522ca8421c812f480250214",
+     "bytes": 26468,
+     "equal": true
+    },
+    "unmatched-mof-kou.csv": {
+     "sha256": "72547e69886d8c88e57553062f2351c78dd7709e8e18aadc360a334b7a43bbaa",
+     "bytes": 7275,
+     "equal": true
+    },
+    "unmatched-mof-moku.csv": {
+     "sha256": "e65499f3ae95e601223ceab271abf8269957cc9f9f1d4a20b3a02b33a70da6c1",
+     "bytes": 106088,
+     "equal": true
+    }
+   }
+  }
+ },
+ "allEqual": true
+}
