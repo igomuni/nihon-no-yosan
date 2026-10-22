@@ -1,3 +1,12 @@
+export type {
+  BudgetRequestJikou,
+  BudgetRequestJikouData,
+  BudgetRequestTrendData,
+  BudgetRequestTrendDetailData,
+  BudgetRequestTrendDetailKou,
+  BudgetRequestTrendRow,
+  BudgetRequestTrendYear,
+} from './budget-request-trend.ts';
 export { amount, parseCsv, readCsv, type Rec } from './csv.ts';
 export {
   mofAmountJikou,
