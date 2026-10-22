@@ -1,0 +1,222 @@
+{
+  "schema": "nihon-no-yosan/terms-status/v0",
+  "checkedOn": "2026-10-22",
+  "statuses": {
+    "pdl1.0": "公共データ利用規約（第1.0版）が適用される。出典と加工したことを書けば、加工したものを再配布できる",
+    "diet-courts": "著作権法で認められる利用に限る規約。名前・コード・額・頁の表（0004）と plain text（0005）は、判断して入れる",
+    "unconfirmed": "利用条件を確かめられていない。公開しない"
+  },
+  "basis": {
+    "page-read": "利用規約のページを開いて、本文を読んだ（または本文に PDL1.0 の語があることを確かめた）",
+    "search-summary": "検索結果の説明だけ。ページ本文は読んでいない",
+    "none": "確かめられていない"
+  },
+  "domains": {
+    "aoc.go.jp": {
+      "authority": "サイバー通信情報監理委員会",
+      "status": "pdl1.0",
+      "basis": "page-read",
+      "url": "https://www.aoc.go.jp/terms/"
+    },
+    "caa.go.jp": {
+      "authority": "消費者庁",
+      "status": "pdl1.0",
+      "basis": "page-read",
+      "url": "https://www.caa.go.jp/terms_of_use/"
+    },
+    "cao.go.jp": {
+      "authority": "内閣府",
+      "status": "pdl1.0",
+      "basis": "page-read",
+      "url": "https://www.cao.go.jp/notice/rule.html"
+    },
+    "cas.go.jp": {
+      "authority": "内閣官房",
+      "status": "pdl1.0",
+      "basis": "search-summary",
+      "url": "https://www.cas.go.jp/jp/tyosakuken/index.html"
+    },
+    "cfa.go.jp": {
+      "authority": "こども家庭庁",
+      "status": "pdl1.0",
+      "basis": "search-summary",
+      "url": "https://www.cfa.go.jp/copyright-policy"
+    },
+    "clb.go.jp": {
+      "authority": "内閣法制局",
+      "status": "pdl1.0",
+      "basis": "page-read",
+      "url": "https://www.clb.go.jp/terms/"
+    },
+    "courts.go.jp": {
+      "authority": "裁判所",
+      "status": "diet-courts",
+      "basis": "page-read",
+      "url": "https://www.courts.go.jp/outline/index.html"
+    },
+    "digital.go.jp": {
+      "authority": "デジタル庁",
+      "status": "pdl1.0",
+      "basis": "page-read",
+      "url": "https://www.digital.go.jp/copyright-policy"
+    },
+    "env.go.jp": {
+      "authority": "環境省",
+      "status": "pdl1.0",
+      "basis": "page-read",
+      "url": "https://www.env.go.jp/mail.html"
+    },
+    "fsa.go.jp": {
+      "authority": "金融庁（カジノ管理委員会の一部の書を含む）",
+      "status": "pdl1.0",
+      "basis": "page-read",
+      "url": "https://www.fsa.go.jp/rules/index.html"
+    },
+    "jbaudit.go.jp": {
+      "authority": "会計検査院",
+      "status": "pdl1.0",
+      "basis": "search-summary",
+      "url": "https://www.jbaudit.go.jp/general/term.html"
+    },
+    "jinji.go.jp": {
+      "authority": "人事院",
+      "status": "pdl1.0",
+      "basis": "page-read",
+      "url": "https://www.jinji.go.jp/shinsei/notice.html"
+    },
+    "maff.go.jp": {
+      "authority": "農林水産省",
+      "status": "pdl1.0",
+      "basis": "page-read",
+      "url": "https://www.maff.go.jp/j/use/link.html"
+    },
+    "mext.go.jp": {
+      "authority": "文部科学省",
+      "status": "pdl1.0",
+      "basis": "page-read",
+      "url": "https://www.mext.go.jp/b_menu/1351168.htm"
+    },
+    "mhlw.go.jp": {
+      "authority": "厚生労働省",
+      "status": "pdl1.0",
+      "basis": "page-read",
+      "url": "https://www.mhlw.go.jp/chosakuken/index.html"
+    },
+    "mlit.go.jp": {
+      "authority": "国土交通省",
+      "status": "pdl1.0",
+      "basis": "page-read",
+      "url": "https://www.mlit.go.jp/link.html"
+    },
+    "mof.go.jp": {
+      "authority": "財務省",
+      "status": "pdl1.0",
+      "basis": "search-summary",
+      "url": "https://www.mof.go.jp/about_mof/notice/index.html"
+    },
+    "moj.go.jp": {
+      "authority": "法務省",
+      "status": "pdl1.0",
+      "basis": "page-read",
+      "url": "https://www.moj.go.jp/hisho06_00280.html"
+    },
+    "ndl.go.jp": {
+      "authority": "国立国会図書館",
+      "status": "pdl1.0",
+      "basis": "search-summary",
+      "url": "https://www.ndl.go.jp/sitepolicy"
+    },
+    "npa.go.jp": {
+      "authority": "警察庁",
+      "status": "pdl1.0",
+      "basis": "search-summary",
+      "url": "https://www.npa.go.jp/rules/"
+    },
+    "ppc.go.jp": {
+      "authority": "個人情報保護委員会",
+      "status": "pdl1.0",
+      "basis": "page-read",
+      "url": "https://www.ppc.go.jp/notice/kiyaku"
+    },
+    "sangiin.go.jp": {
+      "authority": "参議院",
+      "status": "diet-courts",
+      "basis": "page-read",
+      "url": "https://www.sangiin.go.jp/jpn/footer/chosaku.html"
+    },
+    "shugiin.go.jp": {
+      "authority": "衆議院",
+      "status": "diet-courts",
+      "basis": "page-read",
+      "url": "https://www.shugiin.go.jp/internet/itdb_annai.nsf/html/statics/link.html"
+    },
+    "sotsui.go.jp": {
+      "authority": "裁判官訴追委員会",
+      "status": "diet-courts",
+      "basis": "search-summary",
+      "url": "https://www.sotsui.go.jp/"
+    },
+    "soumu.go.jp": {
+      "authority": "総務省",
+      "status": "pdl1.0",
+      "basis": "page-read",
+      "url": "https://www.soumu.go.jp/menu_kyotsuu/policy/tyosaku.html"
+    },
+    "bb.mof.go.jp": {
+      "authority": "財務省 予算書・決算書データベース（予算書の CSV・XML の出どころ）",
+      "status": "unconfirmed",
+      "basis": "none",
+      "url": "https://www.bb.mof.go.jp/hdocs/bxsselect.html",
+      "note": "www.mof.go.jp の利用規約が、別ドメインのデータベースに及ぶかは未確認"
+    },
+    "dangai.go.jp": {
+      "authority": "裁判官弾劾裁判所",
+      "status": "unconfirmed",
+      "basis": "none",
+      "url": "https://www.dangai.go.jp/"
+    },
+    "jcrc.go.jp": {
+      "authority": "カジノ管理委員会",
+      "status": "unconfirmed",
+      "basis": "none",
+      "url": "https://www.jcrc.go.jp/notice.html"
+    },
+    "jftc.go.jp": {
+      "authority": "公正取引委員会",
+      "status": "unconfirmed",
+      "basis": "none",
+      "url": "https://www.jftc.go.jp/kiyaku/"
+    },
+    "kunaicho.go.jp": {
+      "authority": "宮内庁",
+      "status": "unconfirmed",
+      "basis": "search-summary",
+      "url": "https://www.kunaicho.go.jp/copyright/kiyaku.html"
+    },
+    "meti.go.jp": {
+      "authority": "経済産業省",
+      "status": "unconfirmed",
+      "basis": "search-summary",
+      "url": "https://www.meti.go.jp/main/rules.html"
+    },
+    "mod.go.jp": {
+      "authority": "防衛省",
+      "status": "unconfirmed",
+      "basis": "search-summary",
+      "url": "https://www.mod.go.jp/j/info/contents.html"
+    },
+    "mofa.go.jp": {
+      "authority": "外務省",
+      "status": "unconfirmed",
+      "basis": "search-summary",
+      "url": "https://www.mofa.go.jp/mofaj/annai/legalmatters/index.html"
+    },
+    "reconstruction.go.jp": {
+      "authority": "復興庁",
+      "status": "unconfirmed",
+      "basis": "search-summary",
+      "url": "https://www.reconstruction.go.jp/topics/post_38/"
+    }
+  },
+  "gate": "公開できるのは、status が pdl1.0 または diet-courts のドメインの分だけ。basis が search-summary のものは、ページ本文を読んでから公開する"
+}
