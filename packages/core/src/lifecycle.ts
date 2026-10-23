@@ -50,8 +50,8 @@ export interface LifecycleKou {
   name: string;
   /** その項がある段階（`request` `budget` `supp` `settle`） */
   seenIn: LifecycleEventType[];
-  /** 概算要求書にだけある項（予算書の項に突合できなかった）。`reqOnly` = 突合に候補が無い、`zero` = 前年度・要求とも 0。予算書の項は無いので、項コードは空で、鍵は概算要求の側（所属・名前）で作る */
-  requestOnly?: 'reqOnly' | 'zero';
+  /** 概算要求書にだけある項（予算書の項に突合できなかった）。`reqOnly` = 突合に候補が無い、`zero` = 前年度・要求とも 0、`noBudget` = その年度の予算書が基準データに無い（概算要求だけの年度）。予算書の項は無いので、項コードは空で、鍵は概算要求の側（所属・名前）で作る */
+  requestOnly?: 'reqOnly' | 'zero' | 'noBudget';
 }
 
 /**

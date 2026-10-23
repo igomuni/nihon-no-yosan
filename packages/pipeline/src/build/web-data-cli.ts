@@ -15,7 +15,7 @@ import * as path from 'node:path';
 import * as zlib from 'node:zlib';
 import type { SiteAbout, SiteAboutAuthority } from '@nihon-no-yosan/core';
 import { buildBudgetRequestJikouYoukyu } from './jikou-youkyu.ts';
-import { buildLifecycle } from './lifecycle.ts';
+import { buildLifecycle, lifecycleRequestOnlyRows } from './lifecycle.ts';
 import { buildBudgetRequestMofUi, mofUiMatchesFromDataset } from './mof-ui.ts';
 import { buildBudgetRequestTrend, matchesFromDataset } from './trend.ts';
 import { buildBudgetRequestTrendDetail } from './trend-detail.ts';
@@ -44,7 +44,7 @@ const outputs: [string, Buffer][] = [
   ['trend/detail.json.gz', detail.uiGz],
   ['mof/kou.json.gz', mof.kouGz],
   ['mof/detail.json.gz', mof.detailGz],
-  ['lifecycle/data.json.gz', zlib.gzipSync(JSON.stringify(buildLifecycle({ datasetDir: dataset, requestOfMofRow: mof.requestOfMofRow, requestOnlyRows: mof.data.rows })), { level: 9, mtime: 0 } as zlib.ZlibOptions)],
+  ['lifecycle/data.json.gz', zlib.gzipSync(JSON.stringify(buildLifecycle({ datasetDir: dataset, requestOfMofRow: mof.requestOfMofRow, requestOnlyRows: lifecycleRequestOnlyRows(mof.data.rows, matches) })), { level: 9, mtime: 0 } as zlib.ZlibOptions)],
 ];
 for (const [name, bytes] of outputs) {
   fs.mkdirSync(path.dirname(path.join(outDir, name)), { recursive: true });

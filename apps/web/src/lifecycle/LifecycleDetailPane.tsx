@@ -65,7 +65,7 @@ const EVIDENCE_LABEL: Record<LifecycleLinkEvidence, string> = {
   same_name_other_code: '同じ所管・組織で項名が同じ（項コードが違う）',
   same_name_other_org: '項名が同じ（所管・組織が違う）',
   prev_amount_eq_revised: '次の年度の予算書の前年度予算額 = 前の年度の改予算額',
-  prev_amount_eq_budget: '次の年度の予算書の前年度予算額 = 前の年度の政府案の額（補正が無い項）',
+  prev_amount_eq_budget: '次の年度の前年度予算額 = 前の年度の政府案の額（補正が無い項。概算要求書の前年度予算額との比べ方も、これ）',
 };
 const AMOUNT_LABEL: Record<LifecycleLinkAmount, string> = {
   eq_revised: '前年度予算額が、前の年度の改予算額と一致',

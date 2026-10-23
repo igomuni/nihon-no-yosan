@@ -7,7 +7,7 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { buildBudgetRequestJikouYoukyu } from './jikou-youkyu.ts';
-import { buildLifecycle } from './lifecycle.ts';
+import { buildLifecycle, lifecycleRequestOnlyRows } from './lifecycle.ts';
 import { buildBudgetRequestMofUi, mofUiMatchesFromDataset } from './mof-ui.ts';
 import { buildBudgetRequestTrend, matchesFromDataset } from './trend.ts';
 import { buildBudgetRequestTrendDetail } from './trend-detail.ts';
@@ -20,7 +20,7 @@ const kouCsv = buildBudgetRequestTrend({ datasetDir: dataset, matches }).files['
 const jikou = buildBudgetRequestJikouYoukyu({ datasetDir: dataset, matches, kouCsv });
 const detail = buildBudgetRequestTrendDetail({ datasetDir: dataset, matches, kouCsv });
 const mof = buildBudgetRequestMofUi({ datasetDir: dataset, matches, mofMatches: mofUiMatchesFromDataset(dataset), trendKouCsv: kouCsv, jikouKouCsv: jikou.files['kou.csv'], jikouUi: jikou.ui, detailFiles: detail.files });
-const data = buildLifecycle({ datasetDir: dataset, requestOfMofRow: mof.requestOfMofRow, requestOnlyRows: mof.data.rows });
+const data = buildLifecycle({ datasetDir: dataset, requestOfMofRow: mof.requestOfMofRow, requestOnlyRows: lifecycleRequestOnlyRows(mof.data.rows, matches) });
 
 const cell = (v: unknown): string => {
   const s = String(v);

@@ -91,6 +91,13 @@ function absence(stage: LifecycleStage, kou: LifecycleKou, cov: LifecycleCoverag
   }
   const has = (s: LifecycleStage) => kou.seenIn.includes(s);
   if (kou.requestOnly && stage !== 'request') {
+    if (kou.requestOnly === 'noBudget') {
+      return {
+        reason: 'request_only',
+        badge: '予算書が無い年度（概算要求のみ）',
+        detail: `この年度の予算書は、基準データに無い（概算要求の時点）。${LIFECYCLE_STAGE_LABEL[stage]}の値は、観測していない（0 ではない）。`,
+      };
+    }
     return {
       reason: 'request_only',
       badge: '予算書に対応なし（概算要求のみ）',
@@ -159,7 +166,7 @@ export const LIFECYCLE_PATTERNS: { id: LifecyclePattern; label: string; definiti
   { id: 'all_stages', label: '全段階に値あり', definition: '概算要求・政府案・補正・決算のすべてに、この項の値がある' },
   { id: 'partial', label: '一部の段階に値なし', definition: 'どれかの段階に、この項の値が無い（理由は問わない）' },
   { id: 'no_budget', label: '政府案の値なし', definition: '政府案に値が無い（補正・決算にだけある項、概算要求書にだけある項など）' },
-  { id: 'request_only', label: '概算要求のみ', definition: '概算要求書にだけある項（予算書の項に突合できなかった）' },
+  { id: 'request_only', label: '概算要求のみ', definition: '概算要求書にだけある項（予算書の項に結べていない。予算書が基準データに無い年度の項を含む）' },
   { id: 'settle_only', label: '決算の値のみ', definition: '決算にだけ値があり、概算要求・政府案・補正のどれにも値が無い' },
 ];
 

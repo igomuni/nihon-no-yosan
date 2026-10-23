@@ -39,6 +39,12 @@ describe('buildLifecycleLinks', () => {
     const ks = [kou(2023, '001', '費', { org: '甲' }), kou(2024, '001', '費', { org: '乙' }), kou(2024, '002', '費', { org: '丙' })];
     expect(run(ks, [{ revised_amount: 9 }, { budget_prev: 9 }, { budget_prev: 9 }]).map(l => l.s)).toEqual(['AMBIGUOUS', 'AMBIGUOUS']);
   });
+  it('a name-only pair is a candidate only when both 項 have no same-key partner, but a pair with an amount match is also a candidate when one side has a partner', () => {
+    // 前の年度の 'A' は同じ鍵の相手（2024 の 'A'）がある。2024 の別の組織の 'A' は相手が無い
+    const ks = [kou(2023, '001', 'A', { org: '甲' }), kou(2024, '001', 'A', { org: '甲' }), kou(2024, '001', 'A', { org: '乙' })];
+    expect(run(ks, [{ revised_amount: 9 }, { budget_prev: 1 }, { budget_prev: 2 }]).map(l => [l.e, l.s])).toEqual([['same_key', 'RESOLVED'], ['', 'UNRESOLVED']]);
+    expect(run(ks, [{ revised_amount: 9 }, { budget_prev: 1 }, { budget_prev: 9 }]).map(l => [l.e, l.s])).toEqual([['same_key', 'RESOLVED'], ['same_name_other_org;prev_amount_eq_revised', 'RESOLVED']]);
+  });
   it('a 項 with no candidate is UNRESOLVED on its own row, and links never cross the account', () => {
     const ks = [kou(2023, '001', '費', { account: 'special', specialAccount: '年金', subAccount: '' }), kou(2024, '001', '費', { org: '甲' })];
     expect(run(ks, [{ revised_amount: 9 }, { budget_prev: 9 }]).map(l => [l.f !== null, l.t !== null, l.s])).toEqual([[false, true, 'UNRESOLVED'], [true, false, 'UNRESOLVED']]); // 一般会計の次の年度の項、特別会計の前の年度の項の順
