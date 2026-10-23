@@ -4,9 +4,12 @@ import {
   LIFECYCLE_PATTERNS,
   filterLifecycleKous,
   lifecycleCoverage,
+  lifecycleLinkState,
+  lifecycleLinksByKou,
   lifecyclePatternCounts,
   lifecycleRowAmounts,
   lifecycleValues,
+  matchesLifecycleLinks,
   matchesLifecyclePattern,
   sortLifecycleRows,
   type LifecycleData,
@@ -92,6 +95,7 @@ export function LifecyclePage() {
     for (const [i, es] of byKou) m.set(i, lifecycleValues(es.filter(e => e[1] !== 'derived')));
     return m;
   }, [byKou]);
+  const linksByKou = useMemo(() => lifecycleLinksByKou(data?.links ?? []), [data]);
   const coverage = useMemo(() => lifecycleCoverage(data?.kous ?? []), [data]);
 
   const years = data?.years ?? [];
@@ -103,13 +107,20 @@ export function LifecyclePage() {
     return filterLifecycleKous(data.kous.map((k, i) => ({ k, i })), filters, activeYear);
   }, [data, activeYear, filters]);
   const patternCounts = useMemo(() => lifecyclePatternCounts(base.map(x => x.k)), [base]);
+  const unsettledCount = useMemo(() => base.filter(({ i }) => matchesLifecycleLinks(lifecycleLinkState(linksByKou.get(i)), { ...INITIAL_LIFECYCLE_FILTERS, links: 'unsettled' })).length, [base, linksByKou]);
   const list = useMemo(
-    () => sortLifecycleRows(base.filter(({ k }) => matchesLifecyclePattern(k, filters)).map(({ k, i }) => ({ k, i, a: lifecycleRowAmounts(valuesOf.get(i) ?? {}) })), sortKey, sortDir),
-    [base, filters, valuesOf, sortKey, sortDir],
+    () => sortLifecycleRows(
+      base
+        .map(({ k, i }) => ({ k, i, a: lifecycleRowAmounts(valuesOf.get(i) ?? {}), link: lifecycleLinkState(linksByKou.get(i)) }))
+        .filter(({ k, link }) => matchesLifecyclePattern(k, filters) && matchesLifecycleLinks(link, filters)),
+      sortKey,
+      sortDir,
+    ),
+    [base, filters, valuesOf, linksByKou, sortKey, sortDir],
   );
   const onSort = (k: LifecycleSortKey) => {
     if (k === sortKey) setSortDir(d => (d === 1 ? -1 : 1));
-    else { setSortKey(k); setSortDir(k === 'group' || k === 'acct' || k === 'org' || k === 'name' ? 1 : -1); }
+    else { setSortKey(k); setSortDir(k === 'group' || k === 'acct' || k === 'org' || k === 'name' || k === 'links' ? 1 : -1); }
   };
 
   if (error) return <main className="mx-auto max-w-3xl p-8"><p className="rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-800">データの読み込みに失敗しました: {error}（<code>npm run build:data</code> で作る）</p></main>;
@@ -121,7 +132,7 @@ export function LifecyclePage() {
   const checks = data.checks.filter(c => c.year === activeYear);
   const listed = (names: string[]): string => (names.length === 0 ? 'すべて' : names.join('、'));
   const text = (label: string, value: string, regex: boolean): string => (value.trim() === '' ? '' : ` · ${label}: 「${value.trim()}」${regex ? '（正規表現）' : ''}`);
-  const scope = `FY${activeYear} · 所管: ${listed(filters.groups)} · 会計: ${listed(filters.accts)}${text('組織／勘定', filters.org, filters.orgRegex)}${text('項名', filters.name, filters.nameRegex)} · 値のある段階: ${LIFECYCLE_PATTERNS.find(p => p.id === filters.pattern)!.label}`;
+  const scope = `FY${activeYear} · 所管: ${listed(filters.groups)} · 会計: ${listed(filters.accts)}${text('組織／勘定', filters.org, filters.orgRegex)}${text('項名', filters.name, filters.nameRegex)} · 値のある段階: ${LIFECYCLE_PATTERNS.find(p => p.id === filters.pattern)!.label}${filters.links === 'unsettled' ? ' · 年度をまたぐ対応: 未確定のみ' : ''}`;
 
   return (
     <div className="flex h-screen flex-col bg-neutral-50 text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
@@ -139,7 +150,7 @@ export function LifecyclePage() {
       </header>
       <main className="grid min-h-0 flex-1 grid-cols-1 gap-3 px-3 pb-3 lg:grid-cols-[240px_minmax(0,1fr)] xl:flex xl:gap-0">
         <section aria-label="フィルタ" className={`${pane} overflow-hidden xl:w-[var(--fw)] xl:shrink-0`} style={{ '--fw': `${filterWidth}px` } as CSSProperties}>
-          <LifecycleFilterPane inYear={inYear} patternCounts={patternCounts} filters={filters} onChange={f => { setFilters(f); setSelectedId(null); }} />
+          <LifecycleFilterPane inYear={inYear} patternCounts={patternCounts} unsettledCount={unsettledCount} filters={filters} onChange={f => { setFilters(f); setSelectedId(null); }} />
         </section>
         <Splitter label="フィルタの幅" width={filterWidth} limits={FILTER_WIDTH} dir={1} onChange={setFilterWidth} />
         <section aria-label="項の一覧" className={`${pane} flex flex-col overflow-hidden xl:min-w-0 xl:flex-1`}>
@@ -165,7 +176,7 @@ export function LifecyclePage() {
         </section>
         <Splitter label="詳細の幅" width={detailWidth} limits={DETAIL_WIDTH} dir={-1} onChange={setDetailWidth} />
         <section aria-label="項の一生" className={`${pane} overflow-auto lg:col-span-2 xl:col-span-1 xl:w-[var(--dw)] xl:shrink-0`} style={{ '--dw': `${detailWidth}px` } as CSSProperties}>
-          <LifecycleDetailPane kou={kou} events={selectedIndex >= 0 ? byKou.get(selectedIndex) ?? [] : []} coverage={coverage} />
+          <LifecycleDetailPane kou={kou} events={selectedIndex >= 0 ? byKou.get(selectedIndex) ?? [] : []} coverage={coverage} data={data} links={selectedIndex >= 0 ? linksByKou.get(selectedIndex) ?? [] : []} selfIndex={selectedIndex} onNavigate={id => { const t = data.kous.find(x => x.id === id); if (t) { setYear(t.year); setSelectedId(id); } }} />
         </section>
       </main>
       <SourceNote />

@@ -23,9 +23,11 @@ const count = 'ml-auto tabular-nums text-neutral-400';
  * 左のフィルタ（概算要求と当初予算の画面と同じ構成）。
  * `inYear` は選択年度の項。段階ごとの件数は、所管・会計・組織・項名で絞った項（`narrowed`）で数える。
  */
-export function LifecycleFilterPane({ inYear, patternCounts, filters, onChange }: {
+export function LifecycleFilterPane({ inYear, patternCounts, unsettledCount, filters, onChange }: {
   inYear: readonly LifecycleKou[];
   patternCounts: Record<LifecyclePattern, number>;
+  /** 対応が確定していない項の数（所管〜項名で絞った項のうち） */
+  unsettledCount: number;
   filters: LifecycleFilters;
   onChange: (f: LifecycleFilters) => void;
 }) {
@@ -87,6 +89,19 @@ export function LifecycleFilterPane({ inYear, patternCounts, filters, onChange }
           ))}
           {filters.pattern !== 'all' && <p className="text-[11px] text-neutral-500">{current.definition}。理由が分かっているかどうかは問わない。</p>}
           <p className="text-[11px] text-neutral-500">件数は、上の条件で絞った項の数。</p>
+        </fieldset>
+        <fieldset className={section}>
+          <legend className={heading}>年度をまたぐ対応</legend>
+          <label className={row}>
+            <input type="radio" name="lifecycle-links" checked={filters.links === 'all'} onChange={() => set({ links: 'all' })} />
+            すべて
+          </label>
+          <label className={row} title="前後の年度の項との対応が、確定（RESOLVED）していない項。候補はあるが根拠がそろわない項と、候補が無い項">
+            <input type="radio" name="lifecycle-links" checked={filters.links === 'unsettled'} onChange={() => set({ links: 'unsettled' })} />
+            対応未確定
+            <span className={count}>{unsettledCount.toLocaleString()}</span>
+          </label>
+          <p className="text-[11px] text-neutral-500">候補なしも含む。FY2023 の項は FY2024 との、FY2024 の項は FY2023 との対応。</p>
         </fieldset>
       </div>
     </div>

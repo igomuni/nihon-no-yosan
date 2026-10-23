@@ -10,6 +10,8 @@ import * as path from 'node:path';
 import * as fs from 'node:fs';
 import {
   LIFECYCLE_MEASURES,
+  buildLifecycleLinks,
+  lifecycleValues,
   readCsv,
   type LifecycleCheck,
   type LifecycleData,
@@ -210,7 +212,11 @@ export function buildLifecycle({ datasetDir, requestOfMofRow }: { datasetDir: st
       checks.push(...[...tally.values()]);
     }
   }
-  return { years: [...LIFECYCLE_YEARS], kous, events, checks };
+  // 年度をまたぐ対応。項ごとの値（導出の行を除く）から作る
+  const byKou = groupByKou(events.filter(e => e[1] !== 'derived'));
+  const values = kous.map((_, i) => lifecycleValues(byKou.get(i) ?? []));
+  const links = buildLifecycleLinks(kous, values, LIFECYCLE_YEARS);
+  return { years: [...LIFECYCLE_YEARS], kous, events, checks, links };
 }
 
 /** 項の添字ごとの出来事（順は events の順のまま） */
