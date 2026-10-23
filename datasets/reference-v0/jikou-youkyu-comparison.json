@@ -1,0 +1,37 @@
+{
+ "comparedWith": {
+  "repository": "igomuni/marumie-rssystem",
+  "commit": "3aef2de9d0f08a438c94efd32a3c0bc2ae33af19"
+ },
+ "manifest": {
+  "path": "datasets/reference-v0/manifest.json",
+  "sha256": "9d4ac635577461e5acff4c9163fc5056ec7ba2d52d9644b7a1b60c07059642ee"
+ },
+ "files": {
+  "kou.csv": {
+   "comparedWith": "tests/fixtures/budget-request-jikou-youkyu/kou.csv",
+   "sha256": "48c0ce05a3214fb2302afdb018e5722dee30ae539a570233829cfca2675ae5a2",
+   "bytes": 94019,
+   "equal": true
+  },
+  "marks.csv": {
+   "comparedWith": "tests/fixtures/budget-request-jikou-youkyu/marks.csv",
+   "sha256": "36b6135face92026d818aba7f30b5dfc893a17c22602a81c01a3df4794fbc819",
+   "bytes": 111637,
+   "equal": true
+  },
+  "summary.json": {
+   "comparedWith": "tests/fixtures/budget-request-jikou-youkyu/summary.json",
+   "sha256": "1a8b5736dbf77549c48bc1939642ca0b0442dbca4480220f4ee7b1a699f867e5",
+   "bytes": 1391,
+   "equal": true
+  },
+  "jikou.json.gz": {
+   "comparedWith": "public/data/v2/ui/budget-request-trend/jikou.json.gz",
+   "sha256": "522ac14c2792380578e2ce957c582a394f62172dabb387eefa525450f998b053",
+   "bytes": 7528,
+   "equal": true
+  }
+ },
+ "allEqual": true
+}

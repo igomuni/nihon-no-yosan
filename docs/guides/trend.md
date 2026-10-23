@@ -71,7 +71,7 @@ node packages/pipeline/src/build/trend-cli.ts data/dataset/reference-v0 <出力�
 
 ## 画面用 JSON（`kou.json.gz`）
 
-型は `BudgetRequestTrendData`（`packages/core/src/budget-request-trend.ts`）。キー単位に束ね、元の PDF の URL の表（`urls`）を持つ。`gzip` は level 9、mtime 0（同じ中身なら同じバイト列）。年度ごとの値の `src` は `[urls の添字, 目次の頁, PDF の通し頁, 頁の状態]`（頁の状態: `e` = 推定、`i` = 推定した頁が画像、空 = 明細表から引けた）。`jikou`・`orgJikou`・`nJikou`・`nMoku` は、事項要求の検知と事項・目の年度推移の build が、あとから合流させる（この build は出さない）。
+型は `BudgetRequestTrendData`（`packages/core/src/budget-request-trend.ts`）。キー単位に束ね、元の PDF の URL の表（`urls`）を持つ。`gzip` は level 9、mtime 0（同じ中身なら同じバイト列）。年度ごとの値の `src` は `[urls の添字, 目次の頁, PDF の通し頁, 頁の状態]`（頁の状態: `e` = 推定、`i` = 推定した頁が画像、空 = 明細表から引けた）。`jikou`・`orgJikou`・`nJikou`・`nMoku` は、事項要求の検知（`docs/guides/jikou-youkyu.md`）と事項・目の年度推移（`docs/guides/trend-detail.md`）の build が出す JSON を、画面があとから合流させる（この build は出さない）。
 
 ## 実測（記述的な件数）
 
