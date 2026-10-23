@@ -1,0 +1,160 @@
+import { useEffect, useMemo, useState, type CSSProperties, type MouseEvent as ReactMouseEvent } from 'react';
+import {
+  INITIAL_TREND_FILTERS,
+  filterRows,
+  mergeDetailCounts,
+  mergeJikou,
+  sortRows,
+  type BudgetRequestJikouData,
+  type BudgetRequestTrendData,
+  type BudgetRequestTrendDetailData,
+  type BudgetRequestTrendRow,
+  type TrendFilters,
+  type TrendSortDir,
+  type TrendSortKey,
+} from '@nihon-no-yosan/core';
+import { loadGzJson } from '../data.ts';
+import { PageNavMenu } from '../components/PageNavMenu.tsx';
+import { YearSelect } from '../components/YearSelect.tsx';
+import { usePersistedState } from '../usePersistedState.ts';
+import { TrendDetailPane, type TrendDetailTab } from './TrendDetailPane.tsx';
+import { TrendFilterPane } from './TrendFilterPane.tsx';
+import { TrendListPane } from './TrendListPane.tsx';
+
+/**
+ * 概算要求の年度推移（項の粒度, FY2023〜）。
+ *
+ * 左にフィルタ、中に選択年度の一覧（前年度予算額・要求額・増減）、右に選んだ項の全年度分の表・グラフ・元の PDF へのリンク。
+ * データは `npm run build:data` が作る静的ファイル（`trend/kou.json.gz`）をブラウザが直接読む。仕様: docs/guides/trend.md。
+ * 事項要求の候補（`jikou.json.gz`、docs/guides/jikou-youkyu.md）は別に読んで年度の値に合流する。読めなくても一覧は出す。
+ * 事項・目の内訳（`detail.json.gz`、docs/guides/trend-detail.md）は詳細の「事項」「目」のタブ用で、一覧の表示を待たずに後から読む。
+ * 予算書との突合には依存しない。名称が変わった項は別の行（新規・消滅）になる。
+ */
+
+const rowKey = (r: BudgetRequestTrendRow): string => [r.acct, r.min, r.sub, r.org, r.name, r.kou ?? ''].join('|');
+const FILTER_WIDTH = { def: 240, min: 180, max: 420 };
+const DETAIL_WIDTH = { def: 430, min: 320, max: 760 };
+// overflow は枠ごとに付ける（overflow-hidden と overflow-auto を同時に付けると hidden が効き、詳細がスクロールできない）
+const pane = 'min-h-0 min-w-0 rounded-lg border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900';
+
+/** ペイン間のつまみ。ドラッグで隣のペインの幅を変える（xl 以上のみ）。dir: 1 = 右へ動かすと広がる、-1 = 左へ動かすと広がる */
+function Splitter({ label, width, limits, dir, onChange }: { label: string; width: number; limits: { min: number; max: number }; dir: 1 | -1; onChange: (w: number) => void }) {
+  const start = (e: ReactMouseEvent) => {
+    e.preventDefault();
+    const x0 = e.clientX, w0 = width;
+    const move = (ev: MouseEvent) => onChange(Math.min(limits.max, Math.max(limits.min, w0 + dir * (ev.clientX - x0))));
+    const up = () => { window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', up); document.body.style.cursor = ''; };
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', up);
+    document.body.style.cursor = 'col-resize';
+  };
+  return (
+    <div role="separator" aria-orientation="vertical" aria-label={label} onMouseDown={start} className="hidden w-1.5 shrink-0 cursor-col-resize rounded hover:bg-emerald-500/40 xl:block" />
+  );
+}
+
+export function TrendPage() {
+  const [baseData, setData] = useState<BudgetRequestTrendData | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [year, setYear] = usePersistedState<number | null>('trend:year', null);
+  const [filters, setFilters] = useState<TrendFilters>(INITIAL_TREND_FILTERS);
+  const [sortKey, setSortKey] = useState<TrendSortKey>('req');
+  const [sortDir, setSortDir] = useState<TrendSortDir>(-1);
+  const [selectedKey, setSelectedKey] = useState<string | null>(null);
+  const [filterWidth, setFilterWidth] = usePersistedState('trend:filterWidth', FILTER_WIDTH.def);
+  const [detailWidth, setDetailWidth] = usePersistedState('trend:detailWidth', DETAIL_WIDTH.def);
+  const [columnWidths, setColumnWidths] = usePersistedState<Record<string, number>>('trend:columnWidths', {});
+  const [detailTab, setDetailTab] = usePersistedState<TrendDetailTab>('trend:detailTab', 'trend');
+  const [detail, setDetail] = useState<BudgetRequestTrendDetailData | null>(null);
+  const [detailError, setDetailError] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    const jikou = loadGzJson<BudgetRequestJikouData>('trend/jikou.json.gz').catch(() => null);
+    loadGzJson<BudgetRequestTrendData>('trend/kou.json.gz')
+      .then(async d => { const jk = await jikou; if (alive) setData(jk ? mergeJikou(d, jk) : d); })
+      .catch((e: unknown) => { if (alive) setError(e instanceof Error ? e.message : String(e)); });
+    loadGzJson<BudgetRequestTrendDetailData>('trend/detail.json.gz')
+      .then(d => { if (alive) setDetail(d); })
+      .catch(() => { if (alive) setDetailError(true); });
+    return () => { alive = false; };
+  }, []);
+
+  // 事項・目の数は、内訳（detail.json.gz）が届いたら行の年度の値に合流する（一覧の「事項」「目」の列と並べ替え）
+  const data = useMemo(() => (baseData && detail ? mergeDetailCounts(baseData, detail) : baseData), [baseData, detail]);
+  const years = data?.years ?? [];
+  const activeYear = data ? (year !== null && years.includes(year) ? year : years[years.length - 1]!) : null;
+
+  const rows = useMemo(() => {
+    if (!data || activeYear === null) return [];
+    return sortRows(filterRows(data.rows, filters, activeYear, data.years, data.urls), sortKey, sortDir, activeYear, data.years[0]!);
+  }, [data, filters, sortKey, sortDir, activeYear]);
+
+  const selected = useMemo(() => (data && selectedKey ? data.rows.find(r => rowKey(r) === selectedKey) ?? null : null), [data, selectedKey]);
+
+  if (error) {
+    return (
+      <main className="mx-auto max-w-3xl p-8">
+        <p className="rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-800">
+          データの読み込みに失敗しました: {error}（<code>npm run build:data</code> で作る）
+        </p>
+      </main>
+    );
+  }
+  if (!data || activeYear === null) {
+    return (
+      <main className="mx-auto max-w-3xl p-8">
+        <p className="text-sm text-neutral-500">読み込み中…</p>
+      </main>
+    );
+  }
+
+  const lastYear = years[years.length - 1]!;
+  const onSort = (k: TrendSortKey) => {
+    if (k === sortKey) setSortDir(d => (d === 1 ? -1 : 1));
+    else { setSortKey(k); setSortDir(k === 'acct' || k === 'group' || k === 'org' || k === 'name' || k === 'pattern' ? 1 : -1); } // 事項・目の数は多い順から
+  };
+
+  return (
+    <div className="flex h-screen flex-col bg-neutral-50 text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
+      <header className="flex shrink-0 flex-wrap items-start justify-between gap-3 px-3 pb-2 pt-3">
+        <div>
+          <h1 className="text-base font-semibold">概算要求 年度推移</h1>
+          <p className="mt-0.5 text-[11px] text-neutral-500">
+            項の粒度 · FY{years[0]}–FY{lastYear} · 全 {data.rows.length.toLocaleString()} 項 · 出典: 各府省の歳出概算要求書
+          </p>
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          <YearSelect value={String(activeYear)} onChange={y => setYear(Number(y))} years={years} />
+          <PageNavMenu current="trend" />
+        </div>
+      </header>
+      <main className="grid min-h-0 flex-1 grid-cols-1 gap-3 px-3 pb-3 lg:grid-cols-[240px_minmax(0,1fr)] xl:flex xl:gap-0">
+        <section aria-label="フィルタ" className={`${pane} overflow-hidden xl:w-[var(--fw)] xl:shrink-0`} style={{ '--fw': `${filterWidth}px` } as CSSProperties}>
+          <TrendFilterPane rows={data.rows} years={years} urls={data.urls} year={activeYear} filters={filters} onChange={setFilters} />
+        </section>
+        <Splitter label="フィルタの幅" width={filterWidth} limits={FILTER_WIDTH} dir={1} onChange={setFilterWidth} />
+        <section aria-label="項の一覧" className={`${pane} overflow-hidden xl:min-w-0 xl:flex-1`}>
+          <TrendListPane
+            rows={rows}
+            year={activeYear}
+            firstYear={years[0]!}
+            sortKey={sortKey}
+            sortDir={sortDir}
+            onSort={onSort}
+            selectedKey={selectedKey}
+            rowKey={rowKey}
+            urls={data.urls}
+            onSelect={x => setSelectedKey(rowKey(x.row))}
+            widths={columnWidths}
+            onWidthsChange={setColumnWidths}
+          />
+        </section>
+        <Splitter label="詳細の幅" width={detailWidth} limits={DETAIL_WIDTH} dir={-1} onChange={setDetailWidth} />
+        <section aria-label="詳細（全年度）" className={`${pane} overflow-auto lg:col-span-2 xl:col-span-1 xl:w-[var(--dw)] xl:shrink-0`} style={{ '--dw': `${detailWidth}px` } as CSSProperties}>
+          <TrendDetailPane row={selected} years={years} year={activeYear} urls={data.urls} rows={data.rows} onSelectRow={r => setSelectedKey(rowKey(r))} onSelectYear={setYear} tab={detailTab} onTab={setDetailTab} detail={detail} detailError={detailError} />
+        </section>
+      </main>
+    </div>
+  );
+}
