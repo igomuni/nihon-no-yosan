@@ -15,29 +15,42 @@ const muted = 'fill-neutral-500';
 /** 長い名前を 2 行に分ける（5 文字ごと） */
 const lines = (s: string): string[] => (s.length <= 6 ? [s] : [s.slice(0, Math.ceil(s.length / 2)), s.slice(Math.ceil(s.length / 2))]);
 
-/** 段階ごとの額（柱）。ゼロを基準に、値を柱の上に直接書く */
+/**
+ * 段階ごとの額（柱）。ゼロを基準に、値を柱の上に直接書く。観測した値だけを柱にする。
+ * 値の無い段階（`yen` = null）は、柱の代わりに「—」を置く（0 ではない。補完しない）。段階の間を結ぶ線は引かない（対応関係を線で表さない）。
+ */
 export function LevelsChart({ levels, caption }: { levels: readonly LifecycleLevel[]; caption?: string }) {
   const W = 560, H = 190, top = 26, bottom = 44, left = 10, right = 10;
   const plotH = H - top - bottom;
-  const max = Math.max(1, ...levels.map(l => l.yen));
+  const max = Math.max(1, ...levels.map(l => l.yen ?? 0));
   const slot = (W - left - right) / Math.max(1, levels.length);
   const bar = Math.min(44, slot * 0.6);
   return (
     <figure className="m-0">
-      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`段階ごとの額: ${levels.map(l => `${l.label} ${sen(l.yen)}`).join('、')}`} className="block h-auto w-full max-w-[560px]">
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`段階ごとの額: ${levels.map(l => `${l.label} ${l.yen === null ? '値なし' : sen(l.yen)}`).join('、')}`} className="block h-auto w-full max-w-[560px]">
         <line x1={left} x2={W - right} y1={H - bottom} y2={H - bottom} className="stroke-neutral-300 dark:stroke-neutral-600" />
         {levels.map((l, i) => {
-          const h = l.yen > 0 ? Math.max(2, (l.yen / max) * plotH) : 0;
           const x = left + slot * i + (slot - bar) / 2;
+          const names = lines(l.label).map((t, k) => (
+            <text key={k} x={x + bar / 2} y={H - bottom + 14 + k * 12} textAnchor="middle" className={`${muted} text-[10px]`}>{t}</text>
+          ));
+          if (l.yen === null) {
+            return (
+              <g key={`${l.stage}-${l.key}`}>
+                <title>{`${l.label}: 値なし（0 ではない）`}</title>
+                <text x={x + bar / 2} y={H - bottom - 8} textAnchor="middle" className={`${muted} text-[13px]`}>—</text>
+                {names}
+              </g>
+            );
+          }
+          const h = l.yen > 0 ? Math.max(2, (l.yen / max) * plotH) : 0;
           return (
-            <g key={l.key}>
+            <g key={`${l.stage}-${l.key}`}>
               <title>{`${l.label}: ${l.yen.toLocaleString('ja-JP')} 円`}</title>
               <rect x={x} y={H - bottom - h} width={bar} height={h} rx={4} className={BLUE} />
               <rect x={x} y={H - bottom - Math.min(h, 4)} width={bar} height={Math.min(h, 4)} className={BLUE} />
               <text x={x + bar / 2} y={H - bottom - h - 6} textAnchor="middle" className={`${ink} text-[11px] font-semibold tabular-nums`}>{sen(l.yen)}</text>
-              {lines(l.label).map((t, k) => (
-                <text key={k} x={x + bar / 2} y={H - bottom + 14 + k * 12} textAnchor="middle" className={`${muted} text-[10px]`}>{t}</text>
-              ))}
+              {names}
             </g>
           );
         })}

@@ -88,7 +88,7 @@ export function buildLifecycle({ datasetDir, requestOfMofRow }: { datasetDir: st
             id: `${year}:${account}:${key}`,
             year,
             account,
-            ministry: account === 'general' ? (r['所管'] ?? '') : '',
+            ministry: r['所管'] ?? '',
             org: account === 'general' ? (r['組織'] ?? '') : '',
             specialAccount: account === 'special' ? (r['特別会計'] ?? '') : '',
             subAccount: account === 'special' ? (r['勘定'] ?? '') : '',

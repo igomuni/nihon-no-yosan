@@ -5,7 +5,7 @@ import { Icon } from './Icon.tsx';
 export const PAGES = [
   { id: 'trend', label: '概算要求 年度推移' },
   { id: 'mof', label: '概算要求と当初予算' },
-  { id: 'lifecycle', label: '予算の一生の表（試作）' },
+  { id: 'lifecycle', label: '予算の推移' },
   { id: 'about', label: '出典と利用条件' },
 ] as const;
 

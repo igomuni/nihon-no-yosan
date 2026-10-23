@@ -1,5 +1,5 @@
 /**
- * 予算の一生の表（試作）を CSV で出力する。仕様（案）: docs/guides/budget-lifecycle.md
+ * 予算の一生の表を CSV で出力する。仕様（案）: docs/guides/budget-lifecycle.md
  *
  * 使い方: node packages/pipeline/src/build/lifecycle-cli.ts <基準データのディレクトリ> <出力ディレクトリ>
  * 出力: kou.csv、events.csv、checks.json（項の識別、値ごとの出来事、検算の結果）。概算要求の額は、概算要求と当初予算の差の build（`mof-ui.ts`）から取る
