@@ -78,6 +78,10 @@ node packages/pipeline/src/migrate/verify.ts data/dataset/reference-v0 datasets/
 
 **出典表記の例（PDL1.0）:** `出典：財務省「令和8年度予算書」（ページの URL）を加工して作成`。
 
+## 公開
+
+公開できる分（利用条件の本文を確かめた書）だけを `reference-v0.tar.gz` にして、GitHub Releases（タグ `dataset-reference-v0`）に置く。作り方、入れない書、CI での照合は `docs/guides/web-publish.md`。公開分の manifest は `datasets/reference-v0/published-manifest.json`、tar.gz の SHA-256 は `datasets/reference-v0/release.json`。
+
 ## 未確認
 
 - データセットの置き場（GitHub Releases の予定）の、1 ファイルの上限など。基準データの初版は 283 MB（2,298 ファイル）。

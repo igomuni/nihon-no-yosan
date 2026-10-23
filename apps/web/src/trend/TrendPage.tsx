@@ -15,6 +15,7 @@ import {
 } from '@nihon-no-yosan/core';
 import { loadGzJson } from '../data.ts';
 import { PageNavMenu } from '../components/PageNavMenu.tsx';
+import { SourceNote } from '../components/SourceNote.tsx';
 import { YearSelect } from '../components/YearSelect.tsx';
 import { usePersistedState } from '../usePersistedState.ts';
 import { TrendDetailPane, type TrendDetailTab } from './TrendDetailPane.tsx';
@@ -155,6 +156,7 @@ export function TrendPage() {
           <TrendDetailPane row={selected} years={years} year={activeYear} urls={data.urls} rows={data.rows} onSelectRow={r => setSelectedKey(rowKey(r))} onSelectYear={setYear} tab={detailTab} onTab={setDetailTab} detail={detail} detailError={detailError} />
         </section>
       </main>
+      <SourceNote />
     </div>
   );
 }

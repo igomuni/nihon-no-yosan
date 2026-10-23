@@ -1,3 +1,4 @@
+export type { SiteAbout, SiteAboutAuthority } from './about.ts';
 export type {
   BudgetRequestMofData,
   BudgetRequestMofDetail,

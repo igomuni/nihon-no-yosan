@@ -12,6 +12,7 @@ import {
 } from '@nihon-no-yosan/core';
 import { loadGzJson } from '../data.ts';
 import { PageNavMenu } from '../components/PageNavMenu.tsx';
+import { SourceNote } from '../components/SourceNote.tsx';
 import { YearSelect } from '../components/YearSelect.tsx';
 import { usePersistedState } from '../usePersistedState.ts';
 import { MofDetailPane, type MofDetailTab } from './MofDetailPane.tsx';
@@ -133,6 +134,7 @@ export function MofPage() {
           <MofDetailPane row={selected} urls={data.urls} version={data.versions[String(activeYear)] ?? ''} detail={detail} detailError={detailError} tab={detailTab} onTab={setDetailTab} rowKey={selected ? mofRowKey(selected) : null} />
         </section>
       </main>
+      <SourceNote />
     </div>
   );
 }

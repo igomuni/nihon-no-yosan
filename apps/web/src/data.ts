@@ -9,3 +9,10 @@ export async function loadGzJson<T>(path: string): Promise<T> {
   const text = await (decoded ? res : new Response(res.body.pipeThrough(new DecompressionStream('gzip')))).text();
   return JSON.parse(text) as T;
 }
+
+/** `public/data/` の plain な JSON を読む */
+export async function loadJson<T>(path: string): Promise<T> {
+  const res = await fetch(`${import.meta.env.BASE_URL}data/${path}`);
+  if (!res.ok) throw new Error(`${path}: ${res.status}`);
+  return (await res.json()) as T;
+}
