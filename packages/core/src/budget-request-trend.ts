@@ -31,7 +31,7 @@ export interface BudgetRequestTrendYear {
   to?: number;
   /** MOF 突合の状態（参考。MOF の版が無い年度は空） */
   mof: string;
-  /** 備考に事項要求（金額を示さない要求）の記載がある。jikou.json.gz からページで合流する。仕様は事項要求の検知の移行時に書く */
+  /** 備考に事項要求（金額を示さない要求）の記載がある。jikou.json.gz からページで合流する。仕様: docs/guides/jikou-youkyu.md */
   jikou?: BudgetRequestJikou;
   /** この項の組織の行の備考に事項要求の記載がある（組織全体の事項要求。どの項に含まれるかは要求書に書かれていない）。値は備考の本文 */
   orgJikou?: string;
@@ -73,7 +73,7 @@ export interface BudgetRequestTrendData {
   rows: BudgetRequestTrendRow[];
 }
 
-/** 事項要求の記載（事項要求の検知の build が出力する予定）。年度（西暦の文字列）→ [行のキー（jikouKeyOf）, 形, 根拠の行] */
+/** 事項要求の記載（事項要求の検知の build が出力する `jikou.json.gz`。仕様: docs/guides/jikou-youkyu.md）。年度（西暦の文字列）→ [行のキー（jikouKeyOf）, 形, 根拠の行] */
 export interface BudgetRequestJikouData {
   years: Record<string, [string, string[], string][]>;
   /** 組織の行の事項要求: 年度 → [組織のキー（jikouOrgKeyOf）, 備考の本文] */
