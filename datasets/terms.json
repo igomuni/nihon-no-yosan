@@ -33,14 +33,16 @@
     "cas.go.jp": {
       "authority": "内閣官房",
       "status": "pdl1.0",
-      "basis": "search-summary",
-      "url": "https://www.cas.go.jp/jp/tyosakuken/index.html"
+      "basis": "page-read",
+      "url": "https://www.cas.go.jp/jp/tyosakuken/index.html",
+      "checkedOn": "2026-10-23"
     },
     "cfa.go.jp": {
       "authority": "こども家庭庁",
       "status": "pdl1.0",
-      "basis": "search-summary",
-      "url": "https://www.cfa.go.jp/copyright-policy"
+      "basis": "page-read",
+      "url": "https://www.cfa.go.jp/copyright-policy",
+      "checkedOn": "2026-10-23"
     },
     "clb.go.jp": {
       "authority": "内閣法制局",
@@ -76,7 +78,8 @@
       "authority": "会計検査院",
       "status": "pdl1.0",
       "basis": "search-summary",
-      "url": "https://www.jbaudit.go.jp/general/term.html"
+      "url": "https://www.jbaudit.go.jp/general/term.html",
+      "note": "2026-10-23 に WebFetch とブラウザで規約ページ（サイト）を開こうとしたが、サーバーが応答しなかった。本文は未読"
     },
     "jinji.go.jp": {
       "authority": "人事院",
@@ -111,8 +114,10 @@
     "mof.go.jp": {
       "authority": "財務省",
       "status": "pdl1.0",
-      "basis": "search-summary",
-      "url": "https://www.mof.go.jp/about_mof/notice/index.html"
+      "basis": "page-read",
+      "url": "https://www.mof.go.jp/about_mof/notice/index.html",
+      "checkedOn": "2026-10-23",
+      "note": "bb.mof.go.jp（予算書・決算書データベース）には及ぶとは書かれていない。bb.mof.go.jp は自身の規約ページを持つ"
     },
     "moj.go.jp": {
       "authority": "法務省",
@@ -123,14 +128,17 @@
     "ndl.go.jp": {
       "authority": "国立国会図書館",
       "status": "pdl1.0",
-      "basis": "search-summary",
-      "url": "https://www.ndl.go.jp/sitepolicy"
+      "basis": "page-read",
+      "url": "https://www.ndl.go.jp/sitepolicy/terms",
+      "checkedOn": "2026-10-23",
+      "note": "PDL1.0 の「国以外の者」を「国立国会図書館以外の者」と読み替える。有償販売の印刷刊行物など、別の利用ルールのページがある"
     },
     "npa.go.jp": {
       "authority": "警察庁",
       "status": "pdl1.0",
-      "basis": "search-summary",
-      "url": "https://www.npa.go.jp/rules/"
+      "basis": "page-read",
+      "url": "https://www.npa.go.jp/rules/",
+      "checkedOn": "2026-10-23"
     },
     "ppc.go.jp": {
       "authority": "個人情報保護委員会",
@@ -154,7 +162,8 @@
       "authority": "裁判官訴追委員会",
       "status": "diet-courts",
       "basis": "search-summary",
-      "url": "https://www.sotsui.go.jp/"
+      "url": "https://www.sotsui.go.jp/",
+      "note": "2026-10-23 に WebFetch とブラウザで規約ページ（サイト）を開こうとしたが、サーバーが応答しなかった。本文は未読"
     },
     "soumu.go.jp": {
       "authority": "総務省",
@@ -164,58 +173,68 @@
     },
     "bb.mof.go.jp": {
       "authority": "財務省 予算書・決算書データベース（予算書の CSV・XML の出どころ）",
-      "status": "unconfirmed",
-      "basis": "none",
-      "url": "https://www.bb.mof.go.jp/hdocs/bxsselect.html",
-      "note": "www.mof.go.jp の利用規約が、別ドメインのデータベースに及ぶかは未確認"
+      "status": "pdl1.0",
+      "basis": "page-read",
+      "url": "https://www.bb.mof.go.jp/terms/",
+      "note": "予算書・決算書データベース自身の利用規約に PDL1.0 と出典の書き方（「予算書・決算書データベース（当該ページのURL）」）がある。www.mof.go.jp の規約とは別のページ",
+      "checkedOn": "2026-10-23"
     },
     "dangai.go.jp": {
       "authority": "裁判官弾劾裁判所",
-      "status": "unconfirmed",
-      "basis": "none",
-      "url": "https://www.dangai.go.jp/"
+      "status": "diet-courts",
+      "basis": "page-read",
+      "url": "https://www.dangai.go.jp/caution.html",
+      "checkedOn": "2026-10-23",
+      "note": "PDL1.0 の記載なし。私的使用・引用など著作権法で認められた行為を除き、無断で転用・改変できない"
     },
     "jcrc.go.jp": {
       "authority": "カジノ管理委員会",
-      "status": "unconfirmed",
-      "basis": "none",
-      "url": "https://www.jcrc.go.jp/notice.html"
+      "status": "pdl1.0",
+      "basis": "page-read",
+      "url": "https://www.jcrc.go.jp/notice.html",
+      "checkedOn": "2026-10-23"
     },
     "jftc.go.jp": {
       "authority": "公正取引委員会",
-      "status": "unconfirmed",
-      "basis": "none",
-      "url": "https://www.jftc.go.jp/kiyaku/"
+      "status": "pdl1.0",
+      "basis": "page-read",
+      "url": "https://www.jftc.go.jp/kiyaku/",
+      "checkedOn": "2026-10-23"
     },
     "kunaicho.go.jp": {
       "authority": "宮内庁",
-      "status": "unconfirmed",
-      "basis": "search-summary",
-      "url": "https://www.kunaicho.go.jp/copyright/kiyaku.html"
+      "status": "pdl1.0",
+      "basis": "page-read",
+      "url": "https://www.kunaicho.go.jp/copyright/kiyaku.html",
+      "checkedOn": "2026-10-23"
     },
     "meti.go.jp": {
       "authority": "経済産業省",
-      "status": "unconfirmed",
-      "basis": "search-summary",
-      "url": "https://www.meti.go.jp/main/rules.html"
+      "status": "pdl1.0",
+      "basis": "page-read",
+      "url": "https://www.meti.go.jp/main/rules.html",
+      "checkedOn": "2026-10-23"
     },
     "mod.go.jp": {
       "authority": "防衛省",
-      "status": "unconfirmed",
-      "basis": "search-summary",
-      "url": "https://www.mod.go.jp/j/info/contents.html"
+      "status": "pdl1.0",
+      "basis": "page-read",
+      "url": "https://www.mod.go.jp/j/info/contents.html",
+      "checkedOn": "2026-10-23"
     },
     "mofa.go.jp": {
       "authority": "外務省",
-      "status": "unconfirmed",
-      "basis": "search-summary",
-      "url": "https://www.mofa.go.jp/mofaj/annai/legalmatters/index.html"
+      "status": "pdl1.0",
+      "basis": "page-read",
+      "url": "https://www.mofa.go.jp/mofaj/annai/legalmatters/index.html",
+      "checkedOn": "2026-10-23"
     },
     "reconstruction.go.jp": {
       "authority": "復興庁",
-      "status": "unconfirmed",
-      "basis": "search-summary",
-      "url": "https://www.reconstruction.go.jp/topics/post_38/"
+      "status": "pdl1.0",
+      "basis": "page-read",
+      "url": "https://www.reconstruction.go.jp/topics/post_38/",
+      "checkedOn": "2026-10-23"
     }
   },
   "gate": "公開できるのは、status が pdl1.0 または diet-courts のドメインの分だけ。basis が search-summary のものは、ページ本文を読んでから公開する"
