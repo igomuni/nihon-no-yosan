@@ -22,7 +22,7 @@ import { num, td, th, yen } from './shared.ts';
 const STAGE_OF_MEASURE: Partial<Record<LifecycleMeasure, LifecycleStage>> = { request_amount: 'request', budget_amount: 'budget', revised_amount: 'supp', appropriation: 'settle', current_amount: 'settle', spent: 'settle' };
 
 /** 集計: 対象範囲、観測額（全体）、比較できる項、検算の結果（一覧の絞り込みに連動） */
-export function LifecycleSummaryPane({ checks, scope, kous, values, events, coverage }: { checks: LifecycleData['checks']; scope: string; kous: LifecycleKou[]; values: LifecycleValues[]; events: LifecycleEventRow[][]; coverage: LifecycleCoverage }) {
+export function LifecycleSummaryPane({ checks, scope, stageNote, kous, values, events, coverage }: { checks: LifecycleData['checks']; scope: string; stageNote: string; kous: LifecycleKou[]; values: LifecycleValues[]; events: LifecycleEventRow[][]; coverage: LifecycleCoverage }) {
   const [mode, setMode] = useState<'observed' | 'compare'>('observed');
   const [pairId, setPairId] = useState<string>(LIFECYCLE_PAIRS[0]!.id);
   const NAME: Record<string, string> = {
@@ -58,6 +58,7 @@ export function LifecycleSummaryPane({ checks, scope, kous, values, events, cove
       <div className="rounded border border-neutral-200 bg-neutral-50 px-3 py-2 dark:border-neutral-700 dark:bg-neutral-800/40">
         <p className="font-semibold">集計の対象</p>
         <p className="text-neutral-600 dark:text-neutral-300">{scope} · 対象 {kous.length.toLocaleString()} 項（一覧の項。フィルタに連動）</p>
+        <p className="mt-0.5 text-neutral-500">この年度に、基準データで値のある段階 — {stageNote}。無い段階の項は、「値なし」（0 ではない）。</p>
       </div>
       <div role="tablist" aria-label="集計の見方" className="flex gap-1 border-b border-neutral-200 dark:border-neutral-800">
         {([['observed', '観測額（全体）'], ['compare', '比較できる項']] as const).map(([m, label]) => (

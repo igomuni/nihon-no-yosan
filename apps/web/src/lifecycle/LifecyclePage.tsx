@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState, type CSSProperties, type MouseEvent as Re
 import {
   INITIAL_LIFECYCLE_FILTERS,
   LIFECYCLE_PATTERNS,
+  LIFECYCLE_STAGES,
+  LIFECYCLE_STAGE_LABEL,
   filterLifecycleKous,
   lifecycleCoverage,
   lifecycleLinkState,
@@ -30,7 +32,7 @@ import { LifecycleListPane } from './LifecycleListPane.tsx';
 import { LifecycleSummaryPane } from './LifecycleSummaryPane.tsx';
 
 /**
- * 予算の一生の表（項の粒度, FY2023・FY2024）。1 つの項について、概算要求 → 政府案 → 補正 → 決算の値を、段階ごとの状態・グラフ・表で見る。
+ * 予算の推移（項の粒度, FY2023〜FY2027。年度ごとに、基準データにある段階だけ）。1 つの項について、概算要求 → 政府案 → 補正 → 決算の値を、段階ごとの状態・グラフ・表で見る。
  *
  * 左にフィルタ、中に項の一覧または集計、右に選んだ項の一生。
  * 仕様: docs/guides/budget-lifecycle.md。段階の状態の定義: docs/guides/lifecycle-status.md。
@@ -130,6 +132,10 @@ export function LifecyclePage() {
   const selectedIndex = selectedId === null ? -1 : data.kous.findIndex(k => k.id === selectedId && k.year === activeYear);
   const kou = selectedIndex >= 0 ? data.kous[selectedIndex]! : null;
   const checks = data.checks.filter(c => c.year === activeYear);
+  // この年度・会計で、基準データに値のある段階（無い段階は、項の「値なし」の理由に出る）
+  const stageNote = (['general', 'special'] as const)
+    .map(a => `${a === 'general' ? '一般会計' : '特別会計'}: ${LIFECYCLE_STAGES.filter(s => coverage.stages.get(`${activeYear}|${a}`)?.has(s)).map(s => LIFECYCLE_STAGE_LABEL[s]).join('・') || 'なし'}`)
+    .join(' / ');
   const listed = (names: string[]): string => (names.length === 0 ? 'すべて' : names.join('、'));
   const text = (label: string, value: string, regex: boolean): string => (value.trim() === '' ? '' : ` · ${label}: 「${value.trim()}」${regex ? '（正規表現）' : ''}`);
   const scope = `FY${activeYear} · 所管: ${listed(filters.groups)} · 会計: ${listed(filters.accts)}${text('組織／勘定', filters.org, filters.orgRegex)}${text('項名', filters.name, filters.nameRegex)} · 値のある段階: ${LIFECYCLE_PATTERNS.find(p => p.id === filters.pattern)!.label}${filters.links === 'unsettled' ? ' · 年度をまたぐ対応: 未確定のみ' : ''}`;
@@ -167,6 +173,7 @@ export function LifecyclePage() {
               : <LifecycleSummaryPane
                   checks={checks}
                   scope={scope}
+                  stageNote={stageNote}
                   kous={list.map(x => x.k)}
                   values={list.map(x => valuesOf.get(x.i) ?? {})}
                   events={list.map(x => byKou.get(x.i) ?? [])}

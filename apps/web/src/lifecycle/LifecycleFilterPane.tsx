@@ -101,7 +101,7 @@ export function LifecycleFilterPane({ inYear, patternCounts, unsettledCount, fil
             対応未確定
             <span className={count}>{unsettledCount.toLocaleString()}</span>
           </label>
-          <p className="text-[11px] text-neutral-500">候補なしも含む。FY2023 の項は FY2024 との、FY2024 の項は FY2023 との対応。</p>
+          <p className="text-[11px] text-neutral-500">候補なしも含む。前の年度・次の年度の項との対応（最初の年度は次の年度とだけ、最後の年度は前の年度とだけ）。</p>
         </fieldset>
       </div>
     </div>
