@@ -1,4 +1,12 @@
 export type {
+  BudgetRequestMofData,
+  BudgetRequestMofDetail,
+  BudgetRequestMofDetailData,
+  BudgetRequestMofKind,
+  BudgetRequestMofRow,
+  BudgetRequestMofType,
+} from './budget-request-mof.ts';
+export type {
   BudgetRequestJikou,
   BudgetRequestJikouData,
   BudgetRequestTrendData,
