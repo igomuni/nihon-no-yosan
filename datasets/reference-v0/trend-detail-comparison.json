@@ -1,0 +1,61 @@
+{
+ "comparedWith": {
+  "repository": "igomuni/marumie-rssystem",
+  "commit": "3aef2de9d0f08a438c94efd32a3c0bc2ae33af19"
+ },
+ "manifest": {
+  "path": "datasets/reference-v0/manifest.json",
+  "sha256": "9d4ac635577461e5acff4c9163fc5056ec7ba2d52d9644b7a1b60c07059642ee"
+ },
+ "files": {
+  "jikou.csv": {
+   "comparedWith": "tests/fixtures/budget-request-trend/jikou.csv",
+   "sha256": "b3ff8dc78dcdc581bb08203f339cba337e52be360794cf1de4aeaf59ae95207e",
+   "bytes": 2106146,
+   "equal": true
+  },
+  "moku/2023.csv": {
+   "comparedWith": "tests/fixtures/budget-request-trend/moku/2023.csv",
+   "sha256": "4e3bd390e3ef62917d3d38d1a9f0ad447d75d86ccc9244a0ed29e19979b3a06e",
+   "bytes": 2442340,
+   "equal": true
+  },
+  "moku/2024.csv": {
+   "comparedWith": "tests/fixtures/budget-request-trend/moku/2024.csv",
+   "sha256": "45f6a804c8e9f16c0ddb770ad5b7211461f57b45633360e244d69983079a14c7",
+   "bytes": 2392958,
+   "equal": true
+  },
+  "moku/2025.csv": {
+   "comparedWith": "tests/fixtures/budget-request-trend/moku/2025.csv",
+   "sha256": "a184b78179b6ba48ef11d3e52ee9bd9dca76806642fb7f70613e6b002647e621",
+   "bytes": 2521855,
+   "equal": true
+  },
+  "moku/2026.csv": {
+   "comparedWith": "tests/fixtures/budget-request-trend/moku/2026.csv",
+   "sha256": "f85fd423b3cfb7cc88056e5e92228b5a4933ae4128d0a67930ebb96f71ed58ee",
+   "bytes": 2569975,
+   "equal": true
+  },
+  "moku/2027.csv": {
+   "comparedWith": "tests/fixtures/budget-request-trend/moku/2027.csv",
+   "sha256": "1d976bbbbbfaa78d7f28b00d532200a54a6700aa13207cc56c62959773b05d53",
+   "bytes": 2147880,
+   "equal": true
+  },
+  "detail-summary.json": {
+   "comparedWith": "tests/fixtures/budget-request-trend/detail-summary.json",
+   "sha256": "80cd58c4e72afbb95ad0034540acc2d1a2178555cb14a1998ebc6204d13a30b3",
+   "bytes": 14987,
+   "equal": true
+  },
+  "detail.json.gz": {
+   "comparedWith": "public/data/v2/ui/budget-request-trend/detail.json.gz",
+   "sha256": "6753bbf40ec69b5ad97bb2d3625bcfb590adac913da7c2771526a1b54c44a08d",
+   "bytes": 764354,
+   "equal": true
+  }
+ },
+ "allEqual": true
+}

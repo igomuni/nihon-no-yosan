@@ -6,7 +6,7 @@
 node packages/pipeline/src/build/trend-cli.ts data/dataset/reference-v0 <出力ディレクトリ>   # kou.csv、summary.json、kou.json.gz
 ```
 
-項の下の事項・目の年度推移は、別の build（移行の 4 の残り）。
+項の下の事項・目の年度推移は、別の build（`docs/guides/trend-detail.md`）。
 
 ## 入力
 

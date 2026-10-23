@@ -80,7 +80,7 @@ export interface BudgetRequestJikouData {
   orgs?: Record<string, [string, string][]>;
 }
 
-/** 項の事項・目の内訳（1 年度・1 項）。金額は千円。仕様は事項と目の年度推移の移行時に書く */
+/** 項の事項・目の内訳（1 年度・1 項）。金額は千円。仕様: docs/guides/trend-detail.md */
 export interface BudgetRequestTrendDetailKou {
   /** 事項: [要求番号, 事項名, 前年度予算額（総表）, 要求額（総表）, 目の要求額の合計（目が無ければ null）, 検算（一致 / 不一致 / 額の空きあり / 目なし / 画像の頁 / 事項の額なし）] */
   j: [string, string, number | null, number | null, number | null, string][];
@@ -88,7 +88,7 @@ export interface BudgetRequestTrendDetailKou {
   m: [number, string, string, number | null, number | null, number, number][];
 }
 
-/** 事項・目の内訳（事項と目の年度推移の build が出力する予定）。年度（西暦の文字列）→ 行のキー（jikouKeyOf）→ 内訳 */
+/** 事項・目の内訳（事項と目の年度推移の build が出力する `detail.json.gz`）。年度（西暦の文字列）→ 行のキー（jikouKeyOf）→ 内訳 */
 export interface BudgetRequestTrendDetailData {
   years: Record<string, Record<string, BudgetRequestTrendDetailKou>>;
 }
