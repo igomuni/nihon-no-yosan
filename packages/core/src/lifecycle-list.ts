@@ -17,7 +17,7 @@ export const LIFECYCLE_JOINT = '複数所管';
 export const lifecycleIsJoint = (k: LifecycleKou): boolean => lifecycleGroupsOf(k).length > 1;
 
 export interface LifecycleFilters {
-  /** 所管（空 = すべて）。選んだ府省が所管する項（複数の府省が所管する項も含む） */
+  /** 所管（空 = すべて）。選んだ府省が所管する項（複数の府省が所管する項も含む）。「複数所管」を選ぶと、複数の府省が所管する項 */
   groups: string[];
   /** 会計（空 = すべて）。「一般会計」と「〇〇特別会計」 */
   accts: string[];
@@ -43,7 +43,7 @@ export const lifecycleOrgOf = (k: LifecycleKou): string => (k.account === 'gener
 export function filterLifecycleKous<T extends { k: LifecycleKou }>(items: readonly T[], f: LifecycleFilters, year: number): T[] {
   return items.filter(({ k }) =>
     k.year === year &&
-    (f.groups.length === 0 || lifecycleGroupsOf(k).some(g => f.groups.includes(g))) &&
+    (f.groups.length === 0 || lifecycleGroupsOf(k).some(g => f.groups.includes(g)) || (f.groups.includes(LIFECYCLE_JOINT) && lifecycleIsJoint(k))) &&
     (f.accts.length === 0 || f.accts.includes(lifecycleAcctOf(k))) &&
     textMatches(lifecycleOrgOf(k), f.org, f.orgRegex) &&
     textMatches(k.name, f.name, f.nameRegex));

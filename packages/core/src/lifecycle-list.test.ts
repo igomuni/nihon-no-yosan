@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { LifecycleKou } from './lifecycle.ts';
-import { INITIAL_LIFECYCLE_FILTERS, filterLifecycleKous, lifecycleGroupOf, lifecycleGroupsOf, lifecycleRowAmounts, sortLifecycleRows } from './lifecycle-list.ts';
+import { INITIAL_LIFECYCLE_FILTERS, LIFECYCLE_JOINT, filterLifecycleKous, lifecycleGroupOf, lifecycleGroupsOf, lifecycleRowAmounts, sortLifecycleRows } from './lifecycle-list.ts';
 
 const kou = (id: string, o: Partial<LifecycleKou> = {}): LifecycleKou => ({ id, year: 2024, account: 'general', ministry: '内閣府', org: '本府', specialAccount: '', subAccount: '', code: '001', name: id, seenIn: ['budget'], ...o });
 const a = kou('a');
@@ -16,6 +16,8 @@ describe('filterLifecycleKous', () => {
     expect(f({ groups: ['法務省'] })).toEqual(['b']);
     expect(f({ groups: ['総務省'] })).toEqual(['s']);
     expect(f({ groups: ['内閣府'] })).toEqual(['a', 's']);
+    expect(f({ groups: [LIFECYCLE_JOINT] })).toEqual(['s']);
+    expect(f({ groups: [LIFECYCLE_JOINT, '法務省'] })).toEqual(['b', 's']);
   });
   it('splits the original 所管 text at 、 and 及び, and shows N所管 for several', () => {
     expect(lifecycleGroupsOf(s)).toEqual(['内閣府', '総務省', '財務省']);
