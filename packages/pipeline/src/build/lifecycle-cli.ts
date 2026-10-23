@@ -42,5 +42,12 @@ fs.writeFileSync(
     data.events.map(([i, ...rest]) => [data.kous[i]!.id, ...rest.slice(0, 5), ...rest.slice(5)]),
   ),
 );
+fs.writeFileSync(
+  path.join(outDir, 'links.csv'),
+  toCsv(
+    ['from_kou_id', 'to_kou_id', 'evidence', 'amount', 'status'],
+    data.links.map(l => [l.from < 0 ? '' : data.kous[l.from]!.id, l.to < 0 ? '' : data.kous[l.to]!.id, l.evidence.join(';'), l.amount, l.status]),
+  ),
+);
 fs.writeFileSync(path.join(outDir, 'checks.json'), JSON.stringify(data.checks, null, 1) + '\n');
-console.log(`kou ${data.kous.length}, events ${data.events.length}`);
+console.log(`kou ${data.kous.length}, events ${data.events.length}, links ${data.links.length}`);

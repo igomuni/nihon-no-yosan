@@ -3,6 +3,8 @@
  * pipeline（`packages/pipeline/src/build/lifecycle.ts`）が作り、画面が読む。
  */
 
+import type { LifecycleLink } from './lifecycle-links.ts';
+
 export type LifecycleEventType = 'request' | 'budget' | 'supp' | 'settle' | 'derived';
 export type LifecycleState = 'original' | 'derived';
 
@@ -71,4 +73,6 @@ export interface LifecycleData {
   kous: LifecycleKou[];
   events: LifecycleEventRow[];
   checks: LifecycleCheck[];
+  /** 年度をまたぐ項の対応（`lifecycle-links.ts`） */
+  links: LifecycleLink[];
 }

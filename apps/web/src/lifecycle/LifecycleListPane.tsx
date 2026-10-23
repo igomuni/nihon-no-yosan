@@ -7,6 +7,7 @@ import {
   lifecycleGroupsOf,
   lifecycleOrgOf,
   type LifecycleKou,
+  type LifecycleLinkStatus,
   type LifecycleRowAmounts,
   type LifecycleSortDir,
   type LifecycleSortKey,
@@ -21,7 +22,7 @@ function setBodyCursor(value: string): void {
 
 const MAX_ROWS = 600;
 const MIN_COLUMN_WIDTH = 48;
-export const DEFAULT_COLUMN_WIDTHS: Record<LifecycleSortKey, number> = { group: 130, acct: 130, org: 120, name: 220, stages: 72, request: 96, budget: 96, revised: 96, spent: 96, size: 96 };
+export const DEFAULT_COLUMN_WIDTHS: Record<LifecycleSortKey, number> = { group: 130, acct: 130, org: 120, name: 220, stages: 72, links: 72, request: 96, budget: 96, revised: 96, spent: 96, size: 96 };
 const BADGE: Record<LifecycleStage, string> = { request: '要', budget: '政', supp: '補', settle: '決' };
 const COLS: { key: LifecycleSortKey; label: string; left?: boolean; title?: string }[] = [
   { key: 'group', label: '所管', left: true },
@@ -29,12 +30,19 @@ const COLS: { key: LifecycleSortKey; label: string; left?: boolean; title?: stri
   { key: 'org', label: '組織／勘定', left: true },
   { key: 'name', label: '項名', left: true },
   { key: 'stages', label: '段階', left: true, title: '値がある段階。要 = 概算要求、政 = 政府案、補 = 補正、決 = 決算（薄い字は、現行のデータに値が無い）' },
+  { key: 'links', label: '対応', left: true, title: '年度をまたぐ項の対応。確定 = 同じ鍵などで 1 対 1、未確定 = 候補はあるが根拠がそろわない、候補なし = 相手の年度に候補が無い（項が無くなった・新しくできたとは限らない）' },
   { key: 'request', label: '概算要求', title: '要求額' },
   { key: 'budget', label: '政府案', title: '政府案の額' },
   { key: 'revised', label: '補正後', title: '改予算額（補正の記録がある項）' },
   { key: 'spent', label: '決算', title: '支出済額' },
   { key: 'size', label: '最大額', title: '歳出予算現額・政府案・要求額のうち最大（既定の並びの基準）' },
 ];
+
+/** 対応の状態の表示。未確定・候補なしは目立たせすぎず、確定との違いが分かる程度にする */
+export function LinkBadge({ status }: { status: LifecycleLinkStatus }) {
+  const [label, cls] = status === 'RESOLVED' ? ['確定', 'border-emerald-600 text-emerald-700 dark:text-emerald-400'] : status === 'AMBIGUOUS' ? ['未確定', 'border-amber-600 text-amber-700 dark:text-amber-400'] : ['候補なし', 'border-neutral-400 text-neutral-500'];
+  return <span className={`rounded-full border px-1.5 text-[10px] ${cls}`}>{label}</span>;
+}
 
 /** 額の列。値が無いときは「—」（0 とは別） */
 function Amount({ yen }: { yen: number | undefined }) {
@@ -45,7 +53,7 @@ function Amount({ yen }: { yen: number | undefined }) {
 
 export function LifecycleListPane({ items, sortKey, sortDir, onSort, selectedId, onSelect, widths, onWidthsChange }: {
   /** 絞り込み・並べ替え済み */
-  items: readonly { k: LifecycleKou; a: LifecycleRowAmounts }[];
+  items: readonly { k: LifecycleKou; a: LifecycleRowAmounts; link: LifecycleLinkStatus | null }[];
   sortKey: LifecycleSortKey;
   sortDir: LifecycleSortDir;
   onSort: (k: LifecycleSortKey) => void;
@@ -104,7 +112,7 @@ export function LifecycleListPane({ items, sortKey, sortDir, onSort, selectedId,
             </tr>
           </thead>
           <tbody>
-            {shown.map(({ k, a }) => {
+            {shown.map(({ k, a, link }) => {
               const selected = k.id === selectedId;
               return (
                 <tr
@@ -125,6 +133,7 @@ export function LifecycleListPane({ items, sortKey, sortDir, onSort, selectedId,
                       <span key={s} className={k.seenIn.includes(s) ? 'text-emerald-700 dark:text-emerald-400' : 'text-neutral-300 dark:text-neutral-600'}>{BADGE[s]}</span>
                     ))}
                   </td>
+                  <td className="whitespace-nowrap px-2 py-1 text-left">{link === null ? '' : <LinkBadge status={link} />}</td>
                   <Amount yen={a.request} />
                   <Amount yen={a.budget} />
                   <Amount yen={a.revised} />

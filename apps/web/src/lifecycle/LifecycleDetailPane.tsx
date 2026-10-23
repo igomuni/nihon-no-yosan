@@ -8,6 +8,10 @@ import {
   lifecycleUse,
   lifecycleValues,
   type LifecycleCoverage,
+  type LifecycleData,
+  type LifecycleLink,
+  type LifecycleLinkAmount,
+  type LifecycleLinkEvidence,
   type LifecycleEventRow,
   type LifecycleEventType,
   type LifecycleKou,
@@ -15,6 +19,7 @@ import {
 } from '@nihon-no-yosan/core';
 import { ChangesChart, LevelsChart, UseChart } from './charts.tsx';
 import { kouTitle, num, td, th, yen } from './shared.ts';
+import { LinkBadge } from './LifecycleListPane.tsx';
 
 const EVENT_LABEL: Record<LifecycleEventType, string> = { request: '概算要求', budget: '政府案', supp: '補正', settle: '決算', derived: '導出' };
 const EVENT_ORDER: LifecycleEventType[] = ['request', 'budget', 'supp', 'settle', 'derived'];
@@ -55,7 +60,62 @@ function StageCard({ s }: { s: StageStatus }) {
   );
 }
 
-export function LifecycleDetailPane({ kou, events: unsorted, coverage }: { kou: LifecycleKou | null; events: LifecycleEventRow[]; coverage: LifecycleCoverage }) {
+const EVIDENCE_LABEL: Record<LifecycleLinkEvidence, string> = {
+  same_key: '同じ鍵（所管・組織・項コード・項名。特別会計は特別会計・勘定・項コード・項名）',
+  same_name_other_code: '同じ所管・組織で項名が同じ（項コードが違う）',
+  same_name_other_org: '項名が同じ（所管・組織が違う）',
+  prev_amount_eq_revised: '次の年度の予算書の前年度予算額 = 前の年度の改予算額',
+  prev_amount_eq_budget: '次の年度の予算書の前年度予算額 = 前の年度の政府案の額（補正が無い項）',
+};
+const AMOUNT_LABEL: Record<LifecycleLinkAmount, string> = {
+  eq_revised: '前年度予算額が、前の年度の改予算額と一致',
+  eq_budget: '前年度予算額が、前の年度の政府案の額と一致',
+  ne: '前年度予算額が、前の年度の改予算額・政府案の額のどちらとも違う（組替え後の額の可能性があるが、確かめていない）',
+  zero: '前年度予算額が 0（比べない）',
+  'n/a': '比べられない（どちらかに値が無い）',
+};
+
+/** 年度をまたぐ対応。前の年度・次の年度の項との対応を、根拠と状態つきで並べる（対応先へ移れる） */
+function LinksSection({ kou, data, links, selfIndex, onNavigate }: { kou: LifecycleKou; data: LifecycleData; links: readonly LifecycleLink[]; selfIndex: number; onNavigate: (id: string) => void }) {
+  return (
+    <section className="flex flex-col gap-2" aria-label="年度をまたぐ対応">
+      <h3 className="font-semibold">年度をまたぐ対応</h3>
+      {links.length === 0 && <p className="text-neutral-500">対応の行がありません。</p>}
+      <ul className="flex flex-col gap-2">
+        {links.map((l, n) => {
+          const other = l.from === selfIndex ? l.to : l.from;
+          const partner = other >= 0 ? data.kous[other] : undefined;
+          const dir = l.from === selfIndex ? `→ FY${kou.year + 1}` : `← FY${kou.year - 1}`;
+          return (
+            <li key={n} className="flex flex-col gap-1 rounded border border-neutral-200 p-2 dark:border-neutral-700">
+              <p className="flex flex-wrap items-center gap-1.5">
+                <span className="text-neutral-500">{dir}</span>
+                <LinkBadge status={l.status} />
+                {partner ? (
+                  <button type="button" onClick={() => onNavigate(partner.id)} className="text-left font-medium text-blue-700 underline decoration-dotted underline-offset-2 hover:text-blue-900 dark:text-blue-400">
+                    {partner.name}
+                  </button>
+                ) : <span className="text-neutral-500">対応先の候補なし</span>}
+              </p>
+              {partner && <p className="text-[11px] text-neutral-500">{kouTitle(partner)} · 項コード {partner.code}</p>}
+              {l.evidence.length > 0 && (
+                <ul className="list-disc pl-4 text-[11px] text-neutral-600 dark:text-neutral-300">
+                  {l.evidence.map(e => <li key={e}>{EVIDENCE_LABEL[e]}</li>)}
+                </ul>
+              )}
+              {partner && <p className="text-[11px] text-neutral-500">額の確認: {AMOUNT_LABEL[l.amount]}</p>}
+              {l.status === 'AMBIGUOUS' && <p className="text-[11px] text-neutral-500">候補があるが、名前と額の根拠がそろわない、または候補が複数。同じ項と断定しない。</p>}
+              {l.status === 'UNRESOLVED' && <p className="text-[11px] text-neutral-500">相手の年度に、名前・額が合う候補が無い。項が無くなった・新しくできたとは限らない（確かめていない）。</p>}
+            </li>
+          );
+        })}
+      </ul>
+      <p className="text-[11px] text-neutral-500">「確定」は、同じ鍵、または名前と額の根拠がそろって 1 対 1 のとき。額の確認は状態を変えない。会計（一般・特別）をまたぐ対応は探していない。</p>
+    </section>
+  );
+}
+
+export function LifecycleDetailPane({ kou, events: unsorted, coverage, data, links, selfIndex, onNavigate }: { kou: LifecycleKou | null; events: LifecycleEventRow[]; coverage: LifecycleCoverage; data: LifecycleData; links: readonly LifecycleLink[]; selfIndex: number; onNavigate: (id: string) => void }) {
   // 出来事の順（概算要求 → 政府案 → 補正 → 決算 → 導出）。同じ出来事の中は、元の並び
   const events = useMemo(() => [...unsorted].sort((a, b) => EVENT_ORDER.indexOf(a[1]) - EVENT_ORDER.indexOf(b[1])), [unsorted]);
   const observedEvents = useMemo(() => events.filter(e => e[1] !== 'derived'), [events]);
@@ -103,6 +163,8 @@ export function LifecycleDetailPane({ kou, events: unsorted, coverage }: { kou: 
         )}
         <p className="text-[11px] text-neutral-500">グラフの値は、下の表の値と同じです（グラフは見やすさのためで、正は表）。概算要求から決算までを 1 本の帯（サンキー）にしないのは、概算要求 → 政府案の変化は査定による増減で、お金の移動ではないためです。</p>
       </section>
+
+      <LinksSection kou={kou} data={data} links={links} selfIndex={selfIndex} onNavigate={onNavigate} />
 
       <details className="rounded border border-neutral-200 p-2 dark:border-neutral-700">
         <summary className="cursor-pointer font-semibold">値と出典（{events.length} 行）</summary>

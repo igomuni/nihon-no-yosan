@@ -1,5 +1,6 @@
 import type { LifecycleKou } from './lifecycle.ts';
 import type { LifecycleValues } from './lifecycle-view.ts';
+import type { LifecycleLink, LifecycleLinkStatus } from './lifecycle-links.ts';
 import { lifecyclePatternMatches, type LifecyclePattern } from './lifecycle-status.ts';
 import { textMatches } from './trend-view.ts';
 
@@ -26,9 +27,11 @@ export interface LifecycleFilters {
   name: string;
   nameRegex: boolean;
   pattern: LifecyclePattern;
+  /** 年度をまたぐ対応。`unsettled` = 対応が確定していない項（`lifecycleLinkState` が AMBIGUOUS または UNRESOLVED） */
+  links: 'all' | 'unsettled';
 }
 
-export const INITIAL_LIFECYCLE_FILTERS: LifecycleFilters = { groups: [], accts: [], org: '', orgRegex: false, name: '', nameRegex: false, pattern: 'all' };
+export const INITIAL_LIFECYCLE_FILTERS: LifecycleFilters = { groups: [], accts: [], org: '', orgRegex: false, name: '', nameRegex: false, pattern: 'all', links: 'all' };
 
 /** 所管の表示（一覧の列）。1 つの府省はその名前、複数は「N所管」（府省名の一覧は、ツールチップ・詳細に出す） */
 export function lifecycleGroupOf(k: LifecycleKou): string {
@@ -51,7 +54,23 @@ export function filterLifecycleKous<T extends { k: LifecycleKou }>(items: readon
 
 export const matchesLifecyclePattern = (k: LifecycleKou, f: LifecycleFilters): boolean => lifecyclePatternMatches(k, f.pattern);
 
-export type LifecycleSortKey = 'group' | 'acct' | 'org' | 'name' | 'stages' | 'request' | 'budget' | 'revised' | 'spent' | 'size';
+/** 項ごとの年度をまたぐ対応の行（添字 = `kous` の添字。前の年度の項としても、次の年度の項としても入れる） */
+export function lifecycleLinksByKou(links: readonly LifecycleLink[]): Map<number, LifecycleLink[]> {
+  const m = new Map<number, LifecycleLink[]>();
+  for (const l of links) for (const i of [l.from, l.to]) if (i >= 0) (m.get(i) ?? m.set(i, []).get(i)!).push(l);
+  return m;
+}
+
+/** 項の対応の状態。確定した対応（RESOLVED）が 1 つでもあれば RESOLVED、無ければ候補がある（AMBIGUOUS）か、候補なし（UNRESOLVED）。対応の行が無い項は null */
+export function lifecycleLinkState(links: readonly LifecycleLink[] | undefined): LifecycleLinkStatus | null {
+  if (!links || links.length === 0) return null;
+  if (links.some(l => l.status === 'RESOLVED')) return 'RESOLVED';
+  return links.some(l => l.status === 'AMBIGUOUS') ? 'AMBIGUOUS' : 'UNRESOLVED';
+}
+
+export const matchesLifecycleLinks = (state: LifecycleLinkStatus | null, f: LifecycleFilters): boolean => f.links === 'all' || (state !== null && state !== 'RESOLVED');
+
+export type LifecycleSortKey = 'group' | 'acct' | 'org' | 'name' | 'stages' | 'links' | 'request' | 'budget' | 'revised' | 'spent' | 'size';
 export type LifecycleSortDir = 1 | -1;
 
 /** 一覧の行の額（円）。代表の額は、概算要求 = 要求額、政府案 = 政府案の額、補正 = 改予算額、決算 = 支出済額（画面の段階カードと同じ）。値が無いときは undefined */
@@ -61,12 +80,15 @@ export function lifecycleRowAmounts(v: LifecycleValues): LifecycleRowAmounts {
 }
 
 /** 並べ替え。額の列は、値が無い項を、向きによらず末尾に置く（0 とは別） */
-export function sortLifecycleRows<T extends { k: LifecycleKou; a: LifecycleRowAmounts }>(rows: readonly T[], key: LifecycleSortKey, dir: LifecycleSortDir): T[] {
+const LINK_RANK: Record<string, number> = { RESOLVED: 0, AMBIGUOUS: 1, UNRESOLVED: 2 };
+
+export function sortLifecycleRows<T extends { k: LifecycleKou; a: LifecycleRowAmounts; link?: LifecycleLinkStatus | null }>(rows: readonly T[], key: LifecycleSortKey, dir: LifecycleSortDir): T[] {
   const text = (r: T): string => (key === 'group' ? lifecycleGroupOf(r.k) : key === 'acct' ? lifecycleAcctOf(r.k) : key === 'org' ? lifecycleOrgOf(r.k) : r.k.name);
   return [...rows].sort((x, y) => {
     if (key === 'group' || key === 'acct' || key === 'org' || key === 'name') return dir * text(x).localeCompare(text(y), 'ja') || x.k.id.localeCompare(y.k.id);
+    if (key === 'links') return dir * ((LINK_RANK[x.link ?? ''] ?? 3) - (LINK_RANK[y.link ?? ''] ?? 3)) || x.k.id.localeCompare(y.k.id);
     if (key === 'stages') return dir * (x.k.seenIn.length - y.k.seenIn.length) || x.k.id.localeCompare(y.k.id);
-    const a = x.a[key], b = y.a[key];
+    const a = x.a[key as Exclude<LifecycleSortKey, 'group' | 'acct' | 'org' | 'name' | 'stages' | 'links'>], b = y.a[key as Exclude<LifecycleSortKey, 'group' | 'acct' | 'org' | 'name' | 'stages' | 'links'>];
     if (a === undefined || b === undefined) return a === b ? x.k.id.localeCompare(y.k.id) : a === undefined ? 1 : -1;
     return dir * (a - b) || x.k.id.localeCompare(y.k.id);
   });
