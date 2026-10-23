@@ -4,6 +4,7 @@ import { Icon } from './Icon.tsx';
 /** 画面の一覧。`#/{id}` で切り替える */
 export const PAGES = [
   { id: 'trend', label: '概算要求 年度推移' },
+  { id: 'mof', label: '概算要求と当初予算' },
 ] as const;
 
 export type PageId = (typeof PAGES)[number]['id'];
