@@ -44,7 +44,7 @@ const outputs: [string, Buffer][] = [
   ['trend/detail.json.gz', detail.uiGz],
   ['mof/kou.json.gz', mof.kouGz],
   ['mof/detail.json.gz', mof.detailGz],
-  ['lifecycle/data.json.gz', zlib.gzipSync(JSON.stringify(buildLifecycle({ datasetDir: dataset, requestOfMofRow: mof.requestOfMofRow })), { level: 9, mtime: 0 } as zlib.ZlibOptions)],
+  ['lifecycle/data.json.gz', zlib.gzipSync(JSON.stringify(buildLifecycle({ datasetDir: dataset, requestOfMofRow: mof.requestOfMofRow, requestOnlyRows: mof.data.rows })), { level: 9, mtime: 0 } as zlib.ZlibOptions)],
 ];
 for (const [name, bytes] of outputs) {
   fs.mkdirSync(path.dirname(path.join(outDir, name)), { recursive: true });

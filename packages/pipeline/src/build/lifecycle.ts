@@ -2,7 +2,7 @@
  * 予算の一生の表（項 × 出来事 × 項目）。仕様（案）: docs/guides/budget-lifecycle.md。
  *
  * 入力: 基準データの予算書の CSV（`mof-archive/{年度}/kou-{general,special}{,-hosei,-kessan}.csv`）と、概算要求の額（`mof-ui.ts` の `requestOfMofRow`）。
- * 項は、政府案・補正・決算の 3 段階の和集合（段階によって項の集合が違う）。概算要求は、予算書の項に突合できたものだけを結ぶ（要求のみの項は、まだ入れない）。
+ * 項は、政府案・補正・決算の 3 段階の和集合（段階によって項の集合が違う）に、概算要求書にだけある項（`requestOnlyRows`。予算書の項に突合できなかった要求の項と、前年度・要求とも 0 の項）を足す。概算要求は、予算書の項に突合できたものを、その項に結ぶ。
  * 値は、原本の文字列・単位と、正規化した円を両方持つ。項の CSV の金額は目の行の合計なので、状態は `derived`（注に「目の合計」）。
  * 出力は値で返し、書くのは呼び出し側。
  */
@@ -18,6 +18,7 @@ import {
   type LifecycleEventRow,
   type LifecycleEventType,
   type LifecycleKou,
+  type BudgetRequestMofRow,
   type LifecycleMeasure,
   type Rec,
 } from '@nihon-no-yosan/core';
@@ -58,7 +59,7 @@ const intOf = (s: string | undefined): number | null => {
   return Number(t);
 };
 
-export function buildLifecycle({ datasetDir, requestOfMofRow }: { datasetDir: string; requestOfMofRow: ReadonlyMap<string, MofRowRequest> }): LifecycleData {
+export function buildLifecycle({ datasetDir, requestOfMofRow, requestOnlyRows = [] }: { datasetDir: string; requestOfMofRow: ReadonlyMap<string, MofRowRequest>; requestOnlyRows?: readonly BudgetRequestMofRow[] }): LifecycleData {
   const kous: LifecycleKou[] = [];
   const events: LifecycleEventRow[] = [];
   const checks: LifecycleCheck[] = [];
@@ -206,6 +207,33 @@ export function buildLifecycle({ datasetDir, requestOfMofRow }: { datasetDir: st
         if (rqe && bge && kous[i]!.year === year && kous[i]!.account === account) {
           push(i, 'derived', '', '', 'assessment_gap', String(bge[8] - rqe[8]), bge[8] - rqe[8], 'derived', '', '政府案の額 − 概算要求の額');
         }
+      }
+
+      // 概算要求書にだけある項（予算書の項に結べていない）。鍵は概算要求の側（所属・名前）。要求額が読めない行は、値が無いので項にしない
+      for (const r of requestOnlyRows) {
+        if (r.y !== year || r.acct !== (account === 'general' ? 0 : 1) || (r.kind !== 'reqOnly' && r.kind !== 'zero') || r.req === null) continue;
+        const key = ['request', r.min, r.sub, r.org, r.name].join('|');
+        if (index.has(key)) throw new Error(`概算要求のみの項の鍵が重複: ${year} ${key}`);
+        const i = kous.length;
+        index.set(key, i);
+        kous.push({
+          id: `${year}:${account}:${key}`,
+          year,
+          account,
+          ministry: account === 'general' ? r.min : r.grp,
+          org: account === 'general' ? r.org : '',
+          specialAccount: account === 'special' ? r.min : '',
+          subAccount: account === 'special' ? r.sub : '',
+          code: '',
+          name: r.name,
+          seenIn: [],
+          requestOnly: r.kind,
+        });
+        seen.set(i, new Set<LifecycleEventType>(['request']));
+        const src = `mof-ui:${year}|${r.kind}:${key}`;
+        const note = `概算要求書（予算書に突合できなかった項。${r.kind === 'zero' ? '前年度・要求とも 0' : '突合に候補なし'}）${r.books.length > 1 ? '。複数の書に載り、最も大きい額' : ''}`;
+        push(i, 'request', '', '', 'request_amount', String(r.req), r.req * 1000, 'original', src, note);
+        if (r.reqPrev !== null) push(i, 'request', '', '', 'request_prev', String(r.reqPrev), r.reqPrev * 1000, 'original', src, note);
       }
 
       for (const [i, s] of seen) kous[i]!.seenIn = (['request', 'budget', 'supp', 'settle'] as const).filter(x => s.has(x));
