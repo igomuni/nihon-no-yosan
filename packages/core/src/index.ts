@@ -61,3 +61,4 @@ export { formatBudgetShort, formatRate, formatSen, formatSenSigned } from './for
 export * from './trend-view.ts';
 export * from './mof-view.ts';
 export * from './lifecycle.ts';
+export * from './lifecycle-view.ts';

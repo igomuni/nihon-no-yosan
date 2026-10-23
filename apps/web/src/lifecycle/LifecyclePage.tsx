@@ -1,5 +1,18 @@
 import { useEffect, useMemo, useState } from 'react';
-import { LIFECYCLE_MEASURES, formatSen, type LifecycleData, type LifecycleEventRow, type LifecycleEventType, type LifecycleKou } from '@nihon-no-yosan/core';
+import {
+  LIFECYCLE_MEASURES,
+  formatSen,
+  lifecycleChanges,
+  lifecycleLevels,
+  lifecycleTotals,
+  lifecycleUse,
+  lifecycleValues,
+  type LifecycleData,
+  type LifecycleEventRow,
+  type LifecycleEventType,
+  type LifecycleKou,
+} from '@nihon-no-yosan/core';
+import { ChangesChart, LevelsChart, UseChart } from './charts.tsx';
 import { loadGzJson } from '../data.ts';
 import { PageNavMenu } from '../components/PageNavMenu.tsx';
 import { SourceNote } from '../components/SourceNote.tsx';
@@ -62,6 +75,7 @@ export function LifecyclePage() {
   if (error) return <main className="mx-auto max-w-3xl p-8"><p className="rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-800">データの読み込みに失敗しました: {error}（<code>npm run build:data</code> で作る）</p></main>;
   if (!data || activeYear === null) return <main className="mx-auto max-w-3xl p-8"><p className="text-sm text-neutral-500">読み込み中…</p></main>;
 
+  const totals = lifecycleTotals(list.map(({ i }) => byKou.get(i) ?? []));
   const kou = selected !== null ? data.kous[selected] : undefined;
   const events = selected !== null ? byKou.get(selected) ?? [] : [];
   const checks = data.checks.filter(c => c.year === activeYear);
@@ -118,7 +132,7 @@ export function LifecyclePage() {
           </ul>
         </section>
         <section aria-label="項の一生" className="min-h-0 overflow-auto rounded-lg border border-neutral-200 bg-white p-4 text-xs dark:border-neutral-800 dark:bg-neutral-900">
-          {kou ? <KouDetail kou={kou} events={events} /> : <Overview checks={checks} year={activeYear} />}
+          {kou ? <KouDetail kou={kou} events={events} /> : <Overview checks={checks} year={activeYear} totals={totals} account={account} />}
         </section>
       </main>
       <SourceNote />
@@ -127,7 +141,7 @@ export function LifecyclePage() {
 }
 
 /** 項を選ぶ前: 説明と、その年度の検算の結果 */
-function Overview({ checks, year }: { checks: LifecycleData['checks']; year: number }) {
+function Overview({ checks, year, totals, account }: { checks: LifecycleData['checks']; year: number; totals: ReturnType<typeof lifecycleTotals>; account: 'all' | 'general' | 'special' }) {
   const NAME: Record<string, string> = {
     supp_identity: '補正: 改予算額 = 成立予算額 + 差引額、差引額 = 追加額 + 修正減少額',
     enacted_eq_budget: '成立予算額 = 政府案（両方に項がある項）',
@@ -144,6 +158,9 @@ function Overview({ checks, year }: { checks: LifecycleData['checks']; year: num
         <li><b>長い形:</b> 値 1 つが 1 行（events の行そのもの）。状態（原本 / 導出）・出典・原本の単位と、正規化した円を持つ。</li>
       </ul>
       <p className="text-neutral-500">同じ値を、2 つの形で出しています。どちらを正とするか（または両方持つか）を決めるための試作です。</p>
+      <h2 className="mt-2 font-semibold">FY{year} の段階ごとの合計（左の一覧の項の合計）</h2>
+      <LevelsChart levels={totals.map(t => t.level)} caption="政府案がある項の合計（決算にだけある項は含めない）。補正の無い項は、補正後を政府案と同額として足した。概算要求・決算の段は、その段に値がある項だけの合計なので、項の数（下）を見て読む。一般会計と特別会計をまたぐ合計は、繰入の分が二重になります。" />
+      <p className="text-[11px] text-neutral-500">項の数: {totals.map(t => `${t.level.label} ${t.kou.toLocaleString()}`).join(' / ')}{account === 'all' ? '（一般会計と特別会計の合計）' : ''}</p>
       <h2 className="mt-2 font-semibold">FY{year} の検算（全項目の件数）</h2>
       <table className="w-full max-w-3xl border-collapse">
         <thead><tr className="text-left"><th className={th}>式</th><th className={`${th} text-left`}>会計</th><th className={`${th} text-right`}>成り立つ / 対象</th></tr></thead>
@@ -176,6 +193,11 @@ function KouDetail({ kou, events: unsorted }: { kou: LifecycleKou; events: Lifec
     return out;
   }, [events]);
   const missing = (['request', 'budget', 'supp', 'settle'] as const).filter(s => !kou.seenIn.includes(s));
+  const values = useMemo(() => lifecycleValues(events.filter(e => e[1] !== 'derived')), [events]);
+  const levels = lifecycleLevels(values);
+  const { changes, zero } = lifecycleChanges(values);
+  const use = lifecycleUse(values);
+  const base = values.budget_amount ?? values.current_amount ?? null;
   return (
     <div className="flex flex-col gap-5">
       <div>
@@ -186,6 +208,25 @@ function KouDetail({ kou, events: unsorted }: { kou: LifecycleKou; events: Lifec
           {missing.length > 0 && `（${missing.map(s => EVENT_LABEL[s]).join('・')}には、この項の値が無い。0 ではなく「無い」）`}
         </p>
       </div>
+
+      <section className="flex flex-col gap-4">
+        <h3 className="font-semibold">グラフ</h3>
+        <div className="flex flex-col gap-1">
+          <p className="font-semibold text-neutral-600 dark:text-neutral-300">段階ごとの額</p>
+          <LevelsChart levels={levels} caption="柱は 0 を基準にした額。段の間の小さな差は、下の「増減」で見る。" />
+        </div>
+        <div className="flex flex-col gap-1">
+          <p className="font-semibold text-neutral-600 dark:text-neutral-300">段階ごとの増減</p>
+          <ChangesChart changes={changes} zero={zero} base={base} baseLabel={values.budget_amount !== undefined ? '政府案' : '現額'} />
+        </div>
+        {use && (
+          <div className="flex flex-col gap-1">
+            <p className="font-semibold text-neutral-600 dark:text-neutral-300">歳出予算現額の使われ方</p>
+            <UseChart parts={use.parts} total={use.total} />
+          </div>
+        )}
+        <p className="text-[11px] text-neutral-500">グラフの値は、下の表の値と同じです（グラフは見やすさのためで、正は表）。概算要求から決算までを 1 本の帯（サンキー）にしないのは、概算要求 → 政府案の変化は査定による増減で、お金の移動ではないためです。</p>
+      </section>
 
       <section className="flex flex-col gap-2">
         <h3 className="font-semibold">幅広の形（出来事ごとに 1 つの表）</h3>
