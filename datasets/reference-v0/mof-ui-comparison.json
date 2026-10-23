@@ -1,0 +1,31 @@
+{
+ "comparedWith": {
+  "repository": "igomuni/marumie-rssystem",
+  "commit": "3aef2de9d0f08a438c94efd32a3c0bc2ae33af19"
+ },
+ "manifest": {
+  "path": "datasets/reference-v0/manifest.json",
+  "sha256": "9d4ac635577461e5acff4c9163fc5056ec7ba2d52d9644b7a1b60c07059642ee"
+ },
+ "files": {
+  "summary.json": {
+   "comparedWith": "tests/fixtures/budget-request-mof/summary.json",
+   "sha256": "3d6690f7db2b7a9f54c8da76ac3b1160b08ad71b5a1397ea99be7d7ceac30022",
+   "bytes": 2744,
+   "equal": true
+  },
+  "kou.json.gz": {
+   "comparedWith": "public/data/v2/ui/budget-request-mof/kou.json.gz",
+   "sha256": "df1c24b3e0335eda466eefceaddc2c7a8919bf41f2f15cfce407a869cd244b09",
+   "bytes": 214598,
+   "equal": true
+  },
+  "detail.json.gz": {
+   "comparedWith": "public/data/v2/ui/budget-request-mof/detail.json.gz",
+   "sha256": "2873095dbd92dc8494ff10084de80431accbbc71d752634383993c40b49f1f3b",
+   "bytes": 604990,
+   "equal": true
+  }
+ },
+ "allEqual": true
+}
