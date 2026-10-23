@@ -1,0 +1,161 @@
+import { useEffect, useRef, type MouseEvent as ReactMouseEvent } from 'react';
+import {
+  MOF_KIND_LABEL,
+  formatRate,
+  formatSen,
+  formatSenSigned,
+  mofAcctLabelOf,
+  mofDiffOf,
+  mofGroupOf,
+  mofIsJoint,
+  mofOrgOf,
+  mofPublishersOf,
+  mofRateOf,
+  mofRowKey,
+  type BudgetRequestMofRow,
+  type MofSortDir,
+  type MofSortKey,
+} from '@nihon-no-yosan/core';
+import { Icon } from '../components/Icon.tsx';
+import { changeColor } from '../trend/format.ts';
+import { TYPE_INFO } from './typeInfo.ts';
+
+/** ドラッグ中のカーソル（イベントの外から body を変えるので、関数にまとめる） */
+function setBodyCursor(value: string): void {
+  document.body.style.cursor = value;
+}
+
+const MAX_ROWS = 600;
+const MIN_COLUMN_WIDTH = 48;
+export const DEFAULT_COLUMN_WIDTHS: Record<MofSortKey, number> = { group: 150, acct: 140, org: 130, name: 240, nJikou: 56, nMoku: 56, req: 100, mof: 100, diff: 100, rate: 76 };
+const chip = 'ml-1 rounded-full border px-1.5 text-[10px] align-middle';
+
+export function MofListPane({
+  rows,
+  urls,
+  sortKey,
+  sortDir,
+  onSort,
+  selectedKey,
+  onSelect,
+  widths,
+  onWidthsChange,
+}: {
+  /** 絞り込み・並べ替え済み */
+  rows: readonly BudgetRequestMofRow[];
+  urls: readonly string[];
+  sortKey: MofSortKey;
+  sortDir: MofSortDir;
+  onSort: (k: MofSortKey) => void;
+  selectedKey: string | null;
+  onSelect: (r: BudgetRequestMofRow) => void;
+  widths: Record<string, number>;
+  onWidthsChange: (updater: (prev: Record<string, number>) => Record<string, number>) => void;
+}) {
+  const sum = rows.reduce((s, r) => ({ req: s.req + (r.req ?? 0), mof: s.mof + (r.mof ?? 0) }), { req: 0, mof: 0 });
+  const cols: { key: MofSortKey; label: string; left?: boolean; title?: string }[] = [
+    { key: 'group', label: '所管', left: true },
+    { key: 'acct', label: '会計', left: true },
+    { key: 'org', label: '組織／勘定', left: true },
+    { key: 'name', label: '項名', left: true },
+    { key: 'nJikou', label: '事項', title: '事項の数（概算要求と予算書を名前でつないだ和集合）' },
+    { key: 'nMoku', label: '目', title: '目の数（概算要求と予算書を名前でつないだ和集合。事項をまたいで数える）' },
+    { key: 'req', label: '要求額' },
+    { key: 'mof', label: '当初予算額' },
+    { key: 'diff', label: '差' },
+    { key: 'rate', label: '差率' },
+  ];
+  const selectedIdx = selectedKey === null ? -1 : rows.findIndex(r => mofRowKey(r) === selectedKey);
+  const shown = rows.slice(0, Math.max(MAX_ROWS, selectedIdx + 1));
+  const scrollRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (selectedKey === null) return;
+    const el = [...(scrollRef.current?.querySelectorAll<HTMLElement>('tr[data-row-key]') ?? [])].find(e => e.dataset.rowKey === selectedKey);
+    el?.scrollIntoView({ block: 'nearest' });
+  }, [selectedKey]);
+  const widthOf = (k: MofSortKey) => widths[k] ?? DEFAULT_COLUMN_WIDTHS[k];
+  const tableWidth = cols.reduce((n, c) => n + widthOf(c.key), 0);
+
+  function startResize(e: ReactMouseEvent, key: MofSortKey) {
+    e.preventDefault();
+    e.stopPropagation();
+    const startX = e.clientX, startWidth = widthOf(key);
+    const onMove = (ev: MouseEvent) => onWidthsChange(w => ({ ...w, [key]: Math.max(MIN_COLUMN_WIDTH, startWidth + ev.clientX - startX) }));
+    const onUp = () => { window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); setBodyCursor(''); };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+    setBodyCursor('col-resize');
+  }
+
+  return (
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="flex flex-wrap gap-x-5 gap-y-1 border-b border-neutral-200 px-3 py-2 text-xs text-neutral-500 dark:border-neutral-800">
+        <span><b className="tabular-nums text-neutral-800 dark:text-neutral-100">{rows.length.toLocaleString()}</b> 件</span>
+        <span>要求額 合計 <b className="tabular-nums text-neutral-800 dark:text-neutral-100">{formatSen(sum.req)}</b></span>
+        <span>当初予算額 合計 <b className="tabular-nums text-neutral-800 dark:text-neutral-100">{formatSen(sum.mof)}</b></span>
+        <span className="text-neutral-400">一般会計と特別会計をまたぐ合計は、繰入の分が二重になります</span>
+      </div>
+      <div ref={scrollRef} className="min-h-0 flex-1 overflow-auto">
+        <table className="border-collapse text-xs" style={{ width: tableWidth, tableLayout: 'fixed' }}>
+          <colgroup>{cols.map(c => <col key={c.key} style={{ width: widthOf(c.key) }} />)}</colgroup>
+          <thead>
+            <tr>
+              {cols.map(c => (
+                <th
+                  key={c.key}
+                  scope="col"
+                  aria-sort={sortKey === c.key ? (sortDir > 0 ? 'ascending' : 'descending') : undefined}
+                  className={`sticky top-0 z-10 cursor-pointer select-none overflow-hidden whitespace-nowrap border-b border-neutral-200 bg-neutral-100 px-2 py-1.5 font-semibold text-neutral-500 dark:border-neutral-800 dark:bg-neutral-800 ${c.left ? 'text-left' : 'text-right'}`}
+                  onClick={() => onSort(c.key)}
+                  title={c.title}
+                >
+                  {c.label}
+                  {sortKey === c.key && <Icon name={sortDir > 0 ? 'arrow_drop_up' : 'arrow_drop_down'} size={16} className="inline align-middle" />}
+                  <span role="separator" aria-orientation="vertical" aria-label={`${c.label}の列幅`} onMouseDown={e => startResize(e, c.key)} onClick={e => e.stopPropagation()} className="absolute right-0 top-0 h-full w-1.5 cursor-col-resize hover:bg-emerald-500/40" />
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {shown.map(r => {
+              const k = mofRowKey(r); const d = mofDiffOf(r), t = mofRateOf(r); const selected = k === selectedKey;
+              return (
+                <tr
+                  key={k}
+                  data-row-key={k}
+                  tabIndex={0}
+                  aria-selected={selected}
+                  onClick={() => onSelect(r)}
+                  onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(r); } }}
+                  className={`cursor-pointer border-b border-neutral-100 dark:border-neutral-800 ${selected ? 'bg-emerald-50 dark:bg-emerald-950/40' : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/60'}`}
+                >
+                  <td className={`break-words px-2 py-1 text-left ${mofIsJoint(r, urls) ? 'text-neutral-500' : ''}`} title={mofIsJoint(r, urls) ? mofPublishersOf(r, urls).join('、') : undefined}>{mofGroupOf(r, urls)}</td>
+                  <td className="break-words px-2 py-1 text-left">{mofAcctLabelOf(r)}</td>
+                  <td className="break-words px-2 py-1 text-left">
+                    {mofOrgOf(r)}
+                    {r.types.includes('組織に事項要求') && <span title={`${TYPE_INFO['組織に事項要求'].text}${r.orgJikouText ? `（備考: ${r.orgJikouText}）` : ''}`} className={`${chip} ${TYPE_INFO['組織に事項要求'].color}`}>事項要求</span>}
+                  </td>
+                  <td className="break-words px-2 py-1 text-left font-medium">
+                    {r.name}
+                    {r.kind !== 'matched' && <span className={`${chip} border-neutral-400 text-neutral-500`}>{MOF_KIND_LABEL[r.kind]}</span>}
+                    {r.types.filter(x => x !== '組織に事項要求').map(x => (
+                      <span key={x} title={x === '事項要求' && r.jikouText ? `${TYPE_INFO[x].text}（${r.jikouText}）` : TYPE_INFO[x].text} className={`${chip} ${TYPE_INFO[x].color}`}>{x}</span>
+                    ))}
+                  </td>
+                  <td className="whitespace-nowrap px-2 py-1 text-right tabular-nums text-neutral-500">{r.nJikou}</td>
+                  <td className="whitespace-nowrap px-2 py-1 text-right tabular-nums text-neutral-500">{r.nMoku}</td>
+                  <td className="whitespace-nowrap px-2 py-1 text-right tabular-nums">{formatSen(r.req)}</td>
+                  <td className="whitespace-nowrap px-2 py-1 text-right tabular-nums">{formatSen(r.mof)}</td>
+                  <td className={`whitespace-nowrap px-2 py-1 text-right tabular-nums ${changeColor(d)}`}>{formatSenSigned(d)}</td>
+                  <td className={`whitespace-nowrap px-2 py-1 text-right tabular-nums ${changeColor(t)}`}>{formatRate(t)}</td>
+                </tr>
+              );
+            })}
+            {rows.length > shown.length && <tr><td colSpan={10} className="px-2 py-2 text-neutral-500">上位 {shown.length.toLocaleString()} 件を表示（全 {rows.length.toLocaleString()} 件）。絞り込みで減らしてください。</td></tr>}
+            {rows.length === 0 && <tr><td colSpan={10} className="px-2 py-8 text-center text-neutral-500">条件に合う項がありません。</td></tr>}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
