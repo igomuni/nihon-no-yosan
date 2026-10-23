@@ -77,3 +77,42 @@ export {
   type TotalTableRow,
   type TotalTableSourceResult,
 } from './request-total-table.ts';
+export {
+  parseDetailSource,
+  renderRowsCsv as renderDetailTableRowsCsv,
+  renderUnresolvedCsv as renderDetailTableUnresolvedCsv,
+  type DetailRow,
+  type SourceResult as DetailTableSourceResult,
+} from './request-detail-table.ts';
+export {
+  CLASSIFIER_SPEC_VERSION,
+  classifyDocument,
+  directMatch,
+  recordLine,
+  verifyHashes,
+  type ClassifierPageInput,
+  type DirectFamily,
+  type EmptyKind,
+  type PageClassificationRecord,
+} from './request-page-classification.ts';
+export { parseCoverPage, type CoverEntry, type CoverObservation } from './request-cover.ts';
+export {
+  assertValidPage,
+  pageMetaFrom,
+  toSourceTokens,
+  type PageMeta,
+  type RawTextItem,
+  type RawTextStyles,
+  type SourceToken,
+} from './request-source-token.ts';
+export {
+  convertTocPage,
+  DEFAULT_TOC_PARAMS,
+  extractionOptionsId,
+  renderCsv,
+  renderMainCsv,
+  TOC_PDF_NATIVE_SCHEMA,
+  type AuditKind,
+  type PageResult,
+  type TocEntry,
+} from './request-toc.ts';

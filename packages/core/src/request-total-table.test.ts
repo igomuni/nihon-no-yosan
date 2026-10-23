@@ -1,5 +1,3 @@
-import * as fs from 'node:fs';
-import * as path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   TOTAL_TABLE_CSV_COLUMNS,
@@ -14,26 +12,12 @@ import {
   requestYearLabel,
   type LogicalRow,
 } from './request-total-table.ts';
+import { excerptText, hasDataset, type Excerpt } from '../test-support/excerpts.ts';
 import excerpts from './request-total-table.excerpts.json' with { type: 'json' };
 
-// 実物の頁の一部（行の抜き出し）は、基準データの plain text から組み立てる。原文は git に入れない。基準データが無い環境ではこのファイルを飛ばす
-const plainTextDir = path.join(process.cwd(), 'data/dataset/reference-v0/budget-request/2024/plain-text');
-const hasDataset = fs.existsSync(plainTextDir);
+// 実物の頁の一部は、基準データの plain text から組み立てる（`test-support/excerpts.ts`）。基準データが無い環境では、実物を使う describe を飛ばす
 const describeData = describe.skipIf(!hasDataset);
-type Lines = string | number[];
-const lineIndexes = (l: Lines): number[] => {
-  if (typeof l !== 'string') return l;
-  const [a, b] = l.split('-').map(Number) as [number, number];
-  return Array.from({ length: b - a + 1 }, (_, i) => a + i);
-};
-const fixture = (name: string): string =>
-  (excerpts as Record<string, { file: string; page: number; lines: Lines }[]>)[`${name}.txt`]!
-    .map(e => {
-      // 頁の末尾の改行より後ろの空要素は行ではない
-      const lines = fs.readFileSync(path.join(plainTextDir, e.file), 'utf8').split('\f')[e.page - 1]!.split('\n').slice(0, -1);
-      return `${lineIndexes(e.lines).filter(i => i < lines.length).map(i => lines[i]).join('\n')}\n\f`;
-    })
-    .join('');
+const fixture = (name: string): string => excerptText(excerpts as Record<string, Excerpt[]>, `${name}.txt`);
 const parseFixture = (name: string) => parseSource(fixture(name), name, name);
 const amounts = (row: LogicalRow) =>
   Object.values(row.cells).map(c => `${c.sign_raw}${c.amount_raw}`);
@@ -78,7 +62,7 @@ describeData('total-table page / block detection', () => {
   });
 });
 
-describe('numeric tail', () => {
+describeData('numeric tail', () => {
   it('captures 7 independently signed cells, including △ outside the difference column', () => {
     const rows = parseFixture('env-000157010').rows;
     const row = rows.find(r => r.name_compact === '定員合理化に伴う経費' && r.code_raw === '003');
@@ -105,7 +89,7 @@ describe('numeric tail', () => {
   });
 });
 
-describe('row head grammar', () => {
+describeData('row head grammar', () => {
   it('classifies DETAIL before CODE3 so 3-digit request numbers stay DETAIL, and keeps the raw hyphen', () => {
     const rows = parseFixture('mext-02').rows;
     const r99 = rows.find(r => r.request_no_raw === '99');

@@ -6,6 +6,7 @@
   "license": "MIT",
   "type": "module",
   "dependencies": {
-    "@nihon-no-yosan/core": "*"
+    "@nihon-no-yosan/core": "*",
+    "pdfjs-dist": "5.4.296"
   }
 }
