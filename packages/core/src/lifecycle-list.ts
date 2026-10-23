@@ -12,6 +12,10 @@ import { textMatches } from './trend-view.ts';
 /** 所管の原文を府省に分ける（区切りは「、」と「及び」。予算書の FY2023・FY2024 の特別会計で、分けた名前が一般会計の所管の名前と一致することを確かめた（例外は東日本大震災復興特別会計の「復興庁」だけ）） */
 export const lifecycleGroupsOf = (k: LifecycleKou): string[] => k.ministry.split(/、|及び/).map(g => g.trim()).filter(g => g !== '');
 
+/** 所管の選択肢「複数所管」: 複数の府省が所管する項 */
+export const LIFECYCLE_JOINT = '複数所管';
+export const lifecycleIsJoint = (k: LifecycleKou): boolean => lifecycleGroupsOf(k).length > 1;
+
 export interface LifecycleFilters {
   /** 所管（空 = すべて）。選んだ府省が所管する項（複数の府省が所管する項も含む） */
   groups: string[];
