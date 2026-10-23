@@ -63,3 +63,4 @@ export * from './mof-view.ts';
 export * from './lifecycle.ts';
 export * from './lifecycle-view.ts';
 export * from './lifecycle-status.ts';
+export * from './lifecycle-list.ts';

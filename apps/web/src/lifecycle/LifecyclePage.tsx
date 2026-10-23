@@ -1,13 +1,19 @@
 import { useEffect, useMemo, useState, type CSSProperties, type MouseEvent as ReactMouseEvent } from 'react';
 import {
+  INITIAL_LIFECYCLE_FILTERS,
   LIFECYCLE_PATTERNS,
+  filterLifecycleKous,
   lifecycleCoverage,
   lifecyclePatternCounts,
-  lifecyclePatternMatches,
+  lifecycleRowAmounts,
   lifecycleValues,
+  matchesLifecyclePattern,
+  sortLifecycleRows,
   type LifecycleData,
   type LifecycleEventRow,
-  type LifecyclePattern,
+  type LifecycleFilters,
+  type LifecycleSortDir,
+  type LifecycleSortKey,
   type LifecycleValues,
 } from '@nihon-no-yosan/core';
 import { loadGzJson } from '../data.ts';
@@ -16,10 +22,9 @@ import { SourceNote } from '../components/SourceNote.tsx';
 import { YearSelect } from '../components/YearSelect.tsx';
 import { usePersistedState } from '../usePersistedState.ts';
 import { LifecycleDetailPane } from './LifecycleDetailPane.tsx';
-import { LifecycleFilterPane, type LifecycleAccount } from './LifecycleFilterPane.tsx';
+import { LifecycleFilterPane } from './LifecycleFilterPane.tsx';
 import { LifecycleListPane } from './LifecycleListPane.tsx';
 import { LifecycleSummaryPane } from './LifecycleSummaryPane.tsx';
-import { kouTitle } from './shared.ts';
 
 /**
  * 予算の一生の表（項の粒度, FY2023・FY2024）。1 つの項について、概算要求 → 政府案 → 補正 → 決算の値を、段階ごとの状態・グラフ・表で見る。
@@ -57,10 +62,13 @@ export function LifecyclePage() {
   const [data, setData] = useState<LifecycleData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [year, setYear] = usePersistedState<number | null>('lifecycle:year', null);
-  const [account, setAccount] = usePersistedState<LifecycleAccount>('lifecycle:account', 'all');
-  const [query, setQuery] = usePersistedState('lifecycle:query', '');
-  const [pattern, setPattern] = usePersistedState<LifecyclePattern>('lifecycle:pattern', 'all');
+  // フィルタは保存値を既定値の上に重ねる（項目が増えた後に、古い保存値を読んでも欠けないように）
+  const [storedFilters, setFilters] = usePersistedState<LifecycleFilters>('lifecycle:filters', INITIAL_LIFECYCLE_FILTERS);
+  const filters = useMemo(() => ({ ...INITIAL_LIFECYCLE_FILTERS, ...storedFilters }), [storedFilters]);
+  const [sortKey, setSortKey] = usePersistedState<LifecycleSortKey>('lifecycle:sortKey', 'size');
+  const [sortDir, setSortDir] = usePersistedState<LifecycleSortDir>('lifecycle:sortDir', -1);
   const [selectedId, setSelectedId] = usePersistedState<string | null>('lifecycle:selected', null);
+  const [columnWidths, setColumnWidths] = usePersistedState<Record<string, number>>('lifecycle:columnWidths', {});
   const [view, setView] = usePersistedState<'list' | 'summary'>('lifecycle:view', 'list');
   const [filterWidth, setFilterWidth] = usePersistedState('lifecycle:filterWidth', FILTER_WIDTH.def);
   const [detailWidth, setDetailWidth] = usePersistedState('lifecycle:detailWidth', DETAIL_WIDTH.def);
@@ -88,19 +96,21 @@ export function LifecyclePage() {
 
   const years = data?.years ?? [];
   const activeYear = data ? (year !== null && years.includes(year) ? year : years[0]!) : null;
-  // 年度・会計・検索で絞った項（値のある段階で絞る前）。段階ごとの件数は、この集合で数える
+  // 年度・所管・会計・組織・項名で絞った項（値のある段階で絞る前）。段階ごとの件数は、この集合で数える
+  const inYear = useMemo(() => (data && activeYear !== null ? data.kous.filter(k => k.year === activeYear) : []), [data, activeYear]);
   const base = useMemo(() => {
     if (!data || activeYear === null) return [];
-    const q = query.trim().toLowerCase();
-    return data.kous
-      .map((k, i) => ({ k, i }))
-      .filter(({ k }) => k.year === activeYear && (account === 'all' || k.account === account) && (q === '' || `${k.name} ${kouTitle(k)}`.toLowerCase().includes(q)));
-  }, [data, activeYear, account, query]);
+    return filterLifecycleKous(data.kous.map((k, i) => ({ k, i })), filters, activeYear);
+  }, [data, activeYear, filters]);
   const patternCounts = useMemo(() => lifecyclePatternCounts(base.map(x => x.k)), [base]);
-  const list = useMemo(() => {
-    const size = (i: number): number => { const v = valuesOf.get(i) ?? {}; return Math.max(0, v.current_amount ?? 0, v.budget_amount ?? 0, v.request_amount ?? 0); };
-    return base.filter(({ k }) => lifecyclePatternMatches(k, pattern)).map(({ k, i }) => ({ k, i, size: size(i) })).sort((a, b) => b.size - a.size);
-  }, [base, pattern, valuesOf]);
+  const list = useMemo(
+    () => sortLifecycleRows(base.filter(({ k }) => matchesLifecyclePattern(k, filters)).map(({ k, i }) => ({ k, i, a: lifecycleRowAmounts(valuesOf.get(i) ?? {}) })), sortKey, sortDir),
+    [base, filters, valuesOf, sortKey, sortDir],
+  );
+  const onSort = (k: LifecycleSortKey) => {
+    if (k === sortKey) setSortDir(d => (d === 1 ? -1 : 1));
+    else { setSortKey(k); setSortDir(k === 'group' || k === 'acct' || k === 'org' || k === 'name' ? 1 : -1); }
+  };
 
   if (error) return <main className="mx-auto max-w-3xl p-8"><p className="rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-800">データの読み込みに失敗しました: {error}（<code>npm run build:data</code> で作る）</p></main>;
   if (!data || activeYear === null) return <main className="mx-auto max-w-3xl p-8"><p className="text-sm text-neutral-500">読み込み中…</p></main>;
@@ -109,7 +119,9 @@ export function LifecyclePage() {
   const selectedIndex = selectedId === null ? -1 : data.kous.findIndex(k => k.id === selectedId && k.year === activeYear);
   const kou = selectedIndex >= 0 ? data.kous[selectedIndex]! : null;
   const checks = data.checks.filter(c => c.year === activeYear);
-  const scope = `FY${activeYear} · 会計: ${account === 'all' ? 'すべて' : account === 'general' ? '一般会計' : '特別会計'} · 検索: ${query.trim() === '' ? 'なし' : `「${query.trim()}」`} · 値のある段階: ${LIFECYCLE_PATTERNS.find(p => p.id === pattern)!.label}`;
+  const listed = (names: string[]): string => (names.length === 0 ? 'すべて' : names.join('、'));
+  const text = (label: string, value: string, regex: boolean): string => (value.trim() === '' ? '' : ` · ${label}: 「${value.trim()}」${regex ? '（正規表現）' : ''}`);
+  const scope = `FY${activeYear} · 所管: ${listed(filters.groups)} · 会計: ${listed(filters.accts)}${text('組織／勘定', filters.org, filters.orgRegex)}${text('項名', filters.name, filters.nameRegex)} · 値のある段階: ${LIFECYCLE_PATTERNS.find(p => p.id === filters.pattern)!.label}`;
 
   return (
     <div className="flex h-screen flex-col bg-neutral-50 text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
@@ -127,16 +139,7 @@ export function LifecyclePage() {
       </header>
       <main className="grid min-h-0 flex-1 grid-cols-1 gap-3 px-3 pb-3 lg:grid-cols-[240px_minmax(0,1fr)] xl:flex xl:gap-0">
         <section aria-label="フィルタ" className={`${pane} overflow-hidden xl:w-[var(--fw)] xl:shrink-0`} style={{ '--fw': `${filterWidth}px` } as CSSProperties}>
-          <LifecycleFilterPane
-            query={query}
-            onQuery={setQuery}
-            account={account}
-            onAccount={setAccount}
-            pattern={pattern}
-            onPattern={p => { setPattern(p); setSelectedId(null); }}
-            patternCounts={patternCounts}
-            onReset={() => { setQuery(''); setAccount('all'); setPattern('all'); setSelectedId(null); }}
-          />
+          <LifecycleFilterPane inYear={inYear} patternCounts={patternCounts} filters={filters} onChange={f => { setFilters(f); setSelectedId(null); }} />
         </section>
         <Splitter label="フィルタの幅" width={filterWidth} limits={FILTER_WIDTH} dir={1} onChange={setFilterWidth} />
         <section aria-label="項の一覧" className={`${pane} flex flex-col overflow-hidden xl:min-w-0 xl:flex-1`}>
@@ -147,9 +150,9 @@ export function LifecyclePage() {
               </button>
             ))}
           </div>
-          <div className="min-h-0 flex-1 overflow-auto">
+          <div className={`min-h-0 flex-1 ${view === 'list' ? 'overflow-hidden' : 'overflow-auto'}`}>
             {view === 'list'
-              ? <LifecycleListPane items={list} selectedId={kou?.id ?? null} onSelect={k => setSelectedId(k.id)} />
+              ? <LifecycleListPane items={list} sortKey={sortKey} sortDir={sortDir} onSort={onSort} selectedId={kou?.id ?? null} onSelect={k => setSelectedId(k.id)} widths={columnWidths} onWidthsChange={setColumnWidths} />
               : <LifecycleSummaryPane
                   checks={checks}
                   scope={scope}
