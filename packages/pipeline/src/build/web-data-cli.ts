@@ -6,13 +6,16 @@
  * 出力:
  *   trend/{kou,jikou,detail}.json.gz   概算要求の年度推移（`docs/guides/trend.md`、`jikou-youkyu.md`、`trend-detail.md`）
  *   mof/{kou,detail}.json.gz           概算要求と当初予算の差（`docs/guides/mof-ui.md`）
+ *   lifecycle/data.json.gz             予算の一生の表（試作。`docs/guides/budget-lifecycle.md`）
  *   about.json                         出典と利用条件（`docs/guides/web-publish.md`）
  * 出力ディレクトリは git に入れない（`.gitignore` の `data/`）。
  */
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import * as zlib from 'node:zlib';
 import type { SiteAbout, SiteAboutAuthority } from '@nihon-no-yosan/core';
 import { buildBudgetRequestJikouYoukyu } from './jikou-youkyu.ts';
+import { buildLifecycle } from './lifecycle.ts';
 import { buildBudgetRequestMofUi, mofUiMatchesFromDataset } from './mof-ui.ts';
 import { buildBudgetRequestTrend, matchesFromDataset } from './trend.ts';
 import { buildBudgetRequestTrendDetail } from './trend-detail.ts';
@@ -41,6 +44,7 @@ const outputs: [string, Buffer][] = [
   ['trend/detail.json.gz', detail.uiGz],
   ['mof/kou.json.gz', mof.kouGz],
   ['mof/detail.json.gz', mof.detailGz],
+  ['lifecycle/data.json.gz', zlib.gzipSync(JSON.stringify(buildLifecycle({ datasetDir: dataset, requestOfMofRow: mof.requestOfMofRow })), { level: 9, mtime: 0 } as zlib.ZlibOptions)],
 ];
 for (const [name, bytes] of outputs) {
   fs.mkdirSync(path.dirname(path.join(outDir, name)), { recursive: true });
