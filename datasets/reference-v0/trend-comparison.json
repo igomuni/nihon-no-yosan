@@ -1,0 +1,37 @@
+{
+ "comparedWith": {
+  "repository": "igomuni/marumie-rssystem",
+  "commit": "3aef2de9d0f08a438c94efd32a3c0bc2ae33af19"
+ },
+ "manifest": {
+  "path": "datasets/reference-v0/manifest.json",
+  "sha256": "9d4ac635577461e5acff4c9163fc5056ec7ba2d52d9644b7a1b60c07059642ee"
+ },
+ "files": {
+  "kou.csv": {
+   "comparedWith": "tests/fixtures/budget-request-trend/kou.csv",
+   "sha256": "90eb6410ee4ab83068ed4175ffde9bbe66babcc59e978d2d55c6ab65c921bc2d",
+   "bytes": 1400393,
+   "equal": true
+  },
+  "summary.json": {
+   "comparedWith": "tests/fixtures/budget-request-trend/summary.json",
+   "sha256": "e8c4057990432b875db67776442f31d8bc41aa041ed036054db8122c12a2ac81",
+   "bytes": 854,
+   "equal": true
+  },
+  "kou.json.gz": {
+   "comparedWith": "public/data/v2/ui/budget-request-trend/kou.json.gz",
+   "sha256": "8010490950dd2d555f3703b0ee7152b210bbd53e3228c6ba88770b3aaf5140c4",
+   "bytes": 106821,
+   "equal": true
+  },
+  "2027/request-kou.csv": {
+   "comparedWith": "tests/fixtures/mof-budget-request-match/2027/request-kou.csv",
+   "sha256": "92a031d72cb460253b76a16b863908dd002d7731b9596a87e87eb105b1e8d90b",
+   "bytes": 158563,
+   "equal": true
+  }
+ },
+ "allEqual": true
+}
