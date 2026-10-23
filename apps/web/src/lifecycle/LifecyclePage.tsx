@@ -127,7 +127,7 @@ export function LifecyclePage() {
     <div className="flex h-screen flex-col bg-neutral-50 text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
       <header className="flex shrink-0 flex-wrap items-start justify-between gap-3 px-3 pb-2 pt-3">
         <div>
-          <h1 className="text-base font-semibold">予算の一生の表</h1>
+          <h1 className="text-base font-semibold">予算の推移</h1>
           <p className="mt-0.5 text-[11px] text-neutral-500">
             項の粒度 · FY{years[0]}–FY{years[years.length - 1]} · 概算要求 → 政府案 → 補正 → 決算 · 値が無い段階は補完せず「値なし」と表示
           </p>

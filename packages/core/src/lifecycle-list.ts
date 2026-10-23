@@ -5,13 +5,15 @@ import { textMatches } from './trend-view.ts';
 
 /**
  * 予算の一生の一覧: フィルタ・列・並べ替え（純粋な関数）。
- * 所管と組織は一般会計だけの値（特別会計は、特別会計の名称と勘定で識別する）。特別会計の所管は、データに無いので持たせない（推測で府省を割り当てない）。
+ * 所管は予算書の原文。特別会計は複数の府省が所管することがあり、原文は「A、B及びC」の形（例: 内閣府、総務省及び財務省）。
+ * 組織は一般会計だけの値（特別会計は、特別会計の名称と勘定で識別する）。
  */
 
-export const LIFECYCLE_NO_GROUP = '（特別会計）';
+/** 所管の原文を府省に分ける（区切りは「、」と「及び」。予算書の FY2023・FY2024 の特別会計で、分けた名前が一般会計の所管の名前と一致することを確かめた（例外は東日本大震災復興特別会計の「復興庁」だけ）） */
+export const lifecycleGroupsOf = (k: LifecycleKou): string[] => k.ministry.split(/、|及び/).map(g => g.trim()).filter(g => g !== '');
 
 export interface LifecycleFilters {
-  /** 所管（空 = すべて）。選べるのは一般会計の所管と、特別会計をまとめた `LIFECYCLE_NO_GROUP` */
+  /** 所管（空 = すべて）。選んだ府省が所管する項（複数の府省が所管する項も含む） */
   groups: string[];
   /** 会計（空 = すべて）。「一般会計」と「〇〇特別会計」 */
   accts: string[];
@@ -24,7 +26,11 @@ export interface LifecycleFilters {
 
 export const INITIAL_LIFECYCLE_FILTERS: LifecycleFilters = { groups: [], accts: [], org: '', orgRegex: false, name: '', nameRegex: false, pattern: 'all' };
 
-export const lifecycleGroupOf = (k: LifecycleKou): string => (k.account === 'general' ? k.ministry : LIFECYCLE_NO_GROUP);
+/** 所管の表示（一覧の列）。1 つの府省はその名前、複数は「N所管」（府省名の一覧は、ツールチップ・詳細に出す） */
+export function lifecycleGroupOf(k: LifecycleKou): string {
+  const g = lifecycleGroupsOf(k);
+  return g.length <= 1 ? g[0] ?? '' : `${g.length}所管`;
+}
 export const lifecycleAcctOf = (k: LifecycleKou): string => (k.account === 'general' ? '一般会計' : `${k.specialAccount}特別会計`);
 /** 組織（一般会計）または勘定（特別会計） */
 export const lifecycleOrgOf = (k: LifecycleKou): string => (k.account === 'general' ? k.org : k.subAccount);
@@ -33,7 +39,7 @@ export const lifecycleOrgOf = (k: LifecycleKou): string => (k.account === 'gener
 export function filterLifecycleKous<T extends { k: LifecycleKou }>(items: readonly T[], f: LifecycleFilters, year: number): T[] {
   return items.filter(({ k }) =>
     k.year === year &&
-    (f.groups.length === 0 || f.groups.includes(lifecycleGroupOf(k))) &&
+    (f.groups.length === 0 || lifecycleGroupsOf(k).some(g => f.groups.includes(g))) &&
     (f.accts.length === 0 || f.accts.includes(lifecycleAcctOf(k))) &&
     textMatches(lifecycleOrgOf(k), f.org, f.orgRegex) &&
     textMatches(k.name, f.name, f.nameRegex));

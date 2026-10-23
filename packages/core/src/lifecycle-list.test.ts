@@ -1,20 +1,27 @@
 import { describe, expect, it } from 'vitest';
 import type { LifecycleKou } from './lifecycle.ts';
-import { INITIAL_LIFECYCLE_FILTERS, LIFECYCLE_NO_GROUP, filterLifecycleKous, lifecycleRowAmounts, sortLifecycleRows } from './lifecycle-list.ts';
+import { INITIAL_LIFECYCLE_FILTERS, filterLifecycleKous, lifecycleGroupOf, lifecycleGroupsOf, lifecycleRowAmounts, sortLifecycleRows } from './lifecycle-list.ts';
 
 const kou = (id: string, o: Partial<LifecycleKou> = {}): LifecycleKou => ({ id, year: 2024, account: 'general', ministry: '内閣府', org: '本府', specialAccount: '', subAccount: '', code: '001', name: id, seenIn: ['budget'], ...o });
 const a = kou('a');
 const b = kou('b', { ministry: '法務省', org: '法務本省' });
-const s = kou('s', { account: 'special', ministry: '', org: '', specialAccount: '年金', subAccount: '基礎年金勘定' });
+const s = kou('s', { account: 'special', ministry: '内閣府、総務省及び財務省', org: '', specialAccount: '年金', subAccount: '基礎年金勘定' });
 const old = kou('old', { year: 2023 });
 const items = [a, b, s, old].map(k => ({ k }));
 
 describe('filterLifecycleKous', () => {
   const f = (p: Partial<typeof INITIAL_LIFECYCLE_FILTERS>) => filterLifecycleKous(items, { ...INITIAL_LIFECYCLE_FILTERS, ...p }, 2024).map(x => x.k.id);
   it('keeps only the year, and everything else when no filter is set', () => expect(f({})).toEqual(['a', 'b', 's']));
-  it('filters by group; special accounts are grouped under one label (no ministry is assigned to them)', () => {
+  it('filters by group; a special account with several ministries matches each of them', () => {
     expect(f({ groups: ['法務省'] })).toEqual(['b']);
-    expect(f({ groups: [LIFECYCLE_NO_GROUP] })).toEqual(['s']);
+    expect(f({ groups: ['総務省'] })).toEqual(['s']);
+    expect(f({ groups: ['内閣府'] })).toEqual(['a', 's']);
+  });
+  it('splits the original 所管 text at 、 and 及び, and shows N所管 for several', () => {
+    expect(lifecycleGroupsOf(s)).toEqual(['内閣府', '総務省', '財務省']);
+    expect(lifecycleGroupOf(s)).toBe('3所管');
+    expect(lifecycleGroupsOf(kou('t', { ministry: '財務省及び国土交通省' }))).toEqual(['財務省', '国土交通省']);
+    expect(lifecycleGroupOf(a)).toBe('内閣府');
   });
   it('filters by account label', () => {
     expect(f({ accts: ['年金特別会計'] })).toEqual(['s']);

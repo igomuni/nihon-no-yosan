@@ -38,7 +38,7 @@ export interface LifecycleKou {
   id: string;
   year: number;
   account: 'general' | 'special';
-  /** 一般会計の所管・組織。特別会計は空 */
+  /** 所管（予算書の原文）。一般会計は 1 つの府省、特別会計は複数の府省を「、」「及び」でつないだ文字列のことがある（`lifecycleGroupsOf` で分ける）。組織は一般会計だけ（特別会計は空） */
   ministry: string;
   org: string;
   /** 特別会計の名称・勘定。一般会計は空 */

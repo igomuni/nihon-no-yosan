@@ -4,7 +4,7 @@ import {
   LIFECYCLE_PATTERNS,
   MAX_REGEX_PATTERN_LENGTH,
   lifecycleAcctOf,
-  lifecycleGroupOf,
+  lifecycleGroupsOf,
   type LifecycleFilters,
   type LifecycleKou,
   type LifecyclePattern,
@@ -28,7 +28,7 @@ export function LifecycleFilterPane({ inYear, patternCounts, filters, onChange }
   onChange: (f: LifecycleFilters) => void;
 }) {
   const tally = (names: string[]) => { const m = new Map<string, number>(); for (const n of names) m.set(n, (m.get(n) ?? 0) + 1); return m; };
-  const groups = useMemo(() => [...tally(inYear.map(lifecycleGroupOf))].sort((a, b) => b[1] - a[1]), [inYear]);
+  const groups = useMemo(() => [...tally(inYear.flatMap(lifecycleGroupsOf))].sort((a, b) => b[1] - a[1]), [inYear]);
   const accts = useMemo(() => [...tally(inYear.map(lifecycleAcctOf))].sort((a, b) => (a[0] === '一般会計' ? -1 : b[0] === '一般会計' ? 1 : b[1] - a[1])), [inYear]);
   const [open, setOpen] = useState<'group' | 'acct' | null>(null);
   const set = (patch: Partial<LifecycleFilters>) => onChange({ ...filters, ...patch });
@@ -59,7 +59,7 @@ export function LifecycleFilterPane({ inYear, patternCounts, filters, onChange }
         <div className={section}>
           <h3 className={heading}>所管</h3>
           <MultiSelectCombo label="所管" {...comboProps(groups, filters.groups, 'groups', 'group')} />
-          <p className="text-[11px] text-neutral-500">特別会計は、所管をデータから決められないので「{'（特別会計）'}」にまとめる。</p>
+          <p className="text-[11px] text-neutral-500">複数の府省が所管する特別会計は、各府省に数える（予算書の所管の原文を分けた）。</p>
         </div>
         <div className={section}>
           <h3 className={heading}>会計</h3>

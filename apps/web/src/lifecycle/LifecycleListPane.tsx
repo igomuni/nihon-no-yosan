@@ -4,6 +4,7 @@ import {
   formatSen,
   lifecycleAcctOf,
   lifecycleGroupOf,
+  lifecycleGroupsOf,
   lifecycleOrgOf,
   type LifecycleKou,
   type LifecycleRowAmounts,
@@ -115,7 +116,7 @@ export function LifecycleListPane({ items, sortKey, sortDir, onSort, selectedId,
                   onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(k); } }}
                   className={`cursor-pointer border-b border-neutral-100 dark:border-neutral-800 ${selected ? 'bg-emerald-50 dark:bg-emerald-950/40' : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/60'}`}
                 >
-                  <td className="break-words px-2 py-1 text-left">{lifecycleGroupOf(k)}</td>
+                  <td className={`break-words px-2 py-1 text-left ${lifecycleGroupsOf(k).length > 1 ? 'text-neutral-500' : ''}`} title={lifecycleGroupsOf(k).length > 1 ? lifecycleGroupsOf(k).join('、') : undefined}>{lifecycleGroupOf(k)}</td>
                   <td className="break-words px-2 py-1 text-left">{lifecycleAcctOf(k)}</td>
                   <td className="break-words px-2 py-1 text-left">{lifecycleOrgOf(k)}</td>
                   <td className="break-words px-2 py-1 text-left font-medium">{k.name}</td>
