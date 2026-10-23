@@ -8,13 +8,17 @@
     "node": ">=24"
   },
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "apps/*"
   ],
   "scripts": {
-    "typecheck": "tsc -b",
+    "typecheck": "tsc -b && tsc -p apps/web",
     "lint": "eslint .",
     "test": "vitest run",
-    "check": "npm run typecheck && npm run lint && npm run test"
+    "check": "npm run typecheck && npm run lint && npm run test",
+    "build:data": "node packages/pipeline/src/build/web-data-cli.ts data/dataset/reference-v0 apps/web/public/data",
+    "dev": "npm run -w @nihon-no-yosan/web dev",
+    "build": "npm run -w @nihon-no-yosan/web build"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
