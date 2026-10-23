@@ -5,6 +5,7 @@ import { Icon } from './Icon.tsx';
 export const PAGES = [
   { id: 'trend', label: '概算要求 年度推移' },
   { id: 'mof', label: '概算要求と当初予算' },
+  { id: 'about', label: '出典と利用条件' },
 ] as const;
 
 export type PageId = (typeof PAGES)[number]['id'];
