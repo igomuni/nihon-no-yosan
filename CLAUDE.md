@@ -6,13 +6,15 @@
 
 ```bash
 npm run check      # 型チェック（tsc -b）・lint・テスト（vitest）
+npm run build:data # 基準データから画面用の JSON を作る（apps/web/public/data/）
+npm run dev        # 画面の開発サーバー（先に build:data）
 ```
 
 ## 構成と依存
 
 - `packages/core`: 純粋な関数と型。React と Node の fs を使わない。
 - `packages/pipeline`: データを作る（基準データの凍結・照合など）。core を使う。
-- `apps/web`（予定）: 画面。core を使う。pipeline は import しない。
+- `apps/web`: 画面（Vite + React の静的サイト）。core を使う。pipeline は import しない。画面が読む JSON は `npm run build:data` で作り、git に入れない（`docs/decisions/0006-web-app.md`）。
 - 構成の理由は `docs/decisions/0001-repository.md`。
 
 ## ドキュメント
