@@ -1,0 +1,29 @@
+{
+ "manifest": {
+  "path": "datasets/reference-v0/manifest.json",
+  "sha256": "99797aacef28584f35b9155034f8a2cab303b8180396315e8adb62076f7d8016"
+ },
+ "years": {
+  "2023": {
+   "files": 134,
+   "allEqual": true
+  },
+  "2024": {
+   "files": 142,
+   "allEqual": true
+  },
+  "2025": {
+   "files": 135,
+   "allEqual": true
+  },
+  "2026": {
+   "files": 138,
+   "allEqual": true
+  },
+  "2027": {
+   "files": 132,
+   "allEqual": true
+  }
+ },
+ "allEqual": true
+}

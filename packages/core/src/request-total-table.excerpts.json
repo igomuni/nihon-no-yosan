@@ -1,0 +1,67 @@
+{
+ "mext-02.txt": [
+  {
+   "file": "mext.go.jp__content__20230914-mxt_kaikesou01-000031817_02.txt",
+   "page": 1,
+   "lines": "0-31"
+  },
+  {
+   "file": "mext.go.jp__content__20230914-mxt_kaikesou01-000031817_02.txt",
+   "page": 2,
+   "lines": "0-21"
+  },
+  {
+   "file": "mext.go.jp__content__20230914-mxt_kaikesou01-000031817_02.txt",
+   "page": 7,
+   "lines": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    24
+   ]
+  },
+  {
+   "file": "mext.go.jp__content__20230914-mxt_kaikesou01-000031817_02.txt",
+   "page": 8,
+   "lines": "0-8"
+  }
+ ],
+ "env-000157010.txt": [
+  {
+   "file": "env.go.jp__content__000157010.txt",
+   "page": 18,
+   "lines": "0-39"
+  }
+ ],
+ "env-000157012.txt": [
+  {
+   "file": "env.go.jp__content__000157012.txt",
+   "page": 6,
+   "lines": "0-35"
+  }
+ ],
+ "env-000157013.txt": [
+  {
+   "file": "env.go.jp__content__000157013.txt",
+   "page": 5,
+   "lines": "0-51"
+  }
+ ],
+ "meti-enegen.txt": [
+  {
+   "file": "meti.go.jp__main__yosangaisan__fy2024__pdf__enegen_o.txt",
+   "page": 5,
+   "lines": "0-26"
+  }
+ ]
+}

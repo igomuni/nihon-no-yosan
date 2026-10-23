@@ -65,3 +65,15 @@ export * from './lifecycle-view.ts';
 export * from './lifecycle-status.ts';
 export * from './lifecycle-list.ts';
 export * from './lifecycle-links.ts';
+export {
+  AMOUNT_FIELDS,
+  arithmeticMismatches,
+  csvCell,
+  parseSource as parseTotalTableSource,
+  renderAuditCsv as renderTotalTableAuditCsv,
+  renderRowsCsv as renderTotalTableRowsCsv,
+  renderUnresolvedCsv as renderTotalTableUnresolvedCsv,
+  requestYearLabel,
+  type TotalTableRow,
+  type TotalTableSourceResult,
+} from './request-total-table.ts';
