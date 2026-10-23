@@ -6,7 +6,7 @@
  * 出力:
  *   trend/{kou,jikou,detail}.json.gz   概算要求の年度推移（`docs/guides/trend.md`、`jikou-youkyu.md`、`trend-detail.md`）
  *   mof/{kou,detail}.json.gz           概算要求と当初予算の差（`docs/guides/mof-ui.md`）
- *   lifecycle/data.json.gz             予算の一生の表（試作。`docs/guides/budget-lifecycle.md`）
+ *   lifecycle/data.json.gz             予算の一生の表（`docs/guides/budget-lifecycle.md`）
  *   about.json                         出典と利用条件（`docs/guides/web-publish.md`）
  * 出力ディレクトリは git に入れない（`.gitignore` の `data/`）。
  */
