@@ -1,0 +1,216 @@
+import { useMemo, useState } from 'react';
+import {
+  INITIAL_TREND_FILTERS,
+  MAX_REGEX_PATTERN_LENGTH,
+  MULTI_GROUP,
+  acctLabelOf,
+  groupsOf,
+  inAllYears,
+  isGone,
+  isNew,
+  isSharedBooks,
+  isShares,
+  recordsOf,
+  yearOf,
+  type BudgetRequestTrendRow,
+  type ChangeFilter,
+  type PatternFilter,
+  type TrendFilters,
+} from '@nihon-no-yosan/core';
+import { MultiSelectCombo, NONE_SELECTED } from '../components/MultiSelectCombo.tsx';
+import { RegexTextFilter } from '../components/RegexTextFilter.tsx';
+
+const section = 'flex flex-col gap-1.5 border-b border-neutral-200 px-3 py-2.5 dark:border-neutral-800';
+const heading = 'text-[11px] font-semibold tracking-wide text-neutral-500';
+const row = 'flex cursor-pointer items-center gap-1.5 text-xs text-neutral-800 dark:text-neutral-200';
+const count = 'ml-auto tabular-nums text-neutral-400';
+
+export function TrendFilterPane({
+  rows,
+  years,
+  urls,
+  year,
+  filters,
+  onChange,
+}: {
+  rows: readonly BudgetRequestTrendRow[];
+  years: readonly number[];
+  urls: readonly string[];
+  year: number;
+  filters: TrendFilters;
+  onChange: (f: TrendFilters) => void;
+}) {
+  const first = years[0]!;
+  const groups = useMemo(() => {
+    const m = new Map<string, number>();
+    let multi = 0;
+    for (const r of rows) if (yearOf(r, year)) { const gs = groupsOf(r, year, urls); for (const g of gs) m.set(g, (m.get(g) ?? 0) + 1); if (gs.length > 1) multi++; }
+    // 府省ごと（件数はその府省が載せている項。複数所管の項も数える）と、末尾に「複数所管」
+    const list = [...m.entries()].sort((a, b) => b[1] - a[1]);
+    return multi > 0 ? [...list, [MULTI_GROUP, multi] as [string, number]] : list;
+  }, [rows, year, urls]);
+  // 会計の選択肢: 一般会計と、特別会計ごと（件数の多い順）。件数は選択年度に載る項
+  const accts = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const r of rows) if (yearOf(r, year)) m.set(acctLabelOf(r), (m.get(acctLabelOf(r)) ?? 0) + 1);
+    return [...m.entries()].sort((a, b) => (a[0] === '一般会計' ? -1 : b[0] === '一般会計' ? 1 : b[1] - a[1]));
+  }, [rows, year]);
+  // 頁の状態は一覧のレコード（項）で数える
+  const pdfStates = useMemo(() => rows.flatMap(r => (yearOf(r, year) ? recordsOf(r, year, urls) : [])), [rows, year, urls]);
+  const counts = useMemo(
+    () => ({
+      all5: rows.filter(r => inAllYears(r, years)).length,
+      isNew: rows.filter(r => isNew(r, year, first)).length,
+      isGone: rows.filter(r => isGone(r, year, first)).length,
+      shared: pdfStates.filter(isSharedBooks).length,
+      mismatch: rows.filter(r => yearOf(r, year)?.mismatch && !isShares(r, year, urls)).length,
+      shares: rows.filter(r => isShares(r, year, urls)).length,
+      transfer: rows.filter(r => (yearOf(r, year)?.xfer?.length ?? 0) > 0).length,
+      codeChange: rows.filter(r => yearOf(r, year)?.codeChanged).length,
+      newAcct: rows.filter(r => yearOf(r, year)?.newAcct).length,
+      moved: rows.filter(r => yearOf(r, year)?.moved).length,
+      imagePage: pdfStates.filter(x => x.imagePageBy.length > 0).length,
+      noPdfPage: pdfStates.filter(x => x.noPdfPageBy.length > 0).length,
+      jikou: rows.filter(r => yearOf(r, year)?.jikou).length,
+    }),
+    [rows, years, year, first, pdfStates, urls]
+  );
+  const [open, setOpen] = useState<'group' | 'acct' | null>(null);
+  // コンボの選択肢は「名称（件数）」。選択状態は名称で持つ（年度を替えて選択肢に無い名称は、件数 0 で選択肢に残す）
+  const comboProps = (entries: [string, number][], selected: string[], key: 'groups' | 'accts', field: 'group' | 'acct') => {
+    // 選んだのにこの年度に無い名前も、件数 0 の選択肢として出す（見えないまま絞り込んで 0 件になるのを防ぎ、外せるようにする）
+    const all: [string, number][] = [...entries, ...selected.filter(v => v !== NONE_SELECTED && !entries.some(([n]) => n === v)).map(v => [v, 0] as [string, number])];
+    const labelOf = new Map(all.map(([name, n]) => [name, `${name}（${n.toLocaleString()}）`]));
+    const nameOf = new Map([...labelOf].map(([name, label]) => [label, name]));
+    return {
+      options: [...labelOf.values()],
+      selected: selected.map(v => (v === NONE_SELECTED ? v : labelOf.get(v) ?? v)),
+      onChange: (next: string[]) => set({ [key]: next.map(l => (l === NONE_SELECTED ? l : nameOf.get(l) ?? l)) } as Partial<TrendFilters>),
+      open: open === field,
+      onOpenChange: (o: boolean) => setOpen(o ? field : open === field ? null : open),
+    };
+  };
+  const set = (patch: Partial<TrendFilters>) => onChange({ ...filters, ...patch });
+  const newGoneDisabled = year === first;
+  const pattern = (value: PatternFilter, label: string, n: number | null, disabled = false) => (
+    <label className={`${row} ${disabled ? 'opacity-40' : ''}`}>
+      <input type="radio" name="pattern" checked={filters.pattern === value} disabled={disabled} onChange={() => set({ pattern: value })} />
+      {label}
+      {n !== null && <span className={count}>{n.toLocaleString()}</span>}
+    </label>
+  );
+
+  return (
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="flex items-center justify-between border-b border-neutral-200 px-3 py-2 dark:border-neutral-800">
+        <span className="text-xs font-semibold text-neutral-500">フィルタ</span>
+        <button type="button" onClick={() => onChange(INITIAL_TREND_FILTERS)} className="rounded border border-neutral-300 px-2 text-[11px] text-neutral-600 hover:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800">
+          解除
+        </button>
+      </div>
+      <div className="min-h-0 flex-1 overflow-auto">
+        <div className={section}>
+          <h3 className={heading}>所管</h3>
+          <MultiSelectCombo label="所管" {...comboProps(groups, filters.groups, 'groups', 'group')} />
+        </div>
+        <div className={section}>
+          <h3 className={heading}>会計</h3>
+          <MultiSelectCombo label="会計" {...comboProps(accts, filters.accts, 'accts', 'acct')} />
+        </div>
+        <div className={`${section} text-xs`}>
+          <RegexTextFilter
+            label="組織／勘定"
+            value={filters.org}
+            onChange={org => set({ org })}
+            useRegex={filters.orgRegex}
+            onToggleRegex={orgRegex => set({ orgRegex })}
+            maxRegexLength={MAX_REGEX_PATTERN_LENGTH}
+          />
+          <RegexTextFilter
+            label="項名"
+            value={filters.name}
+            onChange={name => set({ name })}
+            useRegex={filters.nameRegex}
+            onToggleRegex={nameRegex => set({ nameRegex })}
+            maxRegexLength={MAX_REGEX_PATTERN_LENGTH}
+          />
+        </div>
+        <div className={section}>
+          <h3 className={heading}>出現パターン</h3>
+          {pattern('all', 'すべて', null)}
+          {pattern('all5', `${years.length}年度とも`, counts.all5)}
+          {pattern('new', '新規（前年度の要求書に無い）', newGoneDisabled ? null : counts.isNew, newGoneDisabled)}
+          {pattern('gone', '消滅（前年度にあり、この年度に無い）', newGoneDisabled ? null : counts.isGone, newGoneDisabled)}
+        </div>
+        <div className={section}>
+          <h3 className={heading}>要求額の前年度予算額比</h3>
+          <select
+            value={filters.change}
+            onChange={e => set({ change: e.target.value as ChangeFilter })}
+            aria-label="要求額の前年度予算額比"
+            className="rounded border border-neutral-300 bg-white px-2 py-1 text-xs dark:border-neutral-700 dark:bg-neutral-900"
+          >
+            <option value="">指定なし</option>
+            <option value="up10">+10%以上</option>
+            <option value="up50">+50%以上</option>
+            <option value="dn10">−10%以下</option>
+            <option value="dn50">−50%以下</option>
+          </select>
+        </div>
+        <div className={section}>
+          <h3 className={heading}>データの状態</h3>
+          <label className={row}>
+            <input type="checkbox" checked={filters.shared} onChange={e => set({ shared: e.target.checked })} />
+            複数書（同じ所管の複数の要求書に載る）
+            <span className={count}>{counts.shared}</span>
+          </label>
+          <label className={row}>
+            <input type="checkbox" checked={filters.mismatch} onChange={e => set({ mismatch: e.target.checked })} />
+            額不一致（持ち分以外で、書によって金額が違う）
+            <span className={count}>{counts.mismatch}</span>
+          </label>
+          <label className={row}>
+            <input type="checkbox" checked={filters.shares} onChange={e => set({ shares: e.target.checked })} />
+            持ち分（各府省の持ち分と合計の書）
+            <span className={count}>{counts.shares}</span>
+          </label>
+          <label className={row}>
+            <input type="checkbox" checked={filters.transfer} onChange={e => set({ transfer: e.target.checked })} />
+            繰入（目に「繰入」を含む）
+            <span className={count}>{counts.transfer}</span>
+          </label>
+          <label className={row}>
+            <input type="checkbox" checked={filters.codeChange} onChange={e => set({ codeChange: e.target.checked })} />
+            所管コードの変更（前の年度から）
+            <span className={count}>{counts.codeChange}</span>
+          </label>
+          <label className={row}>
+            <input type="checkbox" checked={filters.newAcct} onChange={e => set({ newAcct: e.target.checked })} />
+            会計・勘定の新設（この年度に初出）
+            <span className={count}>{counts.newAcct}</span>
+          </label>
+          <label className={row}>
+            <input type="checkbox" checked={filters.moved} onChange={e => set({ moved: e.target.checked })} />
+            移管・改称（前の項からつないだ）
+            <span className={count}>{counts.moved}</span>
+          </label>
+          <label className={row}>
+            <input type="checkbox" checked={filters.imagePage} onChange={e => set({ imagePage: e.target.checked })} />
+            画像頁（PDF の該当頁に文字層なし）
+            <span className={count}>{counts.imagePage}</span>
+          </label>
+          <label className={row}>
+            <input type="checkbox" checked={filters.noPdfPage} onChange={e => set({ noPdfPage: e.target.checked })} />
+            PDF頁なし（頁が引けず、リンクは先頭）
+            <span className={count}>{counts.noPdfPage}</span>
+          </label>
+          <label className={row}>
+            <input type="checkbox" checked={filters.jikou} onChange={e => set({ jikou: e.target.checked })} />
+            事項要求（備考に記載がある）
+            <span className={count}>{counts.jikou}</span>
+          </label>
+        </div>
+      </div>
+    </div>
+  );
+}
