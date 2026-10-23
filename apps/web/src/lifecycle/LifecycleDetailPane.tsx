@@ -61,7 +61,7 @@ function StageCard({ s }: { s: StageStatus }) {
 }
 
 const EVIDENCE_LABEL: Record<LifecycleLinkEvidence, string> = {
-  same_key: '同じ鍵（所管・組織・項コード・項名。特別会計は特別会計・勘定・項コード・項名）',
+  same_key: '同じ鍵（所管・組織・項コード・項名。特別会計は特別会計・勘定・項コード・項名。概算要求のみの項は、所属・項名）',
   same_name_other_code: '同じ所管・組織で項名が同じ（項コードが違う）',
   same_name_other_org: '項名が同じ（所管・組織が違う）',
   prev_amount_eq_revised: '次の年度の予算書の前年度予算額 = 前の年度の改予算額',
@@ -97,7 +97,7 @@ function LinksSection({ kou, data, links, selfIndex, onNavigate }: { kou: Lifecy
                   </button>
                 ) : <span className="text-neutral-500">対応先の候補なし</span>}
               </p>
-              {partner && <p className="text-[11px] text-neutral-500">{kouTitle(partner)} · 項コード {partner.code}</p>}
+              {partner && <p className="text-[11px] text-neutral-500">{kouTitle(partner)} · {partner.requestOnly ? '概算要求のみ（予算書の項コードなし）' : `項コード ${partner.code}`}</p>}
               {l.evidence.length > 0 && (
                 <ul className="list-disc pl-4 text-[11px] text-neutral-600 dark:text-neutral-300">
                   {l.evidence.map(e => <li key={e}>{EVIDENCE_LABEL[e]}</li>)}
@@ -129,7 +129,7 @@ export function LifecycleDetailPane({ kou, events: unsorted, coverage, data, lin
   return (
     <div className="flex flex-col gap-5 p-4 text-xs">
       <div>
-        <p className="text-[11px] text-neutral-500">{kouTitle(kou)} · 項コード {kou.code} · FY{kou.year}</p>
+        <p className="text-[11px] text-neutral-500">{kouTitle(kou)} · {kou.requestOnly ? '概算要求のみ（予算書の項コードなし）' : `項コード ${kou.code}`} · FY{kou.year}</p>
         <h2 className="text-base font-semibold">{kou.name}</h2>
       </div>
 

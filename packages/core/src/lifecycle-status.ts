@@ -8,6 +8,8 @@ import { LIFECYCLE_STAGES, LIFECYCLE_STAGE_LABEL, type LifecycleStage } from './
 
 /** 値が無い理由（確かめられた範囲） */
 export type AbsenceReason =
+  /** 概算要求書にだけある項: 予算書の項に結べていないので、政府案・補正・決算の値は結んでいない */
+  | 'request_only'
   /** 概算要求: 項が政府案に無いので、突合の対象外（突合は政府案の項を対象にする） */
   | 'not_compared'
   /** 概算要求: 同じ年度・同じ所管の政府案の項のうち、突合できた要求の項が 0 件（概算要求書が取り込めていない可能性） */
@@ -88,6 +90,13 @@ function absence(stage: LifecycleStage, kou: LifecycleKou, cov: LifecycleCoverag
     return { reason: 'unknown', badge: '現行データに値なし（理由未確定）', detail: `この年度・会計では、${LIFECYCLE_STAGE_LABEL[stage]}の値が、現行データのどの項にも入っていない。` };
   }
   const has = (s: LifecycleStage) => kou.seenIn.includes(s);
+  if (kou.requestOnly && stage !== 'request') {
+    return {
+      reason: 'request_only',
+      badge: '予算書に対応なし（概算要求のみ）',
+      detail: `この項は概算要求書にだけある（${kou.requestOnly === 'zero' ? '前年度・要求とも 0' : '予算書の項との突合で、名前の候補が見つからなかった'}）。予算書の項に結べていないので、${LIFECYCLE_STAGE_LABEL[stage]}の値は結んでいない（0 ではない）。名称の変更・統合・組み替えなどで見つからない可能性があるが、確かめていない。`,
+    };
+  }
   if (stage === 'request') {
     if (!has('budget')) {
       return {
@@ -143,13 +152,14 @@ export function lifecycleStageStatuses(kou: LifecycleKou, events: readonly Lifec
 }
 
 /** 一覧の絞り込み（欠落パターン）。定義は `LIFECYCLE_PATTERNS` */
-export type LifecyclePattern = 'all' | 'all_stages' | 'partial' | 'no_budget' | 'settle_only';
+export type LifecyclePattern = 'all' | 'all_stages' | 'partial' | 'no_budget' | 'request_only' | 'settle_only';
 
 export const LIFECYCLE_PATTERNS: { id: LifecyclePattern; label: string; definition: string }[] = [
   { id: 'all', label: 'すべて', definition: '' },
   { id: 'all_stages', label: '全段階に値あり', definition: '概算要求・政府案・補正・決算のすべてに、この項の値がある' },
   { id: 'partial', label: '一部の段階に値なし', definition: 'どれかの段階に、この項の値が無い（理由は問わない）' },
-  { id: 'no_budget', label: '政府案の値なし', definition: '政府案の CSV に同じ鍵の行が無い（補正・決算にだけある項など）' },
+  { id: 'no_budget', label: '政府案の値なし', definition: '政府案に値が無い（補正・決算にだけある項、概算要求書にだけある項など）' },
+  { id: 'request_only', label: '概算要求のみ', definition: '概算要求書にだけある項（予算書の項に突合できなかった）' },
   { id: 'settle_only', label: '決算の値のみ', definition: '決算にだけ値があり、概算要求・政府案・補正のどれにも値が無い' },
 ];
 
@@ -160,12 +170,13 @@ export function lifecyclePatternMatches(kou: LifecycleKou, p: LifecyclePattern):
     case 'all_stages': return LIFECYCLE_STAGES.every(has);
     case 'partial': return !LIFECYCLE_STAGES.every(has);
     case 'no_budget': return !has('budget');
+    case 'request_only': return kou.requestOnly !== undefined;
     case 'settle_only': return has('settle') && !has('request') && !has('budget') && !has('supp');
   }
 }
 
 export function lifecyclePatternCounts(kous: readonly LifecycleKou[]): Record<LifecyclePattern, number> {
-  const out = { all: 0, all_stages: 0, partial: 0, no_budget: 0, settle_only: 0 } as Record<LifecyclePattern, number>;
+  const out = { all: 0, all_stages: 0, partial: 0, no_budget: 0, request_only: 0, settle_only: 0 } as Record<LifecyclePattern, number>;
   for (const k of kous) for (const p of LIFECYCLE_PATTERNS) if (lifecyclePatternMatches(k, p.id)) out[p.id]++;
   return out;
 }

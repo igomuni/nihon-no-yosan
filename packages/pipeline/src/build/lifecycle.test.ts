@@ -2,6 +2,7 @@ import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
+import type { BudgetRequestMofRow } from '@nihon-no-yosan/core';
 import { LIFECYCLE_YEARS, buildLifecycle } from './lifecycle.ts';
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'lifecycle-test-'));
@@ -75,5 +76,21 @@ describe('buildLifecycle', () => {
   it('writes the difference between the 政府案 and the request as a derived value', () => {
     const k = r.kous.findIndex(x => x.year === y && x.account === 'general' && x.code === '010');
     expect(r.events.find(e => e[0] === k && e[5] === 'assessment_gap')!.slice(8, 10)).toEqual([5000, 'derived']);
+  });
+
+  describe('with a request-only 項', () => {
+    const row = (o: Partial<BudgetRequestMofRow>): BudgetRequestMofRow => ({ y, kind: 'reqOnly', acct: 0, grp: '内閣府', min: '内閣府', sub: '', org: '本府', name: '要求だけの項', mof: null, mofPrev: null, req: 70, reqPrev: 60, books: [[0, '1', '2', 70]], types: [], nJikou: 0, nMoku: 0, ...o });
+    const rr = buildLifecycle({ datasetDir: tmp, requestOfMofRow: request, requestOnlyRows: [row({}), row({ kind: 'zero', name: '額0の項', req: 0, reqPrev: 0 }), row({ name: '額が読めない項', req: null })] });
+
+    it('adds the 項 with only the request stage, keeps a request of 0 as a value, and skips a row without an amount', () => {
+      const only = rr.kous.filter(k => k.requestOnly !== undefined && k.year === y);
+      expect(only.map(k => [k.name, k.code, k.seenIn.join(','), k.requestOnly])).toEqual([['要求だけの項', '', 'request', 'reqOnly'], ['額0の項', '', 'request', 'zero']]);
+      const i = rr.kous.findIndex(k => k.name === '額0の項');
+      expect(rr.events.filter(e => e[0] === i).map(e => [e[1], e[5], e[8], e[9]])).toEqual([['request', 'request_amount', 0, 'original'], ['request', 'request_prev', 0, 'original']]);
+    });
+
+    it('does not change the 項 built from the 予算書', () => {
+      expect(rr.kous.filter(k => k.requestOnly === undefined)).toEqual(r.kous);
+    });
   });
 });
