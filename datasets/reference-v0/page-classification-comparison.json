@@ -1,0 +1,38 @@
+{
+ "comparedWith": {
+  "repository": "igomuni/marumie-rssystem",
+  "commit": "3aef2de9d0f08a438c94efd32a3c0bc2ae33af19"
+ },
+ "manifest": {
+  "path": "datasets/reference-v0/manifest.json",
+  "sha256": "99797aacef28584f35b9155034f8a2cab303b8180396315e8adb62076f7d8016"
+ },
+ "years": {
+  "2023": {
+   "comparedWith": "tests/fixtures/budget-request-cover-toc-structure/2023/structure-inventory.json",
+   "coverTocPages": 159,
+   "allEqual": true
+  },
+  "2024": {
+   "comparedWith": "tests/fixtures/budget-request-cover-toc-structure/2024/structure-inventory.json",
+   "coverTocPages": 154,
+   "allEqual": true
+  },
+  "2025": {
+   "comparedWith": "tests/fixtures/budget-request-cover-toc-structure/2025/structure-inventory.json",
+   "coverTocPages": 163,
+   "allEqual": true
+  },
+  "2026": {
+   "comparedWith": "tests/fixtures/budget-request-cover-toc-structure/2026/structure-inventory.json",
+   "coverTocPages": 163,
+   "allEqual": true
+  },
+  "2027": {
+   "comparedWith": "tests/fixtures/budget-request-cover-toc-structure/2027/structure-inventory.json",
+   "coverTocPages": 152,
+   "allEqual": true
+  }
+ },
+ "allEqual": true
+}

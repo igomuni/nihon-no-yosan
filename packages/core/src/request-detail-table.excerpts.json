@@ -1,0 +1,114 @@
+{
+ "context.txt": [
+  {
+   "file": "npa.go.jp__policies__budget__r6__gaisanyokyu__hukkoutokubetukaikei.txt",
+   "page": 5,
+   "lines": "0-11",
+   "year": 2024
+  }
+ ],
+ "continuation.txt": [
+  {
+   "file": "mlit.go.jp__page__content__001630395.txt",
+   "page": 10,
+   "lines": "0-6",
+   "year": 2024
+  }
+ ],
+ "wide-triangle.txt": [
+  {
+   "file": "mlit.go.jp__page__content__001630995.txt",
+   "page": 1068,
+   "lines": "0-5",
+   "year": 2024
+  }
+ ],
+ "edges.txt": [
+  {
+   "file": "reconstruction.go.jp__files__user__topics__2023_fukkochougaisansaisyutsu.txt",
+   "page": 103,
+   "lines": "0-30",
+   "year": 2024
+  }
+ ],
+ "arith.txt": [
+  {
+   "file": "cfa.go.jp__assets__contents__node__basic_page__field_ref_resources__88749a20-e454-4a5b-9da8-3a32e1788a23__585bb95a__20230907_policies_budget_04.txt",
+   "page": 91,
+   "lines": "0-14",
+   "year": 2024
+  }
+ ],
+ "undetermined.txt": [
+  {
+   "file": "mlit.go.jp__page__content__001630995.txt",
+   "page": 533,
+   "lines": "0-16",
+   "year": 2024
+  }
+ ],
+ "not-aligned.txt": [
+  {
+   "file": "mext.go.jp__content__20230914-mxt_kaikesou01-000031817_03.txt",
+   "page": 1128,
+   "lines": "0-44",
+   "year": 2024
+  }
+ ],
+ "no-boundary.txt": [
+  {
+   "file": "mext.go.jp__content__20230914-mxt_kaikesou01-000031817_03.txt",
+   "page": 1,
+   "lines": "0-15",
+   "year": 2024
+  }
+ ],
+ "2027/courts-header-number-on-third-line.txt": [
+  {
+   "file": "courts.go.jp__assets__R09saishutsu_gaisanyokyusho_468kb.txt",
+   "page": 8,
+   "lines": "0-32",
+   "year": 2027
+  }
+ ],
+ "2027/courts-header-split-two-line.txt": [
+  {
+   "file": "courts.go.jp__assets__R09saishutsu_gaisanyokyusho_468kb.txt",
+   "page": 52,
+   "lines": "0-49",
+   "year": 2027
+  }
+ ],
+ "2027/mlit-blank-request-neighbour-pages.txt": [
+  {
+   "file": "mlit.go.jp__page__content__002021868.txt",
+   "page": 443,
+   "lines": "0-12",
+   "year": 2027
+  },
+  {
+   "file": "mlit.go.jp__page__content__002021868.txt",
+   "page": 444,
+   "lines": "0-46",
+   "year": 2027
+  },
+  {
+   "file": "mlit.go.jp__page__content__002021868.txt",
+   "page": 445,
+   "lines": "0-15",
+   "year": 2027
+  },
+  {
+   "file": "mlit.go.jp__page__content__002021868.txt",
+   "page": 446,
+   "lines": "0-9",
+   "year": 2027
+  },
+  {
+   "file": "mlit.go.jp__page__content__002021868.txt",
+   "page": 447,
+   "lines": "0-17",
+   "year": 2027
+  }
+ ]
+}
