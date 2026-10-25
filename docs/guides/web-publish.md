@@ -15,7 +15,23 @@ Releases (dataset-reference-v0)          リポジトリ                       C
                                                                             ⑤ GitHub Pages に配る
 ```
 
-`main` に入るたびに動く（手動でも動かせる）。基準データを更新したときは、新しい tar.gz を同じ手順で作り直し、`release.json`・`published-manifest.json` を更新する。
+`main` に入るたびに動く（手動でも動かせる）。過去年度のデータも、同じ流れで、もう 1 つの tar.gz（`dataset-mof-history-v0`）から取り込む（下の「過去年度のデータ」）。基準データを更新したときは、新しい tar.gz を同じ手順で作り直し、`release.json`・`published-manifest.json` を更新する。
+
+## 過去年度のデータ（FY2017〜FY2022）
+
+基準データ（FY2023 以降）とは別のデータセット `mof-history-v0`（`docs/guides/mof-history.md`）を、同じやり方で配る。財務省の予算書・決算書データベースの公式 CSV・XML から作った CSV だけ（PDF・原本は入れない）。
+
+```bash
+node packages/pipeline/src/migrate/package-history.ts data/dataset/mof-history-v0 datasets/mof-history-v0/manifest.json datasets/terms.json <出力ディレクトリ>
+gh release create dataset-mof-history-v0 <出力ディレクトリ>/mof-history-v0.tar.gz --title ... --notes-file ...
+cp <出力ディレクトリ>/release.json datasets/mof-history-v0/release.json
+```
+
+- **入れるもの:** `datasets/mof-history-v0/manifest.json` の全ファイル（138 件）と `manifest.json`。計 139 ファイル、4.9 MB（tar.gz）。
+- **公開してよい条件:** `terms.json` で `bb.mof.go.jp` が `pdl1.0`・`page-read`（利用条件の本文を読んだ）。違えば `package-history.ts` が止まる。
+- **照合:** 作る前に、ディレクトリが manifest と全件一致することを確かめる。CI は、tar.gz の SHA-256 を `release.json` と照合し、展開して `verify.ts` で manifest と全件照合してから、`npm run build:data` に渡す（`build:data` は、過去年度のディレクトリがあるときだけ、FY2017〜FY2022 を足す）。
+- **順序:** Releases に tar.gz を置いてから、`release.json` をコミットした変更を `main` に入れる（置く前に入れると、`main` に入るたびに動く CI がダウンロードに失敗する）。
+- 画面の出典の 1 行と「出典と利用条件」のページは、財務省の予算書・決算書データベース（PDL1.0）の表記のまま（過去年度で変わらない）。
 
 ## 基準データの公開分
 

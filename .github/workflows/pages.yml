@@ -2,6 +2,7 @@ name: pages
 
 # main に入ったら、GitHub Releases の基準データ（公開分）から画面用の JSON を作り、GitHub Pages に公開する。
 # 基準データは datasets/reference-v0/release.json の SHA-256 で固定し、公開分の manifest（datasets/reference-v0/published-manifest.json）で全ファイルを照合する。
+# 過去年度（FY2017〜FY2022）の予算書・決算書のデータも、同じやり方（datasets/mof-history-v0/release.json と manifest.json）で取り込む。
 on:
   push:
     branches: [main]
@@ -37,6 +38,17 @@ jobs:
           tar -xzf "$RUNNER_TEMP/reference-v0.tar.gz" -C data/dataset/reference-v0
       - name: Verify the dataset against the published manifest
         run: node packages/pipeline/src/migrate/verify.ts data/dataset/reference-v0 datasets/reference-v0/published-manifest.json
+      - name: Download the past-years dataset (FY2017-FY2022)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag=$(node -p "require('./datasets/mof-history-v0/release.json').tag")
+          gh release download "$tag" --pattern mof-history-v0.tar.gz --dir "$RUNNER_TEMP"
+          echo "$(node -p "require('./datasets/mof-history-v0/release.json').sha256")  $RUNNER_TEMP/mof-history-v0.tar.gz" | sha256sum --check
+          mkdir -p data/dataset/mof-history-v0
+          tar -xzf "$RUNNER_TEMP/mof-history-v0.tar.gz" -C data/dataset/mof-history-v0
+      - name: Verify the past-years dataset against its manifest
+        run: node packages/pipeline/src/migrate/verify.ts data/dataset/mof-history-v0 datasets/mof-history-v0/manifest.json
       - run: npm run build:data
       - run: npm run build
       - uses: actions/upload-pages-artifact@v3

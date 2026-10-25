@@ -21,7 +21,7 @@
 
 ## 過去年度の予算書・決算書（別のデータセット）
 
-FY2017〜FY2022 の項・目の CSV は、基準データ（`reference-v0`）とは別のデータセット `mof-history-v0`（`data/dataset/mof-history-v0/`、git に入れない）に置く。入力の zip の記録と出力の SHA-256 は `datasets/mof-history-v0/`。作り方・確かめたこと・限界は `docs/guides/mof-history.md`。Releases には載せていない（公開するかは未決定）。
+FY2017〜FY2022 の項・目の CSV は、基準データ（`reference-v0`）とは別のデータセット `mof-history-v0`（`data/dataset/mof-history-v0/`、git に入れない）に置く。入力の zip の記録と出力の SHA-256 は `datasets/mof-history-v0/`。作り方・確かめたこと・限界は `docs/guides/mof-history.md`。Releases の `dataset-mof-history-v0` に置いて、公開サイトにも出す（`docs/guides/web-publish.md`）。
 
 ## 公開の関門
 

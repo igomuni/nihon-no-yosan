@@ -9,8 +9,8 @@
 node packages/pipeline/src/build/mof-archive-cli.ts record <zip のディレクトリ> datasets/mof-history-v0/inputs.json 2017 2018 2019 2020 2021 2022
 # 項・目の CSV を作る（記録と違う zip があれば止まる）
 node packages/pipeline/src/build/mof-archive-cli.ts build <zip のディレクトリ> datasets/mof-history-v0/inputs.json data/dataset/mof-history-v0 2017 2018 2019 2020 2021 2022
-# 画面用のデータを、過去年度つきで作る
-npm run build:data:history
+# 画面用のデータを、過去年度つきで作る（`data/dataset/mof-history-v0/` があれば、`build:data` が足す）
+npm run build:data
 ```
 
 - zip のディレクトリには `DL{年}{帳票}.zip` が並ぶ。置き場は `data/dataset/mof-history-v0/`（git に入れない。基準データと同じ扱い）。git には、入力の記録 `datasets/mof-history-v0/inputs.json`（zip 44 本）・`jikou-inputs.json`（当初予算の XML の集合 12 帳票）・`jikou-hosei-inputs.json`（補正予算の XML の集合 24 帳票）と、出力全ファイルの SHA-256 `manifest.json`（138 ファイル）を入れる。
@@ -165,7 +165,7 @@ FY2026 の事項（一般・特別の合計 1,664）は、10 年続く 1,176（7
 
 ## 予算の一生の表への入れ方
 
-- 年度ごとの入力は `HISTORY_SOURCES`（`packages/pipeline/src/build/lifecycle.ts`）。過去年度のデータセットが無い環境（公開サイトのデプロイなど）では、過去年度は作らない（`lifecycleSources(historyDir)`）。
+- 年度ごとの入力は `HISTORY_SOURCES`（`packages/pipeline/src/build/lifecycle.ts`）。過去年度のデータセットが無い環境では、過去年度は作らない（`lifecycleSources(historyDir)`）。公開サイトのデプロイは、Releases の `dataset-mof-history-v0` を取り込むので、過去年度も出る（`web-publish.md`）。
 - **補正が複数回ある年度**: 項ごとに、その項が載る最後の回の行を使う。回が進むと成立予算額は前の回の改予算額になるので、最後の回の改予算額が、その項の補正後の額になる。前の回にだけある項は、その回の行を使う。補正の差引額・追加額・修正減少額は、その最後の回のものだけで、年度の補正の合計ではない（出来事の注に「この項が載る最後の回は第 N 回」と書く）。回をまたぐ合計は作っていない。
 - **政府案の版**（国会への提出時か成立後か）: 版を示す項目は、XML・CSV の中に無い（XML の見出しは `当初予算` だけ）。zip の中の CSV のファイル日付が手がかり（基準データの FY2023・FY2024 を提出時としている根拠と同じ）。
 
@@ -189,5 +189,5 @@ FY2026 の事項（一般・特別の合計 1,664）は、10 年続く 1,176（7
 - 政府案の版（FY2017〜FY2021。上）。
 - FY2018・FY2020 の特別会計の決算が、最初の取得物に無かった理由。
 - 取得日の記録が無い。取得元の URL の形 `https://www.bb.mof.go.jp/server/{年}/csv/{ファイル名}`（XML は `…/xml/{ファイル名}`）は、zip 44 本の全部と、XML の 48 件（年度ごとに 6 件を無作為に選んだ）について、サイトにあり、`Content-Length`（バイト数）が手元のファイルと一致することを確かめた（2026-10-25。ヘッダだけの確認。ファイル本体を取り直しての SHA-256 の比較はしていない）。
-- 利用条件は、基準データの財務省のデータと同じ出どころ（`bb.mof.go.jp`、PDL1.0 と出典の表記。`docs/guides/data.md`）として扱っているが、過去年度のデータセットを公開（Releases）するかは決めていない。公開サイトには、過去年度は載らない。
+- 利用条件は、基準データの財務省のデータと同じ出どころ（`bb.mof.go.jp`、PDL1.0 と出典の表記。`docs/guides/data.md`）として扱っているが。過去年度のデータセットは、Releases に置いて公開する（上の取り込みと `web-publish.md`）。公開の条件は、`terms.json` の `bb.mof.go.jp` が `pdl1.0`・`page-read` であること。
 - 項コードが年度をまたいで同じ項を指すかは、`links`（年度をまたぐ対応）の規則で結んでいるだけで、組替えの確認はしていない（一般会計の当初予算で、隣り合う年度の項の 95〜98% は鍵が同じ。名称が変わった項が年に 5〜46 件）。

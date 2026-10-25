@@ -1,7 +1,7 @@
 /**
  * 画面（apps/web）が読む JSON を、基準データからまとめて作る。
  *
- * 使い方: node packages/pipeline/src/build/web-data-cli.ts <基準データのディレクトリ> <出力ディレクトリ> [terms.json]
+ * 使い方: node packages/pipeline/src/build/web-data-cli.ts <基準データのディレクトリ> <出力ディレクトリ> [terms.json] [過去年度のデータセットのディレクトリ]
  * 基準データのディレクトリ直下の `manifest.json`（公開分の manifest でよい）と `terms.json` から、「出典と利用条件」の `about.json` も作る。
  * 出力:
  *   trend/{kou,jikou,detail}.json.gz   概算要求の年度推移（`docs/guides/trend.md`、`jikou-youkyu.md`、`trend-detail.md`）
@@ -20,8 +20,10 @@ import { buildBudgetRequestMofUi, mofUiMatchesFromDataset } from './mof-ui.ts';
 import { buildBudgetRequestTrend, matchesFromDataset } from './trend.ts';
 import { buildBudgetRequestTrendDetail } from './trend-detail.ts';
 
-const [dataset, outDir, termsPath = path.join('datasets', 'terms.json'), historyDir] = process.argv.slice(2);
+const [dataset, outDir, termsPath = path.join('datasets', 'terms.json'), historyArg] = process.argv.slice(2);
 if (!dataset || !outDir) throw new Error('usage: web-data-cli.ts <dataset> <outDir> [terms.json] [historyDataset]');
+// 過去年度のデータセット（FY2017〜FY2022。`docs/guides/mof-history.md`）は、ディレクトリがあるときだけ使う（無ければ FY2023 以降だけ）
+const historyDir = historyArg && fs.existsSync(historyArg) ? historyArg : undefined;
 
 const matches = matchesFromDataset(dataset);
 const trend = buildBudgetRequestTrend({ datasetDir: dataset, matches });
