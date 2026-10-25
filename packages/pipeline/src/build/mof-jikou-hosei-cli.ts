@@ -35,7 +35,7 @@ if (mode === 'record') {
   for (const y of rest) for (const a of ACCOUNTS) for (const r of roundsOf(y, a)) hosei[hoseiDocumentIdOf(Number(y), a, r)] = buildJikouHosei(target(y, a, r)).record;
   const rec: RecordFile = {
     schema: 'nihon-no-yosan/mof-jikou-hosei-inputs/v0',
-    note: '財務省の予算書【XML版】（補正予算）の目次と XML（手元にあったもの）の SHA-256 と、最初に作ったときの件数。件数は、パーサーが読んだ結果で、独立に確かめたものではない。取得元の URL・取得日の記録は無い',
+    note: '財務省の予算書【XML版】（補正予算）の目次と XML（手元にあったもの）の SHA-256 と、最初に作ったときの件数。件数は、パーサーが読んだ結果で、独立に確かめたものではない。取得日の記録は無い。取得元の URL の形（https://www.bb.mof.go.jp/server/{年}/xml/{ファイル名}）は、年度ごとに 6 件を無作為に選んだ XML 計 48 件について、サイトにあり、バイト数が一致することを確かめた（2026-10-25、ヘッダだけ）',
     hosei,
   };
   fs.writeFileSync(recordPath, JSON.stringify(rec, null, 1) + '\n');
