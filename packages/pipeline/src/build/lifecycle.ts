@@ -33,6 +33,10 @@ import type { MofRowRequest } from './mof-ui.ts';
  */
 export interface LifecycleSource {
   year: number;
+  /** `history`: 財務省の過去年度の CSV（`mof-history` のデータセット。概算要求書の無い年度）。省略は基準データ */
+  root?: 'history';
+  /** 政府案の版。省略は国会への提出時（`submitted`）。過去年度は、提出時か成立後か確かめていない（`unconfirmed`） */
+  budgetVersion?: 'submitted' | 'unconfirmed';
   budget: string | null;
   supp: Partial<Record<'general' | 'special', string>>;
   settle: Partial<Record<'general' | 'special', string>>;
@@ -46,6 +50,25 @@ export const LIFECYCLE_SOURCES: readonly LifecycleSource[] = [
   { year: 2027, budget: null, supp: {}, settle: {} },
 ];
 export const LIFECYCLE_YEARS: readonly number[] = LIFECYCLE_SOURCES.map(s => s.year);
+
+/**
+ * 概算要求書の無い過去年度（財務省の公式 CSV だけ。`docs/guides/mof-history.md`）。
+ * 特別会計の決算は、FY2018・FY2020 が手元に無い。補正は、年度に複数回あるものがある（回ごとのファイル `kou-*-hosei{,-2,-3}.csv`）。
+ */
+const histories = (year: number, settle: { general?: string; special?: string }): LifecycleSource => ({
+  year, root: 'history', budgetVersion: 'unconfirmed', budget: String(year), supp: both(String(year)), settle,
+});
+export const HISTORY_SOURCES: readonly LifecycleSource[] = [
+  histories(2017, both('2017')),
+  histories(2018, { general: '2018' }),
+  histories(2019, both('2019')),
+  histories(2020, { general: '2020' }),
+  histories(2021, both('2021')),
+  histories(2022, both('2022')),
+];
+
+/** 年度の古い順の入力元。過去年度は、そのデータセット（`historyDir`）がある環境だけ */
+export const lifecycleSources = (historyDir?: string): readonly LifecycleSource[] => (historyDir ? [...HISTORY_SOURCES, ...LIFECYCLE_SOURCES] : LIFECYCLE_SOURCES);
 
 /** 概算要求書にだけある項の行（予算書の項に結べていない）。`noBudget` = その年度の予算書が基準データに無い */
 export interface LifecycleRequestOnlyRow {
@@ -147,21 +170,42 @@ const intOf = (s: string | undefined): number | null => {
   return Number(t);
 };
 
-export function buildLifecycle({ datasetDir, requestOfMofRow, requestOnlyRows = [], sources = LIFECYCLE_SOURCES }: { datasetDir: string; requestOfMofRow: ReadonlyMap<string, MofRowRequest>; requestOnlyRows?: readonly LifecycleRequestOnlyRow[]; sources?: readonly LifecycleSource[] }): LifecycleData {
+export function buildLifecycle({ datasetDir, historyDir, requestOfMofRow, requestOnlyRows = [], sources = lifecycleSources(historyDir) }: { datasetDir: string; historyDir?: string | undefined; requestOfMofRow: ReadonlyMap<string, MofRowRequest>; requestOnlyRows?: readonly LifecycleRequestOnlyRow[]; sources?: readonly LifecycleSource[] }): LifecycleData {
   const kous: LifecycleKou[] = [];
   const events: LifecycleEventRow[] = [];
   const checks: LifecycleCheck[] = [];
   // 設定にあるファイルは、無ければ止める（空の入力を 0 件として通さない）。設定に無い段階は、読まない
-  const rd = (dir: string | null | undefined, file: string): Rec[] => (dir ? readCsv(fs.readFileSync(path.join(datasetDir, 'mof-archive', dir, file), 'utf8')) : []);
-  /** 出典の表記。年度と同じ名前のディレクトリは、ファイル名だけ（FY2023・FY2024 の出力を変えない） */
-  const fileLabel = (dir: string, year: number, file: string): string => (dir === String(year) ? file : `${dir}/${file}`);
+  const rootOf = (source: LifecycleSource): string => {
+    if (source.root !== 'history') return datasetDir;
+    if (!historyDir) throw new Error(`${source.year}: 過去年度のデータセット（historyDir）が無い`);
+    return historyDir;
+  };
+  /** ファイルが無ければ空（`optional`）か、止める */
+  const rd = (root: string, dir: string | null | undefined, file: string, optional = false): Rec[] => {
+    if (!dir) return [];
+    const f = path.join(root, 'mof-archive', dir, file);
+    if (optional && !fs.existsSync(f)) return [];
+    return readCsv(fs.readFileSync(f, 'utf8'));
+  };
+  /** 出典の表記。年度と同じ名前のディレクトリは、ファイル名だけ（FY2023・FY2024 の出力を変えない）。過去年度のデータセットは `history:` を付ける */
+  const fileLabel = (source: LifecycleSource, dir: string, file: string): string => {
+    const label = dir === String(source.year) ? file : `${dir}/${file}`;
+    return source.root === 'history' ? `history:${source.year}/${label}` : label;
+  };
 
   for (const source of sources) {
     const year = source.year;
+    const root = rootOf(source);
     for (const account of ACCOUNTS) {
-      const base = rd(source.budget, `kou-${account}.csv`);
-      const supp = rd(source.supp[account], `kou-${account}-hosei.csv`);
-      const settle = rd(source.settle[account], `kou-${account}-kessan.csv`);
+      const base = rd(root, source.budget, `kou-${account}.csv`);
+      // 補正は回ごとのファイル（`-hosei`、`-hosei-2`、…）。回が続く限り読む
+      const suppRounds: Rec[][] = [rd(root, source.supp[account], `kou-${account}-hosei.csv`)];
+      for (let round = 2; suppRounds[round - 2]!.length > 0; round++) {
+        const rows = rd(root, source.supp[account], `kou-${account}-hosei-${round}.csv`, true);
+        if (rows.length === 0) break;
+        suppRounds.push(rows);
+      }
+      const settle = rd(root, source.settle[account], `kou-${account}-kessan.csv`);
       const tally = new Map<string, LifecycleCheck>();
       const check = (name: string, ok: boolean): void => {
         const c = tally.get(name) ?? { year, account, name, ok: 0, ng: 0 };
@@ -205,13 +249,13 @@ export function buildLifecycle({ datasetDir, requestOfMofRow, requestOnlyRows = 
       base.forEach((r, n) => {
         const i = addKou(r, 'budget');
         budgetIndex.set(keyOf(r, account), i);
-        const src = `${fileLabel(source.budget!, year, `kou-${account}.csv`)}:${n + 1}`;
+        const src = `${fileLabel(source, source.budget!, `kou-${account}.csv`)}:${n + 1}`;
         const note = `目の合計（目の行 ${r['目の行数'] ?? ''}）`;
-        const amt = colOf(r, k => k.startsWith('令和') && /(要求額|予定額)/.test(k) && k.includes('合計'));
+        const amt = colOf(r, k => /^(令和|平成)(元|\d+)年度/.test(k) && /(要求額|予定額)/.test(k) && k.includes('合計'));
         const prev = colOf(r, k => k.startsWith('前年度予算額'));
         for (const [m, c] of [['budget_amount', amt], ['budget_prev', prev]] as const) {
           const v = c === undefined ? null : intOf(r[c]);
-          if (v !== null) push(i, 'budget', 'submitted', '', m, String(r[c!]), v * 1000, 'derived', src, note);
+          if (v !== null) push(i, 'budget', source.budgetVersion ?? 'submitted', '', m, String(r[c!]), v * 1000, 'derived', src, note);
         }
         // 概算要求（突合できたものだけ）
         const rq = requestOfMofRow.get(`${year}|kou-${account}:${n + 1}`);
@@ -223,12 +267,28 @@ export function buildLifecycle({ datasetDir, requestOfMofRow, requestOnlyRows = 
         }
       });
 
-      // 成立・補正。額は千円
+      // 成立・補正。額は千円。補正が年度に複数回あるときは、項ごとに、その項が載る最後の回の行を使う（回が進むと「成立予算額」は前の回の「改予算額」になる。
+      // 前の回にだけある項は、その回の行を使う）。項が連続する回に載るときは、次の回の成立予算額 = 前の回の改予算額かを検算する
       const suppVals = new Map<number, Record<string, number>>();
-      supp.forEach((r, n) => {
-        const i = addKou(r, 'supp');
-        const src = `${fileLabel(source.supp[account]!, year, `kou-${account}-hosei.csv`)}:${n + 1}`;
-        const note = `目の合計（目の行 ${r['目の行数'] ?? ''}）`;
+      const suppRowOf = (r: Rec, k: string): number | null => { const c = colOf(r, x => x.includes(k)); return c === undefined ? null : intOf(r[c]); };
+      const latest = new Map<number, { round: number; n: number; r: Rec }>();
+      suppRounds.forEach((rows, ri) => {
+        rows.forEach((r, n) => {
+          const i = addKou(r, 'supp');
+          const before = latest.get(i);
+          if (before && before.round === ri) {
+            // 前の回の改予算額 = この回の成立予算額
+            const prevRevised = suppRowOf(before.r, '改');
+            const enacted = suppRowOf(r, '成立予算額');
+            if (prevRevised !== null && enacted !== null) check('supp_chain', prevRevised === enacted);
+          }
+          latest.set(i, { round: ri + 1, n, r });
+        });
+      });
+      for (const [i, { round, n, r }] of latest) {
+        const file = round === 1 ? `kou-${account}-hosei.csv` : `kou-${account}-hosei-${round}.csv`;
+        const src = `${fileLabel(source, source.supp[account]!, file)}:${n + 1}`;
+        const note = `目の合計（目の行 ${r['目の行数'] ?? ''}）${suppRounds.length > 1 ? `。補正は年度に ${suppRounds.length} 回、この項が載る最後の回は第 ${round} 回` : ''}`;
         const cols: [LifecycleMeasure, string | undefined][] = [
           ['enacted_amount', colOf(r, k => k.includes('成立予算額'))],
           ['supp_add', colOf(r, k => k.includes('追加額'))],
@@ -248,11 +308,12 @@ export function buildLifecycle({ datasetDir, requestOfMofRow, requestOnlyRows = 
         const need = ['enacted_amount', 'supp_add', 'supp_reduce', 'supp_net', 'revised_amount'];
         if (need.every(m => v[m] !== undefined)) check('supp_identity', v['enacted_amount']! + v['supp_net']! === v['revised_amount']! && v['supp_add']! + v['supp_reduce']! === v['supp_net']!);
         const b = budgetIndex.get(keyOf(r, account));
-        if (b !== undefined && v['enacted_amount'] !== undefined) {
+        // 第 1 回の成立予算額は当初予算の額のはず。第 2 回以降は前の回の改予算額なので、比べない
+        if (round === 1 && b !== undefined && v['enacted_amount'] !== undefined) {
           const bv = events.find(e => e[0] === b && e[5] === 'budget_amount');
           if (bv) check('enacted_eq_budget', bv[8] === v['enacted_amount'] * 1000);
         }
-      });
+      }
 
       // 決算。額は円。特別会計の共管は、組織ごとの行を `part` で分ける
       const settleRows = new Map<number, number[]>();
@@ -262,7 +323,7 @@ export function buildLifecycle({ datasetDir, requestOfMofRow, requestOnlyRows = 
       });
       settle.forEach((r, n) => {
         const i = index.get(keyOf(r, account))!;
-        const src = `${fileLabel(source.settle[account]!, year, `kou-${account}-kessan.csv`)}:${n + 1}`;
+        const src = `${fileLabel(source, source.settle[account]!, `kou-${account}-kessan.csv`)}:${n + 1}`;
         const note = `目の合計（目の行 ${r['目の行数'] ?? ''}）`;
         const part = account === 'special' && (r['共管所管名'] || r['共管組織名']) ? `${r['共管所管名'] ?? ''}|${r['共管組織名'] ?? ''}` : '';
         const v: Record<string, number> = {};
@@ -284,7 +345,7 @@ export function buildLifecycle({ datasetDir, requestOfMofRow, requestOnlyRows = 
           const sv = suppVals.get(i);
           if (sv?.['revised_amount'] !== undefined) {
             check('settle_eq_revised', v['appropriation'] === sv['revised_amount'] * 1000);
-            push(i, 'derived', '', '', 'settle_vs_revised', String(v['appropriation'] - sv['revised_amount'] * 1000), v['appropriation'] - sv['revised_amount'] * 1000, 'derived', `${src} − ${fileLabel(source.supp[account]!, year, `kou-${account}-hosei.csv`)}`, '決算の歳出予算額 − 改予算額 × 1,000');
+            push(i, 'derived', '', '', 'settle_vs_revised', String(v['appropriation'] - sv['revised_amount'] * 1000), v['appropriation'] - sv['revised_amount'] * 1000, 'derived', `${src} − ${fileLabel(source, source.supp[account]!, 'kou-' + account + '-hosei' + (suppRounds.length > 1 ? '*' : '') + '.csv')}`, '決算の歳出予算額 − 改予算額 × 1,000');
           } else {
             const b = events.find(e => e[0] === i && e[5] === 'budget_amount');
             if (b) check('settle_eq_budget_when_no_supp', v['appropriation'] === b[8]);
