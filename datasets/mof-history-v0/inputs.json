@@ -54,6 +54,10 @@
    "sha256": "5e407bc9bb202af9b0d16a4c9fbfa95c5a5d18822428fd6822bfbc2779db4200",
    "bytes": 221591
   },
+  "DL201878001.zip": {
+   "sha256": "70285227be8d5e388bcff810fe93ad73d33685b4b11de295aa8f4417f838c651",
+   "bytes": 60045
+  },
   "DL201911001.zip": {
    "sha256": "eab0f8d053f38f270ac591d13ed0f329d1195729808193c0c072c925fc429b6e",
    "bytes": 160845
@@ -113,6 +117,10 @@
   "DL202077001.zip": {
    "sha256": "07c15708dfc0bb08774fa3233aa84b04212a502cbe53f77f05843fee7b908fbd",
    "bytes": 230961
+  },
+  "DL202078001.zip": {
+   "sha256": "45fa8d2b8f893ccefeafcc8fa483539fe6ae18b5fed869b0fa88db3933a49ead",
+   "bytes": 59170
   },
   "DL202111001.zip": {
    "sha256": "bf7f1cc67f9f57d044c29c2567ce56049ed3a323284d79a20685467fa57fa981",

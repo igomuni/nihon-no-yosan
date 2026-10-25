@@ -53,16 +53,16 @@ export const LIFECYCLE_YEARS: readonly number[] = LIFECYCLE_SOURCES.map(s => s.y
 
 /**
  * 概算要求書の無い過去年度（財務省の公式 CSV だけ。`docs/guides/mof-history.md`）。
- * 特別会計の決算は、FY2018・FY2020 が手元に無い。補正は、年度に複数回あるものがある（回ごとのファイル `kou-*-hosei{,-2,-3}.csv`）。
+ * 補正は、年度に複数回あるものがある（回ごとのファイル `kou-*-hosei{,-2,-3}.csv`）。
  */
 const histories = (year: number, settle: { general?: string; special?: string }): LifecycleSource => ({
   year, root: 'history', budgetVersion: 'unconfirmed', budget: String(year), supp: both(String(year)), settle,
 });
 export const HISTORY_SOURCES: readonly LifecycleSource[] = [
   histories(2017, both('2017')),
-  histories(2018, { general: '2018' }),
+  histories(2018, both('2018')),
   histories(2019, both('2019')),
-  histories(2020, { general: '2020' }),
+  histories(2020, both('2020')),
   histories(2021, both('2021')),
   histories(2022, both('2022')),
 ];

@@ -78,6 +78,10 @@
    "sha256": "8d2bb19cb445581ba4804bad58e1856d2edd7b046187405d103ae46d5bf9c9ec",
    "bytes": 1111
   },
+  "mof-archive/2018/kou-special-kessan.csv": {
+   "sha256": "f005394b7a254b34f23072b57c644d7f2f215cc10923fc03e7bc72ebb91a286b",
+   "bytes": 76905
+  },
   "mof-archive/2018/kou-special.csv": {
    "sha256": "9cbc52142da7d316d4adb9c9a835403bb4df14d6c321f841401700d68602912f",
    "bytes": 42162
@@ -106,13 +110,17 @@
    "sha256": "81b2b886f58cee5c70df04e06360480987635120833d98cec9d515fc8f0a687f",
    "bytes": 1528
   },
+  "mof-archive/2018/moku-special-kessan.csv": {
+   "sha256": "00c3ff85adcfc4b16a819f3fb428942ab35067cd474c4aa35b174832e80501e5",
+   "bytes": 364141
+  },
   "mof-archive/2018/moku-special.csv": {
    "sha256": "80995f1542044e593adf5e8277c8b5b64f1eda12b3fe22707cb9276f900ca74c",
    "bytes": 291006
   },
   "mof-archive/2018/summary.json": {
-   "sha256": "c840d84b6de3568d6b05f7a5cbbc416ba5ef1c03ab618d196e32e4b969481dce",
-   "bytes": 4643
+   "sha256": "237d67c4fe62324f7cbb0cfe3b789be81cbcd15e2a1c49a9ea542ce215e790e1",
+   "bytes": 5302
   },
   "mof-archive/2019/kou-general-hosei.csv": {
    "sha256": "310b3e121730ba1ef8308598b72792ae59ef802d74e01ab9d20bf1c5f1b4bc3b",
@@ -198,6 +206,10 @@
    "sha256": "e74941bff8f418760ee44930959dffa88e511f86664c2bce5f5d07f9d49a05c9",
    "bytes": 12720
   },
+  "mof-archive/2020/kou-special-kessan.csv": {
+   "sha256": "a01470c030d46e578beb38877adc5a2864dd7d5c24c79c70bb7c010be21b6c44",
+   "bytes": 72695
+  },
   "mof-archive/2020/kou-special.csv": {
    "sha256": "6eb6595629d138badec456c5cb2d5ef64c8d5ab96e4a4cd01410bde73c5783e7",
    "bytes": 41360
@@ -234,13 +246,17 @@
    "sha256": "f51a80f04aada79df001f49a0d991af3fead0396d617abd18719980cbd322227",
    "bytes": 23750
   },
+  "mof-archive/2020/moku-special-kessan.csv": {
+   "sha256": "bb08e8b301bcb2712dc86636b7e49ef0207b7b190cacd40c6633c5ee9c46c44a",
+   "bytes": 355817
+  },
   "mof-archive/2020/moku-special.csv": {
    "sha256": "f923c545dc8430fba2e348aad0530ab965441dd1a878b5a3a96820cdc7d7c2a2",
    "bytes": 282685
   },
   "mof-archive/2020/summary.json": {
-   "sha256": "49dd89a3f303d8e6f2ee4d7475feb28acdd66d822086812a01b9f8bd1b7adbd4",
-   "bytes": 5773
+   "sha256": "275dfefbfb4c3e6ba08cdbb26b3b06b4ab559dc21023d141f4a83dec171fc4cd",
+   "bytes": 6432
   },
   "mof-archive/2021/kou-general-hosei.csv": {
    "sha256": "b6b6a8c72f559461341dfdd34a8bb935422ec8aef1a11a5c1d98987db481c0c0",
