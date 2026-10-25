@@ -34,7 +34,7 @@ if (mode === 'record') {
   }
   const rec: Record_ = {
     schema: 'nihon-no-yosan/mof-archive-inputs/v0',
-    note: '財務省の予算書・決算書データベースの公式 CSV の zip（手元にあったもの）。取得元の URL・取得日は記録がない（URL の形は https://www.bb.mof.go.jp/server/{年}/csv/{ファイル名} と推測、未確認）。ここに無い帳票は、手元の取得物に無かったもので、サイトに無いとは確かめていない',
+    note: '財務省の予算書・決算書データベースの公式 CSV の zip（手元にあったもの）。取得日の記録は無い。取得元の URL の形（https://www.bb.mof.go.jp/server/{年}/csv/{ファイル名}）は、44 本の全部について、サイトにあり、バイト数が一致することを確かめた（2026-10-25、ヘッダだけ）。FY2018・FY2020 の特別会計の決算は、最初の取得物に無く、あとからサイトから取得して足した',
     inputs: Object.fromEntries(Object.entries(inputs).sort(([a], [b]) => (a < b ? -1 : 1))),
   };
   fs.writeFileSync(recordPath, JSON.stringify(rec, null, 1) + '\n');

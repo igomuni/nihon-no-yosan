@@ -35,7 +35,7 @@ export interface LifecycleSource {
   year: number;
   /** `history`: 財務省の過去年度の CSV（`mof-history` のデータセット。概算要求書の無い年度）。省略は基準データ */
   root?: 'history';
-  /** 政府案の版。省略は国会への提出時（`submitted`）。過去年度は、提出時か成立後か確かめていない（`unconfirmed`） */
+  /** 政府案の版。省略は国会への提出時（`submitted`）。FY2017〜FY2021 は、提出時か成立後か判定できない（`unconfirmed`） */
   budgetVersion?: 'submitted' | 'unconfirmed';
   budget: string | null;
   supp: Partial<Record<'general' | 'special', string>>;
@@ -56,7 +56,9 @@ export const LIFECYCLE_YEARS: readonly number[] = LIFECYCLE_SOURCES.map(s => s.y
  * 補正は、年度に複数回あるものがある（回ごとのファイル `kou-*-hosei{,-2,-3}.csv`）。
  */
 const histories = (year: number, settle: { general?: string; special?: string }): LifecycleSource => ({
-  year, root: 'history', budgetVersion: 'unconfirmed', budget: String(year), supp: both(String(year)), settle,
+  // 政府案の版: FY2022 は zip の中の CSV の日付が 2022-01-19（FY2023 は 2023-01-24、FY2024 は 2024-01-17 で、基準データはこの日付を根拠に提出時としている）なので提出時。
+  // FY2017〜FY2021 は、日付が再作成日（2022-02-22）で、版を判定できない
+  year, root: 'history', budgetVersion: year >= 2022 ? 'submitted' : 'unconfirmed', budget: String(year), supp: both(String(year)), settle,
 });
 export const HISTORY_SOURCES: readonly LifecycleSource[] = [
   histories(2017, both('2017')),
