@@ -145,9 +145,9 @@ function Mark({ shape, x, y, className }: { shape: (typeof TREND_SERIES)[number]
 
 /**
  * 項の年度推移（折れ線）。横軸は、確定した対応でたどれた年度（連続）、縦軸は円（0 から。1 本の軸）。値が無い年度は、線をつながず（補間しない）、印も置かない。
- * 印は 1 つずつ、値をツールチップ（title）に持つ。線の太さは 2px。選んだ年度は、縦の破線。
+ * 印は 1 つずつ、値をツールチップ（title）に持つ。線の太さは 2px。選んだ年度は、縦の破線。年度の列（横軸の年と、その上の帯）を押すと、その年度に移る（`onSelect`）。
  */
-export function TrendChart({ points, current }: { points: readonly TrendPoint[]; current: number }) {
+export function TrendChart({ points, current, onSelect }: { points: readonly TrendPoint[]; current: number; onSelect?: (year: number) => void }) {
   const W = 560, H = 230, top = 12, bottom = 30, left = 74, right = 14;
   const plotW = W - left - right, plotH = H - top - bottom;
   const max = Math.max(1, ...points.flatMap(p => TREND_SERIES.map(s => p[s.key] ?? 0)));
@@ -165,8 +165,17 @@ export function TrendChart({ points, current }: { points: readonly TrendPoint[];
           </g>
         ))}
         {curIdx >= 0 && <line x1={x(curIdx)} x2={x(curIdx)} y1={top} y2={H - bottom} strokeDasharray="4 3" className="stroke-neutral-400" />}
+        {onSelect && points.map((p, i) => {
+          const colW = points.length === 1 ? plotW : plotW / (points.length - 1);
+          return (
+            <g key={`pick-${p.year}`} role="button" tabIndex={0} aria-label={`${p.year}年度を開く`} className="cursor-pointer outline-none [&:focus-visible>rect]:fill-emerald-500/20 [&:hover>rect]:fill-neutral-500/10" onClick={() => onSelect(p.year)} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(p.year); } }}>
+              <title>{`${p.year}年度を開く`}</title>
+              <rect x={x(i) - colW / 2} y={top} width={colW} height={H - top} fill="transparent" />
+            </g>
+          );
+        })}
         {points.map((p, i) => (
-          <text key={p.year} x={x(i)} y={H - bottom + 16} textAnchor="middle" className={`${p.year === current ? ink : muted} text-[10px] ${p.year === current ? 'font-semibold' : ''}`}>{points.length > 7 ? `'${String(p.year).slice(2)}` : p.year}</text>
+          <text key={p.year} x={x(i)} y={H - bottom + 16} textAnchor="middle" className={`pointer-events-none ${p.year === current ? ink : muted} text-[10px] ${p.year === current ? 'font-semibold' : ''}`}>{points.length > 7 ? `'${String(p.year).slice(2)}` : p.year}</text>
         ))}
         {TREND_SERIES.map(s => {
           // 値のある年度が続く区間ごとに線を引く（値の無い年度をまたいで結ばない）

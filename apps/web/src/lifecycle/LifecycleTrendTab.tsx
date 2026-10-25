@@ -59,9 +59,9 @@ export function LifecycleTrendTab({ kou, chain, kous, valuesOf, links, onNavigat
 
       <section className="flex flex-col gap-2" aria-label="段階ごとの額の年度推移">
         <h3 className="font-semibold">段階ごとの額</h3>
-        <TrendChart points={points} current={kou.year} />
+        <TrendChart points={points} current={kou.year} onSelect={y => { const t = rows.find(r => r.k.year === y); if (t && t.k.id !== kou.id) onNavigate(t.k.id); }} />
         <p className="text-[11px] text-neutral-500">
-          縦軸は 0 から。値が無い年度・段階は、線をつながず、印も置いていません（0 ではありません）。{points.length === 1 ? '確認できた年度が 1 年だけなので、線はありません。' : ''}下の表が元の値です。
+          年度の列（または横軸の年）を押すと、その年度に移ります。縦軸は 0 から。値が無い年度・段階は、線をつながず、印も置いていません（0 ではありません）。{points.length === 1 ? '確認できた年度が 1 年だけなので、線はありません。' : ''}下の表が元の値です。
         </p>
       </section>
 
@@ -82,12 +82,16 @@ export function LifecycleTrendTab({ kou, chain, kous, valuesOf, links, onNavigat
                 const selected = k.id === kou.id;
                 const ev = evidenceTo.get(i);
                 return (
-                  <tr key={k.id} className={`border-t border-neutral-100 dark:border-neutral-800 ${selected ? 'bg-emerald-50 dark:bg-emerald-950/40' : ''}`}>
-                    <td className={`${td} whitespace-nowrap`}>
-                      {selected ? <span className="font-semibold">FY{k.year}</span> : (
-                        <button type="button" onClick={() => onNavigate(k.id)} className="text-blue-700 underline decoration-dotted underline-offset-2 hover:text-blue-900 dark:text-blue-400">FY{k.year}</button>
-                      )}
-                    </td>
+                  <tr
+                    key={k.id}
+                    tabIndex={0}
+                    aria-selected={selected}
+                    title={selected ? undefined : `FY${k.year} を開く`}
+                    onClick={() => { if (!selected) onNavigate(k.id); }}
+                    onKeyDown={e => { if ((e.key === 'Enter' || e.key === ' ') && !selected) { e.preventDefault(); onNavigate(k.id); } }}
+                    className={`border-t border-neutral-100 dark:border-neutral-800 ${selected ? 'bg-emerald-50 dark:bg-emerald-950/40' : 'cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/60'}`}
+                  >
+                    <td className={`${td} whitespace-nowrap ${selected ? 'font-semibold' : ''}`}>FY{k.year}</td>
                     <td className={td}>
                       <span className={prev && prev.name !== k.name ? 'font-medium text-amber-700 dark:text-amber-400' : ''} title={prev && prev.name !== k.name ? `前の年度の項名: ${prev.name}` : undefined}>{k.name}</span>
                       {prev && prev.name !== k.name && <span className="ml-1 text-[10px] text-neutral-500">（名称が変わった）</span>}
@@ -105,7 +109,7 @@ export function LifecycleTrendTab({ kou, chain, kous, valuesOf, links, onNavigat
           </table>
         </div>
         <p className="text-[11px] text-neutral-500">
-          年度の間は、確定（<span className="whitespace-nowrap">同じ鍵、または名前と額の根拠がそろった 1 対 1</span>）した対応だけでたどっています。候補はあるが未確定のところ、候補なしのところで止まります。同じ項と確認できた年度の範囲で、事業が同じとは限りません。
+          行を押すと、その年度に移ります。年度の間は、確定（<span className="whitespace-nowrap">同じ鍵、または名前と額の根拠がそろった 1 対 1</span>）した対応だけでたどっています。候補はあるが未確定のところ、候補なしのところで止まります。同じ項と確認できた年度の範囲で、事業が同じとは限りません。
         </p>
       </section>
     </div>
