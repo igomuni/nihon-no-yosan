@@ -1,0 +1,114 @@
+{
+ "schema": "nihon-no-yosan/mof-jikou-inputs/v0",
+ "note": "財務省の予算書【XML版】（当初予算）の目次と XML（手元にあったもの）の SHA-256 と、最初に作ったときの件数。件数は、パーサーが読んだ結果で、独立に確かめたものではない。取得日の記録は無い。取得元の URL の形（https://www.bb.mof.go.jp/server/{年}/xml/{ファイル名}）は、年度ごとに 6 件を無作為に選んだ XML 計 48 件について、サイトにあり、バイト数が一致することを確かめた（2026-10-25、ヘッダだけ）",
+ "jikou": {
+  "201711001": {
+   "documentId": "201711001",
+   "menuSha256": "b7617957b02c921b6a0c4e4fd941d29fc323625e4408637776f350419632c18b",
+   "xmlFiles": 313,
+   "xmlSetSha256": "4b9b11fe6926d9e7bc2da7cf9f1d068c42eeef00ce36ba055d798cd897bc5535",
+   "targetFiles": 90,
+   "notTargetFiles": 223,
+   "records": 1213
+  },
+  "201712001": {
+   "documentId": "201712001",
+   "menuSha256": "1f0b7b36868f21483823f352f93b4ca4f0a614269d0784a0f31e32426139b7c4",
+   "xmlFiles": 290,
+   "xmlSetSha256": "e51b700e31bb66ec760e6964140298fba052ad942992839fe0fbd54e531c25be",
+   "targetFiles": 33,
+   "notTargetFiles": 257,
+   "records": 397
+  },
+  "201811001": {
+   "documentId": "201811001",
+   "menuSha256": "3568766d0806ba01c4fa911e0ac1f8ab6cbfc28249772a9e562df41f107226db",
+   "xmlFiles": 313,
+   "xmlSetSha256": "2de665ac307f84ca131c7e518ca1e73a4c33bd8c1b4315461f5e210faefc631a",
+   "targetFiles": 90,
+   "notTargetFiles": 223,
+   "records": 1200
+  },
+  "201812001": {
+   "documentId": "201812001",
+   "menuSha256": "fe1166f2c815c59444410f47cc7b97bf7865104f5d3aad31d2757ece62a80a13",
+   "xmlFiles": 283,
+   "xmlSetSha256": "5807e3d11bf948eb02e95e361df97b98396aa5c6c55e07d3628aa92f7bd86766",
+   "targetFiles": 33,
+   "notTargetFiles": 250,
+   "records": 388
+  },
+  "201911001": {
+   "documentId": "201911001",
+   "menuSha256": "d0e89995f0e0ac7a430804eba54bdfec74f64d6cca30fd398005ef6351fc4940",
+   "xmlFiles": 315,
+   "xmlSetSha256": "0aaa53df824db78d850368ad2095020e5717336542f19cf7b1a90e11bf8a69a9",
+   "targetFiles": 91,
+   "notTargetFiles": 224,
+   "records": 1225
+  },
+  "201912001": {
+   "documentId": "201912001",
+   "menuSha256": "116aa6733ead0b8693c3a22bf1cadd8ef4d0510caf94c88c45838f30f3f864d5",
+   "xmlFiles": 284,
+   "xmlSetSha256": "d852739dd2c2325a31d2b1681a83c0e57fd9261b2e4d01f617a80d907d24373d",
+   "targetFiles": 33,
+   "notTargetFiles": 251,
+   "records": 386
+  },
+  "202011001": {
+   "documentId": "202011001",
+   "menuSha256": "483b8d9ccc7e5dcabc53e8522c4624fdaa81e505b883045aa3776653769cf210",
+   "xmlFiles": 315,
+   "xmlSetSha256": "fded7c981df573c6fd038c8fbee5dde17c2e43c6a3fd80b62af173689f7283cd",
+   "targetFiles": 91,
+   "notTargetFiles": 224,
+   "records": 1236
+  },
+  "202012001": {
+   "documentId": "202012001",
+   "menuSha256": "affaab43e4e7b696cf7491927ef6b35d20953f16457d7512b7ef40f6726000b8",
+   "xmlFiles": 284,
+   "xmlSetSha256": "11581f07aa79a3796fcb9d52e8701e192454939b251d6fef40cbeedd4e770256",
+   "targetFiles": 33,
+   "notTargetFiles": 251,
+   "records": 381
+  },
+  "202111001": {
+   "documentId": "202111001",
+   "menuSha256": "2d9416f0b1c935b2938ecf2e68d5f1a1148790e6acebc561a7512d69d4d03b0d",
+   "xmlFiles": 328,
+   "xmlSetSha256": "ecc11c53c2645484647557cacffd4de84304ab63d65e0f4f886830e7cd7b1cd0",
+   "targetFiles": 94,
+   "notTargetFiles": 234,
+   "records": 1249
+  },
+  "202112001": {
+   "documentId": "202112001",
+   "menuSha256": "6a04eb3fd0f1ec391358bbc19346c8cd01e793ed2e46b7fa0621f45dd4c571d9",
+   "xmlFiles": 285,
+   "xmlSetSha256": "a693514be71aead2dc5a47a41586725ce0632d49bcf222842dcd29d16bead0eb",
+   "targetFiles": 33,
+   "notTargetFiles": 252,
+   "records": 380
+  },
+  "202211001": {
+   "documentId": "202211001",
+   "menuSha256": "859d7fb90a46c978721c0c13e0321c78197cb23f8e82944b03a0b574f2a3fbc3",
+   "xmlFiles": 328,
+   "xmlSetSha256": "baa30830ee1bd79b2d87c1577948bc0031d1cdbd015d0b9844d25004a1650b3e",
+   "targetFiles": 94,
+   "notTargetFiles": 234,
+   "records": 1275
+  },
+  "202212001": {
+   "documentId": "202212001",
+   "menuSha256": "359d1c61288a9e4b8b25dd7ab902a3d3927d96b822a4d5acd9a3c844a357151a",
+   "xmlFiles": 286,
+   "xmlSetSha256": "209590384d41762c3895d22674da4a5b44ead51fd1d6589b91828b98153b0d4f",
+   "targetFiles": 33,
+   "notTargetFiles": 253,
+   "records": 351
+  }
+ }
+}

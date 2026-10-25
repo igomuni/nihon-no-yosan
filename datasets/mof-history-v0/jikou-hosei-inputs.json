@@ -1,0 +1,222 @@
+{
+ "schema": "nihon-no-yosan/mof-jikou-hosei-inputs/v0",
+ "note": "財務省の予算書【XML版】（補正予算）の目次と XML（手元にあったもの）の SHA-256 と、最初に作ったときの件数。件数は、パーサーが読んだ結果で、独立に確かめたものではない。取得日の記録は無い。取得元の URL の形（https://www.bb.mof.go.jp/server/{年}/xml/{ファイル名}）は、年度ごとに 6 件を無作為に選んだ XML 計 48 件について、サイトにあり、バイト数が一致することを確かめた（2026-10-25、ヘッダだけ）",
+ "hosei": {
+  "201721001": {
+   "documentId": "201721001",
+   "menuSha256": "11b3033dceed0da409f46594ae23ce2f9d46c588f743064bf5ac6c9f9365b901",
+   "xmlFiles": 242,
+   "xmlSetSha256": "7f5d4b7b28ecfa3e50a586c27b287c98f5d3651cf7c1ff633306941a4d2d2800",
+   "targetFiles": 88,
+   "notTargetFiles": 154,
+   "records": 1092
+  },
+  "201722001": {
+   "documentId": "201722001",
+   "menuSha256": "78ed81c46722c5616e6f48602829dc3bf818b6217d24077c201b632df116a5fb",
+   "xmlFiles": 79,
+   "xmlSetSha256": "d41eda2f66572914bf48a90bbd20710d660a10d0f856fed7414bf509906dcd7a",
+   "targetFiles": 13,
+   "notTargetFiles": 66,
+   "records": 189
+  },
+  "201821001": {
+   "documentId": "201821001",
+   "menuSha256": "f9943cc411d1f36b996cfe66a31980c0f808393fcdd9a1d25d9c1bd1eb7dd380",
+   "xmlFiles": 104,
+   "xmlSetSha256": "c2b3a5536fbfb9eede6aaa2ffada7bd8e856efe26f35b6fb282976ef14258934",
+   "targetFiles": 29,
+   "notTargetFiles": 75,
+   "records": 689
+  },
+  "201821002": {
+   "documentId": "201821002",
+   "menuSha256": "556c5e964fee47f12289f5ae673a47860b8f329fbe8f73a78cd9240eeaa89f73",
+   "xmlFiles": 257,
+   "xmlSetSha256": "80df1884ae7d333f7e1c68a4a28a37e26b156dc0af7b73eae560f5c49976ed79",
+   "targetFiles": 90,
+   "notTargetFiles": 167,
+   "records": 1144
+  },
+  "201822001": {
+   "documentId": "201822001",
+   "menuSha256": "9ca36f5c1de71c852dd379bbfe1d6915a10860547fe54a420d470bea11e26553",
+   "xmlFiles": 10,
+   "xmlSetSha256": "d177d91bc143e076886f1e3b5b44e9d43317e0b8f24a336ddd63487eb64c358b",
+   "targetFiles": 1,
+   "notTargetFiles": 9,
+   "records": 7
+  },
+  "201822002": {
+   "documentId": "201822002",
+   "menuSha256": "7aba10e83b69be158bd8f45a50173a5e1f3b4a25bbd588add0feb4b377422883",
+   "xmlFiles": 79,
+   "xmlSetSha256": "d2a812124c1f3d781d2d7815ad78e3ed073b086880d98b4bee7864a32222a48c",
+   "targetFiles": 14,
+   "notTargetFiles": 65,
+   "records": 198
+  },
+  "201921001": {
+   "documentId": "201921001",
+   "menuSha256": "dd3efc5e664eb70b722aa51451e7531810d410b2566f303281177afe49c82d99",
+   "xmlFiles": 264,
+   "xmlSetSha256": "a47e3327fbe23f68f79edb2b519121d8e38f1c389748aa3fa3e5c300e9f21889",
+   "targetFiles": 91,
+   "notTargetFiles": 173,
+   "records": 1156
+  },
+  "201922001": {
+   "documentId": "201922001",
+   "menuSha256": "e9457801d76111df61096c3494583576e440a06774780a94adf0fed3786a4c68",
+   "xmlFiles": 116,
+   "xmlSetSha256": "54a9afa0a69381bfe0497a5d209cf9b1c7555eef89bc8cf132fc2dde12991d87",
+   "targetFiles": 18,
+   "notTargetFiles": 98,
+   "records": 234
+  },
+  "202021001": {
+   "documentId": "202021001",
+   "menuSha256": "1f66550ed5c35230ff9b7630757518abcf69127f55a75eeaeafba19ccf2bc27f",
+   "xmlFiles": 124,
+   "xmlSetSha256": "23cc29265fa3888602ba52876e25ca2a53cc5cfb122900a7fbc279325ac6f42d",
+   "targetFiles": 38,
+   "notTargetFiles": 86,
+   "records": 779
+  },
+  "202021002": {
+   "documentId": "202021002",
+   "menuSha256": "7c6904eceaa169b7462ca5c10b13b383486d64ba923eaa8ce343c8ccf249a830",
+   "xmlFiles": 113,
+   "xmlSetSha256": "509615ce1e0514c18982c5716eb99e92a1dff1bd7465113a4fa32c8f62b88395",
+   "targetFiles": 34,
+   "notTargetFiles": 79,
+   "records": 683
+  },
+  "202021003": {
+   "documentId": "202021003",
+   "menuSha256": "c8c562908bdddf5478267571ff902733ea243d6f79ad628edeb0e7ead9082331",
+   "xmlFiles": 261,
+   "xmlSetSha256": "79a10e23b04413eee1f77aed57522a9702dde50f1037c4d433cd0bdaf9f7d79d",
+   "targetFiles": 91,
+   "notTargetFiles": 170,
+   "records": 1173
+  },
+  "202022001": {
+   "documentId": "202022001",
+   "menuSha256": "211028e46dff29d5ce7b1af19438a6f4d3c4472cf92822f41f01cc009234fb81",
+   "xmlFiles": 66,
+   "xmlSetSha256": "69a0dea7b1689b7e4f6ed9ab8b54045ebb39810ee25c13703efa5aeaad3d1c24",
+   "targetFiles": 10,
+   "notTargetFiles": 56,
+   "records": 104
+  },
+  "202022002": {
+   "documentId": "202022002",
+   "menuSha256": "d17f54716b3b775ffd8b8f51c44e7fcdac498f327e2613d4c5758e5285bd3075",
+   "xmlFiles": 48,
+   "xmlSetSha256": "bfa259d87008e909d9b553af26c1c3b6cc6f58a1f104f15bc2b43e632fc9ad74",
+   "targetFiles": 6,
+   "notTargetFiles": 42,
+   "records": 66
+  },
+  "202022003": {
+   "documentId": "202022003",
+   "menuSha256": "70a21f40d349e33c4ff8ea413db3119cb4d5e4e0f96f9a5b16b222cb043427f8",
+   "xmlFiles": 118,
+   "xmlSetSha256": "9a0b0e2d6151edabb89465a873488162423d1ba722bb9e2a9cfa33bb7328cb17",
+   "targetFiles": 19,
+   "notTargetFiles": 99,
+   "records": 240
+  },
+  "202121001": {
+   "documentId": "202121001",
+   "menuSha256": "112cd65d6fae082e126d68c0bcc701d89005dcd675ac5384b769d81f31b751a2",
+   "xmlFiles": 273,
+   "xmlSetSha256": "b975afd543b146a5c3b2b177dbdcffe32525cbb0df415783edf19e8a03f2ca39",
+   "targetFiles": 94,
+   "notTargetFiles": 179,
+   "records": 1207
+  },
+  "202122001": {
+   "documentId": "202122001",
+   "menuSha256": "98fbd236aa02590dc55390518101bcfd664b33b301e015e4f0ceefa68debdc7d",
+   "xmlFiles": 106,
+   "xmlSetSha256": "45f13e766ad5bd6a3c1c9b3959c3d4ea3cb7b72d3297c7d57a18749f922643fe",
+   "targetFiles": 17,
+   "notTargetFiles": 89,
+   "records": 205
+  },
+  "202221001": {
+   "documentId": "202221001",
+   "menuSha256": "586b929000ece508596782b2f64e1c1a6eb0a791b8d74d225ab845679fe3c2bb",
+   "xmlFiles": 29,
+   "xmlSetSha256": "8d79d58aad6ad73e68752b3b4de997ce651d08b06c5d8c413145ff95b854a6bb",
+   "targetFiles": 3,
+   "notTargetFiles": 26,
+   "records": 132
+  },
+  "202221002": {
+   "documentId": "202221002",
+   "menuSha256": "c5d9c69329f190e388582601e247bd6d9fad4bf99e50f29c796170effa41918f",
+   "xmlFiles": 275,
+   "xmlSetSha256": "d76896694e84c674d0a3f33e10e0e085f838e30d19d46d7d1ad32af677a6bf07",
+   "targetFiles": 93,
+   "notTargetFiles": 182,
+   "records": 1214
+  },
+  "202222001": {
+   "documentId": "202222001",
+   "menuSha256": "df95f623db62d6a24daa7376351915cd3f147373d44ca29b8f9966b36c1ead20",
+   "xmlFiles": 11,
+   "xmlSetSha256": "b4c9874ba84ea1d012f0a9ab260bc3acb157fb6766c8c49c521b02a79fb96529",
+   "targetFiles": 1,
+   "notTargetFiles": 10,
+   "records": 4
+  },
+  "202222002": {
+   "documentId": "202222002",
+   "menuSha256": "14590aeb4362f8d7f30a9ebfc89edef97f351c3820bda32e2c041638c3d06438",
+   "xmlFiles": 121,
+   "xmlSetSha256": "4e661e8757ed883adcad1132eeb4374277c786cb0833612bf787009cf6d11f4a",
+   "targetFiles": 19,
+   "notTargetFiles": 102,
+   "records": 218
+  },
+  "202321001": {
+   "documentId": "202321001",
+   "menuSha256": "2b0c067fb77dca1357b66533d0109ca778be0d21d20edd0d4b168b7c13177f04",
+   "xmlFiles": 277,
+   "xmlSetSha256": "089d241d816c3bfbdd1d9ec290c90353e0daaed07096ba7bdddb0fc9ee13a561",
+   "targetFiles": 93,
+   "notTargetFiles": 184,
+   "records": 1210
+  },
+  "202322001": {
+   "documentId": "202322001",
+   "menuSha256": "7215a7a5ff7614dcfb898fcd5ee50e71f7dfe106f57ae4620dd0f797adb5d751",
+   "xmlFiles": 127,
+   "xmlSetSha256": "cbe7b122c6baef4e45e98ee6c34da9d664e07452b3ca68a572fc431ca24c38ec",
+   "targetFiles": 19,
+   "notTargetFiles": 108,
+   "records": 227
+  },
+  "202421001": {
+   "documentId": "202421001",
+   "menuSha256": "0b14adaca6e2126c83df036c2acb69635f49d7e9aac342000b68b31e9e1c6636",
+   "xmlFiles": 280,
+   "xmlSetSha256": "96525ea759ad6eb4d50f6db55df938dd05730b15b2acd033dc47ea7fd5aedc6f",
+   "targetFiles": 94,
+   "notTargetFiles": 186,
+   "records": 1225
+  },
+  "202422001": {
+   "documentId": "202422001",
+   "menuSha256": "7e2de3132e5ec5b27aabb23c149df17d4ed95a5c531dd2f05428162536584bef",
+   "xmlFiles": 146,
+   "xmlSetSha256": "8a50c1dd8f74691b72f235b1c30f648fc8ad0b0a0988387064b94012ed71cd23",
+   "targetFiles": 23,
+   "notTargetFiles": 123,
+   "records": 268
+  }
+ }
+}

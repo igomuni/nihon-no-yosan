@@ -1,18 +1,18 @@
 /**
  * 予算の一生の表を CSV で出力する。仕様（案）: docs/guides/budget-lifecycle.md
  *
- * 使い方: node packages/pipeline/src/build/lifecycle-cli.ts <基準データのディレクトリ> <出力ディレクトリ>
+ * 使い方: node packages/pipeline/src/build/lifecycle-cli.ts <基準データのディレクトリ> <出力ディレクトリ> [過去年度のデータセットのディレクトリ]
  * 出力: kou.csv、events.csv、checks.json（項の識別、値ごとの出来事、検算の結果）。概算要求の額は、概算要求と当初予算の差の build（`mof-ui.ts`）から取る
  */
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { buildBudgetRequestJikouYoukyu } from './jikou-youkyu.ts';
-import { buildLifecycle, lifecycleRequestOnlyRows } from './lifecycle.ts';
+import { buildLifecycle, lifecycleRequestOnlyRows, lifecycleSources } from './lifecycle.ts';
 import { buildBudgetRequestMofUi, mofUiMatchesFromDataset } from './mof-ui.ts';
 import { buildBudgetRequestTrend, matchesFromDataset } from './trend.ts';
 import { buildBudgetRequestTrendDetail } from './trend-detail.ts';
 
-const [dataset, outDir] = process.argv.slice(2);
+const [dataset, outDir, historyDir] = process.argv.slice(2);
 if (!dataset || !outDir) throw new Error('usage: lifecycle-cli.ts <dataset> <outDir>');
 
 const matches = matchesFromDataset(dataset);
@@ -20,7 +20,7 @@ const kouCsv = buildBudgetRequestTrend({ datasetDir: dataset, matches }).files['
 const jikou = buildBudgetRequestJikouYoukyu({ datasetDir: dataset, matches, kouCsv });
 const detail = buildBudgetRequestTrendDetail({ datasetDir: dataset, matches, kouCsv });
 const mof = buildBudgetRequestMofUi({ datasetDir: dataset, matches, mofMatches: mofUiMatchesFromDataset(dataset), trendKouCsv: kouCsv, jikouKouCsv: jikou.files['kou.csv'], jikouUi: jikou.ui, detailFiles: detail.files });
-const data = buildLifecycle({ datasetDir: dataset, requestOfMofRow: mof.requestOfMofRow, requestOnlyRows: lifecycleRequestOnlyRows(mof.data.rows, matches) });
+const data = buildLifecycle({ datasetDir: dataset, historyDir, requestOfMofRow: mof.requestOfMofRow, requestOnlyRows: lifecycleRequestOnlyRows(mof.data.rows, matches, lifecycleSources(historyDir)) });
 
 const cell = (v: unknown): string => {
   const s = String(v);
