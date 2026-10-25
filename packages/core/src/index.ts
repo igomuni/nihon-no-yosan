@@ -116,3 +116,4 @@ export {
   type PageResult,
   type TocEntry,
 } from './request-toc.ts';
+export { buildJikouLinks, jikouLinkKeyOf, jikouRunLengths, type JikouLink, type JikouLinkAmount, type JikouLinkEvidence, type JikouLinkStatus, type JikouNode } from './jikou-links.ts';
