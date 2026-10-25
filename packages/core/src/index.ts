@@ -116,4 +116,5 @@ export {
   type PageResult,
   type TocEntry,
 } from './request-toc.ts';
+export { LIFECYCLE_CHAIN_END_LABEL, lifecycleChainSpan, lifecycleChains, type LifecycleChain, type LifecycleChainEnd } from './lifecycle-chain.ts';
 export { buildJikouLinks, jikouLinkKeyOf, jikouRunLengths, type JikouLink, type JikouLinkAmount, type JikouLinkEvidence, type JikouLinkStatus, type JikouNode } from './jikou-links.ts';

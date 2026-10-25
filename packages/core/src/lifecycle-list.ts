@@ -70,7 +70,7 @@ export function lifecycleLinkState(links: readonly LifecycleLink[] | undefined):
 
 export const matchesLifecycleLinks = (state: LifecycleLinkStatus | null, f: LifecycleFilters): boolean => f.links === 'all' || (state !== null && state !== 'RESOLVED');
 
-export type LifecycleSortKey = 'group' | 'acct' | 'org' | 'name' | 'stages' | 'links' | 'request' | 'budget' | 'revised' | 'spent' | 'size';
+export type LifecycleSortKey = 'group' | 'acct' | 'org' | 'name' | 'stages' | 'links' | 'span' | 'request' | 'budget' | 'revised' | 'spent' | 'size';
 export type LifecycleSortDir = 1 | -1;
 
 /** 一覧の行の額（円）。代表の額は、概算要求 = 要求額、政府案 = 政府案の額、補正 = 改予算額、決算 = 支出済額（画面の段階カードと同じ）。値が無いときは undefined */
@@ -82,13 +82,15 @@ export function lifecycleRowAmounts(v: LifecycleValues): LifecycleRowAmounts {
 /** 並べ替え。額の列は、値が無い項を、向きによらず末尾に置く（0 とは別） */
 const LINK_RANK: Record<string, number> = { RESOLVED: 0, AMBIGUOUS: 1, UNRESOLVED: 2 };
 
-export function sortLifecycleRows<T extends { k: LifecycleKou; a: LifecycleRowAmounts; link?: LifecycleLinkStatus | null }>(rows: readonly T[], key: LifecycleSortKey, dir: LifecycleSortDir): T[] {
+/** `years` = 確定した対応でたどれた年数（`lifecycleChains`） */
+export function sortLifecycleRows<T extends { k: LifecycleKou; a: LifecycleRowAmounts; link?: LifecycleLinkStatus | null; years?: number }>(rows: readonly T[], key: LifecycleSortKey, dir: LifecycleSortDir): T[] {
   const text = (r: T): string => (key === 'group' ? lifecycleGroupOf(r.k) : key === 'acct' ? lifecycleAcctOf(r.k) : key === 'org' ? lifecycleOrgOf(r.k) : r.k.name);
   return [...rows].sort((x, y) => {
     if (key === 'group' || key === 'acct' || key === 'org' || key === 'name') return dir * text(x).localeCompare(text(y), 'ja') || x.k.id.localeCompare(y.k.id);
     if (key === 'links') return dir * ((LINK_RANK[x.link ?? ''] ?? 3) - (LINK_RANK[y.link ?? ''] ?? 3)) || x.k.id.localeCompare(y.k.id);
     if (key === 'stages') return dir * (x.k.seenIn.length - y.k.seenIn.length) || x.k.id.localeCompare(y.k.id);
-    const a = x.a[key as Exclude<LifecycleSortKey, 'group' | 'acct' | 'org' | 'name' | 'stages' | 'links'>], b = y.a[key as Exclude<LifecycleSortKey, 'group' | 'acct' | 'org' | 'name' | 'stages' | 'links'>];
+    if (key === 'span') return dir * ((x.years ?? 0) - (y.years ?? 0)) || x.k.id.localeCompare(y.k.id);
+    const a = x.a[key as Exclude<LifecycleSortKey, 'group' | 'acct' | 'org' | 'name' | 'stages' | 'links' | 'span'>], b = y.a[key as Exclude<LifecycleSortKey, 'group' | 'acct' | 'org' | 'name' | 'stages' | 'links' | 'span'>];
     if (a === undefined || b === undefined) return a === b ? x.k.id.localeCompare(y.k.id) : a === undefined ? 1 : -1;
     return dir * (a - b) || x.k.id.localeCompare(y.k.id);
   });
