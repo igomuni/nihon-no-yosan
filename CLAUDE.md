@@ -6,7 +6,7 @@
 
 ```bash
 npm run check      # 型チェック（tsc -b）・lint・テスト（vitest）
-npm run build:data # 基準データから画面用の JSON を作る（apps/web/public/data/）
+npm run build:data # 基準データ（と、あれば過去年度のデータ）から画面用の JSON を作る（apps/web/public/data/）
 npm run dev        # 画面の開発サーバー（先に build:data）
 ```
 

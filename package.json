@@ -16,10 +16,9 @@
     "lint": "eslint .",
     "test": "vitest run",
     "check": "npm run typecheck && npm run lint && npm run test",
-    "build:data": "node packages/pipeline/src/build/web-data-cli.ts data/dataset/reference-v0 apps/web/public/data",
+    "build:data": "node packages/pipeline/src/build/web-data-cli.ts data/dataset/reference-v0 apps/web/public/data datasets/terms.json data/dataset/mof-history-v0",
     "dev": "npm run -w @nihon-no-yosan/web dev",
-    "build": "npm run -w @nihon-no-yosan/web build",
-    "build:data:history": "node packages/pipeline/src/build/web-data-cli.ts data/dataset/reference-v0 apps/web/public/data datasets/terms.json data/dataset/mof-history-v0"
+    "build": "npm run -w @nihon-no-yosan/web build"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
