@@ -27,7 +27,7 @@ export function LevelsChart({ levels, caption }: { levels: readonly LifecycleLev
   const bar = Math.min(44, slot * 0.6);
   return (
     <figure className="m-0">
-      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`段階ごとの額: ${levels.map(l => `${l.label} ${l.yen === null ? '値なし' : sen(l.yen)}`).join('、')}`} className="block h-auto w-full max-w-[560px]">
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`段階ごとの額: ${levels.map(l => `${l.label} ${l.yen === null ? '値なし' : sen(l.yen)}`).join('、')}`} className="block h-auto w-full">
         <line x1={left} x2={W - right} y1={H - bottom} y2={H - bottom} className="stroke-neutral-300 dark:stroke-neutral-600" />
         {levels.map((l, i) => {
           const x = left + slot * i + (slot - bar) / 2;
@@ -72,7 +72,7 @@ export function ChangesChart({ changes, zero, base, baseLabel }: { changes: read
       {changes.length === 0 ? (
         <p className="text-[11px] text-neutral-500">増減はありません{zero.length > 0 ? `（${zero.join('・')}は 0）` : ''}。</p>
       ) : (
-        <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`段階ごとの増減: ${changes.map(c => `${c.label} ${senSigned(c.yen)}`).join('、')}`} className="block h-auto w-full max-w-[560px]">
+        <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`段階ごとの増減: ${changes.map(c => `${c.label} ${senSigned(c.yen)}`).join('、')}`} className="block h-auto w-full">
           <line x1={mid} x2={mid} y1={top} y2={H - 6} className="stroke-neutral-300 dark:stroke-neutral-600" />
           {changes.map((c, i) => {
             const y = top + rowH * i;
@@ -105,7 +105,7 @@ export function ChangesChart({ changes, zero, base, baseLabel }: { changes: read
 export function UseChart({ parts, total }: { parts: readonly LifecycleUse[]; total: number }) {
   const sum = Math.max(1, total);
   return (
-    <figure className="m-0 flex max-w-[560px] flex-col gap-1.5">
+    <figure className="m-0 flex flex-col gap-1.5">
       <div role="img" aria-label={`現額の使われ方: ${parts.map(p => `${p.label} ${sen(p.yen)}`).join('、')}`} className="flex h-5 w-full gap-0.5 overflow-hidden rounded">
         {parts.filter(p => p.yen > 0).map(p => (
           <div key={p.key} title={`${p.label}: ${p.yen.toLocaleString('ja-JP')} 円`} className={`${USE_FILL[p.key]} min-w-[2px] rounded-sm`} style={{ flexGrow: p.yen }} />
@@ -157,7 +157,7 @@ export function TrendChart({ points, current, onSelect }: { points: readonly Tre
   const curIdx = points.findIndex(p => p.year === current);
   return (
     <figure className="m-0">
-      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`年度推移: ${TREND_SERIES.map(s => `${s.label} ${points.map(p => `${p.year}年度 ${p[s.key] === undefined ? '値なし' : sen(p[s.key]!)}`).join('、')}`).join('。')}`} className="block h-auto w-full max-w-[560px]">
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`年度推移: ${TREND_SERIES.map(s => `${s.label} ${points.map(p => `${p.year}年度 ${p[s.key] === undefined ? '値なし' : sen(p[s.key]!)}`).join('、')}`).join('。')}`} className="block h-auto w-full">
         {ticks.map(t => (
           <g key={t}>
             <line x1={left} x2={W - right} y1={y(t)} y2={y(t)} className="stroke-neutral-200 dark:stroke-neutral-700" />
