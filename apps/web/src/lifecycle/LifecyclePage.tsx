@@ -5,6 +5,8 @@ import {
   LIFECYCLE_STAGES,
   LIFECYCLE_STAGE_LABEL,
   filterLifecycleKous,
+  lifecycleChainSpan,
+  lifecycleChains,
   lifecycleCoverage,
   lifecycleLinkState,
   lifecycleLinksByKou,
@@ -26,13 +28,13 @@ import { PageNavMenu } from '../components/PageNavMenu.tsx';
 import { SourceNote } from '../components/SourceNote.tsx';
 import { YearSelect } from '../components/YearSelect.tsx';
 import { usePersistedState } from '../usePersistedState.ts';
-import { LifecycleDetailPane } from './LifecycleDetailPane.tsx';
+import { LifecycleDetailPane, type DetailTab } from './LifecycleDetailPane.tsx';
 import { LifecycleFilterPane } from './LifecycleFilterPane.tsx';
 import { LifecycleListPane } from './LifecycleListPane.tsx';
 import { LifecycleSummaryPane } from './LifecycleSummaryPane.tsx';
 
 /**
- * 予算の推移（項の粒度, FY2023〜FY2027。年度ごとに、基準データにある段階だけ）。1 つの項について、概算要求 → 政府案 → 補正 → 決算の値を、段階ごとの状態・グラフ・表で見る。
+ * 予算の推移（項の粒度。年度ごとに、基準データにある段階だけ）。1 つの項について、概算要求 → 政府案 → 補正 → 決算の値を、段階ごとの状態・グラフ・表で見る。
  *
  * 左にフィルタ、中に項の一覧または集計、右に選んだ項の一生。
  * 仕様: docs/guides/budget-lifecycle.md。段階の状態の定義: docs/guides/lifecycle-status.md。
@@ -75,6 +77,7 @@ export function LifecyclePage() {
   const [selectedId, setSelectedId] = usePersistedState<string | null>('lifecycle:selected', null);
   const [columnWidths, setColumnWidths] = usePersistedState<Record<string, number>>('lifecycle:columnWidths', {});
   const [view, setView] = usePersistedState<'list' | 'summary'>('lifecycle:view', 'list');
+  const [detailTab, setDetailTab] = usePersistedState<DetailTab>('lifecycle:detailTab', 'life');
   const [filterWidth, setFilterWidth] = usePersistedState('lifecycle:filterWidth', FILTER_WIDTH.def);
   const [detailWidth, setDetailWidth] = usePersistedState('lifecycle:detailWidth', DETAIL_WIDTH.def);
 
@@ -99,6 +102,7 @@ export function LifecyclePage() {
   }, [byKou]);
   const linksByKou = useMemo(() => lifecycleLinksByKou(data?.links ?? []), [data]);
   const coverage = useMemo(() => lifecycleCoverage(data?.kous ?? []), [data]);
+  const chainOf = useMemo(() => lifecycleChains(data?.kous ?? [], data?.links ?? [], data?.years ?? []), [data]);
 
   const years = data?.years ?? [];
   const activeYear = data ? (year !== null && years.includes(year) ? year : years[0]!) : null;
@@ -113,12 +117,12 @@ export function LifecyclePage() {
   const list = useMemo(
     () => sortLifecycleRows(
       base
-        .map(({ k, i }) => ({ k, i, a: lifecycleRowAmounts(valuesOf.get(i) ?? {}), link: lifecycleLinkState(linksByKou.get(i)) }))
+        .map(({ k, i }) => { const chain = chainOf(i); const span = lifecycleChainSpan(data?.kous ?? [], chain); return { k, i, a: lifecycleRowAmounts(valuesOf.get(i) ?? {}), link: lifecycleLinkState(linksByKou.get(i)), chain, span, years: span.years }; })
         .filter(({ k, link }) => matchesLifecyclePattern(k, filters) && matchesLifecycleLinks(link, filters)),
       sortKey,
       sortDir,
     ),
-    [base, filters, valuesOf, linksByKou, sortKey, sortDir],
+    [base, data, chainOf, filters, valuesOf, linksByKou, sortKey, sortDir],
   );
   const onSort = (k: LifecycleSortKey) => {
     if (k === sortKey) setSortDir(d => (d === 1 ? -1 : 1));
@@ -183,7 +187,7 @@ export function LifecyclePage() {
         </section>
         <Splitter label="詳細の幅" width={detailWidth} limits={DETAIL_WIDTH} dir={-1} onChange={setDetailWidth} />
         <section aria-label="項の一生" className={`${pane} overflow-auto lg:col-span-2 xl:col-span-1 xl:w-[var(--dw)] xl:shrink-0`} style={{ '--dw': `${detailWidth}px` } as CSSProperties}>
-          <LifecycleDetailPane kou={kou} events={selectedIndex >= 0 ? byKou.get(selectedIndex) ?? [] : []} coverage={coverage} data={data} links={selectedIndex >= 0 ? linksByKou.get(selectedIndex) ?? [] : []} selfIndex={selectedIndex} onNavigate={id => { const t = data.kous.find(x => x.id === id); if (t) { setYear(t.year); setSelectedId(id); } }} />
+          <LifecycleDetailPane kou={kou} events={selectedIndex >= 0 ? byKou.get(selectedIndex) ?? [] : []} coverage={coverage} data={data} links={selectedIndex >= 0 ? linksByKou.get(selectedIndex) ?? [] : []} selfIndex={selectedIndex} onNavigate={id => { const t = data.kous.find(x => x.id === id); if (t) { setYear(t.year); setSelectedId(id); } }} tab={detailTab} onTab={setDetailTab} chain={selectedIndex >= 0 ? chainOf(selectedIndex) : null} valuesOf={valuesOf} />
         </section>
       </main>
       <SourceNote />

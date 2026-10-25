@@ -116,3 +116,4 @@ export {
   type PageResult,
   type TocEntry,
 } from './request-toc.ts';
+export { LIFECYCLE_CHAIN_END_LABEL, lifecycleChainSpan, lifecycleChains, type LifecycleChain, type LifecycleChainEnd } from './lifecycle-chain.ts';

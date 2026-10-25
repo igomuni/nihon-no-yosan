@@ -43,6 +43,11 @@ describe('sortLifecycleRows', () => {
     expect(sortLifecycleRows(rows, 'budget', -1).map(r => r.k.id)).toEqual(['w', 'x', 'z', 'y']);
     expect(sortLifecycleRows(rows, 'budget', 1).map(r => r.k.id)).toEqual(['z', 'x', 'w', 'y']);
   });
+  it('sorts by the number of years confirmed (years), the ones with a longer run first when descending', () => {
+    const withYears = [{ ...row('a', {}), years: 3 }, { ...row('b', {}), years: 10 }, { ...row('c', {}), years: 1 }];
+    expect(sortLifecycleRows(withYears, 'span', -1).map(r => r.k.id)).toEqual(['b', 'a', 'c']);
+    expect(sortLifecycleRows(withYears, 'span', 1).map(r => r.k.id)).toEqual(['c', 'a', 'b']);
+  });
   it('size is the largest of the current, budget and request amounts', () => {
     expect(lifecycleRowAmounts({ request_amount: 3, budget_amount: 5, current_amount: 4 }).size).toBe(5);
     expect(lifecycleRowAmounts({}).size).toBe(0);
