@@ -124,8 +124,8 @@ export type DetailTab = 'life' | 'trend';
 function DetailTabs({ tab, onTab }: { tab: DetailTab; onTab: (t: DetailTab) => void }) {
   return (
     <div role="tablist" aria-label="項の表示" className="sticky top-0 z-10 flex gap-1 border-b border-neutral-200 bg-white px-3 pt-2 text-xs dark:border-neutral-800 dark:bg-neutral-900">
-      {([['life', '一生（段階）'], ['trend', '年度推移']] as const).map(([t, label]) => (
-        <button key={t} type="button" role="tab" aria-selected={tab === t} onClick={() => onTab(t)} className={`rounded-t border-b-2 px-2.5 py-1 ${tab === t ? 'border-emerald-600 font-semibold text-neutral-900 dark:text-neutral-100' : 'border-transparent text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'}`}>{label}</button>
+      {([['life', '1年の推移', '選んだ年度の中で、概算要求 → 政府案 → 補正 → 決算と、額がどう動いたか'], ['trend', '年度推移', '年度をまたいで、同じ項と確認できた年度の額の推移']] as const).map(([t, label, hint]) => (
+        <button key={t} type="button" role="tab" aria-selected={tab === t} title={hint} onClick={() => onTab(t)} className={`rounded-t border-b-2 px-2.5 py-1 ${tab === t ? 'border-emerald-600 font-semibold text-neutral-900 dark:text-neutral-100' : 'border-transparent text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'}`}>{label}</button>
       ))}
     </div>
   );
