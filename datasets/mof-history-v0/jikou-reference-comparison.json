@@ -1,0 +1,22 @@
+{
+ "comparedWith": "data/dataset/reference-v0/mof-archive/{年度}/jikou-*.csv",
+ "files": {
+  "2023/jikou-general.csv": {
+   "records": 1289,
+   "equal": true
+  },
+  "2023/jikou-special.csv": {
+   "records": 361,
+   "equal": true
+  },
+  "2024/jikou-general.csv": {
+   "records": 1256,
+   "equal": true
+  },
+  "2024/jikou-special.csv": {
+   "records": 360,
+   "equal": true
+  }
+ },
+ "allEqual": true
+}

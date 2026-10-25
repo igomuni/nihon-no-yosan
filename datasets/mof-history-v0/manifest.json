@@ -2,6 +2,14 @@
  "schema": "nihon-no-yosan/mof-archive-manifest/v0",
  "inputs": "inputs.json",
  "files": {
+  "mof-archive/2017/jikou-general.csv": {
+   "sha256": "79daa84653fea6d7bf5c1d0fa09c037e5abbf8b47e757c3145c41e1cae771b52",
+   "bytes": 223386
+  },
+  "mof-archive/2017/jikou-special.csv": {
+   "sha256": "4c194a2562a6ed54518fa83006167d0248b18e397c0d946d5e4cb3a1c0e198b7",
+   "bytes": 81455
+  },
   "mof-archive/2017/kou-general-hosei.csv": {
    "sha256": "58a1c1c8761638e4a4de7b1ac14142310b05429a2b4e6348328bfd5c395f92c8",
    "bytes": 76764
@@ -53,6 +61,14 @@
   "mof-archive/2017/summary.json": {
    "sha256": "a3616c6fc3901d1197e2ec32f41298512c3fbaf6c2cfca6a3b0aa74501d3397b",
    "bytes": 4171
+  },
+  "mof-archive/2018/jikou-general.csv": {
+   "sha256": "0729057bc5964514523800f019834137179082e758ad8d36b0e00acda09c5c96",
+   "bytes": 219671
+  },
+  "mof-archive/2018/jikou-special.csv": {
+   "sha256": "e36b377827c02069077b943b2411bbe1bbbb00fcdd70155452ba10fe03980e93",
+   "bytes": 79523
   },
   "mof-archive/2018/kou-general-hosei-2.csv": {
    "sha256": "5133ec6858c8505d3fd7ade5491232c0bbd580b3f90699ff4b9cdc04189744b2",
@@ -122,6 +138,14 @@
    "sha256": "237d67c4fe62324f7cbb0cfe3b789be81cbcd15e2a1c49a9ea542ce215e790e1",
    "bytes": 5302
   },
+  "mof-archive/2019/jikou-general.csv": {
+   "sha256": "409052d19bdbe5b029b8ce62af7da16ada29ffc4aca753d5ca319e6119164533",
+   "bytes": 225628
+  },
+  "mof-archive/2019/jikou-special.csv": {
+   "sha256": "75014c28a8786dfdd0c7768b5452d034566804f8930ae9c4798c35831b091309",
+   "bytes": 79348
+  },
   "mof-archive/2019/kou-general-hosei.csv": {
    "sha256": "310b3e121730ba1ef8308598b72792ae59ef802d74e01ab9d20bf1c5f1b4bc3b",
    "bytes": 80192
@@ -173,6 +197,14 @@
   "mof-archive/2019/summary.json": {
    "sha256": "9fbb5c5bf4760ec7f0bee0858445abb4bf5ad37858553d55258c0577ca681bcf",
    "bytes": 4175
+  },
+  "mof-archive/2020/jikou-general.csv": {
+   "sha256": "6ee3559b0b32497a023099492655ddbe891e9ab489a167f9ac7c0499536de318",
+   "bytes": 227012
+  },
+  "mof-archive/2020/jikou-special.csv": {
+   "sha256": "3bcda00189ceed5cc35a3730a3e14fc570b544c396d91c8ed5de553019c35aad",
+   "bytes": 78155
   },
   "mof-archive/2020/kou-general-hosei-2.csv": {
    "sha256": "97544f25261409ffadc27b358ca2a217e8ba8865f3931c113eb0f71bd1cdfd2f",
@@ -258,6 +290,14 @@
    "sha256": "275dfefbfb4c3e6ba08cdbb26b3b06b4ab559dc21023d141f4a83dec171fc4cd",
    "bytes": 6432
   },
+  "mof-archive/2021/jikou-general.csv": {
+   "sha256": "60e077c8e08b607dbd8ea99f8a729c6d38504058ed6707e4987f46a85a5d5f6b",
+   "bytes": 229017
+  },
+  "mof-archive/2021/jikou-special.csv": {
+   "sha256": "80e239301734da743da328f3a3016f215d96e9ff864359c77ac41f3bb80675fe",
+   "bytes": 77964
+  },
   "mof-archive/2021/kou-general-hosei.csv": {
    "sha256": "b6b6a8c72f559461341dfdd34a8bb935422ec8aef1a11a5c1d98987db481c0c0",
    "bytes": 81956
@@ -309,6 +349,14 @@
   "mof-archive/2021/summary.json": {
    "sha256": "9998fc89d8921e2e4902e38412102cbdbc32e41ff46fc538a9f9c239a6baad48",
    "bytes": 4166
+  },
+  "mof-archive/2022/jikou-general.csv": {
+   "sha256": "2b1e2759a0e31ffc6bd280659f4f5a21dc340ee1f7339d458165f2dd19c79059",
+   "bytes": 234332
+  },
+  "mof-archive/2022/jikou-special.csv": {
+   "sha256": "bac106529a8bb517fd18fb914b0642d3dc0e22d18a358c9def755d5f1c573e58",
+   "bytes": 71799
   },
   "mof-archive/2022/kou-general-hosei-2.csv": {
    "sha256": "e6018d7b04145a3c13aa1cb4863fdc14af5f0dbb356918b4377e60784e8cb6c7",
