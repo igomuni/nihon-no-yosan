@@ -1,0 +1,30 @@
+{
+ "comparedWith": "data/dataset/reference-v0/mof-archive/{年度}",
+ "years": {
+  "2023": {
+   "files": 12,
+   "allEqual": true,
+   "zips": {
+    "DL202311001.zip": "5b37cafbed02f78b04a283ea9bd264e201b0fd7d47a684c09006121999056298",
+    "DL202321001.zip": "1f4c372b468f23c785d7116b216af84f7d1d474e46c7ced99ab89be4878b8d36",
+    "DL202377001.zip": "608944c0d3a63b27ecae8b6352250cdb592f0afe49e545182d68b92fa9d37b79",
+    "DL202312001.zip": "0c4571da22aeede17b30a3e9f7cfe1885923b9c5266c31a0f5233237affd43d4",
+    "DL202322001.zip": "7ab3711b27b66488dd70a2844e03a948c3b2ad46e1578f982fecbc14acdc9023",
+    "DL202378001.zip": "9724040c3b76ce2543cb5c7d16647ccfdbfac44602e77c06c7477f9674406d7f"
+   }
+  },
+  "2024": {
+   "files": 12,
+   "allEqual": true,
+   "zips": {
+    "DL202411001.zip": "234bd440ac8647a07e458e3609457d00a133ffbbef2fc766b1421e1c5510e06f",
+    "DL202421001.zip": "26f9ccf138f5e277c38ec83ad872777e4123fcf7443dd5333d78c218da8a216b",
+    "DL202477001.zip": "5536fd4f9477cf4ce312d74f9000c8822d979fc1098adefa645d49a6d1e187e4",
+    "DL202412001.zip": "48392740ce2a8b83c6e3af0141f37e3ebeebd268466890a506658fa75487603c",
+    "DL202422001.zip": "c96fbce1195da1148c8fa5aceca0a5197a3db818b49c74df44805578135dc5d9",
+    "DL202478001.zip": "d51972865f25f9ce6f83f5d0f1fbd7b4a1e81ba64689e1cff51844b10048cc47"
+   }
+  }
+ },
+ "allEqual": true
+}

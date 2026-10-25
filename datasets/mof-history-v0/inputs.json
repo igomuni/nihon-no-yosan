@@ -1,0 +1,182 @@
+{
+ "schema": "nihon-no-yosan/mof-archive-inputs/v0",
+ "note": "財務省の予算書・決算書データベースの公式 CSV の zip（手元にあったもの）。取得元の URL・取得日は記録がない（URL の形は https://www.bb.mof.go.jp/server/{年}/csv/{ファイル名} と推測、未確認）。ここに無い帳票は、手元の取得物に無かったもので、サイトに無いとは確かめていない",
+ "inputs": {
+  "DL201711001.zip": {
+   "sha256": "1ad3a947ba6592807a7cc85b50f2552fc8539557da0398f611bd061e7d4298cd",
+   "bytes": 158766
+  },
+  "DL201712001.zip": {
+   "sha256": "a5ad654c1d328648320ae627fe18f407ed422b01924d3d7cc9e9c290a1072f1c",
+   "bytes": 43431
+  },
+  "DL201721001.zip": {
+   "sha256": "8ec6dc74515e0cd2fd1637e1ec82fbf10e916cda160663aec81fcd3eb1ed057b",
+   "bytes": 51530
+  },
+  "DL201722001.zip": {
+   "sha256": "ed6481127891c7e9f45d8124e18afada42bcae7e0d343323079449f3b83f5009",
+   "bytes": 11820
+  },
+  "DL201777001.zip": {
+   "sha256": "89a611bc3bf55ebd6e27cbfb866fb15d1aea68ac8717430f60c71c77c6f2070f",
+   "bytes": 218924
+  },
+  "DL201778001.zip": {
+   "sha256": "f45985bbede87c05055880931e7edd56dc1100ffbefcf11babff99d2c5752463",
+   "bytes": 59793
+  },
+  "DL201811001.zip": {
+   "sha256": "fed38dcec4d971cf2733084a7dcec95d6ea919db0cb340577af2f1b096129c1c",
+   "bytes": 155190
+  },
+  "DL201812001.zip": {
+   "sha256": "b61ca61a6bff6bbf774adcc4273d55f79a75700267a26348a9e0c0d8fc43c727",
+   "bytes": 43558
+  },
+  "DL201821001.zip": {
+   "sha256": "1fa310978b471b49151daacec893bfc3d9558304ee7fa25d790e5a09eabe5ae3",
+   "bytes": 20840
+  },
+  "DL201821002.zip": {
+   "sha256": "46aee0d69594db9517eacce099a21a6fa9e99c8b1f5a015b0f9839dadd92d6fd",
+   "bytes": 57609
+  },
+  "DL201822001.zip": {
+   "sha256": "ee1d1ccf8b246bf73a7c7465509179ce38725b4fcf246fb01b8869287d50689c",
+   "bytes": 1481
+  },
+  "DL201822002.zip": {
+   "sha256": "5f648c2b59b8f26737b074cde712346322e9dba5fe93b2111678b29d901eb26c",
+   "bytes": 12141
+  },
+  "DL201877001.zip": {
+   "sha256": "5e407bc9bb202af9b0d16a4c9fbfa95c5a5d18822428fd6822bfbc2779db4200",
+   "bytes": 221591
+  },
+  "DL201878001.zip": {
+   "sha256": "70285227be8d5e388bcff810fe93ad73d33685b4b11de295aa8f4417f838c651",
+   "bytes": 60045
+  },
+  "DL201911001.zip": {
+   "sha256": "eab0f8d053f38f270ac591d13ed0f329d1195729808193c0c072c925fc429b6e",
+   "bytes": 160845
+  },
+  "DL201912001.zip": {
+   "sha256": "d309a744ae37f98cb8fd51bb456349329dfba6c0a929bcbadeb0dfdd96a03e3f",
+   "bytes": 43500
+  },
+  "DL201921001.zip": {
+   "sha256": "72d287524411be275e69dfe727b9e2e15a3009ede4f89679ed6f4dc96f43d124",
+   "bytes": 61757
+  },
+  "DL201922001.zip": {
+   "sha256": "fe356d7684d6be7e1b9f88643811df23c7d2054f2a9b2f001e3e0de8764057e9",
+   "bytes": 14270
+  },
+  "DL201977001.zip": {
+   "sha256": "7f0a33c277d51104eff3c7a53c56d928d8334015a40a8b320eee6976c949b271",
+   "bytes": 227214
+  },
+  "DL201978001.zip": {
+   "sha256": "82aa07d2ec297c90b6f597dfd7d7f5ee9d0883e0ae35bb3b15382e7e970d8756",
+   "bytes": 59583
+  },
+  "DL202011001.zip": {
+   "sha256": "7c7deec70f196db335b85dfbf26fe040ee8a48330798652927fa751c4bc17ed4",
+   "bytes": 160408
+  },
+  "DL202012001.zip": {
+   "sha256": "6197051dc4c023568b6be7463abae8332a2e3fc8f37a54d3c8d4c0b66759bf71",
+   "bytes": 42917
+  },
+  "DL202021001.zip": {
+   "sha256": "ad84b368d9fa4ed6545d53ae0face8efb53f805042dca28cdb21683d05003bb6",
+   "bytes": 25697
+  },
+  "DL202021002.zip": {
+   "sha256": "623eecc48a1290e19fc68f7938afd3399a976ea3028e06cef8c9166301590979",
+   "bytes": 20143
+  },
+  "DL202021003.zip": {
+   "sha256": "bd59df87d511f72d41d9edea905366b6ec48a5fc987e1e99d0c524d2715564b5",
+   "bytes": 72514
+  },
+  "DL202022001.zip": {
+   "sha256": "694932505774fe725ab97c366c56f1a502d8fff5f7bfd52559ca31a7e02723b7",
+   "bytes": 7688
+  },
+  "DL202022002.zip": {
+   "sha256": "cd87ee6e04bd20f1af1a4cbf4828b02d096960c9d40d2e2378f5f5ea7954cd92",
+   "bytes": 5840
+  },
+  "DL202022003.zip": {
+   "sha256": "7225f8f9e3ede01a2ff4cea34a6ab1314eb2b6aa371e14bb1dd2762a0d57f377",
+   "bytes": 14871
+  },
+  "DL202077001.zip": {
+   "sha256": "07c15708dfc0bb08774fa3233aa84b04212a502cbe53f77f05843fee7b908fbd",
+   "bytes": 230961
+  },
+  "DL202078001.zip": {
+   "sha256": "45fa8d2b8f893ccefeafcc8fa483539fe6ae18b5fed869b0fa88db3933a49ead",
+   "bytes": 59170
+  },
+  "DL202111001.zip": {
+   "sha256": "bf7f1cc67f9f57d044c29c2567ce56049ed3a323284d79a20685467fa57fa981",
+   "bytes": 160648
+  },
+  "DL202112001.zip": {
+   "sha256": "99da051e2ab81e6bdcbb909021c00538fa584f80b81fb3d66390c81de80a2b9d",
+   "bytes": 43026
+  },
+  "DL202121001.zip": {
+   "sha256": "c38db60772611ea41e6d95cdcfb07bc03100010f38815022cca3a0d395f1d327",
+   "bytes": 72479
+  },
+  "DL202122001.zip": {
+   "sha256": "747808c6140079430f4e0e37223445480037754328c0f0440fdc2a7803328d9d",
+   "bytes": 13475
+  },
+  "DL202177001.zip": {
+   "sha256": "29e83a0598c8da50752f66e4f471789fc36245de40a303afec320c66708f3bec",
+   "bytes": 236052
+  },
+  "DL202178001.zip": {
+   "sha256": "f657d90ef36ee280b42558a5b52e8b311bfabfe1d09175619577047693f5a2ae",
+   "bytes": 56612
+  },
+  "DL202211001.zip": {
+   "sha256": "0925a76498a3c31a8186bb7233e3305ccb33edf56f1746ebde145c61d82c7c19",
+   "bytes": 163547
+  },
+  "DL202212001.zip": {
+   "sha256": "0d495b20aba638a7823bc6da58f0ddd7f5177a2edfde877ac1fdcafd01f92808",
+   "bytes": 40871
+  },
+  "DL202221001.zip": {
+   "sha256": "d6fddea689dfeedf68dcf9516f7142acf35f4cb10ffd0639c16e6a7963127143",
+   "bytes": 4863
+  },
+  "DL202221002.zip": {
+   "sha256": "2df1af1ca97993f0811995e022e6b4fe81d2adbb435ea061aa95bf65bc6b93f6",
+   "bytes": 81430
+  },
+  "DL202222001.zip": {
+   "sha256": "0ba640154a86cd3b9ab0b5c7e50229ffd01c00765f79cb6c97a140de84eea261",
+   "bytes": 1209
+  },
+  "DL202222002.zip": {
+   "sha256": "3f2531fcd9ded9bd4a14095c6350f5c9e8a534baa06c6cb65b6f2e9a6187d939",
+   "bytes": 13794
+  },
+  "DL202277001.zip": {
+   "sha256": "37b925e9765122b7eb052a4b6269ee833c73bb6edff91224da956407655b00b4",
+   "bytes": 237873
+  },
+  "DL202278001.zip": {
+   "sha256": "27b28b1856e37b8e5a267df8a80056c5aae3dd26c2d394e396955467013ccb59",
+   "bytes": 56122
+  }
+ }
+}

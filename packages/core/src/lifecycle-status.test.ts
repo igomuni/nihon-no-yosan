@@ -63,6 +63,8 @@ describe('lifecycleStageStatuses', () => {
     const lonely = [kou('x', ['budget'])];
     const s = lifecycleStageStatuses(lonely[0]!, [ev('budget', 'budget_amount', 1)], lifecycleCoverage(lonely));
     expect(s.find(x => x.stage === 'settle')).toMatchObject({ reason: 'unknown', badge: '現行データに値なし（理由未確定）' });
+    // 概算要求は、年度に 1 件も入っていないとき、概算要求書を取り込んでいない年度として書く（概算要求書が無かったとは言わない）
+    expect(s.find(x => x.stage === 'request')).toMatchObject({ reason: 'unknown', badge: '概算要求書は取り込んでいない年度' });
   });
 });
 

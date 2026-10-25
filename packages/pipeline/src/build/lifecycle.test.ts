@@ -129,3 +129,43 @@ describe('buildLifecycle', () => {
     });
   });
 });
+
+describe('過去年度（財務省の CSV だけ。概算要求書なし）と複数回の補正', () => {
+  const hist = fs.mkdtempSync(path.join(os.tmpdir(), 'lifecycle-history-'));
+  afterAll(() => fs.rmSync(hist, { recursive: true, force: true }));
+  const put = (file: string, text: string): void => {
+    const dir = path.join(hist, 'mof-archive', '2017');
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, file), text);
+  };
+  const H1 = '所管,組織,項コード,項名,目の行数,平成29年度成立予算額(千円)の合計,補正要求追加額(千円)の合計,補正要求修正減少額(千円)の合計,補正要求差引額(千円)の合計,改平成29年度予算額(千円)の合計';
+  // 当初: 010・020。補正 第 1 回: 010 だけ（+10）。第 2 回: 010（成立 = 第 1 回の改）と 030（新しい項）。020 は第 1 回にも第 2 回にも無い
+  put('kou-general.csv', `${G},平成29年度要求額(千円)の合計,前年度予算額(千円)の合計\n内閣府,本府,010,共通費,3,100,90\n内閣府,本府,020,別の項,1,40,40\n`);
+  put('kou-general-hosei.csv', `${H1}\n内閣府,本府,010,共通費,1,100,10,0,10,110\n内閣府,本府,040,第 1 回だけの項,1,5,1,0,1,6\n`);
+  put('kou-general-hosei-2.csv', `${H1}\n内閣府,本府,010,共通費,1,110,0,-5,-5,105\n内閣府,本府,030,新しい項,1,0,7,0,7,7\n`);
+  put('kou-special.csv', `${S},平成29年度予定額(千円)の合計,前年度予算額(千円)の合計\n`);
+  const sources: LifecycleSource[] = [{ year: 2017, root: 'history', budgetVersion: 'unconfirmed', budget: '2017', supp: { general: '2017' }, settle: {} }];
+  const r = buildLifecycle({ datasetDir: tmp, historyDir: hist, requestOfMofRow: new Map(), sources });
+  const idx = (code: string): number => r.kous.findIndex(k => k.code === code);
+
+  it('reads the 平成 columns, marks the budget version as unconfirmed, and has no request stage', () => {
+    const e = r.events.find(x => x[0] === idx('010') && x[5] === 'budget_amount')!;
+    expect(e.slice(1, 3)).toEqual(['budget', 'unconfirmed']);
+    expect(e[10]).toBe('history:2017/kou-general.csv:1');
+    expect(r.events.some(x => x[1] === 'request')).toBe(false);
+  });
+
+  it('uses, for each 項, the last round that has it, and says which round', () => {
+    const rev = (code: string) => r.events.find(x => x[0] === idx(code) && x[5] === 'revised_amount')!;
+    expect([rev('010')[8], rev('010')[10], rev('010')[11]]).toEqual([105000, 'history:2017/kou-general-hosei-2.csv:1', '目の合計（目の行 1）。補正は年度に 2 回、この項が載る最後の回は第 2 回']);
+    expect(rev('030')[8]).toBe(7000);
+    expect(rev('040')[10]).toBe('history:2017/kou-general-hosei.csv:2'); // 第 1 回にだけある項は、その回の行
+    expect(r.events.some(x => x[0] === idx('020') && x[1] === 'supp')).toBe(false); // どの回にも無い項は補正の値を作らない
+  });
+
+  it('checks that the next round starts from the previous round\'s revised amount, and the first round against the budget', () => {
+    const c = (name: string) => r.checks.find(x => x.year === 2017 && x.account === 'general' && x.name === name);
+    expect(c('supp_chain')).toMatchObject({ ok: 1, ng: 0 });
+    expect(c('enacted_eq_budget')).toBeUndefined(); // 第 1 回の行が最後の回でない項（010）は比べない。040 は当初に無い
+  });
+});

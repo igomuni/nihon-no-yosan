@@ -1,0 +1,382 @@
+{
+ "schema": "nihon-no-yosan/mof-archive-manifest/v0",
+ "inputs": "inputs.json",
+ "files": {
+  "mof-archive/2017/kou-general-hosei.csv": {
+   "sha256": "58a1c1c8761638e4a4de7b1ac14142310b05429a2b4e6348328bfd5c395f92c8",
+   "bytes": 76764
+  },
+  "mof-archive/2017/kou-general-kessan.csv": {
+   "sha256": "15b6926a89ca5a690008c3668b1c68d4396e41b4550c9d0490489fb6244e3f20",
+   "bytes": 110725
+  },
+  "mof-archive/2017/kou-general.csv": {
+   "sha256": "c402aeb837cbd0f2d399d15f6b17e3a030973a88f5988c69257932d56f4d7ef3",
+   "bytes": 69737
+  },
+  "mof-archive/2017/kou-special-hosei.csv": {
+   "sha256": "69866bddbed09b3555829b1e2d53389090a51cf45fe71afb38b4c5ebf4e84119",
+   "bytes": 30422
+  },
+  "mof-archive/2017/kou-special-kessan.csv": {
+   "sha256": "124ae8e9d59c047e91ea0e725a3dc7ea8588e4dd803d6b90961fd35f8266927f",
+   "bytes": 78287
+  },
+  "mof-archive/2017/kou-special.csv": {
+   "sha256": "7307e4e9a101fb2b1ab2547cf7b3d30c23c74101478db3128abb9307a31818bd",
+   "bytes": 42081
+  },
+  "mof-archive/2017/moku-general-hosei.csv": {
+   "sha256": "576dd746690e8d413d02a68c6472c0576845a1de1125e2de4febca6801618216",
+   "bytes": 240580
+  },
+  "mof-archive/2017/moku-general-kessan.csv": {
+   "sha256": "6bc58917a483f76b7288659002a650a336f695ec252ec6a2fe6cf950c93fcf3a",
+   "bytes": 1045537
+  },
+  "mof-archive/2017/moku-general.csv": {
+   "sha256": "e38bcf4978115df03a60cee5c0c96e2d9d3b603d2231f7489171ba7494fd151a",
+   "bytes": 852588
+  },
+  "mof-archive/2017/moku-special-hosei.csv": {
+   "sha256": "df6c84d99d9f15f21e822e28a0afb066ef4265c96e157f055bcc6995c58b8d4a",
+   "bytes": 68517
+  },
+  "mof-archive/2017/moku-special-kessan.csv": {
+   "sha256": "8017523586fb224038e09907cbc6e89c56b1e654903b3c566cad27816b83c52d",
+   "bytes": 366207
+  },
+  "mof-archive/2017/moku-special.csv": {
+   "sha256": "d4cd75c820d5632180ed84762c28ca95b7fc36800e8e8abf65a6145924a482b1",
+   "bytes": 291839
+  },
+  "mof-archive/2017/summary.json": {
+   "sha256": "a3616c6fc3901d1197e2ec32f41298512c3fbaf6c2cfca6a3b0aa74501d3397b",
+   "bytes": 4171
+  },
+  "mof-archive/2018/kou-general-hosei-2.csv": {
+   "sha256": "5133ec6858c8505d3fd7ade5491232c0bbd580b3f90699ff4b9cdc04189744b2",
+   "bytes": 80150
+  },
+  "mof-archive/2018/kou-general-hosei.csv": {
+   "sha256": "cd5380b4156d8232b8e6d168b5fcc34c4fab2a20aedc49bf4ca03e5d9d6ecb88",
+   "bytes": 57259
+  },
+  "mof-archive/2018/kou-general-kessan.csv": {
+   "sha256": "5438fc61b032df8404d21b657182684b2412c4de20336084d43260d42608dd54",
+   "bytes": 113782
+  },
+  "mof-archive/2018/kou-general.csv": {
+   "sha256": "8aea5a2157db651a14d82f37d800030db9658922a0eba669d14cec5877689073",
+   "bytes": 68277
+  },
+  "mof-archive/2018/kou-special-hosei-2.csv": {
+   "sha256": "b5c3aa289549186f382bfaf8aaab69a3bc147b83841a7baabe1c810e515a7bab",
+   "bytes": 30481
+  },
+  "mof-archive/2018/kou-special-hosei.csv": {
+   "sha256": "8d2bb19cb445581ba4804bad58e1856d2edd7b046187405d103ae46d5bf9c9ec",
+   "bytes": 1111
+  },
+  "mof-archive/2018/kou-special-kessan.csv": {
+   "sha256": "f005394b7a254b34f23072b57c644d7f2f215cc10923fc03e7bc72ebb91a286b",
+   "bytes": 76905
+  },
+  "mof-archive/2018/kou-special.csv": {
+   "sha256": "9cbc52142da7d316d4adb9c9a835403bb4df14d6c321f841401700d68602912f",
+   "bytes": 42162
+  },
+  "mof-archive/2018/moku-general-hosei-2.csv": {
+   "sha256": "ced7a7b3f55677d64687296314166432ca0d161dec91f3db2327f65e6b46bba8",
+   "bytes": 261282
+  },
+  "mof-archive/2018/moku-general-hosei.csv": {
+   "sha256": "7d4b186f63c07f705ec982d21b043d4a85c9ef003b492d52e9a83bc4cb0ad852",
+   "bytes": 85446
+  },
+  "mof-archive/2018/moku-general-kessan.csv": {
+   "sha256": "6932fa68b07a6ede9626927f6a874487d131f23b64fdecd29687f2705c83760b",
+   "bytes": 1059523
+  },
+  "mof-archive/2018/moku-general.csv": {
+   "sha256": "5613cb4346d3b52c2ce7f631d80a83d23b274aff14d28da7f5ef2ab6c054afb4",
+   "bytes": 837307
+  },
+  "mof-archive/2018/moku-special-hosei-2.csv": {
+   "sha256": "e4f99edab943a011b248a5181100aa749f55907fc4bb8bd8e89c674d62aad477",
+   "bytes": 68308
+  },
+  "mof-archive/2018/moku-special-hosei.csv": {
+   "sha256": "81b2b886f58cee5c70df04e06360480987635120833d98cec9d515fc8f0a687f",
+   "bytes": 1528
+  },
+  "mof-archive/2018/moku-special-kessan.csv": {
+   "sha256": "00c3ff85adcfc4b16a819f3fb428942ab35067cd474c4aa35b174832e80501e5",
+   "bytes": 364141
+  },
+  "mof-archive/2018/moku-special.csv": {
+   "sha256": "80995f1542044e593adf5e8277c8b5b64f1eda12b3fe22707cb9276f900ca74c",
+   "bytes": 291006
+  },
+  "mof-archive/2018/summary.json": {
+   "sha256": "237d67c4fe62324f7cbb0cfe3b789be81cbcd15e2a1c49a9ea542ce215e790e1",
+   "bytes": 5302
+  },
+  "mof-archive/2019/kou-general-hosei.csv": {
+   "sha256": "310b3e121730ba1ef8308598b72792ae59ef802d74e01ab9d20bf1c5f1b4bc3b",
+   "bytes": 80192
+  },
+  "mof-archive/2019/kou-general-kessan.csv": {
+   "sha256": "9664e36ff746729849f700e4968183ab04f041f266277bef15d7114618b40642",
+   "bytes": 114318
+  },
+  "mof-archive/2019/kou-general.csv": {
+   "sha256": "f21c8c5833e70f31ea701bfae27bb48796e40977921683dbb87153ddcb3586ba",
+   "bytes": 69172
+  },
+  "mof-archive/2019/kou-special-hosei.csv": {
+   "sha256": "b872b242832b8efd6e9bc0cac78d8528ba00422486270780fdd8d6671d9f8504",
+   "bytes": 35145
+  },
+  "mof-archive/2019/kou-special-kessan.csv": {
+   "sha256": "cf4daedff309178f4c2d3e0b321fbcfe16c9ccc5e45bf6a70a9b606b06c5f1e4",
+   "bytes": 74661
+  },
+  "mof-archive/2019/kou-special.csv": {
+   "sha256": "c86a574b8681080648199dca76473b6dcc9ab36cd62cc0c041cf0e75ffb37068",
+   "bytes": 41878
+  },
+  "mof-archive/2019/moku-general-hosei.csv": {
+   "sha256": "f8a4f67ec020f1553a82369c668df1c7863ade86f512d8ef2d4fc50291ac889c",
+   "bytes": 287709
+  },
+  "mof-archive/2019/moku-general-kessan.csv": {
+   "sha256": "6b60d6e82280248f6860545d5e2b8e845b7b0e2d6afac036f250e42c6e6f7285",
+   "bytes": 1087513
+  },
+  "mof-archive/2019/moku-general.csv": {
+   "sha256": "4cae42429864cb28c7c924517ce734d42cb452af5cfdc2e78aa9ecfaa7c03ba8",
+   "bytes": 859362
+  },
+  "mof-archive/2019/moku-special-hosei.csv": {
+   "sha256": "b199e3a5fc4900abb7ce11612f73bbcc03577ad88a904f3d54ad7b71bf604e8a",
+   "bytes": 78405
+  },
+  "mof-archive/2019/moku-special-kessan.csv": {
+   "sha256": "f8a3460736b94d58bd1f290aa6c21fe0561caf69dbf7c196ad87c820abfbde4f",
+   "bytes": 356754
+  },
+  "mof-archive/2019/moku-special.csv": {
+   "sha256": "e07ce4e6d31c39c05d62623a6f15cbc9d91343ccc8d4c2c63c22ab7e61a1bbbb",
+   "bytes": 285264
+  },
+  "mof-archive/2019/summary.json": {
+   "sha256": "9fbb5c5bf4760ec7f0bee0858445abb4bf5ad37858553d55258c0577ca681bcf",
+   "bytes": 4175
+  },
+  "mof-archive/2020/kou-general-hosei-2.csv": {
+   "sha256": "97544f25261409ffadc27b358ca2a217e8ba8865f3931c113eb0f71bd1cdfd2f",
+   "bytes": 55112
+  },
+  "mof-archive/2020/kou-general-hosei-3.csv": {
+   "sha256": "8cd3c22d11c15b936d0dec426ddd7f4d8d709685fe15ea2ced67872bc5be553f",
+   "bytes": 81270
+  },
+  "mof-archive/2020/kou-general-hosei.csv": {
+   "sha256": "a58f95067e838f0001d44f5f8d159183db2767a11cd3f61a1e1ee5fb8c732529",
+   "bytes": 60881
+  },
+  "mof-archive/2020/kou-general-kessan.csv": {
+   "sha256": "37dbe4c129de1a4fda53f36fbad5aa6a78b096919e216cb88a54febce46a3be5",
+   "bytes": 119805
+  },
+  "mof-archive/2020/kou-general.csv": {
+   "sha256": "0e7bee2aa659179bfd446dce0f4d1d51723874491472dfdc8915ce11d6e8f8a1",
+   "bytes": 69081
+  },
+  "mof-archive/2020/kou-special-hosei-2.csv": {
+   "sha256": "b6db094adc738ce1a05e7d97c64493976bb406ea5261862bd17afc40632f59b5",
+   "bytes": 7269
+  },
+  "mof-archive/2020/kou-special-hosei-3.csv": {
+   "sha256": "174a7d6b862a67733bf1db4030151c181d06e85ebf5e56d47b369fd05cc74391",
+   "bytes": 34783
+  },
+  "mof-archive/2020/kou-special-hosei.csv": {
+   "sha256": "e74941bff8f418760ee44930959dffa88e511f86664c2bce5f5d07f9d49a05c9",
+   "bytes": 12720
+  },
+  "mof-archive/2020/kou-special-kessan.csv": {
+   "sha256": "a01470c030d46e578beb38877adc5a2864dd7d5c24c79c70bb7c010be21b6c44",
+   "bytes": 72695
+  },
+  "mof-archive/2020/kou-special.csv": {
+   "sha256": "6eb6595629d138badec456c5cb2d5ef64c8d5ab96e4a4cd01410bde73c5783e7",
+   "bytes": 41360
+  },
+  "mof-archive/2020/moku-general-hosei-2.csv": {
+   "sha256": "53af6240e04eaf2cbec07a2d8a6c3a7a1aeec35a6c8b8bf09356a66705c0c3bf",
+   "bytes": 83697
+  },
+  "mof-archive/2020/moku-general-hosei-3.csv": {
+   "sha256": "d7ab0460118367366a4d90cf7f8bb9f7a607c3e8d6b880719f959411667c0e2b",
+   "bytes": 342444
+  },
+  "mof-archive/2020/moku-general-hosei.csv": {
+   "sha256": "2db664ac445dfb3d97539c977bee031d1bb48f7623b8f6166ea5c6071d3ad6e6",
+   "bytes": 112721
+  },
+  "mof-archive/2020/moku-general-kessan.csv": {
+   "sha256": "ea825faafa6bdf2f2a4d03eaae2700fad973635bb1ed9360e2b939a124323d30",
+   "bytes": 1103235
+  },
+  "mof-archive/2020/moku-general.csv": {
+   "sha256": "a1b507060fea65bd4353769e7e48d7d557fd4ad56284c1751036c966a654a738",
+   "bytes": 861675
+  },
+  "mof-archive/2020/moku-special-hosei-2.csv": {
+   "sha256": "29f8cca78ccf1ad437cea7434ef7846c53beda832e4013d3f71446f94f3543b8",
+   "bytes": 16622
+  },
+  "mof-archive/2020/moku-special-hosei-3.csv": {
+   "sha256": "97fc736d2b2236ed91fbcf8ff11c411c306e659579b54140ec9dec7b0d0a68d7",
+   "bytes": 80194
+  },
+  "mof-archive/2020/moku-special-hosei.csv": {
+   "sha256": "f51a80f04aada79df001f49a0d991af3fead0396d617abd18719980cbd322227",
+   "bytes": 23750
+  },
+  "mof-archive/2020/moku-special-kessan.csv": {
+   "sha256": "bb08e8b301bcb2712dc86636b7e49ef0207b7b190cacd40c6633c5ee9c46c44a",
+   "bytes": 355817
+  },
+  "mof-archive/2020/moku-special.csv": {
+   "sha256": "f923c545dc8430fba2e348aad0530ab965441dd1a878b5a3a96820cdc7d7c2a2",
+   "bytes": 282685
+  },
+  "mof-archive/2020/summary.json": {
+   "sha256": "275dfefbfb4c3e6ba08cdbb26b3b06b4ab559dc21023d141f4a83dec171fc4cd",
+   "bytes": 6432
+  },
+  "mof-archive/2021/kou-general-hosei.csv": {
+   "sha256": "b6b6a8c72f559461341dfdd34a8bb935422ec8aef1a11a5c1d98987db481c0c0",
+   "bytes": 81956
+  },
+  "mof-archive/2021/kou-general-kessan.csv": {
+   "sha256": "22d44cb1a6ceac6fc22d759d5f0282fcc80f47e205e66723f3a1a334f0b4fe96",
+   "bytes": 126245
+  },
+  "mof-archive/2021/kou-general.csv": {
+   "sha256": "2c8c3221cea3f3d228b53d9bb88b6b60f2f427531657d8ba535696b6d98a86a8",
+   "bytes": 68991
+  },
+  "mof-archive/2021/kou-special-hosei.csv": {
+   "sha256": "202b15777bacad15989c33466bb1f8d9b7dfdbcbb573be0502467c8a456cdd3e",
+   "bytes": 29157
+  },
+  "mof-archive/2021/kou-special-kessan.csv": {
+   "sha256": "c220dbaa1a49d9fdd6118eac3193bbec04e6da1bb38cd6e08dfa8e5bd662eb1c",
+   "bytes": 69882
+  },
+  "mof-archive/2021/kou-special.csv": {
+   "sha256": "e81c1267bcc382eb45d5550b68912feaeae7e855d59ed4fece28813e5f9afcae",
+   "bytes": 41624
+  },
+  "mof-archive/2021/moku-general-hosei.csv": {
+   "sha256": "cda5dc3ec439c4b88222db72a193c93982fd1ed763a51dfb8938f7885e43f9e9",
+   "bytes": 343388
+  },
+  "mof-archive/2021/moku-general-kessan.csv": {
+   "sha256": "d8a3e0f8c1bbc1ee8a982e395c0d6852ef2bad330f1c1e68c6f5259a94ea0789",
+   "bytes": 1121588
+  },
+  "mof-archive/2021/moku-general.csv": {
+   "sha256": "6571c16b0aa4192cfa39892227e2b3daf79740d59738973790bffe1e6e77e99e",
+   "bytes": 866164
+  },
+  "mof-archive/2021/moku-special-hosei.csv": {
+   "sha256": "1ce7d81a3a5fa671848d15f081df5fc931044b779a696c83cd001e3374e29eec",
+   "bytes": 68253
+  },
+  "mof-archive/2021/moku-special-kessan.csv": {
+   "sha256": "6c204119120f1833d75261197ac97aeb5dbde9163661857f00c6f465a544d32e",
+   "bytes": 333587
+  },
+  "mof-archive/2021/moku-special.csv": {
+   "sha256": "743594c513495c4b49ef01f107490c59d5134235883a365a9077da32f79861f8",
+   "bytes": 287931
+  },
+  "mof-archive/2021/summary.json": {
+   "sha256": "9998fc89d8921e2e4902e38412102cbdbc32e41ff46fc538a9f9c239a6baad48",
+   "bytes": 4166
+  },
+  "mof-archive/2022/kou-general-hosei-2.csv": {
+   "sha256": "e6018d7b04145a3c13aa1cb4863fdc14af5f0dbb356918b4377e60784e8cb6c7",
+   "bytes": 82324
+  },
+  "mof-archive/2022/kou-general-hosei.csv": {
+   "sha256": "581f2812bf97d7d0164c92a0356f8249c103e1bd895b8126f3f80e4b3d2d6e17",
+   "bytes": 12444
+  },
+  "mof-archive/2022/kou-general-kessan.csv": {
+   "sha256": "21431c687901eed583ccbba9377f470d4078bc4027f9724b9495cbb51e32825e",
+   "bytes": 130856
+  },
+  "mof-archive/2022/kou-general.csv": {
+   "sha256": "d36d28f49fbf75c0b762061a62e82f740bc5fceceed7462cf909f3ce42a241e6",
+   "bytes": 70665
+  },
+  "mof-archive/2022/kou-special-hosei-2.csv": {
+   "sha256": "1b0f8053a15f8cdf3b28e7e467769b6f02a1ec2522f81707a49f69ae9886db1c",
+   "bytes": 31096
+  },
+  "mof-archive/2022/kou-special-hosei.csv": {
+   "sha256": "e8092e4ad888a18a3d72b83ede9650d9f395a2997b48ae507cfd669515574d7f",
+   "bytes": 491
+  },
+  "mof-archive/2022/kou-special-kessan.csv": {
+   "sha256": "6abcaf9db72dd14f212418d559ca1aa0e20181ba247c554c9b518bcb3a58633b",
+   "bytes": 69694
+  },
+  "mof-archive/2022/kou-special.csv": {
+   "sha256": "389bc2b58d5c30c2daad1819969e55cfdb6757be1f1ede355db70096a34030cb",
+   "bytes": 37701
+  },
+  "mof-archive/2022/moku-general-hosei-2.csv": {
+   "sha256": "3027b6c1e486a00f67fd0f5d441f20fca3e46a1c6cd6f312d1d6e755ab70a54c",
+   "bytes": 388697
+  },
+  "mof-archive/2022/moku-general-hosei.csv": {
+   "sha256": "24e6ff4cbfb4b41646756c7a2c3eb73149bafda1d76a3acb756b3d9973a331e2",
+   "bytes": 14183
+  },
+  "mof-archive/2022/moku-general-kessan.csv": {
+   "sha256": "d18128cdf6a8886f1f84f69cf6d142d269c2016d099b1da12451bd510408c019",
+   "bytes": 1126838
+  },
+  "mof-archive/2022/moku-general.csv": {
+   "sha256": "081e708d8e7c5de7fc3ceaaf2e97841c9034347230bfb73e22faa738f22859bd",
+   "bytes": 877788
+  },
+  "mof-archive/2022/moku-special-hosei-2.csv": {
+   "sha256": "330c305353693c3b3d02d4d62462915247dc2f5c6af78b476746a25c95f2a319",
+   "bytes": 69245
+  },
+  "mof-archive/2022/moku-special-hosei.csv": {
+   "sha256": "c210fb1ff132bddda8610059da8ae8732608607d73e786df42e5bd320fae1cff",
+   "bytes": 879
+  },
+  "mof-archive/2022/moku-special-kessan.csv": {
+   "sha256": "1bf9e8fe917b9f0d95296fc154761bb5dfbf9094f0ea364b28b36ff489cbb062",
+   "bytes": 332993
+  },
+  "mof-archive/2022/moku-special.csv": {
+   "sha256": "c301d01e108cc06a135769cb53ae53f037dc5bb1389f2deee4a778185e871596",
+   "bytes": 260673
+  },
+  "mof-archive/2022/summary.json": {
+   "sha256": "1d7d58277682d363ed78af670e476bd854b28b0f83cf5c78c4dc985b640365a0",
+   "bytes": 5294
+  }
+ }
+}

@@ -87,6 +87,9 @@ export function lifecycleCoverage(kous: readonly LifecycleKou[]): LifecycleCover
 /** 値が無い理由を決める。判定できる範囲だけ。 */
 function absence(stage: LifecycleStage, kou: LifecycleKou, cov: LifecycleCoverage): Pick<StageStatus, 'reason' | 'badge' | 'detail'> {
   if (!cov.stages.get(`${kou.year}|${kou.account}`)?.has(stage)) {
+    if (stage === 'request') {
+      return { reason: 'unknown', badge: '概算要求書は取り込んでいない年度', detail: 'この年度・会計では、概算要求の値が、現行データのどの項にも入っていない。概算要求書を基準データに取り込んでいるのは FY2023 以降で、それより前の年度は予算書（財務省の CSV）だけから作っている。概算要求書が無かったということではない。' };
+    }
     return { reason: 'unknown', badge: '現行データに値なし（理由未確定）', detail: `この年度・会計では、${LIFECYCLE_STAGE_LABEL[stage]}の値が、現行データのどの項にも入っていない。` };
   }
   const has = (s: LifecycleStage) => kou.seenIn.includes(s);
