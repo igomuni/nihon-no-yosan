@@ -33,3 +33,17 @@ describe('the parsers stop on a file they do not recognise (no silent skip)', ()
     expect(r).toEqual({ status: 'unsupported', file: 'a.xml', reason: 'document_id' });
   });
 });
+
+describe('補正予算の事項の CSV の名前と列', async () => {
+  const { hoseiColumns, hoseiFileName, hoseiYearLabelOf, hoseiDocumentIdOf } = await import('./mof-jikou-hosei.ts');
+  it('uses 令和元年度 for the FY2019 supplementary budget (the initial budget says 平成31年度), and names later rounds -2, -3', () => {
+    expect([2018, 2019, 2020].map(hoseiYearLabelOf)).toEqual(['平成30年度', '令和元年度', '令和2年度']);
+    expect([hoseiFileName('general', 1), hoseiFileName('special', 2), hoseiFileName('general', 3)]).toEqual(['jikou-general-hosei.csv', 'jikou-special-hosei-2.csv', 'jikou-general-hosei-3.csv']);
+    expect([hoseiDocumentIdOf(2020, 'general', 3), hoseiDocumentIdOf(2020, 'special', 1)]).toEqual(['202021003', '202022001']);
+  });
+  it('keeps the general and special column sets of the 項 / 事項 CSVs', () => {
+    expect(hoseiColumns(2023, 'general').slice(0, 7)).toEqual(['所管', '組織', '項コード', '項名', '事項名', '主要経費別分類コード', '令和5年度成立予算額(千円)']);
+    expect(hoseiColumns(2023, 'special').slice(0, 9)).toEqual(['所管', '特別会計', '勘定', '組織', '項コード', '項名', '事項名', '分類コード', '令和5年度成立予算額(千円)']);
+    expect(hoseiColumns(2023, 'special').at(-4)).toBe('行の種類');
+  });
+});
