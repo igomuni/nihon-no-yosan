@@ -54,7 +54,6 @@ export function LifecycleFilterPane({ inYear, patternCounts, unsettledCount, fil
       onOpenChange: (o: boolean) => setOpen(o ? field : open === field ? null : open),
     };
   };
-  const current = LIFECYCLE_PATTERNS.find(p => p.id === filters.pattern)!;
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -68,7 +67,6 @@ export function LifecycleFilterPane({ inYear, patternCounts, unsettledCount, fil
         <div className={section}>
           <h3 className={heading}>所管</h3>
           <MultiSelectCombo label="所管" {...comboProps(groups, filters.groups, 'groups', 'group')} />
-          <p className="text-[11px] text-neutral-500">複数の府省が所管する特別会計は、各府省に数える（予算書の所管の原文を分けた）。</p>
         </div>
         <div className={section}>
           <h3 className={heading}>会計</h3>
@@ -77,6 +75,7 @@ export function LifecycleFilterPane({ inYear, patternCounts, unsettledCount, fil
         <div className={`${section} text-xs`}>
           <RegexTextFilter label="組織／勘定" value={filters.org} onChange={org => set({ org })} useRegex={filters.orgRegex} onToggleRegex={orgRegex => set({ orgRegex })} maxRegexLength={MAX_REGEX_PATTERN_LENGTH} />
           <RegexTextFilter label="項名" value={filters.name} onChange={name => set({ name })} useRegex={filters.nameRegex} onToggleRegex={nameRegex => set({ nameRegex })} maxRegexLength={MAX_REGEX_PATTERN_LENGTH} />
+          <RegexTextFilter label="事項名" value={filters.jikouName} onChange={jikouName => set({ jikouName })} useRegex={filters.jikouNameRegex} onToggleRegex={jikouNameRegex => set({ jikouNameRegex })} maxRegexLength={MAX_REGEX_PATTERN_LENGTH} />
         </div>
         <fieldset className={section}>
           <legend className={heading}>値のある段階</legend>
@@ -87,8 +86,6 @@ export function LifecycleFilterPane({ inYear, patternCounts, unsettledCount, fil
               <span className={count}>{patternCounts[p.id].toLocaleString()}</span>
             </label>
           ))}
-          {filters.pattern !== 'all' && <p className="text-[11px] text-neutral-500">{current.definition}。理由が分かっているかどうかは問わない。</p>}
-          <p className="text-[11px] text-neutral-500">件数は、上の条件で絞った項の数。</p>
         </fieldset>
         <fieldset className={section}>
           <legend className={heading}>年度をまたぐ対応</legend>
@@ -101,7 +98,6 @@ export function LifecycleFilterPane({ inYear, patternCounts, unsettledCount, fil
             対応未確定
             <span className={count}>{unsettledCount.toLocaleString()}</span>
           </label>
-          <p className="text-[11px] text-neutral-500">候補なしも含む。前の年度・次の年度の項との対応（最初の年度は次の年度とだけ、最後の年度は前の年度とだけ）。</p>
         </fieldset>
       </div>
     </div>

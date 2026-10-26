@@ -77,9 +77,11 @@ function Amount({ yen }: { yen: number | undefined }) {
     : <td className="whitespace-nowrap px-2 py-1 text-right tabular-nums" title={`${yen.toLocaleString('ja-JP')} 円`}>{yen === 0 ? '0円' : formatSen(yen / 1000)}</td>;
 }
 
-export function LifecycleListPane({ items, jikouLoading, sortKey, sortDir, onSort, selectedId, onSelect, widths, onWidthsChange }: {
+export function LifecycleListPane({ items, notice, jikouLoading, sortKey, sortDir, onSort, selectedId, onSelect, widths, onWidthsChange }: {
   /** 絞り込み・並べ替え済み */
   items: readonly { k: LifecycleKou; a: LifecycleRowAmounts; link: LifecycleLinkStatus | null; chain: LifecycleChain; span: { from: number; to: number; years: number }; jikou: JikouCount | null }[];
+  /** 一覧の代わりに出す文（事項名で絞るのに、事項のデータが届いていないとき）。無ければ null */
+  notice: string | null;
   /** 事項のデータ（`lifecycle/jikou.json.gz`）を読み込み中。このあいだ、事項の列は「…」 */
   jikouLoading: boolean;
   sortKey: LifecycleSortKey;
@@ -90,6 +92,12 @@ export function LifecycleListPane({ items, jikouLoading, sortKey, sortDir, onSor
   widths: Record<string, number>;
   onWidthsChange: (updater: (prev: Record<string, number>) => Record<string, number>) => void;
 }) {
+  // 一覧の項の、段階ごとの額の合計（値のある項だけ。0 は値）
+  const totals = ([['概算要求', 'request'], ['政府案', 'budget'], ['補正後', 'revised'], ['決算', 'spent']] as const).map(([label, k]) => {
+    let sum = 0, n = 0;
+    for (const x of items) { const v = x.a[k]; if (v !== undefined) { sum += v; n++; } }
+    return { label, sum: n === 0 ? null : sum, n };
+  });
   const selectedIdx = selectedId === null ? -1 : items.findIndex(x => x.k.id === selectedId);
   const shown = items.slice(0, Math.max(MAX_ROWS, selectedIdx + 1));
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -112,11 +120,12 @@ export function LifecycleListPane({ items, jikouLoading, sortKey, sortDir, onSor
     setBodyCursor('col-resize');
   }
 
+  if (notice !== null) return <p className="p-4 text-xs text-neutral-500">{notice}</p>;
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex flex-wrap gap-x-5 gap-y-1 border-b border-neutral-200 px-3 py-2 text-xs text-neutral-500 dark:border-neutral-800">
         <span><b className="tabular-nums text-neutral-800 dark:text-neutral-100">{items.length.toLocaleString()}</b> 項</span>
-        <span className="text-neutral-400">「—」は値なし（0 とは別）。合計は「集計」タブ（値のある項だけで足す）</span>
+        {totals.map(t => t.sum !== null && <span key={t.label} title={`値のある ${t.n.toLocaleString()} 項の合計（${t.sum.toLocaleString('ja-JP')} 円）`}>{t.label} <b className="tabular-nums text-neutral-800 dark:text-neutral-100">{formatSen(t.sum / 1000)}</b></span>)}
       </div>
       <div ref={scrollRef} className="min-h-0 flex-1 overflow-auto">
         <table className="border-collapse text-xs" style={{ width: tableWidth, tableLayout: 'fixed' }}>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { jikouAmount, jikouCounts, jikouEvidenceMask, jikouEvidenceOf, jikouIndex, jikouRequestOnly, jikouTable, jikouTotals, type LifecycleJikouData, type LifecycleJikouNode } from './lifecycle-jikou.ts';
+import { jikouAmount, jikouChainNodes, jikouCounts, jikouEvidenceMask, jikouEvidenceOf, jikouIndex, jikouRequestOnly, jikouRowOf, jikouTable, jikouTotals, type LifecycleJikouData, type LifecycleJikouNode } from './lifecycle-jikou.ts';
 
 // 項 A（添字 0: FY2023、1: FY2024）、項 B（添字 2: FY2024、別の項）
 const n = (k: number, year: number, name: string, budget: number | null, revised: number | null = null, request: number | null = null): LifecycleJikouNode => [k, year, name, budget, null, revised, revised === null || budget === null ? null : revised - budget, request];
@@ -121,5 +121,22 @@ describe('jikouCounts', () => {
       ['2024:general:A', { total: 4, suppOnly: 1, requestOnly: 1 }],
       ['2024:general:B', { total: 1, suppOnly: 0, requestOnly: 0 }],
     ]));
+  });
+});
+
+describe('jikouChainNodes / jikouRowOf', () => {
+  // 事項 4（FY2024 の「事項 Y 改」）は、事項 1（FY2023 の「事項 Y」）から続く。事項 6（別の項）は事項 2 から続く
+  it('follows the resolved links both ways from any 事項 of the flow, across 項', () => {
+    expect(jikouChainNodes(index, 4)).toEqual([1, 4]);
+    expect(jikouChainNodes(index, 1)).toEqual([1, 4]);
+    expect(jikouChainNodes(index, 6)).toEqual([2, 6]); // 項をまたぐ対応
+    expect(jikouChainNodes(index, 5)).toEqual([5]);
+  });
+  it('makes a row of the flow with the latest name, and says whether the name changed', () => {
+    const r = jikouRowOf(index, 1);
+    expect([...r.cells.keys()].sort()).toEqual([2023, 2024]);
+    expect(r).toMatchObject({ name: '事項 Y 改', renamed: true, firstYear: 2023, lastYear: 2024 });
+    expect(r.cells.get(2024)?.link).toBe(1);
+    expect(index.nodeByKey.get('2024:general:A|事項 W')).toBe(5);
   });
 });

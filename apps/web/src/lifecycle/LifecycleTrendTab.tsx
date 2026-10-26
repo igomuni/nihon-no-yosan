@@ -60,9 +60,6 @@ export function LifecycleTrendTab({ kou, chain, kous, valuesOf, links, onNavigat
       <section className="flex flex-col gap-2" aria-label="段階ごとの額の年度推移">
         <h3 className="font-semibold">段階ごとの額</h3>
         <TrendChart points={points} current={kou.year} onSelect={y => { const t = rows.find(r => r.k.year === y); if (t && t.k.id !== kou.id) onNavigate(t.k.id); }} />
-        <p className="text-[11px] text-neutral-500">
-          年度の列（または横軸の年）を押すと、その年度に移ります。縦軸は 0 から。値が無い年度・段階は、線をつながず、印も置いていません（0 ではありません）。{points.length === 1 ? '確認できた年度が 1 年だけなので、線はありません。' : ''}下の表が元の値です。
-        </p>
       </section>
 
       <section className="flex flex-col gap-2" aria-label="年度の表">
@@ -108,9 +105,6 @@ export function LifecycleTrendTab({ kou, chain, kous, valuesOf, links, onNavigat
             </tbody>
           </table>
         </div>
-        <p className="text-[11px] text-neutral-500">
-          行を押すと、その年度に移ります。年度の間は、確定（<span className="whitespace-nowrap">同じ鍵、または名前と額の根拠がそろった 1 対 1</span>）した対応だけでたどっています。候補はあるが未確定のところ、候補なしのところで止まります。同じ項と確認できた年度の範囲で、事業が同じとは限りません。
-        </p>
       </section>
     </div>
   );
