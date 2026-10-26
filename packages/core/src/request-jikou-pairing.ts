@@ -4,7 +4,8 @@
  * 入力は、概算要求と当初予算の差の画面用データ（`mof/detail.json.gz`）。行のキー（`mofRowKey`: 年度|種類|会計|所管|府省|勘定|組織|名前）ごとに、事項が
  * [名前, コード, 要求額, 当初予算額] で入っている（片側に無ければ null）。名前でつなぐ処理は `pairByName`（mof-ui）がすでに行っているので、ここではその結果を数える。
  */
-import type { BudgetRequestJikouData, BudgetRequestMofDetail } from './budget-request-mof.ts';
+import type { BudgetRequestMofDetail } from './budget-request-mof.ts';
+import type { BudgetRequestJikouData } from './budget-request-trend.ts';
 
 /** 名前の近さ（文字の 2 字組の Dice 係数。0〜1） */
 export function bigramDice(a: string, b: string): number {

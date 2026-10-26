@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { BudgetRequestJikouData, BudgetRequestMofDetail } from './budget-request-mof.ts';
+import type { BudgetRequestMofDetail } from './budget-request-mof.ts';
+import type { BudgetRequestJikouData } from './budget-request-trend.ts';
 import { bigramDice, jikouKeyOfMofRow, requestJikouPairing } from './request-jikou-pairing.ts';
 
 const j = (...rows: [string, number | null, number | null][]): BudgetRequestMofDetail => ({ j: rows.map(([n, q, b]) => [n, '', q, b]), m: [] });
