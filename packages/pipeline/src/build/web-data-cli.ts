@@ -18,7 +18,7 @@ import type { SiteAbout, SiteAboutAuthority } from '@nihon-no-yosan/core';
 import { buildBudgetRequestJikouYoukyu } from './jikou-youkyu.ts';
 import { buildJikouLinkData } from './jikou-links.ts';
 import { buildLifecycle, lifecycleRequestOnlyRows, lifecycleSources } from './lifecycle.ts';
-import { buildLifecycleJikou } from './lifecycle-jikou.ts';
+import { buildLifecycleJikou, mofRowKouIds, requestOnlyJikou } from './lifecycle-jikou.ts';
 import { buildBudgetRequestMofUi, mofUiMatchesFromDataset } from './mof-ui.ts';
 import { buildBudgetRequestTrend, matchesFromDataset } from './trend.ts';
 import { buildBudgetRequestTrendDetail } from './trend-detail.ts';
@@ -28,6 +28,7 @@ if (!dataset || !outDir) throw new Error('usage: web-data-cli.ts <dataset> <outD
 // 過去年度のデータセット（FY2017〜FY2022。`docs/guides/mof-history.md`）は、ディレクトリがあるときだけ使う（無ければ FY2023 以降だけ）
 const historyDir = historyArg && fs.existsSync(historyArg) ? historyArg : undefined;
 
+const fail = (msg: string): never => { throw new Error(msg); };
 const matches = matchesFromDataset(dataset);
 const trend = buildBudgetRequestTrend({ datasetDir: dataset, matches });
 const kouCsv = trend.files['kou.csv'];
@@ -44,11 +45,22 @@ const mof = buildBudgetRequestMofUi({
 });
 
 const gz = (v: unknown): Buffer => zlib.gzipSync(JSON.stringify(v), { level: 9, mtime: 0 } as zlib.ZlibOptions);
-const lifecycle = buildLifecycle({ datasetDir: dataset, historyDir, requestOfMofRow: mof.requestOfMofRow, requestOnlyRows: lifecycleRequestOnlyRows(mof.data.rows, matches, lifecycleSources(historyDir)) });
-// 事項（当初予算・補正）。項に結べない事項があれば止まる（捨てない）
+const requestOnlyRows = lifecycleRequestOnlyRows(mof.data.rows, matches, lifecycleSources(historyDir));
+const lifecycle = buildLifecycle({ datasetDir: dataset, historyDir, requestOfMofRow: mof.requestOfMofRow, requestOnlyRows });
+// 事項（当初予算・補正・概算要求）。項に結べない事項、予算書の事項に置けない要求額があれば止まる（捨てない）
 const jikouData = buildJikouLinkData(dataset, historyDir);
-const lifecycleJikou = buildLifecycleJikou({ years: jikouData.years, nodes: [...jikouData.nodes, ...jikouData.suppOnly], links: [...jikouData.links, ...jikouData.suppOnlyLinks] }, lifecycle.kous);
+const kouIdOfMofRow = mofRowKouIds(dataset);
+const lifecycleJikou = buildLifecycleJikou(
+  jikouData,
+  lifecycle.kous,
+  lifecycle.links,
+  {
+    matched: new Map([...mof.jikouOfMofRow].map(([row, v]) => [kouIdOfMofRow.get(row) ?? fail(`予算書の項の行が無い: ${row}`), v])),
+    requestOnly: requestOnlyJikou(requestOnlyRows, mof.details, detail.files['jikou.csv'] ?? fail('no jikou.csv')),
+  },
+);
 if (Object.keys(lifecycleJikou.unmatched).length > 0) throw new Error(`項に結べない事項がある: ${JSON.stringify(lifecycleJikou.unmatched)}`);
+if (lifecycleJikou.unplaced > 0) throw new Error(`予算書の事項に置けない概算要求の事項がある: ${lifecycleJikou.unplaced}`);
 
 const outputs: [string, Buffer][] = [
   ['trend/kou.json.gz', trend.uiGz],

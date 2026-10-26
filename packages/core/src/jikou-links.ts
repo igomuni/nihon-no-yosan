@@ -1,6 +1,6 @@
 /**
  * 年度をまたぐ事項の対応（`jikou-links`）。前の年度の事項と次の年度の事項を、根拠つきで結ぶ。仕様: docs/guides/mof-history.md（事項の年度をまたぐ対応）。
- * 純粋な関数。項の対応（`lifecycle-links.ts`）と同じ考え方で、会計（一般・特別）をまたぐ対応は探さない。事項の鍵は年度の中で一意（確かめ済み）。
+ * 純粋な関数。`same_name_linked_kou`（事項名が同じで、項が確定した対応でつながる。概算要求にだけある項の事項）は、画面用のデータを作るときに足す（`lifecycle-jikou.md`）。項の対応（`lifecycle-links.ts`）と同じ考え方で、会計（一般・特別）をまたぐ対応は探さない。事項の鍵は年度の中で一意（確かめ済み）。
  *
  * 1. 同じ鍵（`same_key`）の事項は結ぶ。鍵は、一般会計が 所管|組織|項コード|項名|事項名、特別会計が 特別会計|勘定|組織|項コード|項名|事項名（特別会計の所管は、目次の表記が年度で変わるので、鍵に入れない）。状態は `RESOLVED`。
  * 2. 同じ鍵の相手が無い事項について、相手の年度の同じ会計の全事項から候補を探す。根拠は次の 4 種類。
@@ -13,7 +13,7 @@
  */
 
 export type JikouLinkStatus = 'RESOLVED' | 'AMBIGUOUS' | 'UNRESOLVED';
-export type JikouLinkEvidence = 'same_key' | 'same_name_other_item' | 'same_item_other_name' | 'same_name_other_org' | 'prev_amount_eq_revised' | 'prev_amount_eq_budget';
+export type JikouLinkEvidence = 'same_key' | 'same_name_other_item' | 'same_item_other_name' | 'same_name_other_org' | 'prev_amount_eq_revised' | 'prev_amount_eq_budget' | 'same_name_linked_kou';
 /** 次の年度の前年度予算額と、前の年度の額の突き合わせ。`eq_revised` 改予算額と一致、`eq_budget` 当初の額と一致、`ne` どちらとも違う、`zero` 前年度予算額が 0（比べない）、`n/a` どちらかに値が無い */
 export type JikouLinkAmount = 'eq_revised' | 'eq_budget' | 'ne' | 'zero' | 'n/a';
 
@@ -146,6 +146,43 @@ export function linkSuppOnly(nodes: readonly JikouNode[], suppOnly: readonly Jik
     const prev = at.get(`${s.year - 1}|${key}`);
     if (prev !== undefined) connect(prev, i);
   });
+  return added;
+}
+
+/**
+ * 項の確定した対応で、事項を結ぶ（概算要求にだけある項の事項。鍵では結べない）。名前が同じで、項が確定した対応でつながる、隣り合う年度の事項を、`same_name_linked_kou` で結ぶ。
+ * `nodes` の `firstExtra` 以降が対象。`kouOf[i]` = 事項 i の項の id、`kouPairs` = 確定した項の対応 [前の年度の項の id, 次の年度の項の id]。
+ * 同じ名前の事項が相手の項に 2 つ以上あるとき、すでに確定した対応が出入りしている事項には、結ばない。
+ */
+export function linkExtrasByKou(nodes: readonly JikouNode[], firstExtra: number, kouOf: readonly string[], kouPairs: readonly (readonly [string, string])[], links: readonly JikouLink[]): JikouLink[] {
+  const byKouName = new Map<string, number[]>();
+  nodes.forEach((n, i) => { const k = `${kouOf[i]}|${n.name}`; (byKouName.get(k) ?? byKouName.set(k, []).get(k)!).push(i); });
+  const nextKou = new Map<string, string[]>(), prevKou = new Map<string, string[]>();
+  for (const [a, b] of kouPairs) {
+    (nextKou.get(a) ?? nextKou.set(a, []).get(a)!).push(b);
+    (prevKou.get(b) ?? prevKou.set(b, []).get(b)!).push(a);
+  }
+  const hasOut = new Set<number>(), hasIn = new Set<number>();
+  for (const l of links) if (l.status === 'RESOLVED' && l.from >= 0 && l.to >= 0) { hasOut.add(l.from); hasIn.add(l.to); }
+  const added: JikouLink[] = [];
+  const only = (kous: readonly string[] | undefined, name: string, year: number): number | undefined => {
+    if (!kous || kous.length !== 1) return undefined;
+    const c = (byKouName.get(`${kous[0]}|${name}`) ?? []).filter(j => nodes[j]!.year === year);
+    return c.length === 1 ? c[0] : undefined;
+  };
+  const connect = (from: number, to: number): void => {
+    if (hasOut.has(from) || hasIn.has(to)) return;
+    hasOut.add(from);
+    hasIn.add(to);
+    added.push({ from, to, evidence: ['same_name_linked_kou'], amount: 'n/a', status: 'RESOLVED' });
+  };
+  for (let i = firstExtra; i < nodes.length; i++) {
+    const n = nodes[i]!;
+    const next = only(nextKou.get(kouOf[i]!), n.name, n.year + 1);
+    if (next !== undefined) connect(i, next);
+    const prev = only(prevKou.get(kouOf[i]!), n.name, n.year - 1);
+    if (prev !== undefined) connect(prev, i);
+  }
   return added;
 }
 

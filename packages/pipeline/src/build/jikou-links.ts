@@ -4,7 +4,7 @@
  * 入力: 事項の CSV（`mof-archive/{年度}/jikou-{general,special}.csv`。FY2017〜FY2022 は過去年度のデータセット、FY2023〜FY2026 は基準データ。FY2025 は国会への提出時の版）と、
  * 補正の事項の CSV（`jikou-{general,special}-hosei{,-2,-3}.csv`。FY2017〜FY2024。補正後の額に使う）。名前は `nameKey` で揃える。
  */
-import { buildJikouLinks, jikouLinkKeyOf, jikouRunLengths, linkSuppOnly, nameKey, parseCsv, type JikouLink, type JikouNode } from '@nihon-no-yosan/core';
+import { buildJikouLinks, jikouLinkKeyOf, jikouRunLengths, nameKey, parseCsv, type JikouLink, type JikouNode } from '@nihon-no-yosan/core';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
@@ -40,8 +40,6 @@ export interface JikouLinkData {
   links: JikouLink[];
   /** 補正にだけある事項（当初予算に載っていない。額は補正後・差引額だけ）。`nodes` と `links` には含めない（件数・継続年数は当初予算の事項のまま） */
   suppOnly: JikouNode[];
-  /** 補正にだけある事項の対応（同じ鍵だけ）。添字は `nodes` の後ろに `suppOnly` を続けた並び */
-  suppOnlyLinks: JikouLink[];
   /** 補正後の額が付いた事項の数（年度ごと） */
   revisedCount: Record<number, number>;
 }
@@ -110,7 +108,7 @@ export function buildJikouLinkData(datasetDir: string, historyDir?: string): Jik
     revisedCount[year] = nodes.filter(n => n.year === year && n.revised !== undefined).length;
   }
   const links = buildJikouLinks(nodes, years);
-  return { years, nodes, runs: jikouRunLengths(nodes, links), links, suppOnly, suppOnlyLinks: linkSuppOnly(nodes, suppOnly, links), revisedCount };
+  return { years, nodes, runs: jikouRunLengths(nodes, links), links, suppOnly, revisedCount };
 }
 
 export const jikouNodeId = (n: JikouNode): string => `${n.year}:${jikouLinkKeyOf(n)}`;
