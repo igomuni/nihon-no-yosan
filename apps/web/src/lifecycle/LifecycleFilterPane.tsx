@@ -77,6 +77,7 @@ export function LifecycleFilterPane({ inYear, patternCounts, unsettledCount, fil
         <div className={`${section} text-xs`}>
           <RegexTextFilter label="組織／勘定" value={filters.org} onChange={org => set({ org })} useRegex={filters.orgRegex} onToggleRegex={orgRegex => set({ orgRegex })} maxRegexLength={MAX_REGEX_PATTERN_LENGTH} />
           <RegexTextFilter label="項名" value={filters.name} onChange={name => set({ name })} useRegex={filters.nameRegex} onToggleRegex={nameRegex => set({ nameRegex })} maxRegexLength={MAX_REGEX_PATTERN_LENGTH} />
+          <RegexTextFilter label="事項名（「事項」タブ）" value={filters.jikouName} onChange={jikouName => set({ jikouName })} useRegex={filters.jikouNameRegex} onToggleRegex={jikouNameRegex => set({ jikouNameRegex })} maxRegexLength={MAX_REGEX_PATTERN_LENGTH} />
         </div>
         <fieldset className={section}>
           <legend className={heading}>値のある段階</legend>

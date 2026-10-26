@@ -57,6 +57,10 @@ export interface JikouIndex {
   requestRead: ReadonlySet<number>;
   /** 事項 → 前の年度へ入ってくる確定した対応（`links` の添字）。相手が 1 つに決まる事項だけ */
   inLink: ReadonlyMap<number, number>;
+  /** 事項 → 次の年度へ出ていく確定した対応（`links` の添字）。相手が 1 つに決まる事項だけ */
+  outLink: ReadonlyMap<number, number>;
+  /** `${項の id}|${事項名}` → 事項（`nodes` の添字）。1 つの項の 1 年度に、同じ名前の事項は無い */
+  nodeByKey: ReadonlyMap<string, number>;
 }
 
 export function jikouIndex(data: LifecycleJikouData): JikouIndex {
@@ -69,11 +73,12 @@ export function jikouIndex(data: LifecycleJikouData): JikouIndex {
     (into.get(l[1]) ?? into.set(l[1], []).get(l[1])!).push(i);
     (out.get(l[0]) ?? out.set(l[0], []).get(l[0])!).push(i);
   });
-  const inLink = new Map<number, number>();
+  const inLink = new Map<number, number>(), outLink = new Map<number, number>();
   data.links.forEach((l, i) => {
-    if (into.get(l[1])!.length === 1 && out.get(l[0])!.length === 1) inLink.set(l[1], i);
+    if (into.get(l[1])!.length === 1 && out.get(l[0])!.length === 1) { inLink.set(l[1], i); outLink.set(l[0], i); }
   });
-  return { data, kouOf, nodesOf, requestRead: new Set(data.requestRead), inLink };
+  const nodeByKey = new Map(data.nodes.map((n, i) => [`${data.kous[n[0]]}|${n[2]}`, i]));
+  return { data, kouOf, nodesOf, requestRead: new Set(data.requestRead), inLink, outLink, nodeByKey };
 }
 
 export interface JikouCell {
@@ -203,4 +208,34 @@ export function jikouCounts(index: JikouIndex): Map<string, JikouCount> {
     else if (jikouRequestOnly(n)) c.requestOnly++;
   }
   return out;
+}
+
+/** 事項 1 件を通る、年度をまたぐ 1 本の流れ（確定した対応だけ。項が変わっても進む）。年度の古い順。選んだ事項を含む */
+export function jikouChainNodes(index: JikouIndex, node: number): number[] {
+  const { data } = index;
+  const back: number[] = [];
+  for (let n = node; ;) {
+    const li = index.inLink.get(n);
+    if (li === undefined) break;
+    n = data.links[li]![0];
+    back.push(n);
+  }
+  const fwd: number[] = [];
+  for (let n = node; ;) {
+    const li = index.outLink.get(n);
+    if (li === undefined) break;
+    n = data.links[li]![1];
+    fwd.push(n);
+  }
+  return [...back.reverse(), node, ...fwd];
+}
+
+/** 事項 1 件の、年度をまたぐ 1 本の流れを、表の行（`JikouRow`）にする。項の年度の並びに限らない（項が変わった年度も含む） */
+export function jikouRowOf(index: JikouIndex, node: number): JikouRow {
+  const { data } = index;
+  const chain = jikouChainNodes(index, node);
+  const cells = new Map<number, JikouCell>();
+  chain.forEach((n, i) => cells.set(data.nodes[n]![1], i === 0 ? { node: n } : { node: n, link: index.inLink.get(n)! }));
+  const names = chain.map(n => data.nodes[n]![2]);
+  return { cells, name: names[names.length - 1]!, renamed: new Set(names).size > 1, firstYear: data.nodes[chain[0]!]![1], lastYear: data.nodes[chain[chain.length - 1]!]![1] };
 }

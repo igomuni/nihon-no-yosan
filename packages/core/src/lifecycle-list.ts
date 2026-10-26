@@ -27,11 +27,14 @@ export interface LifecycleFilters {
   name: string;
   nameRegex: boolean;
   pattern: LifecyclePattern;
+  /** 事項名（事項の一覧だけで使う。空 = すべて）。項の一覧は変えない */
+  jikouName: string;
+  jikouNameRegex: boolean;
   /** 年度をまたぐ対応。`unsettled` = 対応が確定していない項（`lifecycleLinkState` が AMBIGUOUS または UNRESOLVED） */
   links: 'all' | 'unsettled';
 }
 
-export const INITIAL_LIFECYCLE_FILTERS: LifecycleFilters = { groups: [], accts: [], org: '', orgRegex: false, name: '', nameRegex: false, pattern: 'all', links: 'all' };
+export const INITIAL_LIFECYCLE_FILTERS: LifecycleFilters = { groups: [], accts: [], org: '', orgRegex: false, name: '', nameRegex: false, jikouName: '', jikouNameRegex: false, pattern: 'all', links: 'all' };
 
 /** 所管の表示（一覧の列）。1 つの府省はその名前、複数は「N所管」（府省名の一覧は、ツールチップ・詳細に出す） */
 export function lifecycleGroupOf(k: LifecycleKou): string {
