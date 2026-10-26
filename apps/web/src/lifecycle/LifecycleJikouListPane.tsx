@@ -17,11 +17,11 @@ const COLS: { key: Exclude<JikouSortKey, 'size'>; label: string; left?: boolean;
   { key: 'org', label: '組織／勘定', left: true },
   { key: 'kou', label: '項名', left: true },
   { key: 'name', label: '事項名', left: true },
+  { key: 'span', label: '確認済み年度', left: true, title: '確定した対応（同じ鍵、または名前と額の根拠がそろった 1 対 1）でたどれた年度の範囲と年数。項が変わった年度も含む。事業が同じとは限らない' },
   { key: 'request', label: '概算要求', title: '概算要求書（総表）の事項の要求額' },
   { key: 'budget', label: '政府案', title: '予算書の当初予算（提出時）の額' },
   { key: 'revised', label: '補正後', title: '改予算額（補正の事項の記録がある事項。FY2024 まで）' },
   { key: 'suppNet', label: '補正の差引', title: '補正の差引額（補正が複数回の年度は、その事項が載る最後の回の値）' },
-  { key: 'span', label: '確認済み年度', left: true, title: '確定した対応（同じ鍵、または名前と額の根拠がそろった 1 対 1）でたどれた年度の範囲と年数。項が変わった年度も含む。事業が同じとは限らない' },
 ];
 
 /** 額の列（千円）。値が無いときは「—」（0 とは別） */
@@ -72,7 +72,6 @@ export function LifecycleJikouListPane({ items, loading, failed, sortKey, sortDi
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex flex-wrap gap-x-5 gap-y-1 border-b border-neutral-200 px-3 py-2 text-xs text-neutral-500 dark:border-neutral-800">
         <span><b className="tabular-nums text-neutral-800 dark:text-neutral-100">{items.length.toLocaleString()}</b> 事項</span>
-        <span className="text-neutral-400">「—」は値なし（0 とは別）。決算は事項の単位が無い。「値のある段階」「年度をまたぐ対応」の絞り込みは、項の一覧だけ。</span>
       </div>
       <div ref={scrollRef} className="min-h-0 flex-1 overflow-auto">
         <table className="border-collapse text-xs" style={{ width: tableWidth, tableLayout: 'fixed' }}>
@@ -114,14 +113,14 @@ export function LifecycleJikouListPane({ items, loading, failed, sortKey, sortDi
                   <td className="break-words px-2 py-1 text-left">{lifecycleOrgOf(k)}</td>
                   <td className="break-words px-2 py-1 text-left">{k.name}</td>
                   <td className="break-words px-2 py-1 text-left font-medium">{r.name}</td>
-                  <Amount v={r.request} />
-                  <Amount v={r.budget} />
-                  <Amount v={r.revised} />
-                  <Amount v={r.suppNet} />
                   <td className="whitespace-nowrap px-2 py-1 text-left tabular-nums" title={`FY${r.span.from}${r.span.from === r.span.to ? '' : `〜FY${r.span.to}`}（${r.span.years} 年）。確定した対応だけでたどった範囲`}>
                     {r.span.from === r.span.to ? r.span.from : `${r.span.from}–${r.span.to}`}
                     <span className="ml-1 text-neutral-400">({r.span.years}年)</span>
                   </td>
+                  <Amount v={r.request} />
+                  <Amount v={r.budget} />
+                  <Amount v={r.revised} />
+                  <Amount v={r.suppNet} />
                 </tr>
               );
             })}

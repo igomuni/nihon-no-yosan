@@ -24,7 +24,7 @@ export function LifecycleJikouDetail({ jikou, loading, failed, node, kouOf, onSe
   const table = useMemo<JikouTable | null>(() => (jikou && node !== null ? { years: flow.map(n => jikou.data.nodes[n]![1]), rows: [jikouRowOf(jikou, node)] } : null), [jikou, node, flow]);
   if (failed) return <p className="p-4 text-xs text-red-700">事項の読み込みに失敗しました（<code>npm run build:data</code> で作る）。</p>;
   if (loading || !jikou) return <p className="p-4 text-xs text-neutral-500">事項を読み込み中…</p>;
-  if (node === null || !table) return <p className="p-4 text-xs text-neutral-500">一覧から事項を選ぶと、その事項の概算要求・政府案・補正後を、年度をまたいで、グラフ・表で見られます。決算は事項の単位が無いので出ません。値が無い所は 0 ではなく「—」と表示し、補完しません。</p>;
+  if (node === null || !table) return <p className="p-4 text-xs text-neutral-500">一覧から事項を選んでください。</p>;
   const n = jikou.data.nodes[node]!;
   const kou = kouOf.get(jikou.data.kous[n[0]]!);
   const row = table.rows[0]!;
@@ -34,9 +34,7 @@ export function LifecycleJikouDetail({ jikou, loading, failed, node, kouOf, onSe
       <div>
         <p className="text-[11px] text-neutral-500">{kou ? `${kouTitle(kou)} › ${kou.name}` : ''} · FY{n[1]}</p>
         <h2 className="text-base font-semibold">{n[2]}</h2>
-        <p className="mt-0.5 text-[11px] text-neutral-500">
-          確認済みの年度: <b>FY{row.firstYear}{row.firstYear === row.lastYear ? '' : `〜FY${row.lastYear}`}</b>（{flow.length} 年）。確定した対応（同じ鍵、または名前と額の根拠がそろった 1 対 1）だけでたどっています。項が変わった年度も含みます。事業が同じとは限りません。
-        </p>
+        <p className="mt-0.5 text-[11px] text-neutral-500">確認済みの年度: <b>FY{row.firstYear}{row.firstYear === row.lastYear ? '' : `〜FY${row.lastYear}`}</b>（{flow.length} 年）</p>
         {kou && (
           <button type="button" onClick={() => onOpenKou(kou)} className="mt-1.5 rounded border border-neutral-300 px-2 py-0.5 text-[11px] text-neutral-700 hover:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800">
             この項（{kou.name}）の詳細を開く
@@ -47,17 +45,11 @@ export function LifecycleJikouDetail({ jikou, loading, failed, node, kouOf, onSe
       <section className="flex flex-col gap-2" aria-label="段階ごとの額の年度推移">
         <h3 className="font-semibold">段階ごとの額</h3>
         <JikouChart table={table} jikou={jikou} current={n[1]} onSelect={y => { if (y !== n[1]) onSelectNode(yearNode(y)); }} />
-        <p className="text-[11px] text-neutral-500">
-          年度の列（または横軸の年）を押すと、その年度の事項に移ります。縦軸は 0 から。値が無い年度・段階は、線をつながず、印も置いていません（0 ではありません）。決算は事項の単位が無いので、描いていません（項の決算は、項の詳細の「年度推移」で見られます）。
-        </p>
       </section>
 
       <section className="flex flex-col gap-2" aria-label="年度の表">
         <h3 className="font-semibold">年度ごとの額と対応</h3>
         <JikouYearTable table={table} jikou={jikou} selectedYear={n[1]} onYear={y => { if (y !== n[1]) onSelectNode(yearNode(y)); }} />
-        <p className="text-[11px] text-neutral-500">
-          行を押すと、その年度の事項に移ります。「—」は現行のデータに値が無いこと（0 とは別）。「対応」は、前の年度の事項との対応の根拠（確定したものだけ）で、マウスを重ねると詳細が出ます。補正の差引額は、補正が複数回の年度は、その事項が載る最後の回の値です。
-        </p>
       </section>
     </div>
   );

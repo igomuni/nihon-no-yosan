@@ -14,6 +14,7 @@ import {
   jikouSuppOnly,
   jikouTotals,
   type JikouIndex,
+  type JikouLinkEvidence,
   type JikouMeasure,
   type JikouRow,
   type JikouTable,
@@ -28,6 +29,17 @@ const AMOUNT_LABEL: Record<(typeof JIKOU_AMOUNT)[number], string> = {
   ne: '次の年度の前年度予算額が、前の年度の改予算額・政府案の額のどちらとも違う',
   zero: '次の年度の前年度予算額が 0（比べない）',
   'n/a': '比べられない（どちらかに値が無い）',
+};
+
+/** 対応の根拠の短い言い方（年度の表。詳しい説明は、マウスを重ねたときの文） */
+const SHORT_EVIDENCE: Record<JikouLinkEvidence, string> = {
+  same_key: '同じ鍵',
+  same_name_other_item: '同じ名前（項が違う）',
+  same_item_other_name: '同じ項（名前が違う）',
+  same_name_other_org: '同じ名前（所属が違う）',
+  prev_amount_eq_revised: '前年度予算額 = 前年の改予算額',
+  prev_amount_eq_budget: '前年度予算額 = 前年の政府案',
+  same_name_linked_kou: '同じ名前（項が対応）',
 };
 
 export const cell = (v: number | null): string => (v === null ? '—' : v === 0 ? '0円' : formatSen(v));
@@ -115,7 +127,7 @@ export function JikouYearTable({ table, jikou, selectedYear, onYear }: { table: 
                     <>
                       <span className={renamed ? 'font-medium text-amber-700 dark:text-amber-400' : ''} title={renamed ? `前の年度の事項名: ${prevNode![2]}` : undefined}>{node[2]}</span>
                       {renamed && <span className="ml-1 text-[10px] text-neutral-500">（名称が変わった）</span>}
-                      {link && <span className="block text-[10px] text-neutral-500" title={`${jikouEvidenceOf(link[2]).map(e => JIKOU_EVIDENCE_LABEL[e]).join(' / ')}。${AMOUNT_LABEL[JIKOU_AMOUNT[link[3]]!]}`}>対応: {jikouEvidenceOf(link[2]).map(e => (e === 'same_key' ? '同じ鍵' : JIKOU_EVIDENCE_LABEL[e])).join('・')}</span>}
+                      {link && <span className="block text-[10px] text-neutral-500" title={`${jikouEvidenceOf(link[2]).map(e => JIKOU_EVIDENCE_LABEL[e]).join(' / ')}。${AMOUNT_LABEL[JIKOU_AMOUNT[link[3]]!]}`}>対応: {jikouEvidenceOf(link[2]).map(e => SHORT_EVIDENCE[e]).join('・')}</span>}
                     </>
                   ) : <span className="text-neutral-400">この年度に事項なし</span>)
                     : <span className="text-neutral-500">{table.rows.filter(r => r.cells.has(y)).length}/{table.rows.length} 事項</span>}

@@ -82,7 +82,6 @@ export function LifecycleJikouTab({ kou, chain, kous, valuesOf, jikou, loading, 
   const labels = useMemo(() => (jikou ? jikouLabels(rows, kou.year, jikou) : []), [rows, kou.year, jikou]);
   const memberYears = useMemo(() => members.map(m => m.k.year), [members]);
   const years = useMemo(() => table?.years ?? memberYears, [table, memberYears]);
-  const noData = memberYears.filter(y => !years.includes(y));
   const chosenTable = useMemo<JikouTable>(() => ({ years, rows: chosen }), [years, chosen]);
   const one = chosen.length === 1 ? chosen[0]! : null;
   const select = (key: string): void => { onPick([key]); top.current?.scrollIntoView({ block: 'start', behavior: 'smooth' }); };
@@ -92,12 +91,11 @@ export function LifecycleJikouTab({ kou, chain, kous, valuesOf, jikou, loading, 
       <div>
         <p className="text-[11px] text-neutral-500">{kouTitle(kou)} · FY{kou.year}</p>
         <h2 className="text-base font-semibold">{kou.name}</h2>
-        <p className="mt-0.5 text-[11px] text-neutral-500">項の下の事項（概算要求・予算書の当初予算・補正）。年度は、項の年度推移で確認できた範囲（FY{memberYears[0]}{memberYears.length > 1 ? `〜FY${memberYears[memberYears.length - 1]}` : ''}）のうち、事項のある年度。</p>
       </div>
 
       {failed ? <p className="text-red-700">事項の読み込みに失敗しました（<code>npm run build:data</code> で作る）。</p>
         : loading || !jikou || !table ? <p className="text-neutral-500">事項を読み込み中…</p>
-        : rows.length === 0 ? <p className="text-neutral-500">この項の事項は、現行のデータにありません。{years.length === 0 ? '予算書の事項は FY2026 まで、概算要求書の事項は FY2023 以降です。' : ''}</p>
+        : rows.length === 0 ? <p className="text-neutral-500">この項の事項は、現行のデータにありません。</p>
         : (
           <>
             <section ref={top} className="flex flex-col gap-1.5" aria-label="事項の選択">
@@ -111,7 +109,7 @@ export function LifecycleJikouTab({ kou, chain, kous, valuesOf, jikou, loading, 
                 onOpenChange={setOpen}
               />
               <p className="text-[11px] text-neutral-500">
-                {one ? `${span(one)}${one.renamed ? ' · 名称が変わっています（下の表に年度ごとの名前）' : ''}` : chosen.length === 0 ? '事項を選んでください。' : `選んだ ${chosen.length} 事項の合計（値のある事項だけを足す）。`}
+                {one ? `${span(one)}${one.renamed ? ' · 名称が変わった' : ''}` : chosen.length === 0 ? '事項を選んでください' : `選んだ ${chosen.length} 事項の合計`}
               </p>
             </section>
 
@@ -120,17 +118,11 @@ export function LifecycleJikouTab({ kou, chain, kous, valuesOf, jikou, loading, 
                 <section className="flex flex-col gap-2" aria-label="段階ごとの額の年度推移">
                   <h3 className="font-semibold">段階ごとの額{one ? '' : '（選んだ事項の合計）'}</h3>
                   <JikouChart table={chosenTable} jikou={jikou} current={kou.year} onSelect={y => { const m = members.find(x => x.k.year === y); if (m && m.k.id !== kou.id) onNavigate(m.k.id); }} />
-                  <p className="text-[11px] text-neutral-500">
-                    年度の列（または横軸の年）を押すと、その年度の項に移ります。縦軸は 0 から。値が無い年度・段階は、線をつながず、印も置いていません（0 ではありません）。決算は事項の単位が無いので、描いていません（項の決算は、項の「年度推移」で見られます）。
-                  </p>
                 </section>
 
                 <section className="flex flex-col gap-2" aria-label="年度の表">
                   <h3 className="font-semibold">年度ごとの額{one ? 'と対応' : '（選んだ事項の合計）'}</h3>
                   <JikouYearTable table={chosenTable} jikou={jikou} selectedYear={kou.year} onYear={y => { const m = members.find(x => x.k.year === y); if (m && m.k.id !== kou.id) onNavigate(m.k.id); }} />
-                  <p className="text-[11px] text-neutral-500">
-                    行を押すと、その年度の項に移ります。「—」は現行のデータに値が無いこと（0 とは別）。{one ? '「対応」は、前の年度の事項との対応の根拠（確定したものだけ）で、マウスを重ねると詳細が出ます。' : '合計は、値のある事項だけの足し算で、一部の事項にしか値が無い年度は、その数（n/m 事項）を添えます。'}補正の差引額は、補正が複数回の年度は、その事項が載る最後の回の値です。
-                  </p>
                 </section>
 
                 {!one && <JikouBreakdown rows={chosen} jikou={jikou} year={kou.year} onSelect={select} />}
@@ -141,17 +133,6 @@ export function LifecycleJikouTab({ kou, chain, kous, valuesOf, jikou, loading, 
             <AllJikou table={table} jikou={jikou} years={years} members={members} kou={kou} onNavigate={onNavigate} onPick={select} picked={chosen.map(rowKey)} />
           </>
         )}
-
-      <section className="flex flex-col gap-1 rounded border border-neutral-200 p-2 text-[11px] text-neutral-600 dark:border-neutral-700 dark:text-neutral-300" aria-label="この表にないもの">
-        <p className="font-semibold">この表にないもの</p>
-        <ul className="list-disc pl-4">
-          <li>事項の単位の決算。決算は項と目の単位で（事項の列が無い）、目は事項の下に結べないので、項の「1年の推移」と「年度推移」で見る。</li>
-          <li>概算要求の事項は、概算要求書（総表）の要求額。予算書の事項と、同じ項の中で名前でつないでいる（つながらない事項は「要求のみ」「予算のみ」）。要求書の前年度予算額は、事項の単位では出していない。名前が変わった事項は、つながらない。</li>
-          <li>補正後・補正の差引額は、補正の事項の記録がある年度（FY2024 まで）の事項だけ。FY2025 以降は、現行のデータに補正の事項が無い。補正が複数回の年度は、その事項が載る最後の回の値で、年度の合計ではない。項の差引額は、項が載る最後の回（事項の無い「項のみ」の行を含む）の値なので、補正の差引額の事項の計が項の額と合わないことがある。</li>
-          {noData.length > 0 && table && rows.length > 0 && <li>{noData.map(y => `FY${y}`).join('・')}: 事項のデータが無い年度（その年度に、予算書にも概算要求書にも、この項の事項が無い）。</li>}
-          <li>年度の間の対応は、確定したもの（同じ鍵、または名前と額の根拠がそろった 1 対 1）だけでたどっている。対応が確定しない事項は、別の行になる。事業が同じとは限らない。</li>
-        </ul>
-      </section>
     </div>
   );
 }
@@ -182,7 +163,6 @@ function JikouBreakdown({ rows, jikou, year, onSelect }: { rows: readonly JikouR
           </tbody>
         </table>
       </div>
-      <p className="text-[11px] text-neutral-500">行を押すと、その事項だけを選びます。</p>
     </section>
   );
 }
@@ -233,7 +213,6 @@ function Reconcile({ table, jikou, years, members, valuesOf, current }: { table:
             </tbody>
           </table>
         </div>
-        <p className="text-[11px] text-neutral-500">事項の計は、値のある事項だけの合計で、一部の事項にしか値が無い年度は、その数を添えます。項の額は、概算要求が総表、政府案・補正後が予算書の目の合計（導出）で、事項の計と合うはずです。値が無い年度は「—」。</p>
       </div>
     </details>
   );
@@ -291,7 +270,6 @@ function AllJikou({ table, jikou, years, members, kou, onNavigate, onPick, picke
               </tbody>
             </table>
           </div>
-          <p className="text-[11px] text-neutral-500">{MEASURE(measure).hint}。行を押すと、その事項だけを選びます（選んでいる事項は、薄く色が付きます）。</p>
         </div>
       )}
     </details>

@@ -192,7 +192,7 @@ export function LifecyclePage() {
         <div>
           <h1 className="text-base font-semibold">予算の推移</h1>
           <p className="mt-0.5 text-[11px] text-neutral-500">
-            項の粒度（事項は「事項」タブ） · FY{years[0]}–FY{years[years.length - 1]} · 概算要求 → 政府案 → 補正 → 決算 · 値が無い段階は補完せず「値なし」と表示
+            項の粒度 · FY{years[0]}–FY{years[years.length - 1]} · 概算要求 → 政府案 → 補正 → 決算 · 値が無い段階は補完せず「値なし」と表示
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-2">

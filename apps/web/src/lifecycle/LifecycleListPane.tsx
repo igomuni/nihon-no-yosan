@@ -116,7 +116,6 @@ export function LifecycleListPane({ items, jikouLoading, sortKey, sortDir, onSor
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex flex-wrap gap-x-5 gap-y-1 border-b border-neutral-200 px-3 py-2 text-xs text-neutral-500 dark:border-neutral-800">
         <span><b className="tabular-nums text-neutral-800 dark:text-neutral-100">{items.length.toLocaleString()}</b> 項</span>
-        <span className="text-neutral-400">「—」は値なし（0 とは別）。合計は「集計」タブ（値のある項だけで足す）</span>
       </div>
       <div ref={scrollRef} className="min-h-0 flex-1 overflow-auto">
         <table className="border-collapse text-xs" style={{ width: tableWidth, tableLayout: 'fixed' }}>
