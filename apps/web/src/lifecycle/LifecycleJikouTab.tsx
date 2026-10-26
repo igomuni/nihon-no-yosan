@@ -105,7 +105,7 @@ function chosenRows(rows: readonly JikouRow[], picked: string[] | null): JikouRo
  * 2 つ以上選ぶと、選んだ事項の合計（値のある事項だけ足す）を出し、選んだ年度の事項ごとの値を別の表に出す。
  * 事項に決算は無い（決算は項と目の単位）。値の無い所は「—」（0 とは別）。事項の計は項の額と照合する（折りたたみ）。この項のすべての事項は、年度 × 値の表（折りたたみ）。
  */
-export function LifecycleJikouTab({ kou, chain, kous, valuesOf, jikou, loading, failed, onNavigate }: {
+export function LifecycleJikouTab({ kou, chain, kous, valuesOf, jikou, loading, failed, onNavigate, picked, onPick }: {
   kou: LifecycleKou;
   chain: LifecycleChain;
   kous: readonly LifecycleKou[];
@@ -115,10 +115,12 @@ export function LifecycleJikouTab({ kou, chain, kous, valuesOf, jikou, loading, 
   loading: boolean;
   failed: boolean;
   onNavigate: (id: string) => void;
+  /** 選んだ事項（行のキー。値の約束は `chosenRows`）。タブを切り替えても残すので、持ち主は右ペイン（タブの外） */
+  picked: string[] | null;
+  onPick: (picked: string[] | null) => void;
 }) {
   const members = useMemo(() => chain.members.map(i => ({ i, k: kous[i]! })), [chain, kous]);
   const table = useMemo(() => (jikou ? jikouTable(jikou, members.map(m => m.k.id)) : null), [jikou, members]);
-  const [picked, setPicked] = useState<string[] | null>(null);
   const [open, setOpen] = useState(false);
   const top = useRef<HTMLElement>(null);
   const rows = useMemo(() => table?.rows ?? [], [table]);
@@ -129,7 +131,7 @@ export function LifecycleJikouTab({ kou, chain, kous, valuesOf, jikou, loading, 
   const noData = memberYears.filter(y => !years.includes(y));
   const chosenTable = useMemo<JikouTable>(() => ({ years, rows: chosen }), [years, chosen]);
   const one = chosen.length === 1 ? chosen[0]! : null;
-  const select = (key: string): void => { setPicked([key]); top.current?.scrollIntoView({ block: 'start', behavior: 'smooth' }); };
+  const select = (key: string): void => { onPick([key]); top.current?.scrollIntoView({ block: 'start', behavior: 'smooth' }); };
 
   return (
     <div className="flex flex-col gap-5 p-4 text-xs">
@@ -150,7 +152,7 @@ export function LifecycleJikouTab({ kou, chain, kous, valuesOf, jikou, loading, 
                 label="事項"
                 options={labels}
                 selected={picked === null ? [labels[0]!] : picked.includes(NONE_SELECTED) ? [NONE_SELECTED] : picked.length === 0 ? [] : chosen.map(r => labels[rows.indexOf(r)]!)}
-                onChange={next => setPicked(next.includes(NONE_SELECTED) ? [NONE_SELECTED] : next.length === 0 ? [] : next.map(l => rowKey(rows[labels.indexOf(l)]!)))}
+                onChange={next => onPick(next.includes(NONE_SELECTED) ? [NONE_SELECTED] : next.length === 0 ? [] : next.map(l => rowKey(rows[labels.indexOf(l)]!)))}
                 open={open}
                 onOpenChange={setOpen}
               />
