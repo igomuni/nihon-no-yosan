@@ -27,9 +27,9 @@ describe('jikouListRows', () => {
   const rows = jikouListRows(index, kouById, 2024);
   it('makes a row of each 事項 of the year, with its 項, its values (null when missing) and the length of its flow', () => {
     expect(rows.map(r => r.name)).toEqual(['研究費の推進', '施設費', '研究費の調査', '補正で新しい']);
-    expect(rows[0]).toMatchObject({ k: A, budget: 300, revised: 320, request: 280, suppNet: null, span: { from: 2023, to: 2024, years: 2 }, size: 300 });
+    expect(rows[0]).toMatchObject({ k: A, budget: 300, revised: 320, request: 280, suppNet: null, span: { from: 2023, to: 2024, years: 2 }, size: 320 });
     expect(rows[1]).toMatchObject({ span: { from: 2024, to: 2024, years: 1 } });
-    expect(rows[2]).toMatchObject({ budget: null, request: 40, size: 40 }); // 大きさは、政府案、無ければ補正後、概算要求
+    expect(rows[2]).toMatchObject({ budget: null, request: 40, size: 40 }); // 大きさは、概算要求・政府案・補正後のうち最大
     expect(rows[3]).toMatchObject({ budget: null, revised: 900, size: 900 });
   });
   it('is empty for a year without 事項', () => {

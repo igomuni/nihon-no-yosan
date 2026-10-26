@@ -90,6 +90,12 @@ export function LifecycleListPane({ items, jikouLoading, sortKey, sortDir, onSor
   widths: Record<string, number>;
   onWidthsChange: (updater: (prev: Record<string, number>) => Record<string, number>) => void;
 }) {
+  // 一覧の項の、段階ごとの額の合計（値のある項だけ。0 は値）
+  const totals = ([['概算要求', 'request'], ['政府案', 'budget'], ['補正後', 'revised'], ['決算', 'spent']] as const).map(([label, k]) => {
+    let sum = 0, n = 0;
+    for (const x of items) { const v = x.a[k]; if (v !== undefined) { sum += v; n++; } }
+    return { label, sum: n === 0 ? null : sum, n };
+  });
   const selectedIdx = selectedId === null ? -1 : items.findIndex(x => x.k.id === selectedId);
   const shown = items.slice(0, Math.max(MAX_ROWS, selectedIdx + 1));
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -116,6 +122,7 @@ export function LifecycleListPane({ items, jikouLoading, sortKey, sortDir, onSor
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex flex-wrap gap-x-5 gap-y-1 border-b border-neutral-200 px-3 py-2 text-xs text-neutral-500 dark:border-neutral-800">
         <span><b className="tabular-nums text-neutral-800 dark:text-neutral-100">{items.length.toLocaleString()}</b> 項</span>
+        {totals.map(t => t.sum !== null && <span key={t.label} title={`値のある ${t.n.toLocaleString()} 項の合計（${t.sum.toLocaleString('ja-JP')} 円）`}>{t.label} <b className="tabular-nums text-neutral-800 dark:text-neutral-100">{formatSen(t.sum / 1000)}</b></span>)}
       </div>
       <div ref={scrollRef} className="min-h-0 flex-1 overflow-auto">
         <table className="border-collapse text-xs" style={{ width: tableWidth, tableLayout: 'fixed' }}>

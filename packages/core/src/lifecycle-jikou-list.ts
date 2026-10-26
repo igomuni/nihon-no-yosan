@@ -21,7 +21,7 @@ export interface JikouListRow {
   suppNet: number | null;
   /** 確定した対応でたどれた年度の範囲と年数 */
   span: { from: number; to: number; years: number };
-  /** 並べ替えの大きさ（千円）: 政府案、無ければ補正後、概算要求。どれも無ければ 0 */
+  /** 並べ替えの大きさ（千円）: 概算要求・政府案・補正後のうち最大（項の「最大額」と同じ考え方。補正後が歳出予算現額の代わり）。どれも無ければ 0 */
   size: number;
 }
 
@@ -35,7 +35,7 @@ export function jikouListRows(index: JikouIndex, kouById: ReadonlyMap<string, Li
     if (!k) return;
     const chain = jikouChainNodes(index, node);
     const from = data.nodes[chain[0]!]![1], to = data.nodes[chain[chain.length - 1]!]![1];
-    rows.push({ node, k, name: n[2], budget: n[3], revised: n[5], suppNet: n[6], request: n[7], span: { from, to, years: chain.length }, size: n[3] ?? n[5] ?? n[7] ?? 0 });
+    rows.push({ node, k, name: n[2], budget: n[3], revised: n[5], suppNet: n[6], request: n[7], span: { from, to, years: chain.length }, size: Math.max(0, n[7] ?? 0, n[3] ?? 0, n[5] ?? 0) });
   });
   return rows;
 }

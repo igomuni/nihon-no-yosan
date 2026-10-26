@@ -22,7 +22,7 @@ import { num, td, th, yen } from './shared.ts';
 const STAGE_OF_MEASURE: Partial<Record<LifecycleMeasure, LifecycleStage>> = { request_amount: 'request', budget_amount: 'budget', revised_amount: 'supp', appropriation: 'settle', current_amount: 'settle', spent: 'settle' };
 
 /** 集計: 対象範囲、観測額（全体）、比較できる項、検算の結果（一覧の絞り込みに連動） */
-export function LifecycleSummaryPane({ checks, scope, stageNote, kous, values, events, coverage }: { checks: LifecycleData['checks']; scope: string; stageNote: string; kous: LifecycleKou[]; values: LifecycleValues[]; events: LifecycleEventRow[][]; coverage: LifecycleCoverage }) {
+export function LifecycleSummaryPane({ checks, scope, kous, values, events, coverage }: { checks: LifecycleData['checks']; scope: string; kous: LifecycleKou[]; values: LifecycleValues[]; events: LifecycleEventRow[][]; coverage: LifecycleCoverage }) {
   const [mode, setMode] = useState<'observed' | 'compare'>('observed');
   const [pairId, setPairId] = useState<string>(LIFECYCLE_PAIRS[0]!.id);
   const NAME: Record<string, string> = {
@@ -58,7 +58,6 @@ export function LifecycleSummaryPane({ checks, scope, stageNote, kous, values, e
       <div className="rounded border border-neutral-200 bg-neutral-50 px-3 py-2 dark:border-neutral-700 dark:bg-neutral-800/40">
         <p className="font-semibold">集計の対象</p>
         <p className="text-neutral-600 dark:text-neutral-300">{scope} · 対象 {kous.length.toLocaleString()} 項（一覧の項。フィルタに連動）</p>
-        <p className="mt-0.5 text-neutral-500">この年度に、基準データで値のある段階 — {stageNote}。無い段階の項は、「値なし」（0 ではない）。</p>
       </div>
       <div role="tablist" aria-label="集計の見方" className="flex gap-1 border-b border-neutral-200 dark:border-neutral-800">
         {([['observed', '観測額（全体）'], ['compare', '比較できる項']] as const).map(([m, label]) => (
@@ -68,7 +67,6 @@ export function LifecycleSummaryPane({ checks, scope, stageNote, kous, values, e
 
       {mode === 'observed' ? (
         <section className="flex flex-col gap-2">
-          <p className="text-neutral-500">各段階で、値を確認できた項の合計です。段階によって、値のある項の集合が違います（下の項数）。段階の間の差は、査定や増減を表しません。補正の記録が無い項は、補正後の合計に入っていません（政府案の額で補いません）。</p>
           <LevelsChart levels={observed.map(t => t.level)} />
           <table className="w-full max-w-2xl border-collapse">
             <thead><tr className="text-left"><th className={th}>段階（項目）</th><th className={`${th} text-right`}>観測額の合計</th><th className={`${th} text-right`}>値のある項数 / 対象</th></tr></thead>
@@ -82,11 +80,9 @@ export function LifecycleSummaryPane({ checks, scope, stageNote, kous, values, e
               ))}
             </tbody>
           </table>
-          <p className="text-[11px] text-neutral-500">一般会計と特別会計をまたぐ合計は、繰入の分が二重になります。決算の共管（特別会計）の行は、足してあります。</p>
         </section>
       ) : (
         <section className="flex flex-col gap-3">
-          <p className="text-neutral-500">比べる 2 つの段階を選びます。<b>両方に値がある項だけ</b>で、合計と差を出します。片方にしか値が無い項は、比べず、数と理由だけを書きます。差の原因（査定・補正・組み替えなど）は、ここでは決めません。</p>
           <label className="flex items-center gap-2">
             比べる段階
             <select value={pairId} onChange={e => setPairId(e.target.value)} className="rounded border border-neutral-300 bg-white px-2 py-1 dark:border-neutral-700 dark:bg-neutral-900">
@@ -111,7 +107,6 @@ export function LifecycleSummaryPane({ checks, scope, stageNote, kous, values, e
                   </table>
                 </>
               )}
-              <p className="text-[11px] text-neutral-500">同じ項と見なした根拠: {spec.basis}。</p>
               <div className="text-[11px] text-neutral-500">
                 <p>比べていない項: 前の段階にだけ値がある {pair.fromOnly.toLocaleString()} 項、後の段階にだけ値がある {pair.toOnly.toLocaleString()} 項（対象のうち、どちらにも値が無い項 {(kous.length - pair.both - pair.fromOnly - pair.toOnly).toLocaleString()} 項は数えない）。</p>
                 {pair.fromOnly > 0 && <p>前だけ（後の段階が値なし）の内訳: {excluded('to').map(([b, n]) => `${b} ${n}`).join(' / ')}</p>}
@@ -126,10 +121,9 @@ export function LifecycleSummaryPane({ checks, scope, stageNote, kous, values, e
               ) : (
                 <>
                   <LevelsChart levels={all4.levels} />
-                  <p>4 つの段階がそろう {all4.kou.toLocaleString()} 項（対象 {kous.length.toLocaleString()} 項のうち）の合計です。2 つの段階の比較（上）とは、対象の項が違います。</p>
+                  <p>4 つの段階がそろう項: {all4.kou.toLocaleString()} / {kous.length.toLocaleString()} 項</p>
                 </>
               )}
-              <p className="text-[11px] text-neutral-500">同じ項と見なした根拠: 概算要求は名前の突合（MATCHED / NEAR_NAME）、ほかは同じ年度・同じ鍵。</p>
             </div>
           )}
         </section>
@@ -149,7 +143,6 @@ export function LifecycleSummaryPane({ checks, scope, stageNote, kous, values, e
             ))}
           </tbody>
         </table>
-        <p className="mt-1 text-neutral-500">段をまたぐ式で合わない項は、原因が未確認です。</p>
       </div>
     </div>
   );

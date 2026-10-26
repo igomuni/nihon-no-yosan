@@ -10,8 +10,8 @@ function setBodyCursor(value: string): void {
 const MAX_ROWS = 600;
 const MIN_COLUMN_WIDTH = 48;
 export const DEFAULT_JIKOU_COLUMN_WIDTHS: Record<JikouSortKey, number> = { group: 110, acct: 110, org: 110, kou: 180, name: 240, request: 96, budget: 96, revised: 96, suppNet: 96, span: 112, size: 96 };
-/** 一覧の列。`size`（並べ替えの大きさ）は列に出さない */
-const COLS: { key: Exclude<JikouSortKey, 'size'>; label: string; left?: boolean; title?: string }[] = [
+/** 一覧の列。順は、項の一覧に合わせる */
+const COLS: { key: JikouSortKey; label: string; left?: boolean; title?: string }[] = [
   { key: 'group', label: '所管', left: true },
   { key: 'acct', label: '会計', left: true },
   { key: 'org', label: '組織／勘定', left: true },
@@ -21,7 +21,7 @@ const COLS: { key: Exclude<JikouSortKey, 'size'>; label: string; left?: boolean;
   { key: 'request', label: '概算要求', title: '概算要求書（総表）の事項の要求額' },
   { key: 'budget', label: '政府案', title: '予算書の当初予算（提出時）の額' },
   { key: 'revised', label: '補正後', title: '改予算額（補正の事項の記録がある事項。FY2024 まで）' },
-  { key: 'suppNet', label: '補正の差引', title: '補正の差引額（補正が複数回の年度は、その事項が載る最後の回の値）' },
+  { key: 'size', label: '最大額', title: '概算要求・政府案・補正後のうち最大（既定の並びの基準）' },
 ];
 
 /** 額の列（千円）。値が無いときは「—」（0 とは別） */
@@ -66,12 +66,18 @@ export function LifecycleJikouListPane({ items, loading, failed, sortKey, sortDi
     setBodyCursor('col-resize');
   }
 
+  const totals = ([['概算要求', 'request'], ['政府案', 'budget'], ['補正後', 'revised']] as const).map(([label, k]) => {
+    let sum = 0, n = 0;
+    for (const r of items) { const v = r[k]; if (v !== null) { sum += v; n++; } }
+    return { label, sum: n === 0 ? null : sum, n };
+  });
   if (failed) return <p className="p-4 text-xs text-red-700">事項の読み込みに失敗しました（<code>npm run build:data</code> で作る）。</p>;
   if (loading) return <p className="p-4 text-xs text-neutral-500">事項を読み込み中…</p>;
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex flex-wrap gap-x-5 gap-y-1 border-b border-neutral-200 px-3 py-2 text-xs text-neutral-500 dark:border-neutral-800">
         <span><b className="tabular-nums text-neutral-800 dark:text-neutral-100">{items.length.toLocaleString()}</b> 事項</span>
+        {totals.map(t => t.sum !== null && <span key={t.label} title={`値のある ${t.n.toLocaleString()} 事項の合計（${t.sum.toLocaleString('ja-JP')} 千円）`}>{t.label} <b className="tabular-nums text-neutral-800 dark:text-neutral-100">{formatSen(t.sum)}</b></span>)}
       </div>
       <div ref={scrollRef} className="min-h-0 flex-1 overflow-auto">
         <table className="border-collapse text-xs" style={{ width: tableWidth, tableLayout: 'fixed' }}>
@@ -120,7 +126,7 @@ export function LifecycleJikouListPane({ items, loading, failed, sortKey, sortDi
                   <Amount v={r.request} />
                   <Amount v={r.budget} />
                   <Amount v={r.revised} />
-                  <Amount v={r.suppNet} />
+                  <td className="whitespace-nowrap px-2 py-1 text-right tabular-nums text-neutral-500">{formatSen(r.size)}</td>
                 </tr>
               );
             })}

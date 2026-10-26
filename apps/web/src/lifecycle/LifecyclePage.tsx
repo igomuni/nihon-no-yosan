@@ -2,8 +2,6 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties, type MouseEve
 import {
   INITIAL_LIFECYCLE_FILTERS,
   LIFECYCLE_PATTERNS,
-  LIFECYCLE_STAGES,
-  LIFECYCLE_STAGE_LABEL,
   filterLifecycleKous,
   lifecycleChainSpan,
   lifecycleChains,
@@ -178,10 +176,6 @@ export function LifecyclePage() {
   const selectedIndex = selectedId === null ? -1 : data.kous.findIndex(k => k.id === selectedId && k.year === activeYear);
   const kou = selectedIndex >= 0 ? data.kous[selectedIndex]! : null;
   const checks = data.checks.filter(c => c.year === activeYear);
-  // この年度・会計で、基準データに値のある段階（無い段階は、項の「値なし」の理由に出る）
-  const stageNote = (['general', 'special'] as const)
-    .map(a => `${a === 'general' ? '一般会計' : '特別会計'}: ${LIFECYCLE_STAGES.filter(s => coverage.stages.get(`${activeYear}|${a}`)?.has(s)).map(s => LIFECYCLE_STAGE_LABEL[s]).join('・') || 'なし'}`)
-    .join(' / ');
   const listed = (names: string[]): string => (names.length === 0 ? 'すべて' : names.join('、'));
   const text = (label: string, value: string, regex: boolean): string => (value.trim() === '' ? '' : ` · ${label}: 「${value.trim()}」${regex ? '（正規表現）' : ''}`);
   const scope = `FY${activeYear} · 所管: ${listed(filters.groups)} · 会計: ${listed(filters.accts)}${text('組織／勘定', filters.org, filters.orgRegex)}${text('項名', filters.name, filters.nameRegex)} · 値のある段階: ${LIFECYCLE_PATTERNS.find(p => p.id === filters.pattern)!.label}${filters.links === 'unsettled' ? ' · 年度をまたぐ対応: 未確定のみ' : ''}`;
@@ -191,9 +185,6 @@ export function LifecyclePage() {
       <header className="flex shrink-0 flex-wrap items-start justify-between gap-3 px-3 pb-2 pt-3">
         <div>
           <h1 className="text-base font-semibold">予算の推移</h1>
-          <p className="mt-0.5 text-[11px] text-neutral-500">
-            項の粒度 · FY{years[0]}–FY{years[years.length - 1]} · 概算要求 → 政府案 → 補正 → 決算 · 値が無い段階は補完せず「値なし」と表示
-          </p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <YearSelect value={String(activeYear)} onChange={y => { setYear(Number(y)); setSelectedId(null); setSelectedJikou(null); }} years={years} />
@@ -221,7 +212,6 @@ export function LifecyclePage() {
               : <LifecycleSummaryPane
                   checks={checks}
                   scope={scope}
-                  stageNote={stageNote}
                   kous={list.map(x => x.k)}
                   values={list.map(x => valuesOf.get(x.i) ?? {})}
                   events={list.map(x => byKou.get(x.i) ?? [])}
