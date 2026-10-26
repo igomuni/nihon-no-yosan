@@ -7,6 +7,7 @@
  *   trend/{kou,jikou,detail}.json.gz   概算要求の年度推移（`docs/guides/trend.md`、`jikou-youkyu.md`、`trend-detail.md`）
  *   mof/{kou,detail}.json.gz           概算要求と当初予算の差（`docs/guides/mof-ui.md`）
  *   lifecycle/data.json.gz             予算の一生の表（`docs/guides/budget-lifecycle.md`）
+ *   lifecycle/jikou.json.gz            予算の一生の画面の事項タブ用（`docs/guides/lifecycle-jikou.md`。タブを開いたときに読む）
  *   about.json                         出典と利用条件（`docs/guides/web-publish.md`）
  * 出力ディレクトリは git に入れない（`.gitignore` の `data/`）。
  */
@@ -15,7 +16,9 @@ import * as path from 'node:path';
 import * as zlib from 'node:zlib';
 import type { SiteAbout, SiteAboutAuthority } from '@nihon-no-yosan/core';
 import { buildBudgetRequestJikouYoukyu } from './jikou-youkyu.ts';
+import { buildJikouLinkData } from './jikou-links.ts';
 import { buildLifecycle, lifecycleRequestOnlyRows, lifecycleSources } from './lifecycle.ts';
+import { buildLifecycleJikou } from './lifecycle-jikou.ts';
 import { buildBudgetRequestMofUi, mofUiMatchesFromDataset } from './mof-ui.ts';
 import { buildBudgetRequestTrend, matchesFromDataset } from './trend.ts';
 import { buildBudgetRequestTrendDetail } from './trend-detail.ts';
@@ -40,13 +43,21 @@ const mof = buildBudgetRequestMofUi({
   detailFiles: detail.files,
 });
 
+const gz = (v: unknown): Buffer => zlib.gzipSync(JSON.stringify(v), { level: 9, mtime: 0 } as zlib.ZlibOptions);
+const lifecycle = buildLifecycle({ datasetDir: dataset, historyDir, requestOfMofRow: mof.requestOfMofRow, requestOnlyRows: lifecycleRequestOnlyRows(mof.data.rows, matches, lifecycleSources(historyDir)) });
+// 事項（当初予算・補正）。項に結べない事項があれば止まる（捨てない）
+const jikouData = buildJikouLinkData(dataset, historyDir);
+const lifecycleJikou = buildLifecycleJikou({ years: jikouData.years, nodes: [...jikouData.nodes, ...jikouData.suppOnly], links: [...jikouData.links, ...jikouData.suppOnlyLinks] }, lifecycle.kous);
+if (Object.keys(lifecycleJikou.unmatched).length > 0) throw new Error(`項に結べない事項がある: ${JSON.stringify(lifecycleJikou.unmatched)}`);
+
 const outputs: [string, Buffer][] = [
   ['trend/kou.json.gz', trend.uiGz],
   ['trend/jikou.json.gz', jikou.uiGz],
   ['trend/detail.json.gz', detail.uiGz],
   ['mof/kou.json.gz', mof.kouGz],
   ['mof/detail.json.gz', mof.detailGz],
-  ['lifecycle/data.json.gz', zlib.gzipSync(JSON.stringify(buildLifecycle({ datasetDir: dataset, historyDir, requestOfMofRow: mof.requestOfMofRow, requestOnlyRows: lifecycleRequestOnlyRows(mof.data.rows, matches, lifecycleSources(historyDir)) })), { level: 9, mtime: 0 } as zlib.ZlibOptions)],
+  ['lifecycle/data.json.gz', gz(lifecycle)],
+  ['lifecycle/jikou.json.gz', gz(lifecycleJikou.data)],
 ];
 for (const [name, bytes] of outputs) {
   fs.mkdirSync(path.dirname(path.join(outDir, name)), { recursive: true });
