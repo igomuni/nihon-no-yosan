@@ -77,9 +77,11 @@ function Amount({ yen }: { yen: number | undefined }) {
     : <td className="whitespace-nowrap px-2 py-1 text-right tabular-nums" title={`${yen.toLocaleString('ja-JP')} 円`}>{yen === 0 ? '0円' : formatSen(yen / 1000)}</td>;
 }
 
-export function LifecycleListPane({ items, jikouLoading, sortKey, sortDir, onSort, selectedId, onSelect, widths, onWidthsChange }: {
+export function LifecycleListPane({ items, notice, jikouLoading, sortKey, sortDir, onSort, selectedId, onSelect, widths, onWidthsChange }: {
   /** 絞り込み・並べ替え済み */
   items: readonly { k: LifecycleKou; a: LifecycleRowAmounts; link: LifecycleLinkStatus | null; chain: LifecycleChain; span: { from: number; to: number; years: number }; jikou: JikouCount | null }[];
+  /** 一覧の代わりに出す文（事項名で絞るのに、事項のデータが届いていないとき）。無ければ null */
+  notice: string | null;
   /** 事項のデータ（`lifecycle/jikou.json.gz`）を読み込み中。このあいだ、事項の列は「…」 */
   jikouLoading: boolean;
   sortKey: LifecycleSortKey;
@@ -118,6 +120,7 @@ export function LifecycleListPane({ items, jikouLoading, sortKey, sortDir, onSor
     setBodyCursor('col-resize');
   }
 
+  if (notice !== null) return <p className="p-4 text-xs text-neutral-500">{notice}</p>;
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex flex-wrap gap-x-5 gap-y-1 border-b border-neutral-200 px-3 py-2 text-xs text-neutral-500 dark:border-neutral-800">

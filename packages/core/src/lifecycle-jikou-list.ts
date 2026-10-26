@@ -60,3 +60,11 @@ export function sortJikouRows(rows: readonly JikouListRow[], key: JikouSortKey, 
     return dir * (a - b) || tie(x, y);
   });
 }
+
+/** 選んだ年度で、事項名が検索に合う事項を持つ項（`LifecycleKou.id`）。項の一覧の「事項名」の絞り込みに使う。検索が空なら null（絞り込まない） */
+export function kouIdsWithJikou(index: JikouIndex, year: number, query: string, regex: boolean): Set<string> | null {
+  if (query.trim() === '') return null;
+  const ids = new Set<string>();
+  for (const n of index.data.nodes) if (n[1] === year && textMatches(n[2], query, regex)) ids.add(index.data.kous[n[0]]!);
+  return ids;
+}

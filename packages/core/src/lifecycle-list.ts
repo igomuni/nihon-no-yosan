@@ -27,7 +27,7 @@ export interface LifecycleFilters {
   name: string;
   nameRegex: boolean;
   pattern: LifecyclePattern;
-  /** 事項名（事項の一覧だけで使う。空 = すべて）。項の一覧は変えない */
+  /** 事項名（空 = すべて）。事項の一覧では、事項名が合う事項、項の一覧では、その年度に事項名が合う事項を持つ項。`filterLifecycleKous` は使わない（事項のデータが要る） */
   jikouName: string;
   jikouNameRegex: boolean;
   /** 年度をまたぐ対応。`unsettled` = 対応が確定していない項（`lifecycleLinkState` が AMBIGUOUS または UNRESOLVED） */

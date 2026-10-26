@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { LifecycleKou } from './lifecycle.ts';
 import { jikouIndex, type LifecycleJikouData, type LifecycleJikouNode } from './lifecycle-jikou.ts';
-import { filterJikouRows, jikouListRows, sortJikouRows } from './lifecycle-jikou-list.ts';
+import { filterJikouRows, jikouListRows, kouIdsWithJikou, sortJikouRows } from './lifecycle-jikou-list.ts';
 import { INITIAL_LIFECYCLE_FILTERS } from './lifecycle-list.ts';
 
 const kou = (id: string, o: Partial<LifecycleKou> = {}): LifecycleKou => ({ id, year: 2024, account: 'general', ministry: '財務省', org: '財務本省', specialAccount: '', subAccount: '', code: '001', name: id, seenIn: ['budget'], ...o });
@@ -58,5 +58,16 @@ describe('sortJikouRows', () => {
     expect(sortJikouRows(rows, 'span', -1)[0]!.name).toBe('研究費の推進');
     const names = rows.map(r => r.name);
     expect(sortJikouRows(rows, 'name', 1).map(r => r.name)).toEqual([...names].sort((x, y) => x.localeCompare(y, 'ja')));
+  });
+});
+
+describe('kouIdsWithJikou', () => {
+  it('lists the 項 that have a 事項 of the year matching the search; null when the search is empty', () => {
+    expect(kouIdsWithJikou(index, 2024, '', false)).toBeNull();
+    expect(kouIdsWithJikou(index, 2024, '  ', false)).toBeNull();
+    expect(kouIdsWithJikou(index, 2024, '施設', false)).toEqual(new Set(['2024:general:A']));
+    expect(kouIdsWithJikou(index, 2024, '研究費', false)).toEqual(new Set(['2024:general:A', '2024:general:B']));
+    expect(kouIdsWithJikou(index, 2024, '^研究費$', true)).toEqual(new Set()); // 2023 の事項は、2024 の項に数えない
+    expect(kouIdsWithJikou(index, 2023, '^研究費$', true)).toEqual(new Set(['2023:general:A']));
   });
 });

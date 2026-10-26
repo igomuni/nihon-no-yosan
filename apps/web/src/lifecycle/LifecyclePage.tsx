@@ -14,6 +14,7 @@ import {
   jikouCounts,
   jikouIndex,
   jikouListRows,
+  kouIdsWithJikou,
   lifecycleValues,
   matchesLifecycleLinks,
   matchesLifecyclePattern,
@@ -135,10 +136,14 @@ export function LifecyclePage() {
   const activeYear = data ? (year !== null && years.includes(year) ? year : years[0]!) : null;
   // 年度・所管・会計・組織・項名で絞った項（値のある段階で絞る前）。段階ごとの件数は、この集合で数える
   const inYear = useMemo(() => (data && activeYear !== null ? data.kous.filter(k => k.year === activeYear) : []), [data, activeYear]);
+  // 事項名の絞り込みは、その年度に事項名が合う事項を持つ項に絞る（事項のデータが届くまでは絞れないので、項の一覧は読み込み中の表示にする）
+  const jikouKouSet = useMemo(() => (jikou && activeYear !== null ? kouIdsWithJikou(jikou, activeYear, filters.jikouName, filters.jikouNameRegex) : null), [jikou, activeYear, filters.jikouName, filters.jikouNameRegex]);
+  const jikouFilterNotice = filters.jikouName.trim() === '' || jikouState === 'ready' ? null : jikouState === 'loading' ? '事項を読み込み中…' : '事項の読み込みに失敗しました（npm run build:data で作る）。';
   const base = useMemo(() => {
     if (!data || activeYear === null) return [];
-    return filterLifecycleKous(data.kous.map((k, i) => ({ k, i })), filters, activeYear);
-  }, [data, activeYear, filters]);
+    const kous = filterLifecycleKous(data.kous.map((k, i) => ({ k, i })), filters, activeYear);
+    return jikouKouSet === null ? kous : kous.filter(({ k }) => jikouKouSet.has(k.id));
+  }, [data, activeYear, filters, jikouKouSet]);
   const patternCounts = useMemo(() => lifecyclePatternCounts(base.map(x => x.k)), [base]);
   const unsettledCount = useMemo(() => base.filter(({ i }) => matchesLifecycleLinks(lifecycleLinkState(linksByKou.get(i)), { ...INITIAL_LIFECYCLE_FILTERS, links: 'unsettled' })).length, [base, linksByKou]);
   const list = useMemo(
@@ -178,7 +183,7 @@ export function LifecyclePage() {
   const checks = data.checks.filter(c => c.year === activeYear);
   const listed = (names: string[]): string => (names.length === 0 ? 'すべて' : names.join('、'));
   const text = (label: string, value: string, regex: boolean): string => (value.trim() === '' ? '' : ` · ${label}: 「${value.trim()}」${regex ? '（正規表現）' : ''}`);
-  const scope = `FY${activeYear} · 所管: ${listed(filters.groups)} · 会計: ${listed(filters.accts)}${text('組織／勘定', filters.org, filters.orgRegex)}${text('項名', filters.name, filters.nameRegex)} · 値のある段階: ${LIFECYCLE_PATTERNS.find(p => p.id === filters.pattern)!.label}${filters.links === 'unsettled' ? ' · 年度をまたぐ対応: 未確定のみ' : ''}`;
+  const scope = `FY${activeYear} · 所管: ${listed(filters.groups)} · 会計: ${listed(filters.accts)}${text('組織／勘定', filters.org, filters.orgRegex)}${text('項名', filters.name, filters.nameRegex)}${text('事項名', filters.jikouName, filters.jikouNameRegex)} · 値のある段階: ${LIFECYCLE_PATTERNS.find(p => p.id === filters.pattern)!.label}${filters.links === 'unsettled' ? ' · 年度をまたぐ対応: 未確定のみ' : ''}`;
 
   return (
     <div className="flex h-screen flex-col bg-neutral-50 text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
@@ -208,7 +213,7 @@ export function LifecyclePage() {
             {view === 'jikou'
               ? <LifecycleJikouListPane items={jikouList} loading={jikouState === 'loading'} failed={jikouState === 'error'} sortKey={jikouSortKey} sortDir={jikouSortDir} onSort={onJikouSort} selectedNode={selectedJikouNode} onSelect={r => setSelectedJikou(`${r.k.id}|${r.name}`)} widths={jikouColumnWidths} onWidthsChange={setJikouColumnWidths} />
               : view === 'list'
-              ? <LifecycleListPane items={list} jikouLoading={jikouState === 'loading'} sortKey={sortKey} sortDir={sortDir} onSort={onSort} selectedId={kou?.id ?? null} onSelect={k => setSelectedId(k.id)} widths={columnWidths} onWidthsChange={setColumnWidths} />
+              ? <LifecycleListPane items={list} notice={jikouFilterNotice} jikouLoading={jikouState === 'loading'} sortKey={sortKey} sortDir={sortDir} onSort={onSort} selectedId={kou?.id ?? null} onSelect={k => setSelectedId(k.id)} widths={columnWidths} onWidthsChange={setColumnWidths} />
               : <LifecycleSummaryPane
                   checks={checks}
                   scope={scope}
