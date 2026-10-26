@@ -65,6 +65,31 @@ describe('buildLifecycleLinks', () => {
     const otherMinistry = [kou(2023, '018', '農業生産基盤整備事業調査諸費'), kou(2024, '039', '農業農村整備事業調査諸費', { ministry: '農水' })];
     expect(run(otherMinistry, [{ budget_amount: 1138 }, { budget_prev: 1138 }]).map(l => [l.e, l.s])).toEqual([['prev_amount_eq_budget', 'AMBIGUOUS']]);
   });
+  describe('succession of a 所属 (the totals of the amounts match to the yen)', () => {
+    const sp = (year: number, acct: string, sub: string, code: string, name: string): LifecycleKou => kou(year, code, name, { account: 'special', specialAccount: acct, subAccount: sub, ministry: acct });
+    const old = [sp(2023, '年金', '子勘定', '01', '交付金'), sp(2023, '年金', '子勘定', '03', '業務取扱費'), sp(2023, '年金', '子勘定', '09', '予備費')];
+    const next = [sp(2024, '新会計', '子勘定', '01', '交付金'), sp(2024, '新会計', '子勘定', '06', '業務取扱費'), sp(2024, '新会計', '子勘定', '19', '予備費'), sp(2024, '新会計', '子勘定', '02', '新設の項'), sp(2024, '新会計', '別勘定', '03', '業務取扱費'), sp(2024, '新会計', '別勘定', '19', '予備費')];
+    const vs = (prev: number[]): LifecycleValues[] => [{ revised_amount: 100 }, { revised_amount: 10 }, { revised_amount: 4 }, ...prev.map(p => ({ budget_prev: p }))];
+    it('reads the new 所属 as the old one, so the same key, the same name and the same code resolve inside it, but not the other new 所属', () => {
+      const r = run([...old, ...next], vs([100, 10, 4, 0, 1, 1]));
+      const of = (f: string) => r.filter(l => l.f === f);
+      expect(of('01/交付金')).toEqual([{ f: '01/交付金', t: '01/交付金', e: 'same_key_succession;prev_amount_eq_revised', a: 'eq_revised', s: 'RESOLVED' }]);
+      expect(of('03/業務取扱費').map(l => [l.t, l.e, l.s])).toEqual([['06/業務取扱費', 'same_name_other_code;prev_amount_eq_revised', 'RESOLVED']]);
+      expect(of('09/予備費').map(l => [l.t, l.s])).toEqual([['19/予備費', 'RESOLVED']]);
+      // 新しい項と、もう一方の新しい所属の項は、相手が無い
+      expect(r.filter(l => l.f === null).map(l => l.t).sort()).toEqual(['02/新設の項', '03/業務取扱費', '19/予備費']);
+    });
+    it('does nothing when the totals do not match (the same names stay ambiguous)', () => {
+      const r = run([...old, ...next], vs([99, 10, 4, 0, 1, 1]));
+      expect(r.find(l => l.f === '01/交付金')).toMatchObject({ e: 'same_name_other_org', s: 'AMBIGUOUS' });
+      expect(r.some(l => l.e.includes('same_key_succession'))).toBe(false);
+    });
+    it('needs a one-to-one match of the 所属 (two old 所属 with the same total make no succession)', () => {
+      const twin = [...old, sp(2023, '年金', '双子勘定', '01', '交付金'), sp(2023, '年金', '双子勘定', '03', '業務取扱費'), sp(2023, '年金', '双子勘定', '09', '予備費')];
+      const twinVs: LifecycleValues[] = [...vs([]).slice(0, 3), { revised_amount: 100 }, { revised_amount: 10 }, { revised_amount: 4 }, ...[100, 10, 4, 0, 1, 1].map(p => ({ budget_prev: p }))];
+      expect(run([...twin, ...next], twinVs).some(l => l.e.includes('same_key_succession'))).toBe(false);
+    });
+  });
   it('is AMBIGUOUS when the previous 項 has several candidates', () => {
     const ks = [kou(2023, '001', '費', { org: '甲' }), kou(2024, '001', '費', { org: '乙' }), kou(2024, '002', '費', { org: '丙' })];
     expect(run(ks, [{ revised_amount: 9 }, { budget_prev: 9 }, { budget_prev: 9 }]).map(l => l.s)).toEqual(['AMBIGUOUS', 'AMBIGUOUS']);
