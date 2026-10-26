@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   JIKOU_AMOUNT,
   JIKOU_EVIDENCE_LABEL,
@@ -6,6 +6,7 @@ import {
   formatSen,
   jikouAmount,
   jikouEvidenceOf,
+  jikouRequestOnly,
   jikouSuppOnly,
   jikouTable,
   jikouTotals,
@@ -27,7 +28,7 @@ const AMOUNT_LABEL: Record<(typeof JIKOU_AMOUNT)[number], string> = {
 };
 
 /** 項の額（円）のうち、事項の計と比べる値。事項の額は千円 */
-const KOU_VALUE: Record<JikouMeasure, keyof LifecycleValues> = { budget: 'budget_amount', revised: 'revised_amount', suppNet: 'supp_net', prev: 'budget_prev' };
+const KOU_VALUE: Record<JikouMeasure, keyof LifecycleValues> = { request: 'request_amount', budget: 'budget_amount', revised: 'revised_amount', suppNet: 'supp_net', prev: 'budget_prev' };
 
 const cell = (v: number | null): string => (v === null ? '—' : v === 0 ? '0円' : formatSen(v));
 const exact = (v: number): string => `${v.toLocaleString('ja-JP')} 千円`;
@@ -47,8 +48,10 @@ export function LifecycleJikouTab({ kou, chain, kous, valuesOf, jikou, loading, 
   failed: boolean;
   onNavigate: (id: string) => void;
 }) {
-  const [measure, setMeasure] = useState<JikouMeasure>('budget');
+  // 予算書が基準データに無い年度（概算要求のみの項）は、概算要求から見る（この切り替えは、タブの key で作り直す）
+  const [measure, setMeasure] = useState<JikouMeasure>(kou.requestOnly === 'noBudget' ? 'request' : 'budget');
   const [open, setOpen] = useState<number | null>(null);
+  const scroller = useRef<HTMLDivElement>(null);
   const members = useMemo(() => chain.members.map(i => ({ i, k: kous[i]! })), [chain, kous]);
   const table = useMemo(() => (jikou ? jikouTable(jikou, members.map(m => m.k.id)) : null), [jikou, members]);
   const totals = useMemo(() => (jikou && table ? jikouTotals(jikou, table, measure) : []), [jikou, table, measure]);
@@ -58,6 +61,12 @@ export function LifecycleJikouTab({ kou, chain, kous, valuesOf, jikou, loading, 
   const noData = memberYears.filter(y => !years.includes(y));
   const current = MEASURE(measure);
   const row = table && open !== null ? table.rows[open] : undefined;
+  // 年度の列が多いときは、選んだ年度の列が見える位置まで、表を横にずらす
+  useEffect(() => {
+    const box = scroller.current;
+    const th = box?.querySelector<HTMLElement>('[data-selected="true"]');
+    if (box && th) box.scrollLeft = Math.max(0, th.offsetLeft - box.clientWidth / 2);
+  }, [kou.id, table, measure]);
 
   return (
     <div className="flex flex-col gap-5 p-4 text-xs">
@@ -70,7 +79,7 @@ export function LifecycleJikouTab({ kou, chain, kous, valuesOf, jikou, loading, 
       {failed ? <p className="text-red-700">事項の読み込みに失敗しました（<code>npm run build:data</code> で作る）。</p>
         : loading || !jikou || !table ? <p className="text-neutral-500">事項を読み込み中…</p>
         : table.rows.length === 0 ? (
-          <p className="text-neutral-500">この項の事項は、現行のデータにありません。{kou.requestOnly ? '概算要求書にだけある項で、予算書の事項と結べていません。' : years.length === 0 ? '予算書の事項は FY2026 までで、この年度の予算書は基準データにありません。' : ''}</p>
+          <p className="text-neutral-500">この項の事項は、現行のデータにありません。{years.length === 0 ? '予算書の事項は FY2026 まで、概算要求書の事項は FY2023 以降です。' : ''}</p>
         ) : (
           <>
             <div role="tablist" aria-label="事項の値" className="flex flex-wrap gap-1">
@@ -80,7 +89,7 @@ export function LifecycleJikouTab({ kou, chain, kous, valuesOf, jikou, loading, 
             </div>
             <p className="-mt-3 text-[11px] text-neutral-500">{current.hint}。</p>
 
-            <div className="overflow-x-auto">
+            <div ref={scroller} className="overflow-x-auto">
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="text-left">
@@ -89,7 +98,7 @@ export function LifecycleJikouTab({ kou, chain, kous, valuesOf, jikou, loading, 
                       const m = members.find(x => x.k.year === y)!;
                       const selected = m.k.id === kou.id;
                       return (
-                        <th key={y} className={`${th} whitespace-nowrap text-right ${selected ? 'bg-emerald-50 dark:bg-emerald-950/40' : ''}`}>
+                        <th key={y} data-selected={selected} className={`${th} whitespace-nowrap text-right ${selected ? 'bg-emerald-50 dark:bg-emerald-950/40' : ''}`}>
                           <button type="button" disabled={selected} title={selected ? undefined : `FY${y} の項を開く`} onClick={() => onNavigate(m.k.id)} className={selected ? 'font-semibold text-neutral-900 dark:text-neutral-100' : 'underline decoration-dotted underline-offset-2 hover:text-neutral-900 dark:hover:text-neutral-100'}>FY{y}</button>
                         </th>
                       );
@@ -111,7 +120,12 @@ export function LifecycleJikouTab({ kou, chain, kous, valuesOf, jikou, loading, 
                       {years.map(y => {
                         const c = r.cells.get(y);
                         const v = jikou ? jikouAmount(jikou, c, measure) : null;
-                        return <td key={y} className={`${num} ${y === kou.year ? 'bg-emerald-50/60 dark:bg-emerald-950/20' : ''}`} title={v === null ? (c ? (jikou && jikouSuppOnly(jikou.data.nodes[c.node]!) ? '当初予算に無い事項（補正で新しくできた）' : '現行データに値なし') : 'この年度に事項なし') : exact(v)}>{cell(v)}</td>;
+                        const gap = v === null && c && jikou ? absent(jikou, c.node, measure) : null;
+                        return (
+                          <td key={y} className={`${num} ${y === kou.year ? 'bg-emerald-50/60 dark:bg-emerald-950/20' : ''}`} title={v === null ? (gap ? gap.hint : c ? '現行データに値なし' : 'この年度に事項なし') : exact(v)}>
+                            {gap?.label ? <span className="text-[10px] text-neutral-500">{gap.label}</span> : cell(v)}
+                          </td>
+                        );
                       })}
                     </tr>
                   ))}
@@ -155,14 +169,29 @@ export function LifecycleJikouTab({ kou, chain, kous, valuesOf, jikou, loading, 
       <section className="flex flex-col gap-1 rounded border border-neutral-200 p-2 text-[11px] text-neutral-600 dark:border-neutral-700 dark:text-neutral-300" aria-label="この表にないもの">
         <p className="font-semibold">この表にないもの</p>
         <ul className="list-disc pl-4">
-          <li>概算要求の事項と、事項の単位の決算。決算は項と目の単位で（事項の列が無い）、目は事項の下に結べないので、項の「1年の推移」と「年度推移」で見る。</li>
+          <li>事項の単位の決算。決算は項と目の単位で（事項の列が無い）、目は事項の下に結べないので、項の「1年の推移」と「年度推移」で見る。</li>
+          <li>概算要求の事項は、概算要求書（総表）の要求額。予算書の事項と、同じ項の中で名前でつないでいる（つながらない事項は「要求のみ」「予算のみ」）。要求書の前年度予算額は、事項の単位では出していない。名前が変わった事項は、つながらない。</li>
           <li>補正後・補正の差引額は、補正の事項の記録がある年度（FY2024 まで）の事項だけ。FY2025 以降は、現行のデータに補正の事項が無い。補正が複数回の年度は、その事項が載る最後の回の値で、年度の合計ではない。項の差引額は、項が載る最後の回（事項の無い「項のみ」の行を含む）の値なので、補正の差引額の事項の計が項の額と合わないことがある。</li>
-          {noData.length > 0 && table && table.rows.length > 0 && <li>{noData.map(y => `FY${y}`).join('・')}: 事項のデータが無い年度（予算書が基準データに無い年度、または項が予算書にない）。</li>}
+          {noData.length > 0 && table && table.rows.length > 0 && <li>{noData.map(y => `FY${y}`).join('・')}: 事項のデータが無い年度（その年度に、予算書にも概算要求書にも、この項の事項が無い）。</li>}
           <li>年度の間の対応は、確定したもの（同じ鍵、または名前と額の根拠がそろった 1 対 1）だけでたどっている。対応が確定しない事項は、別の行になる。事業が同じとは限らない。</li>
         </ul>
       </section>
     </div>
   );
+}
+
+/** 値が無い理由が分かるときの、小さな印と説明。分からないときは null（`—` と「現行データに値なし」） */
+function absent(jikou: JikouIndex, nodeIndex: number, measure: JikouMeasure): { label: string; hint: string } | null {
+  const n = jikou.data.nodes[nodeIndex]!;
+  if (measure === 'request') {
+    if (n[3] === null) return null;
+    return jikou.requestRead.has(n[0])
+      ? { label: '予算のみ', hint: '概算要求書の同じ項に、同名の事項が無い' }
+      : { label: '', hint: '概算要求の事項を読めていない項（要求書に明細が無い、または明細の項につながらない）' };
+  }
+  if (jikouRequestOnly(n)) return { label: '要求のみ', hint: '予算書（当初予算・補正）に無い事項（概算要求書にだけある）' };
+  if (jikouSuppOnly(n) && (measure === 'budget' || measure === 'prev')) return { label: '補正のみ', hint: '当初予算に無い事項（補正で新しくできた）' };
+  return null;
 }
 
 const MEASURE = (k: JikouMeasure) => JIKOU_MEASURES.find(m => m.key === k)!;

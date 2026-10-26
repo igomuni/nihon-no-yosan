@@ -2,11 +2,11 @@
  * 予算の一生の画面の「事項」タブ: 項の下の事項を、年度をまたぐ確定した対応（`jikou-links.ts`）でそろえて、年度の列に並べる。純粋な関数。
  * 仕様: docs/guides/lifecycle-jikou.md。画面用のデータ（`lifecycle/jikou.json.gz`）の型もここに置く。
  *
- * 事項の額は千円。政府案（当初予算）、補正後、補正の差引額、予算書の前年度予算額がある。概算要求の事項と決算の事項（決算は項と目だけ）は無い。
+ * 事項の額は千円。概算要求（総表の要求額）、政府案（当初予算）、補正後、補正の差引額、予算書の前年度予算額がある。決算の事項は無い（決算は項と目だけ）。
  */
 import type { JikouLinkAmount, JikouLinkEvidence } from './jikou-links.ts';
 
-export const JIKOU_EVIDENCE: readonly JikouLinkEvidence[] = ['same_key', 'same_name_other_item', 'same_item_other_name', 'same_name_other_org', 'prev_amount_eq_revised', 'prev_amount_eq_budget'];
+export const JIKOU_EVIDENCE: readonly JikouLinkEvidence[] = ['same_key', 'same_name_other_item', 'same_item_other_name', 'same_name_other_org', 'prev_amount_eq_revised', 'prev_amount_eq_budget', 'same_name_linked_kou'];
 export const JIKOU_AMOUNT: readonly JikouLinkAmount[] = ['eq_revised', 'eq_budget', 'ne', 'zero', 'n/a'];
 
 export const JIKOU_EVIDENCE_LABEL: Record<JikouLinkEvidence, string> = {
@@ -16,10 +16,11 @@ export const JIKOU_EVIDENCE_LABEL: Record<JikouLinkEvidence, string> = {
   same_name_other_org: '事項名が同じで、所属が違う',
   prev_amount_eq_revised: '次の年度の前年度予算額 = 前の年度の改予算額',
   prev_amount_eq_budget: '次の年度の前年度予算額 = 前の年度の政府案の額',
+  same_name_linked_kou: '事項名が同じで、項が確定した対応でつながる（概算要求にだけある項）',
 };
 
-/** 事項 1 件（1 年度）: [項の添字, 年度, 事項名, 政府案, 予算書の前年度予算額, 補正後, 補正の差引額]。額は千円で、値が無ければ null */
-export type LifecycleJikouNode = [number, number, string, number | null, number | null, number | null, number | null];
+/** 事項 1 件（1 年度）: [項の添字, 年度, 事項名, 政府案, 予算書の前年度予算額, 補正後, 補正の差引額, 概算要求の要求額]。額は千円で、値が無ければ null */
+export type LifecycleJikouNode = [number, number, string, number | null, number | null, number | null, number | null, number | null];
 
 /** 確定した年度をまたぐ対応: [前の年度の事項, 次の年度の事項, 根拠（`JIKOU_EVIDENCE` の添字を立てたビット）, 額の確認（`JIKOU_AMOUNT` の添字）] */
 export type LifecycleJikouLink = [number, number, number, number];
@@ -31,16 +32,19 @@ export interface LifecycleJikouData {
   kous: string[];
   nodes: LifecycleJikouNode[];
   links: LifecycleJikouLink[];
+  /** 概算要求の事項を読めた項（`kous` の添字）。ここに無い項は、要求側の事項が読めていない（要求書に明細が無い、または明細の項につながらない）ので、「予算のみ」とは言えない */
+  requestRead: number[];
 }
 
-export type JikouMeasure = 'budget' | 'revised' | 'suppNet' | 'prev';
+export type JikouMeasure = 'request' | 'budget' | 'revised' | 'suppNet' | 'prev';
 export const JIKOU_MEASURES: readonly { key: JikouMeasure; label: string; hint: string }[] = [
+  { key: 'request', label: '概算要求', hint: '概算要求書（総表）の事項の要求額。予算書の事項と、同じ項の中で名前でつないだもの。要求側の事項が読めた項だけ' },
   { key: 'budget', label: '政府案', hint: '当初予算（国会への提出時の政府案）の額' },
   { key: 'revised', label: '補正後', hint: '改予算額。補正の事項の記録がある事項だけ（FY2024 まで）' },
   { key: 'suppNet', label: '補正の差引額', hint: '補正の差引額（追加額 + 修正減少額）。補正が複数回の年度は、その事項が載る最後の回の値' },
   { key: 'prev', label: '前年度予算額', hint: '予算書が載せる前年度予算額' },
 ];
-const MEASURE_AT: Record<JikouMeasure, 3 | 4 | 5 | 6> = { budget: 3, prev: 4, revised: 5, suppNet: 6 };
+const MEASURE_AT: Record<JikouMeasure, 3 | 4 | 5 | 6 | 7> = { budget: 3, prev: 4, revised: 5, suppNet: 6, request: 7 };
 
 /** 事項の索引（データを読んだ後に 1 度だけ作る） */
 export interface JikouIndex {
@@ -49,6 +53,8 @@ export interface JikouIndex {
   kouOf: ReadonlyMap<string, number>;
   /** 項の添字 → その項の事項（`nodes` の添字） */
   nodesOf: ReadonlyMap<number, readonly number[]>;
+  /** 概算要求の事項を読めた項（`kous` の添字） */
+  requestRead: ReadonlySet<number>;
   /** 事項 → 前の年度へ入ってくる確定した対応（`links` の添字）。相手が 1 つに決まる事項だけ */
   inLink: ReadonlyMap<number, number>;
 }
@@ -67,7 +73,7 @@ export function jikouIndex(data: LifecycleJikouData): JikouIndex {
   data.links.forEach((l, i) => {
     if (into.get(l[1])!.length === 1 && out.get(l[0])!.length === 1) inLink.set(l[1], i);
   });
-  return { data, kouOf, nodesOf, inLink };
+  return { data, kouOf, nodesOf, requestRead: new Set(data.requestRead), inLink };
 }
 
 export interface JikouCell {
@@ -95,7 +101,7 @@ export interface JikouTable {
 }
 
 /**
- * 選んだ項の年度の並び（`kouIds`）にある事項を、確定した対応で結んで行にする。並び: 最後の年度の政府案の額の降順（その年度に無い行は、その後に最後にあった年度の新しい順）。
+ * 選んだ項の年度の並び（`kouIds`）にある事項を、確定した対応で結んで行にする。並び: 最後の年度の額（政府案、無ければ補正後、概算要求）の降順（その年度に無い行は、その後に最後にあった年度の新しい順）。
  * 対応は、並びの中の事項どうしだけで結ぶ（項をまたぐ対応は、行にしない）。
  */
 export function jikouTable(index: JikouIndex, kouIds: readonly string[]): JikouTable {
@@ -132,13 +138,17 @@ export function jikouTable(index: JikouIndex, kouIds: readonly string[]): JikouT
   }
   const lastYear = years[years.length - 1];
   const onLast = (r: JikouRow): boolean => r.lastYear === lastYear;
-  const amountAtLast = (r: JikouRow): number => data.nodes[r.cells.get(r.lastYear)!.node]![3] ?? -Infinity;
+  const amountAtLast = (r: JikouRow): number => (([, , , b, , rv, , q]) => b ?? rv ?? q ?? -Infinity)(data.nodes[r.cells.get(r.lastYear)!.node]!);
   rows.sort((a, b) => Number(onLast(b)) - Number(onLast(a)) || (onLast(a) ? amountAtLast(b) - amountAtLast(a) : b.lastYear - a.lastYear) || a.name.localeCompare(b.name, 'ja'));
   return { years, rows };
 }
 
-/** 当初予算に載っていない事項（補正で新しくできた事項）。政府案・予算書の前年度予算額の列では、行に数えない */
+/** 当初予算に載っていない事項（補正で新しくできた事項） */
 export const jikouSuppOnly = (n: LifecycleJikouNode): boolean => n[3] === null && n[5] !== null;
+/** 予算書（当初・補正）に載っていない事項（概算要求書にだけある事項） */
+export const jikouRequestOnly = (n: LifecycleJikouNode): boolean => n[3] === null && n[5] === null && n[7] !== null;
+/** その値の合計に、事項の行として数えるか。政府案・前年度予算額は当初予算の事項、補正後・補正の差引額は当初予算か補正の事項、概算要求は要求額のある事項（予算のみの事項は、要求の行に数えない） */
+const counts = (n: LifecycleJikouNode, measure: JikouMeasure): boolean => (measure === 'request' ? n[7] !== null : measure === 'budget' || measure === 'prev' ? n[3] !== null : n[3] !== null || n[5] !== null);
 
 /** セルの額（千円）。事項の記録に値が無いときは null（0 ではない） */
 export const jikouAmount = (index: JikouIndex, cell: JikouCell | undefined, measure: JikouMeasure): number | null => (cell ? index.data.nodes[cell.node]![MEASURE_AT[measure]] : null);
@@ -160,8 +170,8 @@ export function jikouTotals(index: JikouIndex, table: JikouTable, measure: Jikou
     for (const r of table.rows) {
       const c = r.cells.get(year);
       if (!c) continue;
-      // 補正にだけある事項は、政府案・前年度予算額の合計には入らない（当初予算の項の額と比べるため、行にも数えない）
-      if ((measure === 'budget' || measure === 'prev') && jikouSuppOnly(index.data.nodes[c.node]!)) continue;
+      // 比べる項の額（予算書の目の合計、概算要求の総表）に入る事項だけを、行に数える
+      if (!counts(index.data.nodes[c.node]!, measure)) continue;
       rows++;
       const v = jikouAmount(index, c, measure);
       if (v !== null) { withValue++; sum += v; }

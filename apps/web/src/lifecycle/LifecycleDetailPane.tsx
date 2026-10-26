@@ -126,7 +126,7 @@ export type DetailTab = 'life' | 'trend' | 'jikou';
 function DetailTabs({ tab, onTab }: { tab: DetailTab; onTab: (t: DetailTab) => void }) {
   return (
     <div role="tablist" aria-label="項の表示" className="sticky top-0 z-10 flex gap-1 border-b border-neutral-200 bg-white px-3 pt-2 text-xs dark:border-neutral-800 dark:bg-neutral-900">
-      {([['life', '1年の推移', '選んだ年度の中で、概算要求 → 政府案 → 補正 → 決算と、額がどう動いたか'], ['trend', '年度推移', '年度をまたいで、同じ項と確認できた年度の額の推移'], ['jikou', '事項', '項の下の事項（政府案・補正）を、年度をまたいでそろえて見る']] as const).map(([t, label, hint]) => (
+      {([['life', '1年の推移', '選んだ年度の中で、概算要求 → 政府案 → 補正 → 決算と、額がどう動いたか'], ['trend', '年度推移', '年度をまたいで、同じ項と確認できた年度の額の推移'], ['jikou', '事項', '項の下の事項（概算要求・政府案・補正）を、年度をまたいでそろえて見る']] as const).map(([t, label, hint]) => (
         <button key={t} type="button" role="tab" aria-selected={tab === t} title={hint} onClick={() => onTab(t)} className={`rounded-t border-b-2 px-2.5 py-1 ${tab === t ? 'border-emerald-600 font-semibold text-neutral-900 dark:text-neutral-100' : 'border-transparent text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'}`}>{label}</button>
       ))}
     </div>
@@ -144,7 +144,7 @@ export function LifecycleDetailPane({ kou, events: unsorted, coverage, data, lin
   const { changes, zero } = lifecycleChanges(values);
   const use = lifecycleUse(values);
   const base = values.budget_amount ?? values.current_amount ?? null;
-  if (tab === 'jikou' && chain) return <><DetailTabs tab={tab} onTab={onTab} /><LifecycleJikouTab kou={kou} chain={chain} kous={data.kous} valuesOf={valuesOf} jikou={jikou} loading={jikouState === 'loading'} failed={jikouState === 'error'} onNavigate={onNavigate} /></>;
+  if (tab === 'jikou' && chain) return <><DetailTabs tab={tab} onTab={onTab} /><LifecycleJikouTab key={kou.requestOnly === 'noBudget' ? 'request' : 'budget'} kou={kou} chain={chain} kous={data.kous} valuesOf={valuesOf} jikou={jikou} loading={jikouState === 'loading'} failed={jikouState === 'error'} onNavigate={onNavigate} /></>;
   if (tab === 'trend' && chain) return <><DetailTabs tab={tab} onTab={onTab} /><LifecycleTrendTab kou={kou} chain={chain} kous={data.kous} valuesOf={valuesOf} links={data.links} onNavigate={onNavigate} /></>;
   return (
     <>
