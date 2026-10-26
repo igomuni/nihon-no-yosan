@@ -121,3 +121,4 @@ export { buildJikouLinks, jikouLinkKeyOf, jikouRunLengths, linkSuppOnly, type Ji
 export { REDACTED_MIN, SOLID_DARK, kouOfPage, solidDark, type KouPageRow, type PageKouMatch, type SolidDark } from './redacted-pages.ts';
 export { SUPP_REQUEST_CLASSES, classifySuppRequest, suppRequestPairs, type SuppRequestClass, type SuppRequestPair } from './supp-request-pairs.ts';
 export { JIKOU_AMOUNT, JIKOU_EVIDENCE, JIKOU_EVIDENCE_LABEL, JIKOU_MEASURES, jikouAmount, jikouEvidenceMask, jikouEvidenceOf, jikouIndex, jikouSuppOnly, jikouTable, jikouTotals, type JikouCell, type JikouIndex, type JikouMeasure, type JikouRow, type JikouTable, type JikouYearTotal, type LifecycleJikouData, type LifecycleJikouLink, type LifecycleJikouNode } from './lifecycle-jikou.ts';
+export { NEAR_NAME, NEAR_RATIO, SAME_AMOUNT_RATE, bigramDice, jikouKeyOfMofRow, requestJikouPairing, type JikouPairingYear } from './request-jikou-pairing.ts';

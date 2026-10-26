@@ -1,0 +1,156 @@
+{
+ "years": [
+  {
+   "year": 2023,
+   "request": 1625,
+   "budget": 1650,
+   "both": 1487,
+   "requestOnly": {
+    "matched": 74,
+    "zeroKou": 48,
+    "requestOnlyKou": 16,
+    "matchedZero": 36
+   },
+   "budgetOnly": {
+    "matched": 48,
+    "mofOnlyKou": 115,
+    "matchedZero": 5
+   },
+   "ratio": {
+    "n": 1391,
+    "near": 1305,
+    "median": 1,
+    "extreme": 30
+   },
+   "leftover": {
+    "namePairs": 22,
+    "samePairs": 10,
+    "requestZeroPairs": 0,
+    "unpairedRequest": 52,
+    "unpairedRequestZero": 36,
+    "unpairedBudget": 26,
+    "unpairedBudgetZero": 5
+   },
+   "marks": {
+    "budgetOnlyPositive": 43,
+    "budgetOnlyInMarkedKou": 7,
+    "requestZero": 36,
+    "requestZeroInMarkedKou": 9
+   }
+  },
+  {
+   "year": 2024,
+   "request": 1617,
+   "budget": 1616,
+   "both": 1510,
+   "requestOnly": {
+    "matched": 53,
+    "zeroKou": 41,
+    "requestOnlyKou": 13,
+    "matchedZero": 45
+   },
+   "budgetOnly": {
+    "matched": 19,
+    "mofOnlyKou": 87,
+    "matchedZero": 3
+   },
+   "ratio": {
+    "n": 1427,
+    "near": 1340,
+    "median": 1,
+    "extreme": 26
+   },
+   "leftover": {
+    "namePairs": 7,
+    "samePairs": 4,
+    "requestZeroPairs": 1,
+    "unpairedRequest": 46,
+    "unpairedRequestZero": 44,
+    "unpairedBudget": 12,
+    "unpairedBudgetZero": 2
+   },
+   "marks": {
+    "budgetOnlyPositive": 16,
+    "budgetOnlyInMarkedKou": 2,
+    "requestZero": 45,
+    "requestZeroInMarkedKou": 17
+   }
+  },
+  {
+   "year": 2025,
+   "request": 1691,
+   "budget": 1652,
+   "both": 1579,
+   "requestOnly": {
+    "matched": 55,
+    "zeroKou": 43,
+    "requestOnlyKou": 14,
+    "matchedZero": 36
+   },
+   "budgetOnly": {
+    "matched": 24,
+    "mofOnlyKou": 49,
+    "matchedZero": 5
+   },
+   "ratio": {
+    "n": 1487,
+    "near": 1385,
+    "median": 1,
+    "extreme": 33
+   },
+   "leftover": {
+    "namePairs": 11,
+    "samePairs": 6,
+    "requestZeroPairs": 0,
+    "unpairedRequest": 44,
+    "unpairedRequestZero": 36,
+    "unpairedBudget": 13,
+    "unpairedBudgetZero": 4
+   },
+   "marks": {
+    "budgetOnlyPositive": 19,
+    "budgetOnlyInMarkedKou": 1,
+    "requestZero": 36,
+    "requestZeroInMarkedKou": 13
+   }
+  },
+  {
+   "year": 2026,
+   "request": 1715,
+   "budget": 1664,
+   "both": 1605,
+   "requestOnly": {
+    "matched": 58,
+    "zeroKou": 43,
+    "requestOnlyKou": 9,
+    "matchedZero": 47
+   },
+   "budgetOnly": {
+    "matched": 9,
+    "mofOnlyKou": 50,
+    "matchedZero": 2
+   },
+   "ratio": {
+    "n": 1515,
+    "near": 1437,
+    "median": 1,
+    "extreme": 28
+   },
+   "leftover": {
+    "namePairs": 5,
+    "samePairs": 2,
+    "requestZeroPairs": 0,
+    "unpairedRequest": 53,
+    "unpairedRequestZero": 47,
+    "unpairedBudget": 4,
+    "unpairedBudgetZero": 2
+   },
+   "marks": {
+    "budgetOnlyPositive": 7,
+    "budgetOnlyInMarkedKou": 0,
+    "requestZero": 47,
+    "requestZeroInMarkedKou": 16
+   }
+  }
+ ]
+}
