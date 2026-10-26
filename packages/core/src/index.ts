@@ -119,3 +119,4 @@ export {
 export { LIFECYCLE_CHAIN_END_LABEL, lifecycleChainSpan, lifecycleChains, type LifecycleChain, type LifecycleChainEnd } from './lifecycle-chain.ts';
 export { buildJikouLinks, jikouLinkKeyOf, jikouRunLengths, type JikouLink, type JikouLinkAmount, type JikouLinkEvidence, type JikouLinkStatus, type JikouNode } from './jikou-links.ts';
 export { REDACTED_MIN, SOLID_DARK, kouOfPage, solidDark, type KouPageRow, type PageKouMatch, type SolidDark } from './redacted-pages.ts';
+export { SUPP_REQUEST_CLASSES, classifySuppRequest, suppRequestPairs, type SuppRequestClass, type SuppRequestPair } from './supp-request-pairs.ts';
