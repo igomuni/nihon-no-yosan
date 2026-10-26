@@ -2,16 +2,18 @@ import type { LifecycleKou } from './lifecycle.ts';
 import type { LifecycleValues } from './lifecycle-view.ts';
 import type { LifecycleLink, LifecycleLinkStatus } from './lifecycle-links.ts';
 import { lifecyclePatternMatches, type LifecyclePattern } from './lifecycle-status.ts';
-import { textMatches } from './trend-view.ts';
+import { PUBLISHER_NAMES, textMatches } from './trend-view.ts';
 
 /**
  * 予算の一生の一覧: フィルタ・列・並べ替え（純粋な関数）。
- * 所管は予算書の原文。特別会計は複数の府省が所管することがあり、原文は「A、B及びC」の形（例: 内閣府、総務省及び財務省）。
+ * 所管は予算書の原文を府省に分けたもの。特別会計は複数の府省が所管することがあり、原文は「A、B及びC」の形（例: 内閣府、総務省及び財務省）。
+ * 一般会計の内閣府の外局（こども家庭庁・消費者庁・金融庁など。予算書の所管はどれも内閣府で、組織がその外局）は、年度推移・概算要求と当初予算の差の画面と同じく、それぞれの府省として数える（要求書の公開元の府省庁名の表と同じ名前の組織）。
  * 組織は一般会計だけの値（特別会計は、特別会計の名称と勘定で識別する）。
  */
 
-/** 所管の原文を府省に分ける（区切りは「、」と「及び」。予算書の FY2023・FY2024 の特別会計で、分けた名前が一般会計の所管の名前と一致することを確かめた（例外は東日本大震災復興特別会計の「復興庁」だけ）） */
-export const lifecycleGroupsOf = (k: LifecycleKou): string[] => k.ministry.split(/、|及び/).map(g => g.trim()).filter(g => g !== '');
+/** 所管を府省に分ける。内閣府の外局は、その外局（上）。それ以外は、所管の原文を分ける（区切りは「、」と「及び」。予算書の FY2023・FY2024 の特別会計で、分けた名前が一般会計の所管の名前と一致することを確かめた（例外は東日本大震災復興特別会計の「復興庁」だけ）） */
+export const lifecycleGroupsOf = (k: LifecycleKou): string[] =>
+  k.account === 'general' && k.ministry === '内閣府' && k.org !== '内閣府' && PUBLISHER_NAMES.has(k.org) ? [k.org] : k.ministry.split(/、|及び/).map(g => g.trim()).filter(g => g !== '');
 
 /** 所管の選択肢「複数所管」: 複数の府省が所管する項 */
 export const LIFECYCLE_JOINT = '複数所管';

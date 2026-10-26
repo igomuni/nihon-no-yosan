@@ -295,6 +295,9 @@ const PUBLISHER_BY_HOST: Record<string, string> = {
   'sotsui.go.jp': '裁判官訴追委員会', 'soumu.go.jp': '総務省',
 };
 
+/** 公開元の府省庁名の一覧（`publisherOf` が返す名前）。内閣府の外局を、府省として数えるときの基準にも使う */
+export const PUBLISHER_NAMES: ReadonlySet<string> = new Set(Object.values(PUBLISHER_BY_HOST));
+
 /** 要求書の URL → 公開元の府省庁名（未知のドメインはドメインのまま） */
 export function publisherOf(url: string): string {
   const m = /^https?:\/\/([^/:?#]+)/i.exec(url);
