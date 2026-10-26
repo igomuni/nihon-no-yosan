@@ -4,7 +4,7 @@
  * 入力: 事項の CSV（`mof-archive/{年度}/jikou-{general,special}.csv`。FY2017〜FY2022 は過去年度のデータセット、FY2023〜FY2026 は基準データ。FY2025 は国会への提出時の版）と、
  * 補正の事項の CSV（`jikou-{general,special}-hosei{,-2,-3}.csv`。FY2017〜FY2024。補正後の額に使う）。名前は `nameKey` で揃える。
  */
-import { buildJikouLinks, jikouLinkKeyOf, jikouRunLengths, nameKey, parseCsv, type JikouLink, type JikouNode } from '@nihon-no-yosan/core';
+import { buildJikouLinks, jikouLinkKeyOf, jikouRunLengths, linkSuppOnly, nameKey, parseCsv, type JikouLink, type JikouNode } from '@nihon-no-yosan/core';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
@@ -29,22 +29,31 @@ const int = (s: string | undefined): number | null => (s === undefined || s === 
 const dirOf = (year: number, datasetDir: string, historyDir: string): string =>
   path.join(year <= 2022 ? historyDir : datasetDir, 'mof-archive', year === 2025 ? '2025_teishutsu' : String(year));
 
+/** 過去年度のデータセットが無いときは、基準データだけの年度（FY2023 以降）。補正の事項は過去年度のデータセットにあるので、補正後の額も付かない */
+export const jikouLinkYears = (historyDir: string | undefined): readonly number[] => (historyDir ? JIKOU_LINK_YEARS : JIKOU_LINK_YEARS.filter(y => y >= 2023));
+
 export interface JikouLinkData {
   years: readonly number[];
   nodes: JikouNode[];
   /** 事項ごとの継続年数（`nodes` と同じ順） */
   runs: number[];
   links: JikouLink[];
+  /** 補正にだけある事項（当初予算に載っていない。額は補正後・差引額だけ）。`nodes` と `links` には含めない（件数・継続年数は当初予算の事項のまま） */
+  suppOnly: JikouNode[];
+  /** 補正にだけある事項の対応（同じ鍵だけ）。添字は `nodes` の後ろに `suppOnly` を続けた並び */
+  suppOnlyLinks: JikouLink[];
   /** 補正後の額が付いた事項の数（年度ごと） */
   revisedCount: Record<number, number>;
 }
 
-export function buildJikouLinkData(datasetDir: string, historyDir: string): JikouLinkData {
+export function buildJikouLinkData(datasetDir: string, historyDir?: string): JikouLinkData {
+  const years = jikouLinkYears(historyDir);
   const nodes: JikouNode[] = [];
+  const suppOnly: JikouNode[] = [];
   const revisedCount: Record<number, number> = {};
-  for (const year of JIKOU_LINK_YEARS) {
+  for (const year of years) {
     for (const account of ACCOUNTS) {
-      const t = readTable(path.join(dirOf(year, datasetDir, historyDir), `jikou-${account}.csv`));
+      const t = readTable(path.join(dirOf(year, datasetDir, historyDir ?? ''), `jikou-${account}.csv`));
       const c = (name: string): number => col(t, h => h === name, name);
       const iAmt = col(t, h => /(要求額|予定額)\(千円\)$/.test(h), '当年度の額');
       const iPrev = c('前年度予算額(千円)');
@@ -63,7 +72,8 @@ export function buildJikouLinkData(datasetDir: string, historyDir: string): Jiko
         prev: int(r[iPrev]),
       }));
       // 補正後の額: 補正が複数回あるときは、その事項が載る最後の回
-      if (year <= 2024) {
+      const extra = new Map<string, JikouNode>();
+      if (historyDir && year <= 2024) {
         const byKey = new Map(made.map(n => [jikouLinkKeyOf(n), n]));
         for (let round = 1; ; round++) {
           const f = path.join(historyDir, 'mof-archive', String(year), `jikou-${account}-hosei${round > 1 ? `-${round}` : ''}.csv`);
@@ -71,6 +81,7 @@ export function buildJikouLinkData(datasetDir: string, historyDir: string): Jiko
           const h = readTable(f);
           const hc = (name: string): number => col(h, x => x === name, name);
           const iRev = col(h, x => x.startsWith('改'), '改予算額');
+          const iNet = col(h, x => /^補正(要求|予定)差引額/.test(x), '補正の差引額');
           const iKind = hc('行の種類');
           for (const r of h.rows) {
             if (r[iKind] !== '事項') continue;
@@ -85,17 +96,21 @@ export function buildJikouLinkData(datasetDir: string, historyDir: string): Jiko
               name: nameKey(r[hc('事項名')]),
               budget: null, prev: null,
             };
-            const n = byKey.get(jikouLinkKeyOf(probe));
-            if (n) n.revised = int(r[iRev]) ?? undefined;
+            // 当初予算に無い事項は、補正にだけある事項として別に持つ（回が進んだら、最後の回の値）
+            const n = byKey.get(jikouLinkKeyOf(probe)) ?? extra.get(jikouLinkKeyOf(probe)) ?? probe;
+            if (n === probe) extra.set(jikouLinkKeyOf(probe), probe);
+            n.revised = int(r[iRev]) ?? undefined;
+            n.suppNet = int(r[iNet]) ?? undefined;
           }
         }
       }
       nodes.push(...made);
+      suppOnly.push(...extra.values());
     }
     revisedCount[year] = nodes.filter(n => n.year === year && n.revised !== undefined).length;
   }
-  const links = buildJikouLinks(nodes, JIKOU_LINK_YEARS);
-  return { years: JIKOU_LINK_YEARS, nodes, runs: jikouRunLengths(nodes, links), links, revisedCount };
+  const links = buildJikouLinks(nodes, years);
+  return { years, nodes, runs: jikouRunLengths(nodes, links), links, suppOnly, suppOnlyLinks: linkSuppOnly(nodes, suppOnly, links), revisedCount };
 }
 
 export const jikouNodeId = (n: JikouNode): string => `${n.year}:${jikouLinkKeyOf(n)}`;

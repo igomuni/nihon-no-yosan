@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildJikouLinks, jikouRunLengths, type JikouNode } from './jikou-links.ts';
+import { buildJikouLinks, jikouRunLengths, linkSuppOnly, type JikouLink, type JikouNode } from './jikou-links.ts';
 
 const node = (year: number, o: Partial<JikouNode> & { name: string }): JikouNode => ({
   year, account: 'general', ministry: '内閣府', specialAccount: '', subAccount: '', org: '本府', itemCode: '001', itemName: '共通費', budget: 100, prev: 90, ...o,
@@ -58,5 +58,27 @@ describe('jikouRunLengths', () => {
     const nodes = [node(2020, { name: 'A' }), node(2021, { name: 'A' }), node(2022, { name: 'A' }), node(2022, { name: 'B' })];
     const links = buildJikouLinks(nodes, years);
     expect(jikouRunLengths(nodes, links)).toEqual([1, 2, 3, 1]);
+  });
+});
+
+describe('linkSuppOnly', () => {
+  const node = (year: number, name: string, extra: Partial<JikouNode> = {}): JikouNode => ({ year, account: 'general', ministry: 'm', specialAccount: '', subAccount: '', org: 'o', itemCode: '001', itemName: '項', name, budget: 100, prev: null, ...extra });
+  it('joins a 事項 that exists only in the supplementary budget to the same-key 事項 of the next year', () => {
+    const nodes = [node(2020, 'a'), node(2021, 'b')];
+    const suppOnly = [node(2020, 'b', { budget: null, revised: 500, suppNet: 500 })];
+    const r = linkSuppOnly(nodes, suppOnly, []);
+    expect(r).toEqual([{ from: 2, to: 1, evidence: ['same_key'], amount: 'n/a', status: 'RESOLVED' }]);
+  });
+  it('joins from the same-key 事項 of the previous year, and records the amount check', () => {
+    const nodes = [node(2019, 'b', { revised: 120 }), node(2020, 'z', { prev: 120 })];
+    const suppOnly = [node(2020, 'b', { budget: null, prev: 120, revised: 300, suppNet: 300 })];
+    const r = linkSuppOnly(nodes, suppOnly, []);
+    expect(r).toEqual([{ from: 0, to: 2, evidence: ['same_key', 'prev_amount_eq_revised'], amount: 'eq_revised', status: 'RESOLVED' }]);
+  });
+  it('does not add to a 事項 that already has a resolved link in that direction', () => {
+    const nodes = [node(2020, 'a'), node(2021, 'b')];
+    const suppOnly = [node(2020, 'b', { budget: null, revised: 500, suppNet: 500 })];
+    const taken: JikouLink[] = [{ from: 0, to: 1, evidence: ['same_name_other_item', 'prev_amount_eq_budget'], amount: 'eq_budget', status: 'RESOLVED' }];
+    expect(linkSuppOnly(nodes, suppOnly, taken)).toEqual([]);
   });
 });

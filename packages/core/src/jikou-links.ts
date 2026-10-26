@@ -37,6 +37,8 @@ export interface JikouNode {
   prev: number | null;
   /** その年度の補正後の額（補正の事項の CSV から。補正の無い事項・年度は undefined） */
   revised?: number | undefined;
+  /** その年度の補正の差引額（補正の事項の CSV から。`revised` と同じ回の値。補正の無い事項・年度は undefined） */
+  suppNet?: number | undefined;
 }
 
 export interface JikouLink {
@@ -115,6 +117,36 @@ export function buildJikouLinks(nodes: readonly JikouNode[], years: readonly num
     }
   }
   return links;
+}
+
+/**
+ * 補正にだけある事項（当初予算に載っていない事項。補正で新しくできた事項）を、同じ鍵の事項と結ぶ。
+ * `nodes` の後ろに `suppOnly` を続けた並びの添字で返す。年度が隣り合う同じ鍵の事項だけを `same_key` で結び、すでに確定した対応が出入りしている事項には足さない
+ * （`buildJikouLinks` の結果は変えない。補正にだけある事項は、そこでは候補を探さないので、名前だけ・額だけの対応は作らない）。
+ */
+export function linkSuppOnly(nodes: readonly JikouNode[], suppOnly: readonly JikouNode[], links: readonly JikouLink[]): JikouLink[] {
+  const all = [...nodes, ...suppOnly];
+  const at = new Map<string, number>();
+  all.forEach((n, i) => at.set(`${n.year}|${jikouLinkKeyOf(n)}`, i));
+  const hasOut = new Set<number>(), hasIn = new Set<number>();
+  for (const l of links) if (l.status === 'RESOLVED' && l.from >= 0 && l.to >= 0) { hasOut.add(l.from); hasIn.add(l.to); }
+  const added: JikouLink[] = [];
+  const connect = (from: number, to: number): void => {
+    if (hasOut.has(from) || hasIn.has(to)) return;
+    hasOut.add(from);
+    hasIn.add(to);
+    const amount = amountCheck(all[from]!, all[to]!);
+    added.push({ from, to, evidence: ['same_key', ...(amount === 'eq_revised' ? ['prev_amount_eq_revised' as const] : amount === 'eq_budget' ? ['prev_amount_eq_budget' as const] : [])], amount, status: 'RESOLVED' });
+  };
+  suppOnly.forEach((s, k) => {
+    const i = nodes.length + k;
+    const key = jikouLinkKeyOf(s);
+    const next = at.get(`${s.year + 1}|${key}`);
+    if (next !== undefined) connect(i, next);
+    const prev = at.get(`${s.year - 1}|${key}`);
+    if (prev !== undefined) connect(prev, i);
+  });
+  return added;
 }
 
 /**

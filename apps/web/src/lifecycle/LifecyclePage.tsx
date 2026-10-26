@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties, type MouseEvent as ReactMouseEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent as ReactMouseEvent } from 'react';
 import {
   INITIAL_LIFECYCLE_FILTERS,
   LIFECYCLE_PATTERNS,
@@ -12,12 +12,15 @@ import {
   lifecycleLinksByKou,
   lifecyclePatternCounts,
   lifecycleRowAmounts,
+  jikouIndex,
   lifecycleValues,
   matchesLifecycleLinks,
   matchesLifecyclePattern,
   sortLifecycleRows,
+  type JikouIndex,
   type LifecycleData,
   type LifecycleEventRow,
+  type LifecycleJikouData,
   type LifecycleFilters,
   type LifecycleSortDir,
   type LifecycleSortKey,
@@ -104,6 +107,19 @@ export function LifecyclePage() {
   const coverage = useMemo(() => lifecycleCoverage(data?.kous ?? []), [data]);
   const chainOf = useMemo(() => lifecycleChains(data?.kous ?? [], data?.links ?? [], data?.years ?? []), [data]);
 
+  // 事項（lifecycle/jikou.json.gz）は、事項のタブを初めて開いたときに読む。結果（索引か失敗）は、読み終えたときに入れる
+  const [jikouResult, setJikouResult] = useState<{ index: JikouIndex } | { failed: true } | null>(null);
+  const jikouRequested = useRef(false);
+  useEffect(() => {
+    if (detailTab !== 'jikou' || jikouRequested.current) return;
+    jikouRequested.current = true;
+    loadGzJson<LifecycleJikouData>('lifecycle/jikou.json.gz')
+      .then(d => setJikouResult({ index: jikouIndex(d) }))
+      .catch(() => setJikouResult({ failed: true }));
+  }, [detailTab]);
+  const jikou = jikouResult && 'index' in jikouResult ? jikouResult.index : null;
+  const jikouState = jikouResult === null ? 'loading' : 'index' in jikouResult ? 'ready' : 'error';
+
   const years = data?.years ?? [];
   const activeYear = data ? (year !== null && years.includes(year) ? year : years[0]!) : null;
   // 年度・所管・会計・組織・項名で絞った項（値のある段階で絞る前）。段階ごとの件数は、この集合で数える
@@ -187,7 +203,7 @@ export function LifecyclePage() {
         </section>
         <Splitter label="詳細の幅" width={detailWidth} limits={DETAIL_WIDTH} dir={-1} onChange={setDetailWidth} />
         <section aria-label="項の一生" className={`${pane} overflow-auto lg:col-span-2 xl:col-span-1 xl:w-[var(--dw)] xl:shrink-0`} style={{ '--dw': `${detailWidth}px` } as CSSProperties}>
-          <LifecycleDetailPane kou={kou} events={selectedIndex >= 0 ? byKou.get(selectedIndex) ?? [] : []} coverage={coverage} data={data} links={selectedIndex >= 0 ? linksByKou.get(selectedIndex) ?? [] : []} selfIndex={selectedIndex} onNavigate={id => { const t = data.kous.find(x => x.id === id); if (t) { setYear(t.year); setSelectedId(id); } }} tab={detailTab} onTab={setDetailTab} chain={selectedIndex >= 0 ? chainOf(selectedIndex) : null} valuesOf={valuesOf} />
+          <LifecycleDetailPane kou={kou} events={selectedIndex >= 0 ? byKou.get(selectedIndex) ?? [] : []} coverage={coverage} data={data} links={selectedIndex >= 0 ? linksByKou.get(selectedIndex) ?? [] : []} selfIndex={selectedIndex} onNavigate={id => { const t = data.kous.find(x => x.id === id); if (t) { setYear(t.year); setSelectedId(id); } }} tab={detailTab} onTab={setDetailTab} chain={selectedIndex >= 0 ? chainOf(selectedIndex) : null} valuesOf={valuesOf} jikou={jikou} jikouState={jikouState} />
         </section>
       </main>
       <SourceNote />
