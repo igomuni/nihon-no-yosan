@@ -48,6 +48,11 @@ describe('sortLifecycleRows', () => {
     expect(sortLifecycleRows(withYears, 'span', -1).map(r => r.k.id)).toEqual(['b', 'a', 'c']);
     expect(sortLifecycleRows(withYears, 'span', 1).map(r => r.k.id)).toEqual(['c', 'a', 'b']);
   });
+  it('sorts by the number of 事項, with the ones that have none (or not loaded yet) last in both directions', () => {
+    const withJikou = [{ ...row('a', {}), jikou: { total: 3 } }, { ...row('b', {}), jikou: null }, { ...row('c', {}), jikou: { total: 12 } }, { ...row('d', {}) }];
+    expect(sortLifecycleRows(withJikou, 'jikou', -1).map(r => r.k.id)).toEqual(['c', 'a', 'b', 'd']);
+    expect(sortLifecycleRows(withJikou, 'jikou', 1).map(r => r.k.id)).toEqual(['a', 'c', 'b', 'd']);
+  });
   it('size is the largest of the current, budget and request amounts', () => {
     expect(lifecycleRowAmounts({ request_amount: 3, budget_amount: 5, current_amount: 4 }).size).toBe(5);
     expect(lifecycleRowAmounts({}).size).toBe(0);

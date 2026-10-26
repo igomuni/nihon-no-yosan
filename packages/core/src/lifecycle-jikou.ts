@@ -183,3 +183,24 @@ export function jikouTotals(index: JikouIndex, table: JikouTable, measure: Jikou
 /** 対応の根拠（ビット）を、根拠の並びに戻す */
 export const jikouEvidenceOf = (mask: number): JikouLinkEvidence[] => JIKOU_EVIDENCE.filter((_, i) => (mask & (1 << i)) !== 0);
 export const jikouEvidenceMask = (evidence: readonly JikouLinkEvidence[]): number => evidence.reduce((m, e) => m | (1 << JIKOU_EVIDENCE.indexOf(e)), 0);
+
+export interface JikouCount {
+  /** 項の下の事項の数（その年度の項 1 つ分） */
+  total: number;
+  /** うち、補正にだけある事項（当初予算に無い）、概算要求にだけある事項（予算書に無い） */
+  suppOnly: number;
+  requestOnly: number;
+}
+
+/** 項（`LifecycleKou.id`）ごとの事項の数。事項の無い項は入らない（値なし） */
+export function jikouCounts(index: JikouIndex): Map<string, JikouCount> {
+  const out = new Map<string, JikouCount>();
+  for (const n of index.data.nodes) {
+    const id = index.data.kous[n[0]]!;
+    const c = out.get(id) ?? out.set(id, { total: 0, suppOnly: 0, requestOnly: 0 }).get(id)!;
+    c.total++;
+    if (jikouSuppOnly(n)) c.suppOnly++;
+    else if (jikouRequestOnly(n)) c.requestOnly++;
+  }
+  return out;
+}

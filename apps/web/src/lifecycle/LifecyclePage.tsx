@@ -12,6 +12,7 @@ import {
   lifecycleLinksByKou,
   lifecyclePatternCounts,
   lifecycleRowAmounts,
+  jikouCounts,
   jikouIndex,
   lifecycleValues,
   matchesLifecycleLinks,
@@ -107,18 +108,19 @@ export function LifecyclePage() {
   const coverage = useMemo(() => lifecycleCoverage(data?.kous ?? []), [data]);
   const chainOf = useMemo(() => lifecycleChains(data?.kous ?? [], data?.links ?? [], data?.years ?? []), [data]);
 
-  // 事項（lifecycle/jikou.json.gz）は、事項のタブを初めて開いたときに読む。結果（索引か失敗）は、読み終えたときに入れる
+  // 事項（lifecycle/jikou.json.gz。項の一覧の「事項」列と、事項のタブが使う）は、項の一覧の表示を待たせず、後から読む。結果（索引か失敗）は、読み終えたときに入れる
   const [jikouResult, setJikouResult] = useState<{ index: JikouIndex } | { failed: true } | null>(null);
   const jikouRequested = useRef(false);
   useEffect(() => {
-    if (detailTab !== 'jikou' || jikouRequested.current) return;
+    if (jikouRequested.current) return;
     jikouRequested.current = true;
     loadGzJson<LifecycleJikouData>('lifecycle/jikou.json.gz')
       .then(d => setJikouResult({ index: jikouIndex(d) }))
       .catch(() => setJikouResult({ failed: true }));
-  }, [detailTab]);
+  }, []);
   const jikou = jikouResult && 'index' in jikouResult ? jikouResult.index : null;
   const jikouState = jikouResult === null ? 'loading' : 'index' in jikouResult ? 'ready' : 'error';
+  const jikouCountOf = useMemo(() => (jikou ? jikouCounts(jikou) : null), [jikou]);
 
   const years = data?.years ?? [];
   const activeYear = data ? (year !== null && years.includes(year) ? year : years[0]!) : null;
@@ -133,12 +135,12 @@ export function LifecyclePage() {
   const list = useMemo(
     () => sortLifecycleRows(
       base
-        .map(({ k, i }) => { const chain = chainOf(i); const span = lifecycleChainSpan(data?.kous ?? [], chain); return { k, i, a: lifecycleRowAmounts(valuesOf.get(i) ?? {}), link: lifecycleLinkState(linksByKou.get(i)), chain, span, years: span.years }; })
+        .map(({ k, i }) => { const chain = chainOf(i); const span = lifecycleChainSpan(data?.kous ?? [], chain); return { k, i, a: lifecycleRowAmounts(valuesOf.get(i) ?? {}), link: lifecycleLinkState(linksByKou.get(i)), chain, span, years: span.years, jikou: jikouCountOf?.get(k.id) ?? null }; })
         .filter(({ k, link }) => matchesLifecyclePattern(k, filters) && matchesLifecycleLinks(link, filters)),
       sortKey,
       sortDir,
     ),
-    [base, data, chainOf, filters, valuesOf, linksByKou, sortKey, sortDir],
+    [base, data, chainOf, filters, valuesOf, linksByKou, jikouCountOf, sortKey, sortDir],
   );
   const onSort = (k: LifecycleSortKey) => {
     if (k === sortKey) setSortDir(d => (d === 1 ? -1 : 1));
@@ -189,7 +191,7 @@ export function LifecyclePage() {
           </div>
           <div className={`min-h-0 flex-1 ${view === 'list' ? 'overflow-hidden' : 'overflow-auto'}`}>
             {view === 'list'
-              ? <LifecycleListPane items={list} sortKey={sortKey} sortDir={sortDir} onSort={onSort} selectedId={kou?.id ?? null} onSelect={k => setSelectedId(k.id)} widths={columnWidths} onWidthsChange={setColumnWidths} />
+              ? <LifecycleListPane items={list} jikouLoading={jikouState === 'loading'} sortKey={sortKey} sortDir={sortDir} onSort={onSort} selectedId={kou?.id ?? null} onSelect={k => setSelectedId(k.id)} widths={columnWidths} onWidthsChange={setColumnWidths} />
               : <LifecycleSummaryPane
                   checks={checks}
                   scope={scope}

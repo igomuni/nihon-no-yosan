@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import {
   LIFECYCLE_MEASURES,
   formatSen,
@@ -139,12 +139,15 @@ export function LifecycleDetailPane({ kou, events: unsorted, coverage, data, lin
   const observedEvents = useMemo(() => events.filter(e => e[1] !== 'derived'), [events]);
   const statuses = useMemo(() => (kou ? lifecycleStageStatuses(kou, observedEvents, coverage) : []), [kou, observedEvents, coverage]);
   const values = useMemo(() => lifecycleValues(observedEvents), [observedEvents]);
+  // 事項のタブで選んだ事項は、タブを切り替えても、同じ項の別の年度に移っても残す（別の項に移ると、既定の選択に戻す）
+  const [jikouPick, setJikouPick] = useState<{ chain: string; picked: string[] | null }>({ chain: '', picked: null });
+  const chainId = chain ? data.kous[chain.members[0]!]!.id : '';
   if (!kou) return <p className="p-4 text-xs text-neutral-500">一覧から項を選ぶと、その項の概算要求 → 政府案 → 補正 → 決算を、段階ごとの状態・グラフ・表で見られます。値が無い段階は 0 ではなく「値なし」と表示し、補完しません。</p>;
   const levels = lifecycleLevels(values);
   const { changes, zero } = lifecycleChanges(values);
   const use = lifecycleUse(values);
   const base = values.budget_amount ?? values.current_amount ?? null;
-  if (tab === 'jikou' && chain) return <><DetailTabs tab={tab} onTab={onTab} /><LifecycleJikouTab key={kou.requestOnly === 'noBudget' ? 'request' : 'budget'} kou={kou} chain={chain} kous={data.kous} valuesOf={valuesOf} jikou={jikou} loading={jikouState === 'loading'} failed={jikouState === 'error'} onNavigate={onNavigate} /></>;
+  if (tab === 'jikou' && chain) return <><DetailTabs tab={tab} onTab={onTab} /><LifecycleJikouTab key={kou.requestOnly === 'noBudget' ? 'request' : 'budget'} kou={kou} chain={chain} kous={data.kous} valuesOf={valuesOf} jikou={jikou} loading={jikouState === 'loading'} failed={jikouState === 'error'} onNavigate={onNavigate} picked={jikouPick.chain === chainId ? jikouPick.picked : null} onPick={picked => setJikouPick({ chain: chainId, picked })} /></>;
   if (tab === 'trend' && chain) return <><DetailTabs tab={tab} onTab={onTab} /><LifecycleTrendTab kou={kou} chain={chain} kous={data.kous} valuesOf={valuesOf} links={data.links} onNavigate={onNavigate} /></>;
   return (
     <>

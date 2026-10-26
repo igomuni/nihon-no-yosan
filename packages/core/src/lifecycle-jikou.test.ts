@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { jikouAmount, jikouEvidenceMask, jikouEvidenceOf, jikouIndex, jikouRequestOnly, jikouTable, jikouTotals, type LifecycleJikouData, type LifecycleJikouNode } from './lifecycle-jikou.ts';
+import { jikouAmount, jikouCounts, jikouEvidenceMask, jikouEvidenceOf, jikouIndex, jikouRequestOnly, jikouTable, jikouTotals, type LifecycleJikouData, type LifecycleJikouNode } from './lifecycle-jikou.ts';
 
 // 項 A（添字 0: FY2023、1: FY2024）、項 B（添字 2: FY2024、別の項）
 const n = (k: number, year: number, name: string, budget: number | null, revised: number | null = null, request: number | null = null): LifecycleJikouNode => [k, year, name, budget, null, revised, revised === null || budget === null ? null : revised - budget, request];
@@ -105,5 +105,21 @@ describe('概算要求の事項', () => {
     expect(idx.requestRead.has(0)).toBe(true);
     expect(idx.requestRead.has(1)).toBe(false);
     expect(d.nodes.map(x => jikouRequestOnly(x))).toEqual([false, false, true, false]);
+  });
+});
+
+describe('jikouCounts', () => {
+  it('counts the 事項 of each 項 (one year), telling the ones only in the supplementary budget and only in the 概算要求', () => {
+    const d: LifecycleJikouData = {
+      years: [2024],
+      kous: ['2024:general:A', '2024:general:B'],
+      nodes: [n(0, 2024, 'P', 100, null, 90), n(0, 2024, 'Q', 50), n(0, 2024, 'R', null, null, 40), n(0, 2024, 'S', null, 900), n(1, 2024, 'T', 7)],
+      links: [],
+      requestRead: [0],
+    };
+    expect(jikouCounts(jikouIndex(d))).toEqual(new Map([
+      ['2024:general:A', { total: 4, suppOnly: 1, requestOnly: 1 }],
+      ['2024:general:B', { total: 1, suppOnly: 0, requestOnly: 0 }],
+    ]));
   });
 });

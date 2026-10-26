@@ -147,17 +147,18 @@ function Mark({ shape, x, y, className }: { shape: (typeof TREND_SERIES)[number]
  * 項の年度推移（折れ線）。横軸は、確定した対応でたどれた年度（連続）、縦軸は円（0 から。1 本の軸）。値が無い年度は、線をつながず（補間しない）、印も置かない。
  * 印は 1 つずつ、値をツールチップ（title）に持つ。線の太さは 2px。選んだ年度は、縦の破線。年度の列（横軸の年と、その上の帯）を押すと、その年度に移る（`onSelect`）。
  */
-export function TrendChart({ points, current, onSelect }: { points: readonly TrendPoint[]; current: number; onSelect?: (year: number) => void }) {
+export function TrendChart({ points, current, onSelect, series }: { points: readonly TrendPoint[]; current: number; onSelect?: (year: number) => void; /** 描く系列。省略すると 4 つすべて（事項は決算が無いので、決算を除く） */ series?: readonly TrendSeriesKey[] }) {
+  const shown = TREND_SERIES.filter(s => !series || series.includes(s.key));
   const W = 560, H = 230, top = 12, bottom = 30, left = 74, right = 14;
   const plotW = W - left - right, plotH = H - top - bottom;
-  const max = Math.max(1, ...points.flatMap(p => TREND_SERIES.map(s => p[s.key] ?? 0)));
+  const max = Math.max(1, ...points.flatMap(p => shown.map(s => p[s.key] ?? 0)));
   const x = (i: number): number => (points.length === 1 ? left + plotW / 2 : left + (plotW * i) / (points.length - 1));
   const y = (v: number): number => top + plotH - (v / max) * plotH;
   const ticks = [0, max / 2, max];
   const curIdx = points.findIndex(p => p.year === current);
   return (
     <figure className="m-0">
-      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`年度推移: ${TREND_SERIES.map(s => `${s.label} ${points.map(p => `${p.year}年度 ${p[s.key] === undefined ? '値なし' : sen(p[s.key]!)}`).join('、')}`).join('。')}`} className="block h-auto w-full">
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`年度推移: ${shown.map(s => `${s.label} ${points.map(p => `${p.year}年度 ${p[s.key] === undefined ? '値なし' : sen(p[s.key]!)}`).join('、')}`).join('。')}`} className="block h-auto w-full">
         {ticks.map(t => (
           <g key={t}>
             <line x1={left} x2={W - right} y1={y(t)} y2={y(t)} className="stroke-neutral-200 dark:stroke-neutral-700" />
@@ -177,7 +178,7 @@ export function TrendChart({ points, current, onSelect }: { points: readonly Tre
         {points.map((p, i) => (
           <text key={p.year} x={x(i)} y={H - bottom + 16} textAnchor="middle" className={`pointer-events-none ${p.year === current ? ink : muted} text-[10px] ${p.year === current ? 'font-semibold' : ''}`}>{points.length > 7 ? `'${String(p.year).slice(2)}` : p.year}</text>
         ))}
-        {TREND_SERIES.map(s => {
+        {shown.map(s => {
           // 値のある年度が続く区間ごとに線を引く（値の無い年度をまたいで結ばない）
           const runs: number[][] = [];
           points.forEach((p, i) => { if (p[s.key] === undefined) return; const last = runs[runs.length - 1]; if (last && last[last.length - 1] === i - 1) last.push(i); else runs.push([i]); });
@@ -196,7 +197,7 @@ export function TrendChart({ points, current, onSelect }: { points: readonly Tre
         })}
       </svg>
       <ul className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-[11px]">
-        {TREND_SERIES.map(s => (
+        {shown.map(s => (
           <li key={s.key} className="flex items-center gap-1.5">
             <svg width="16" height="12" aria-hidden="true"><line x1="0" x2="16" y1="6" y2="6" strokeWidth={2} className={s.stroke} /><Mark shape={s.shape} x={8} y={6} className={s.fill} /></svg>
             <span>{s.label}</span>
