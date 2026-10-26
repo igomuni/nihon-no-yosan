@@ -5,7 +5,7 @@
  */
 import type { LifecycleKou } from './lifecycle.ts';
 import { jikouChainNodes, type JikouIndex } from './lifecycle-jikou.ts';
-import { filterLifecycleKous, lifecycleAcctOf, lifecycleGroupOf, lifecycleOrgOf, type LifecycleFilters, type LifecycleSortDir } from './lifecycle-list.ts';
+import { filterLifecycleKous, lifecycleAcctOf, lifecycleGroupOf, lifecycleOrgOf, lifecyclePublisherOf, type LifecycleFilters, type LifecycleSortDir } from './lifecycle-list.ts';
 import { textMatches } from './trend-view.ts';
 
 export interface JikouListRow {
@@ -45,14 +45,14 @@ export function filterJikouRows(rows: readonly JikouListRow[], f: LifecycleFilte
   return filterLifecycleKous(rows, f, year).filter(r => textMatches(r.name, f.jikouName, f.jikouNameRegex));
 }
 
-export type JikouSortKey = 'group' | 'acct' | 'org' | 'kou' | 'name' | 'request' | 'budget' | 'revised' | 'suppNet' | 'span' | 'size';
+export type JikouSortKey = 'publisher' | 'group' | 'acct' | 'org' | 'kou' | 'name' | 'request' | 'budget' | 'revised' | 'suppNet' | 'span' | 'size';
 
 /** 並べ替え。額の列は、値が無い事項を、向きによらず末尾に置く（0 とは別） */
 export function sortJikouRows(rows: readonly JikouListRow[], key: JikouSortKey, dir: LifecycleSortDir): JikouListRow[] {
-  const text = (r: JikouListRow): string => (key === 'group' ? lifecycleGroupOf(r.k) : key === 'acct' ? lifecycleAcctOf(r.k) : key === 'org' ? lifecycleOrgOf(r.k) : key === 'kou' ? r.k.name : r.name);
+  const text = (r: JikouListRow): string => (key === 'publisher' ? lifecyclePublisherOf(r.k) : key === 'group' ? lifecycleGroupOf(r.k) : key === 'acct' ? lifecycleAcctOf(r.k) : key === 'org' ? lifecycleOrgOf(r.k) : key === 'kou' ? r.k.name : r.name);
   const tie = (x: JikouListRow, y: JikouListRow): number => x.k.id.localeCompare(y.k.id) || x.name.localeCompare(y.name, 'ja');
   return [...rows].sort((x, y) => {
-    if (key === 'group' || key === 'acct' || key === 'org' || key === 'kou' || key === 'name') return dir * text(x).localeCompare(text(y), 'ja') || tie(x, y);
+    if (key === 'publisher' || key === 'group' || key === 'acct' || key === 'org' || key === 'kou' || key === 'name') return dir * text(x).localeCompare(text(y), 'ja') || tie(x, y);
     if (key === 'span') return dir * (x.span.years - y.span.years) || tie(x, y);
     if (key === 'size') return dir * (x.size - y.size) || tie(x, y);
     const a = x[key], b = y[key];

@@ -45,7 +45,7 @@ const mof = buildBudgetRequestMofUi({
 });
 
 const gz = (v: unknown): Buffer => zlib.gzipSync(JSON.stringify(v), { level: 9, mtime: 0 } as zlib.ZlibOptions);
-const requestOnlyRows = lifecycleRequestOnlyRows(mof.data.rows, matches, lifecycleSources(historyDir));
+const requestOnlyRows = lifecycleRequestOnlyRows(mof.data.rows, mof.data.urls, matches, lifecycleSources(historyDir));
 const lifecycle = buildLifecycle({ datasetDir: dataset, historyDir, requestOfMofRow: mof.requestOfMofRow, requestOnlyRows });
 // 事項（当初予算・補正・概算要求）。項に結べない事項、予算書の事項に置けない要求額があれば止まる（捨てない）
 const jikouData = buildJikouLinkData(dataset, historyDir);

@@ -6,6 +6,8 @@ import {
   lifecycleGroupOf,
   lifecycleGroupsOf,
   lifecycleOrgOf,
+  lifecyclePublisherOf,
+  lifecyclePublishersOf,
   LIFECYCLE_CHAIN_END_LABEL,
   type JikouCount,
   type LifecycleChain,
@@ -25,10 +27,11 @@ function setBodyCursor(value: string): void {
 
 const MAX_ROWS = 600;
 const MIN_COLUMN_WIDTH = 48;
-export const DEFAULT_COLUMN_WIDTHS: Record<LifecycleSortKey, number> = { group: 130, acct: 130, org: 120, name: 220, jikou: 64, stages: 72, links: 72, span: 112, request: 96, budget: 96, revised: 96, spent: 96, size: 96 };
+export const DEFAULT_COLUMN_WIDTHS: Record<LifecycleSortKey, number> = { publisher: 110, group: 130, acct: 130, org: 120, name: 220, jikou: 64, stages: 72, links: 72, span: 112, request: 96, budget: 96, revised: 96, spent: 96, size: 96 };
 const BADGE: Record<LifecycleStage, string> = { request: '要', budget: '政', supp: '補', settle: '決' };
 const COLS: { key: LifecycleSortKey; label: string; left?: boolean; title?: string }[] = [
-  { key: 'group', label: '所管', left: true },
+  { key: 'publisher', label: '提出府省', left: true, title: '概算要求書の公開元の府省（要求書の PDF のドメイン由来）。複数の府省の書に載る項は「N府省」。概算要求書の無い年度・項は「—」' },
+  { key: 'group', label: '所管', left: true, title: '予算書の所管（原文を府省に分けたもの）' },
   { key: 'acct', label: '会計', left: true },
   { key: 'org', label: '組織／勘定', left: true },
   { key: 'name', label: '項名', left: true },
@@ -161,6 +164,7 @@ export function LifecycleListPane({ items, notice, jikouLoading, sortKey, sortDi
                   onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(k); } }}
                   className={`cursor-pointer border-b border-neutral-100 dark:border-neutral-800 ${selected ? 'bg-emerald-50 dark:bg-emerald-950/40' : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/60'}`}
                 >
+                  <td className={`break-words px-2 py-1 text-left ${lifecyclePublishersOf(k).length > 1 ? 'text-neutral-500' : ''}`} title={lifecyclePublishersOf(k).length > 1 ? lifecyclePublishersOf(k).join('、') : undefined}>{lifecyclePublisherOf(k) || <span className="text-neutral-300 dark:text-neutral-600">—</span>}</td>
                   <td className={`break-words px-2 py-1 text-left ${lifecycleGroupsOf(k).length > 1 ? 'text-neutral-500' : ''}`} title={lifecycleGroupsOf(k).length > 1 ? lifecycleGroupsOf(k).join('、') : undefined}>{lifecycleGroupOf(k)}</td>
                   <td className="break-words px-2 py-1 text-left">{lifecycleAcctOf(k)}</td>
                   <td className="break-words px-2 py-1 text-left">{lifecycleOrgOf(k)}</td>

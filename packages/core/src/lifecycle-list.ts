@@ -13,11 +13,21 @@ import { textMatches } from './trend-view.ts';
 /** 所管の原文を府省に分ける（区切りは「、」と「及び」。予算書の FY2023・FY2024 の特別会計で、分けた名前が一般会計の所管の名前と一致することを確かめた（例外は東日本大震災復興特別会計の「復興庁」だけ）） */
 export const lifecycleGroupsOf = (k: LifecycleKou): string[] => k.ministry.split(/、|及び/).map(g => g.trim()).filter(g => g !== '');
 
+/** 提出府省（概算要求書の公開元の府省庁名）。概算要求書に載らない項は空 */
+export const lifecyclePublishersOf = (k: LifecycleKou): readonly string[] => k.publishers ?? [];
+/** 提出府省の表示（一覧の列）。1 つはその名前、複数は「N府省」（府省名の一覧は、ツールチップ）。無ければ空 */
+export function lifecyclePublisherOf(k: LifecycleKou): string {
+  const p = lifecyclePublishersOf(k);
+  return p.length <= 1 ? p[0] ?? '' : `${p.length}府省`;
+}
+
 /** 所管の選択肢「複数所管」: 複数の府省が所管する項 */
 export const LIFECYCLE_JOINT = '複数所管';
 export const lifecycleIsJoint = (k: LifecycleKou): boolean => lifecycleGroupsOf(k).length > 1;
 
 export interface LifecycleFilters {
+  /** 提出府省（空 = すべて）。選んだ府省の概算要求書に載る項（`LifecycleKou.publishers`。複数の府省の書に載る項も含む）。概算要求書の無い年度・項は、選ぶと外れる */
+  publishers: string[];
   /** 所管（空 = すべて）。選んだ府省が所管する項（複数の府省が所管する項も含む）。「複数所管」を選ぶと、複数の府省が所管する項 */
   groups: string[];
   /** 会計（空 = すべて）。「一般会計」と「〇〇特別会計」 */
@@ -34,7 +44,7 @@ export interface LifecycleFilters {
   links: 'all' | 'unsettled';
 }
 
-export const INITIAL_LIFECYCLE_FILTERS: LifecycleFilters = { groups: [], accts: [], org: '', orgRegex: false, name: '', nameRegex: false, jikouName: '', jikouNameRegex: false, pattern: 'all', links: 'all' };
+export const INITIAL_LIFECYCLE_FILTERS: LifecycleFilters = { publishers: [], groups: [], accts: [], org: '', orgRegex: false, name: '', nameRegex: false, jikouName: '', jikouNameRegex: false, pattern: 'all', links: 'all' };
 
 /** 所管の表示（一覧の列）。1 つの府省はその名前、複数は「N所管」（府省名の一覧は、ツールチップ・詳細に出す） */
 export function lifecycleGroupOf(k: LifecycleKou): string {
@@ -49,6 +59,7 @@ export const lifecycleOrgOf = (k: LifecycleKou): string => (k.account === 'gener
 export function filterLifecycleKous<T extends { k: LifecycleKou }>(items: readonly T[], f: LifecycleFilters, year: number): T[] {
   return items.filter(({ k }) =>
     k.year === year &&
+    (f.publishers.length === 0 || lifecyclePublishersOf(k).some(p => f.publishers.includes(p))) &&
     (f.groups.length === 0 || lifecycleGroupsOf(k).some(g => f.groups.includes(g)) || (f.groups.includes(LIFECYCLE_JOINT) && lifecycleIsJoint(k))) &&
     (f.accts.length === 0 || f.accts.includes(lifecycleAcctOf(k))) &&
     textMatches(lifecycleOrgOf(k), f.org, f.orgRegex) &&
@@ -73,7 +84,7 @@ export function lifecycleLinkState(links: readonly LifecycleLink[] | undefined):
 
 export const matchesLifecycleLinks = (state: LifecycleLinkStatus | null, f: LifecycleFilters): boolean => f.links === 'all' || (state !== null && state !== 'RESOLVED');
 
-export type LifecycleSortKey = 'group' | 'acct' | 'org' | 'name' | 'jikou' | 'stages' | 'links' | 'span' | 'request' | 'budget' | 'revised' | 'spent' | 'size';
+export type LifecycleSortKey = 'publisher' | 'group' | 'acct' | 'org' | 'name' | 'jikou' | 'stages' | 'links' | 'span' | 'request' | 'budget' | 'revised' | 'spent' | 'size';
 export type LifecycleSortDir = 1 | -1;
 
 /** 一覧の行の額（円）。代表の額は、概算要求 = 要求額、政府案 = 政府案の額、補正 = 改予算額、決算 = 支出済額（画面の段階カードと同じ）。値が無いときは undefined */
@@ -87,9 +98,9 @@ const LINK_RANK: Record<string, number> = { RESOLVED: 0, AMBIGUOUS: 1, UNRESOLVE
 
 /** `years` = 確定した対応でたどれた年数（`lifecycleChains`）、`jikou` = 項の下の事項の数（無い・読み込み前は null か undefined。向きによらず末尾） */
 export function sortLifecycleRows<T extends { k: LifecycleKou; a: LifecycleRowAmounts; link?: LifecycleLinkStatus | null; years?: number; jikou?: { total: number } | null }>(rows: readonly T[], key: LifecycleSortKey, dir: LifecycleSortDir): T[] {
-  const text = (r: T): string => (key === 'group' ? lifecycleGroupOf(r.k) : key === 'acct' ? lifecycleAcctOf(r.k) : key === 'org' ? lifecycleOrgOf(r.k) : r.k.name);
+  const text = (r: T): string => (key === 'publisher' ? lifecyclePublisherOf(r.k) : key === 'group' ? lifecycleGroupOf(r.k) : key === 'acct' ? lifecycleAcctOf(r.k) : key === 'org' ? lifecycleOrgOf(r.k) : r.k.name);
   return [...rows].sort((x, y) => {
-    if (key === 'group' || key === 'acct' || key === 'org' || key === 'name') return dir * text(x).localeCompare(text(y), 'ja') || x.k.id.localeCompare(y.k.id);
+    if (key === 'publisher' || key === 'group' || key === 'acct' || key === 'org' || key === 'name') return dir * text(x).localeCompare(text(y), 'ja') || x.k.id.localeCompare(y.k.id);
     if (key === 'links') return dir * ((LINK_RANK[x.link ?? ''] ?? 3) - (LINK_RANK[y.link ?? ''] ?? 3)) || x.k.id.localeCompare(y.k.id);
     if (key === 'stages') return dir * (x.k.seenIn.length - y.k.seenIn.length) || x.k.id.localeCompare(y.k.id);
     if (key === 'span') return dir * ((x.years ?? 0) - (y.years ?? 0)) || x.k.id.localeCompare(y.k.id);
@@ -98,7 +109,7 @@ export function sortLifecycleRows<T extends { k: LifecycleKou; a: LifecycleRowAm
       if (a === undefined || b === undefined) return a === b ? x.k.id.localeCompare(y.k.id) : a === undefined ? 1 : -1;
       return dir * (a - b) || x.k.id.localeCompare(y.k.id);
     }
-    const a = x.a[key as Exclude<LifecycleSortKey, 'group' | 'acct' | 'org' | 'name' | 'jikou' | 'stages' | 'links' | 'span'>], b = y.a[key as Exclude<LifecycleSortKey, 'group' | 'acct' | 'org' | 'name' | 'jikou' | 'stages' | 'links' | 'span'>];
+    const a = x.a[key as Exclude<LifecycleSortKey, 'publisher' | 'group' | 'acct' | 'org' | 'name' | 'jikou' | 'stages' | 'links' | 'span'>], b = y.a[key as Exclude<LifecycleSortKey, 'publisher' | 'group' | 'acct' | 'org' | 'name' | 'jikou' | 'stages' | 'links' | 'span'>];
     if (a === undefined || b === undefined) return a === b ? x.k.id.localeCompare(y.k.id) : a === undefined ? 1 : -1;
     return dir * (a - b) || x.k.id.localeCompare(y.k.id);
   });

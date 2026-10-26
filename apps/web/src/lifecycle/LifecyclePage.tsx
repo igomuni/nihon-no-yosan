@@ -166,12 +166,12 @@ export function LifecyclePage() {
   }, [jikou, selectedJikou, activeYear]);
   const onJikouSort = (k: JikouSortKey) => {
     if (k === jikouSortKey) setJikouSortDir(d => (d === 1 ? -1 : 1));
-    else { setJikouSortKey(k); setJikouSortDir(k === 'group' || k === 'acct' || k === 'org' || k === 'kou' || k === 'name' ? 1 : -1); }
+    else { setJikouSortKey(k); setJikouSortDir(k === 'publisher' || k === 'group' || k === 'acct' || k === 'org' || k === 'kou' || k === 'name' ? 1 : -1); }
   };
   const jikouKeyOf = (node: number): string => `${jikou!.data.kous[jikou!.data.nodes[node]![0]]}|${jikou!.data.nodes[node]![2]}`;
   const onSort = (k: LifecycleSortKey) => {
     if (k === sortKey) setSortDir(d => (d === 1 ? -1 : 1));
-    else { setSortKey(k); setSortDir(k === 'group' || k === 'acct' || k === 'org' || k === 'name' || k === 'links' ? 1 : -1); }
+    else { setSortKey(k); setSortDir(k === 'publisher' || k === 'group' || k === 'acct' || k === 'org' || k === 'name' || k === 'links' ? 1 : -1); }
   };
 
   if (error) return <main className="mx-auto max-w-3xl p-8"><p className="rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-800">データの読み込みに失敗しました: {error}（<code>npm run build:data</code> で作る）</p></main>;
@@ -183,7 +183,7 @@ export function LifecyclePage() {
   const checks = data.checks.filter(c => c.year === activeYear);
   const listed = (names: string[]): string => (names.length === 0 ? 'すべて' : names.join('、'));
   const text = (label: string, value: string, regex: boolean): string => (value.trim() === '' ? '' : ` · ${label}: 「${value.trim()}」${regex ? '（正規表現）' : ''}`);
-  const scope = `FY${activeYear} · 所管: ${listed(filters.groups)} · 会計: ${listed(filters.accts)}${text('組織／勘定', filters.org, filters.orgRegex)}${text('項名', filters.name, filters.nameRegex)}${text('事項名', filters.jikouName, filters.jikouNameRegex)} · 値のある段階: ${LIFECYCLE_PATTERNS.find(p => p.id === filters.pattern)!.label}${filters.links === 'unsettled' ? ' · 年度をまたぐ対応: 未確定のみ' : ''}`;
+  const scope = `FY${activeYear}${filters.publishers.length > 0 ? ` · 提出府省: ${listed(filters.publishers)}` : ''} · 所管: ${listed(filters.groups)} · 会計: ${listed(filters.accts)}${text('組織／勘定', filters.org, filters.orgRegex)}${text('項名', filters.name, filters.nameRegex)}${text('事項名', filters.jikouName, filters.jikouNameRegex)} · 値のある段階: ${LIFECYCLE_PATTERNS.find(p => p.id === filters.pattern)!.label}${filters.links === 'unsettled' ? ' · 年度をまたぐ対応: 未確定のみ' : ''}`;
 
   return (
     <div className="flex h-screen flex-col bg-neutral-50 text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">

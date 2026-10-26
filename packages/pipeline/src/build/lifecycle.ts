@@ -13,6 +13,7 @@ import {
   buildLifecycleLinks,
   nameKey,
   lifecycleValues,
+  publisherOf,
   readCsv,
   type LifecycleCheck,
   type LifecycleData,
@@ -89,13 +90,15 @@ export interface LifecycleRequestOnlyRow {
   reqPrev: number | null;
   /** 複数の書に載る（最も大きい額を使う） */
   multiBook: boolean;
+  /** その項を載せた概算要求書の公開元の府省庁名（複数の書に載るときは複数） */
+  publishers: string[];
 }
 
 /**
  * 概算要求と当初予算の差の行（`reqOnly`・`zero`）から。同じ所属・項名の行が複数ある（特別会計で、所管の違う書に同じ項が載る。FY2025 の東日本大震災復興特別会計「内閣府共通費」など）ときは、
  * 1 つの項にまとめる。要求額は最も大きい行（同じなら先の行）を使い、複数の書に載る項として記す。
  */
-export function requestOnlyFromMof(rows: readonly BudgetRequestMofRow[]): LifecycleRequestOnlyRow[] {
+export function requestOnlyFromMof(rows: readonly BudgetRequestMofRow[], urls: readonly string[]): LifecycleRequestOnlyRow[] {
   const groups = new Map<string, BudgetRequestMofRow[]>();
   for (const r of rows) {
     if (r.kind !== 'reqOnly' && r.kind !== 'zero') continue;
@@ -104,15 +107,15 @@ export function requestOnlyFromMof(rows: readonly BudgetRequestMofRow[]): Lifecy
   }
   return [...groups.values()].map(rs => {
     const top = rs.reduce((a, r) => ((r.req ?? -Infinity) > (a.req ?? -Infinity) ? r : a), rs[0]!);
-    return { y: top.y, kind: top.kind as 'reqOnly' | 'zero', acct: top.acct, grp: top.grp, min: top.min, sub: top.sub, org: top.org, name: top.name, req: top.req, reqPrev: top.reqPrev, multiBook: rs.length > 1 || rs.some(r => r.books.length > 1) };
+    return { y: top.y, kind: top.kind as 'reqOnly' | 'zero', acct: top.acct, grp: top.grp, min: top.min, sub: top.sub, org: top.org, name: top.name, req: top.req, reqPrev: top.reqPrev, multiBook: rs.length > 1 || rs.some(r => r.books.length > 1), publishers: [...new Set(rs.flatMap(r => r.books.map(([u]) => publisherOf(urls[u] ?? ''))).filter(Boolean))] };
   });
 }
 
 /** 概算要求書にだけある項の行: 予算書に突合できなかった行（概算要求と当初予算の差の行）と、予算書が基準データに無い年度の概算要求書の行 */
-export function lifecycleRequestOnlyRows(mofRows: readonly BudgetRequestMofRow[], matches: ReadonlyMap<number, { requestKou: readonly Rec[] }>, sources: readonly LifecycleSource[] = LIFECYCLE_SOURCES): LifecycleRequestOnlyRow[] {
+export function lifecycleRequestOnlyRows(mofRows: readonly BudgetRequestMofRow[], urls: readonly string[], matches: ReadonlyMap<number, { requestKou: readonly Rec[] }>, sources: readonly LifecycleSource[] = LIFECYCLE_SOURCES): LifecycleRequestOnlyRow[] {
   const noBudgetYears = sources.filter(s => s.budget === null).map(s => s.year);
   return [
-    ...requestOnlyFromMof(mofRows.filter(r => !noBudgetYears.includes(r.y))),
+    ...requestOnlyFromMof(mofRows.filter(r => !noBudgetYears.includes(r.y)), urls),
     ...noBudgetYears.flatMap(y => requestOnlyFromRequestKou(matches.get(y)?.requestKou ?? (() => { throw new Error(`${y}: 概算要求書の行が無い`); })(), y)),
   ];
 }
@@ -135,6 +138,8 @@ export function requestOnlyFromRequestKou(requestKou: readonly Rec[], year: numb
     return {
       y: year, kind: 'noBudget' as const, acct: special ? 1 as const : 0 as const, grp: '', min: special ? top['account'] ?? '' : top['ministry'] ?? '', sub: special ? top['sub'] ?? '' : '', org: special ? '' : top['org'] ?? '',
       name: nameKey(top['request_name'] ?? ''), req: amount(top['request_amount']), reqPrev: amount(top['previous_amount']), multiBook: rs.length > 1,
+      // 書の slug の先頭が公開元のドメイン
+      publishers: [...new Set(rs.map(r => publisherOf(`https://${(r['request_source'] ?? '').split('__')[0]}`)).filter(Boolean))],
     };
   });
 }
@@ -266,6 +271,7 @@ export function buildLifecycle({ datasetDir, historyDir, requestOfMofRow, reques
           if (rq.req !== null) push(i, 'request', '', '', 'request_amount', String(rq.req), rq.req * 1000, rq.merged ? 'derived' : 'original', `mof-ui:${year}|kou-${account}:${n + 1}`, rnote);
           if (rq.reqPrev !== null) push(i, 'request', '', '', 'request_prev', String(rq.reqPrev), rq.reqPrev * 1000, rq.merged ? 'derived' : 'original', `mof-ui:${year}|kou-${account}:${n + 1}`, rnote);
           seen.get(i)!.add('request');
+          if (rq.publishers.length > 0) kous[i]!.publishers = [...rq.publishers];
         }
       });
 
@@ -383,6 +389,7 @@ export function buildLifecycle({ datasetDir, historyDir, requestOfMofRow, reques
           name: r.name,
           seenIn: [],
           requestOnly: r.kind,
+          ...(r.publishers.length > 0 ? { publishers: [...r.publishers] } : {}),
         });
         seen.set(i, new Set<LifecycleEventType>(['request']));
         const src = `mof-ui:${year}|${r.kind}:${key}`;

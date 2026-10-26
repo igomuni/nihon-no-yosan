@@ -20,7 +20,7 @@ const kouCsv = buildBudgetRequestTrend({ datasetDir: dataset, matches }).files['
 const jikou = buildBudgetRequestJikouYoukyu({ datasetDir: dataset, matches, kouCsv });
 const detail = buildBudgetRequestTrendDetail({ datasetDir: dataset, matches, kouCsv });
 const mof = buildBudgetRequestMofUi({ datasetDir: dataset, matches, mofMatches: mofUiMatchesFromDataset(dataset), trendKouCsv: kouCsv, jikouKouCsv: jikou.files['kou.csv'], jikouUi: jikou.ui, detailFiles: detail.files });
-const data = buildLifecycle({ datasetDir: dataset, historyDir, requestOfMofRow: mof.requestOfMofRow, requestOnlyRows: lifecycleRequestOnlyRows(mof.data.rows, matches, lifecycleSources(historyDir)) });
+const data = buildLifecycle({ datasetDir: dataset, historyDir, requestOfMofRow: mof.requestOfMofRow, requestOnlyRows: lifecycleRequestOnlyRows(mof.data.rows, mof.data.urls, matches, lifecycleSources(historyDir)) });
 
 const cell = (v: unknown): string => {
   const s = String(v);

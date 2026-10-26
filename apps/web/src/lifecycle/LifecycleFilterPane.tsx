@@ -7,6 +7,7 @@ import {
   lifecycleAcctOf,
   lifecycleGroupsOf,
   lifecycleIsJoint,
+  lifecyclePublishersOf,
   type LifecycleFilters,
   type LifecycleKou,
   type LifecyclePattern,
@@ -39,10 +40,12 @@ export function LifecycleFilterPane({ inYear, patternCounts, unsettledCount, fil
     return joint > 0 ? [...list, [LIFECYCLE_JOINT, joint] as [string, number]] : list;
   }, [inYear]);
   const accts = useMemo(() => [...tally(inYear.map(lifecycleAcctOf))].sort((a, b) => (a[0] === '一般会計' ? -1 : b[0] === '一般会計' ? 1 : b[1] - a[1])), [inYear]);
-  const [open, setOpen] = useState<'group' | 'acct' | null>(null);
+  // 提出府省の選択肢: その年度に、概算要求書に載る項を持つ府省（件数は、その府省の書に載る項。複数の府省の書に載る項は、それぞれに数える）
+  const publishers = useMemo(() => [...tally(inYear.flatMap(k => [...lifecyclePublishersOf(k)]))].sort((a, b) => b[1] - a[1]), [inYear]);
+  const [open, setOpen] = useState<'publisher' | 'group' | 'acct' | null>(null);
   const set = (patch: Partial<LifecycleFilters>) => onChange({ ...filters, ...patch });
   // コンボの選択肢は「名称（件数）」。選択状態は名称で持つ（選んだのにこの年度に無い名前も、件数 0 の選択肢に残す）
-  const comboProps = (entries: [string, number][], selected: string[], key: 'groups' | 'accts', field: 'group' | 'acct') => {
+  const comboProps = (entries: [string, number][], selected: string[], key: 'publishers' | 'groups' | 'accts', field: 'publisher' | 'group' | 'acct') => {
     const all: [string, number][] = [...entries, ...selected.filter(v => v !== NONE_SELECTED && !entries.some(([n]) => n === v)).map(v => [v, 0] as [string, number])];
     const labelOf = new Map(all.map(([name, n]) => [name, `${name}（${n.toLocaleString()}）`]));
     const nameOf = new Map([...labelOf].map(([name, label]) => [label, name]));
@@ -64,6 +67,10 @@ export function LifecycleFilterPane({ inYear, patternCounts, unsettledCount, fil
         </button>
       </div>
       <div className="min-h-0 flex-1 overflow-auto">
+        <div className={section}>
+          <h3 className={heading}>提出府省</h3>
+          <MultiSelectCombo label="提出府省" {...comboProps(publishers, filters.publishers, 'publishers', 'publisher')} />
+        </div>
         <div className={section}>
           <h3 className={heading}>所管</h3>
           <MultiSelectCombo label="所管" {...comboProps(groups, filters.groups, 'groups', 'group')} />
