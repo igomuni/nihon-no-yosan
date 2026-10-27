@@ -121,7 +121,7 @@ describe('buildLifecycle', () => {
         // 同じ項が複数の書に載るときは、最も大きい額。読めない前年度予算額は、行を作らない（0 にしない）
         expect(d.events.filter(e => e[1] === 'request').map(e => [e[0], e[5], e[8]])).toEqual([[1, 'request_amount', 120000], [1, 'request_prev', 100000], [2, 'request_amount', 0]]);
         expect(d.events.some(e => e[1] === 'supp' || e[1] === 'settle')).toBe(false);
-        // 提出府省は、要求書の行の公開元から（書の slug の先頭）。予算書の項には付かない
+        // 要求所管は、要求書の行の公開元から（書の slug の先頭）。予算書の項には付かない
         expect(d.kous.map(k => k.publishers ?? null)).toEqual([null, ['内閣府'], null]);
         // 概算要求だけの年度の前年度予算額（要求書の値）で、前の年度の政府案の額と比べる
         expect(d.links.filter(l => l.from >= 0 && l.to >= 0).map(l => [l.evidence.join(';'), l.amount])).toEqual([['same_name_other_code;prev_amount_eq_budget', 'eq_budget']]);

@@ -12,7 +12,7 @@ const MIN_COLUMN_WIDTH = 48;
 export const DEFAULT_JIKOU_COLUMN_WIDTHS: Record<JikouSortKey, number> = { publisher: 110, group: 110, acct: 110, org: 110, kou: 180, name: 240, request: 96, budget: 96, revised: 96, suppNet: 96, span: 112, size: 96 };
 /** 一覧の列。順は、項の一覧に合わせる */
 const COLS: { key: JikouSortKey; label: string; left?: boolean; title?: string }[] = [
-  { key: 'publisher', label: '提出府省', left: true, title: '概算要求書の公開元の府省（要求書の PDF のドメイン由来）。複数の府省の書に載る項は「N府省」。概算要求書の無い年度・項は「—」' },
+  { key: 'publisher', label: '要求所管', left: true, title: '概算要求書の公開元の府省（要求書の PDF のドメイン由来）。複数の府省の書に載る項は「N府省」。概算要求書の無い年度・項は「—」' },
   { key: 'group', label: '所管', left: true, title: '予算書の所管（原文を府省に分けたもの）' },
   { key: 'acct', label: '会計', left: true },
   { key: 'org', label: '組織／勘定', left: true },

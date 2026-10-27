@@ -59,12 +59,12 @@ describe('sortLifecycleRows', () => {
   });
 });
 
-describe('提出府省', () => {
+describe('要求所管', () => {
   const k = (publishers?: string[]): LifecycleKou => kou('x', publishers ? { publishers } : {});
   it('shows one ministry by name, several as a count, none as empty', () => {
     expect([lifecyclePublisherOf(k(['消費者庁'])), lifecyclePublisherOf(k(['内閣府', '厚生労働省'])), lifecyclePublisherOf(k())]).toEqual(['消費者庁', '2府省', '']);
   });
-  it('filters by any of the 提出府省, and drops the 項 with no 概算要求書', () => {
+  it('filters by any of the 要求所管, and drops the 項 with no 概算要求書', () => {
     const items = [k(['消費者庁']), k(['内閣府', '厚生労働省']), k()].map(x => ({ k: x }));
     const ids = (publishers: string[]): number => filterLifecycleKous(items, { ...INITIAL_LIFECYCLE_FILTERS, publishers }, 2024).length;
     expect([ids([]), ids(['厚生労働省']), ids(['消費者庁', '内閣府']), ids(['財務省'])]).toEqual([3, 1, 2, 0]);

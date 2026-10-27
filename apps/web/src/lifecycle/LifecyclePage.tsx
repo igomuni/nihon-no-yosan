@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties, type MouseEve
 import {
   INITIAL_LIFECYCLE_FILTERS,
   LIFECYCLE_PATTERNS,
+  type LifecycleKou,
   filterLifecycleKous,
   lifecycleChainSpan,
   lifecycleChains,
@@ -73,6 +74,8 @@ function Splitter({ label, width, limits, dir, onChange }: { label: string; widt
   };
   return <div role="separator" aria-orientation="vertical" aria-label={label} onMouseDown={start} className="hidden w-1.5 shrink-0 cursor-col-resize rounded hover:bg-emerald-500/40 xl:block" />;
 }
+
+const NO_KOUS: readonly LifecycleKou[] = [];
 
 export function LifecyclePage() {
   const [data, setData] = useState<LifecycleData | null>(null);
@@ -183,7 +186,7 @@ export function LifecyclePage() {
   const checks = data.checks.filter(c => c.year === activeYear);
   const listed = (names: string[]): string => (names.length === 0 ? 'すべて' : names.join('、'));
   const text = (label: string, value: string, regex: boolean): string => (value.trim() === '' ? '' : ` · ${label}: 「${value.trim()}」${regex ? '（正規表現）' : ''}`);
-  const scope = `FY${activeYear}${filters.publishers.length > 0 ? ` · 提出府省: ${listed(filters.publishers)}` : ''} · 所管: ${listed(filters.groups)} · 会計: ${listed(filters.accts)}${text('組織／勘定', filters.org, filters.orgRegex)}${text('項名', filters.name, filters.nameRegex)}${text('事項名', filters.jikouName, filters.jikouNameRegex)} · 値のある段階: ${LIFECYCLE_PATTERNS.find(p => p.id === filters.pattern)!.label}${filters.links === 'unsettled' ? ' · 年度をまたぐ対応: 未確定のみ' : ''}`;
+  const scope = `FY${activeYear}${filters.publishers.length > 0 ? ` · 要求所管: ${listed(filters.publishers)}` : ''} · 所管: ${listed(filters.groups)} · 会計: ${listed(filters.accts)}${text('組織／勘定', filters.org, filters.orgRegex)}${text('項名', filters.name, filters.nameRegex)}${text('事項名', filters.jikouName, filters.jikouNameRegex)} · 値のある段階: ${LIFECYCLE_PATTERNS.find(p => p.id === filters.pattern)!.label}${filters.links === 'unsettled' ? ' · 年度をまたぐ対応: 未確定のみ' : ''}`;
 
   return (
     <div className="flex h-screen flex-col bg-neutral-50 text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
@@ -198,7 +201,7 @@ export function LifecyclePage() {
       </header>
       <main className="grid min-h-0 flex-1 grid-cols-1 gap-3 px-3 pb-3 lg:grid-cols-[240px_minmax(0,1fr)] xl:flex xl:gap-0">
         <section aria-label="フィルタ" className={`${pane} overflow-hidden xl:w-[var(--fw)] xl:shrink-0`} style={{ '--fw': `${filterWidth}px` } as CSSProperties}>
-          <LifecycleFilterPane inYear={inYear} patternCounts={patternCounts} unsettledCount={unsettledCount} filters={filters} onChange={f => { setFilters(f); setSelectedId(null); setSelectedJikou(null); }} />
+          <LifecycleFilterPane allKous={data?.kous ?? NO_KOUS} inYear={inYear} patternCounts={patternCounts} unsettledCount={unsettledCount} filters={filters} onChange={f => { setFilters(f); setSelectedId(null); setSelectedJikou(null); }} />
         </section>
         <Splitter label="フィルタの幅" width={filterWidth} limits={FILTER_WIDTH} dir={1} onChange={setFilterWidth} />
         <section aria-label="項の一覧" className={`${pane} flex flex-col overflow-hidden xl:min-w-0 xl:flex-1`}>
