@@ -7,6 +7,7 @@ const a = kou('a');
 const b = kou('b', { ministry: '法務省', org: '法務本省' });
 const s = kou('s', { account: 'special', ministry: '内閣府、総務省及び財務省', org: '', specialAccount: '年金', subAccount: '基礎年金勘定' });
 const old = kou('old', { year: 2023 });
+const cfa = kou('cfa', { ministry: '内閣府', org: 'こども家庭庁' });
 const items = [a, b, s, old].map(k => ({ k }));
 
 describe('filterLifecycleKous', () => {
@@ -24,6 +25,15 @@ describe('filterLifecycleKous', () => {
     expect(lifecycleGroupOf(s)).toBe('3所管');
     expect(lifecycleGroupsOf(kou('t', { ministry: '財務省及び国土交通省' }))).toEqual(['財務省', '国土交通省']);
     expect(lifecycleGroupOf(a)).toBe('内閣府');
+  });
+  it('counts an agency of the Cabinet Office (the 組織) as its own 所管, like the other screens; the Cabinet Office itself keeps its own', () => {
+    expect(lifecycleGroupsOf(cfa)).toEqual(['こども家庭庁']);
+    expect(lifecycleGroupOf(cfa)).toBe('こども家庭庁');
+    expect(lifecycleGroupsOf(kou('h', { ministry: '内閣府', org: '内閣本府' }))).toEqual(['内閣府']);
+    expect(lifecycleGroupsOf(kou('h2', { ministry: '法務省', org: 'こども家庭庁' }))).toEqual(['法務省']); // 内閣府以外の所管は、組織が同じ名前でも変えない
+    const fc = filterLifecycleKous([a, cfa].map(k => ({ k })), { ...INITIAL_LIFECYCLE_FILTERS, groups: ['こども家庭庁'] }, 2024).map(x => x.k.id);
+    expect(fc).toEqual(['cfa']);
+    expect(filterLifecycleKous([a, cfa].map(k => ({ k })), { ...INITIAL_LIFECYCLE_FILTERS, groups: ['内閣府'] }, 2024).map(x => x.k.id)).toEqual(['a']);
   });
   it('filters by account label', () => {
     expect(f({ accts: ['年金特別会計'] })).toEqual(['s']);
