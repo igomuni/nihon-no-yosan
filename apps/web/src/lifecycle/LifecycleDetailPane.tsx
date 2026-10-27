@@ -67,6 +67,7 @@ function StageCard({ s }: { s: StageStatus }) {
 
 const EVIDENCE_LABEL: Record<LifecycleLinkEvidence, string> = {
   same_key: '同じ鍵（所管・組織・項コード・項名。特別会計は特別会計・勘定・項コード・項名。概算要求のみの項は、所属・項名）',
+  same_key_succession: '同じ鍵（所属は、金額の合計が一致する引き継ぎ先に読み替えた。項コード・項名が同じ）',
   same_name_other_code: '同じ所管・組織で項名が同じ（項コードが違う）',
   same_name_other_org: '項名が同じ（所管・組織が違う）',
   prev_amount_eq_revised: '次の年度の予算書の前年度予算額 = 前の年度の改予算額',
