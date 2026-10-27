@@ -65,6 +65,7 @@ export * from './lifecycle-view.ts';
 export * from './lifecycle-status.ts';
 export * from './lifecycle-list.ts';
 export * from './lifecycle-links.ts';
+export * from './lifecycle-same-year.ts';
 export {
   AMOUNT_FIELDS,
   arithmeticMismatches,

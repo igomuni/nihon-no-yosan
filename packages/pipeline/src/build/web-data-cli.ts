@@ -17,7 +17,7 @@ import * as zlib from 'node:zlib';
 import type { SiteAbout, SiteAboutAuthority } from '@nihon-no-yosan/core';
 import { buildBudgetRequestJikouYoukyu } from './jikou-youkyu.ts';
 import { buildJikouLinkData } from './jikou-links.ts';
-import { buildLifecycle, lifecycleRequestOnlyRows, lifecycleSources } from './lifecycle.ts';
+import { buildLifecycle, lifecycleRequestOnlyRows, lifecycleSources, sameYearPairsOf } from './lifecycle.ts';
 import { buildLifecycleJikou, mofRowKouIds, requestOnlyJikou } from './lifecycle-jikou.ts';
 import { buildBudgetRequestMofUi, mofUiMatchesFromDataset } from './mof-ui.ts';
 import { buildBudgetRequestTrend, matchesFromDataset } from './trend.ts';
@@ -56,7 +56,7 @@ const lifecycleJikou = buildLifecycleJikou(
   lifecycle.links,
   {
     matched: new Map([...mof.jikouOfMofRow].map(([row, v]) => [kouIdOfMofRow.get(row) ?? fail(`予算書の項の行が無い: ${row}`), v])),
-    requestOnly: requestOnlyJikou(requestOnlyRows, mof.details, detail.files['jikou.csv'] ?? fail('no jikou.csv')),
+    requestOnly: requestOnlyJikou(requestOnlyRows, mof.details, detail.files['jikou.csv'] ?? fail('no jikou.csv'), sameYearPairsOf(lifecycle)),
   },
 );
 if (Object.keys(lifecycleJikou.unmatched).length > 0) throw new Error(`項に結べない事項がある: ${JSON.stringify(lifecycleJikou.unmatched)}`);
