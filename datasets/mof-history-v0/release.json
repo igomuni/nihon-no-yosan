@@ -1,8 +1,8 @@
 {
- "tag": "dataset-mof-history-v0",
+ "tag": "dataset-mof-history-v0-r2",
  "asset": "mof-history-v0.tar.gz",
- "sha256": "ed9ac0836b6a8d07c5ea7997a8b5df76a3c027d41afe993ea5efcf498557bf3f",
- "bytes": 4905640,
- "manifestSha256": "7146d451c5455f31f1a3fc80630db644054528dd93daca407a37e483a103a553",
- "files": 139
+ "sha256": "aa3017afd07853c077aa739abdd15b79f6a4993b228affa90c79c18d44e4b807",
+ "bytes": 4963543,
+ "manifestSha256": "f48c73da81b5e7ad3ff3669716b9bda2690beb1ceef9e3f45ab435d56252421c",
+ "files": 144
 }

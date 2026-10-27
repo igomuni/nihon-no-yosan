@@ -22,7 +22,7 @@ const COLS: { key: JikouSortKey; label: string; left?: boolean; title?: string }
   { key: 'span', label: '確認済み年度', left: true, title: '確定した対応（同じ鍵、または名前と額の根拠がそろった 1 対 1）でたどれた年度の範囲と年数。項が変わった年度も含む。事業が同じとは限らない' },
   { key: 'request', label: '概算要求', title: '概算要求書（総表）の事項の要求額' },
   { key: 'budget', label: '政府案', title: '予算書の当初予算（提出時）の額' },
-  { key: 'revised', label: '補正後', title: '改予算額（補正の事項の記録がある事項。FY2024 まで）' },
+  { key: 'revised', label: '補正後', title: '改予算額（補正の事項の記録がある事項）' },
   { key: 'size', label: '最大額', title: '概算要求・政府案・補正後のうち最大（既定の並びの基準）' },
 ];
 
