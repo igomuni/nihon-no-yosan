@@ -101,21 +101,40 @@ export interface MokuListRow {
   spent: number | null;
   unused: number | null;
   flags: number;
+  /** 確認済み年度: 項の確定した対応でたどった年度のうち、この目の識別（目名・分類コード。無ければ同じ目名が 1 つだけの目）が続けて見つかった範囲。`years` はその年数 */
+  span: { from: number; to: number; years: number };
   /** 並べ替えの大きさ（千円）: 概算要求・政府案・補正後・歳出予算現額のうち最大。どれも無ければ 0 */
   size: number;
 }
 
-/** 選んだ年度の目の行。項が見つからない目は作らない */
-export function mokuListRows(index: MokuIndex, kouById: ReadonlyMap<string, LifecycleKou>, year: number): MokuListRow[] {
+/**
+ * 選んだ年度の目の行。項が見つからない目は作らない。
+ * `chainOf` は、項（`LifecycleKou.id`）を通る、確定した対応でたどった項の id（年度の古い順）。確認済み年度（`span`）に使う。
+ */
+export function mokuListRows(index: MokuIndex, kouById: ReadonlyMap<string, LifecycleKou>, year: number, chainOf: (kouId: string) => readonly string[]): MokuListRow[] {
   const { data } = index;
   const rows: MokuListRow[] = [];
   data.nodes.forEach((n, node) => {
     if (n[1] !== year) return;
-    const k = kouById.get(data.kous[n[0]]!);
+    const kouId = data.kous[n[0]]!;
+    const k = kouById.get(kouId);
     if (!k) return;
-    rows.push({ node, k, name: n[2], part: n[4], budget: n[5], revised: n[6], suppNet: n[7], current: n[8], spent: n[9], unused: n[11], request: n[12], flags: n[13], size: Math.max(0, n[12] ?? 0, n[5] ?? 0, n[6] ?? 0, n[8] ?? 0) });
+    rows.push({ node, k, name: n[2], part: n[4], budget: n[5], revised: n[6], suppNet: n[7], current: n[8], spent: n[9], unused: n[11], request: n[12], flags: n[13], span: mokuSpan(index, node, chainOf(kouId)), size: Math.max(0, n[12] ?? 0, n[5] ?? 0, n[6] ?? 0, n[8] ?? 0) });
   });
   return rows;
+}
+
+/** 確認済み年度: `mokuFlow` でたどった年度のうち、選んだ目から続けて同じ目が見つかった範囲（途中で見つからない年度があれば、そこで止める） */
+export function mokuSpan(index: MokuIndex, node: number, chainKouIds: readonly string[]): { from: number; to: number; years: number } {
+  const flow = mokuFlow(index, node, chainKouIds);
+  const at = flow.findIndex(f => f.node === node);
+  const year = index.data.nodes[node]![1];
+  if (at < 0) return { from: year, to: year, years: 1 };
+  let lo = at, hi = at;
+  while (lo > 0 && flow[lo - 1]!.node !== null) lo--;
+  while (hi < flow.length - 1 && flow[hi + 1]!.node !== null) hi++;
+  const yearOf = (i: number): number => index.data.nodes[flow[i]!.node!]![1];
+  return { from: yearOf(lo), to: yearOf(hi), years: hi - lo + 1 };
 }
 
 /** 年度・所管・会計・組織／勘定・項名と、目名で絞る（項の一覧と同じフィルタ。「値のある段階」「年度をまたぐ対応」「事項名」は使わない） */
@@ -123,7 +142,7 @@ export function filterMokuRows(rows: readonly MokuListRow[], f: LifecycleFilters
   return filterLifecycleKous(rows, f, year).filter(r => textMatches(r.name, f.mokuName, f.mokuNameRegex));
 }
 
-export type MokuSortKey = 'publisher' | 'group' | 'acct' | 'org' | 'kou' | 'name' | 'request' | 'budget' | 'revised' | 'current' | 'spent' | 'unused' | 'size';
+export type MokuSortKey = 'publisher' | 'group' | 'acct' | 'org' | 'kou' | 'name' | 'span' | 'request' | 'budget' | 'revised' | 'current' | 'spent' | 'unused' | 'size';
 export const MOKU_TEXT_SORT_KEYS: readonly MokuSortKey[] = ['publisher', 'group', 'acct', 'org', 'kou', 'name'];
 
 /** 並べ替え。額の列は、値が無い目を、向きによらず末尾に置く（0 とは別） */
@@ -133,7 +152,8 @@ export function sortMokuRows(rows: readonly MokuListRow[], key: MokuSortKey, dir
   return [...rows].sort((x, y) => {
     if (MOKU_TEXT_SORT_KEYS.includes(key)) return dir * text(x).localeCompare(text(y), 'ja') || tie(x, y);
     if (key === 'size') return dir * (x.size - y.size) || tie(x, y);
-    const a = x[key as Exclude<MokuSortKey, 'publisher' | 'group' | 'acct' | 'org' | 'kou' | 'name' | 'size'>], b = y[key as Exclude<MokuSortKey, 'publisher' | 'group' | 'acct' | 'org' | 'kou' | 'name' | 'size'>];
+    if (key === 'span') return dir * (x.span.years - y.span.years) || tie(x, y);
+    const a = x[key as Exclude<MokuSortKey, 'publisher' | 'group' | 'acct' | 'org' | 'kou' | 'name' | 'size' | 'span'>], b = y[key as Exclude<MokuSortKey, 'publisher' | 'group' | 'acct' | 'org' | 'kou' | 'name' | 'size' | 'span'>];
     if (a === null || b === null) return a === b ? tie(x, y) : a === null ? 1 : -1;
     return dir * (a - b) || tie(x, y);
   });
