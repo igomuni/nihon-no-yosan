@@ -13,6 +13,7 @@ import {
   mofMokuCode,
   nameKey as ns,
   pairByName,
+  publisherOf,
   readCsv,
   reqMokuCode,
   type BudgetRequestJikouData,
@@ -86,6 +87,8 @@ export interface MofRowRequest {
   req: number | null;
   reqPrev: number | null;
   merged: boolean;
+  /** その項を載せた概算要求書の公開元の府省庁名（複数の書に載る項は複数） */
+  publishers: string[];
 }
 
 const num = (s: string | undefined): number | null => { const t = (s ?? '').replace(/[\s,]/g, ''); if (!/^△?\d+$/.test(t)) return null; return t.startsWith('△') ? -Number(t.slice(1)) : Number(t); };
@@ -244,7 +247,7 @@ export function buildBudgetRequestMofUi({ datasetDir, matches, mofMatches, trend
       if (qs.some(q => q.m['reason']! === 'kou_renamed')) types.add('改称');
       if (PLACEHOLDER.test(ns(r['項名']!))) types.add('編成で決まる');
       const mofName = ns(r['項名']!) !== ns(top.m['request_name']!) || names.length > 1 ? ns(r['項名']!) : undefined;
-      requestOfMofRow.set(`${year}|${id}`, { req, reqPrev, merged: items.length > 1 });
+      requestOfMofRow.set(`${year}|${id}`, { req, reqPrev, merged: items.length > 1, publishers: [...new Set(books.map(([u]) => publisherOf(urls[u] ?? '')).filter(Boolean))] });
       const detail = detailOf(detailReq, id);
       jikouOfMofRow.set(`${year}|${id}`, { j: detail.j, noReq: detail.noReq === 1 });
       push({

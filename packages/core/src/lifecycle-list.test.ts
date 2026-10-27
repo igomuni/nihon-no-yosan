@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { LifecycleKou } from './lifecycle.ts';
-import { INITIAL_LIFECYCLE_FILTERS, LIFECYCLE_JOINT, filterLifecycleKous, lifecycleGroupOf, lifecycleGroupsOf, lifecycleRowAmounts, sortLifecycleRows } from './lifecycle-list.ts';
+import { INITIAL_LIFECYCLE_FILTERS, LIFECYCLE_JOINT, filterLifecycleKous, lifecycleGroupOf, lifecyclePublisherOf, lifecycleGroupsOf, lifecycleRowAmounts, sortLifecycleRows } from './lifecycle-list.ts';
 
 const kou = (id: string, o: Partial<LifecycleKou> = {}): LifecycleKou => ({ id, year: 2024, account: 'general', ministry: '内閣府', org: '本府', specialAccount: '', subAccount: '', code: '001', name: id, seenIn: ['budget'], ...o });
 const a = kou('a');
@@ -66,5 +66,17 @@ describe('sortLifecycleRows', () => {
   it('size is the largest of the current, budget and request amounts', () => {
     expect(lifecycleRowAmounts({ request_amount: 3, budget_amount: 5, current_amount: 4 }).size).toBe(5);
     expect(lifecycleRowAmounts({}).size).toBe(0);
+  });
+});
+
+describe('要求所管', () => {
+  const k = (publishers?: string[]): LifecycleKou => kou('x', publishers ? { publishers } : {});
+  it('shows one ministry by name, several as a count, none as empty', () => {
+    expect([lifecyclePublisherOf(k(['消費者庁'])), lifecyclePublisherOf(k(['内閣府', '厚生労働省'])), lifecyclePublisherOf(k())]).toEqual(['消費者庁', '2所管', '']);
+  });
+  it('filters by any of the 要求所管, and drops the 項 with no 概算要求書', () => {
+    const items = [k(['消費者庁']), k(['内閣府', '厚生労働省']), k()].map(x => ({ k: x }));
+    const ids = (publishers: string[]): number => filterLifecycleKous(items, { ...INITIAL_LIFECYCLE_FILTERS, publishers }, 2024).length;
+    expect([ids([]), ids(['厚生労働省']), ids(['消費者庁', '内閣府']), ids(['財務省']), ids(['複数所管'])]).toEqual([3, 1, 2, 0, 1]);
   });
 });

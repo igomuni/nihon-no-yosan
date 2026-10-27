@@ -50,6 +50,8 @@ export interface LifecycleKou {
   name: string;
   /** その項がある段階（`request` `budget` `supp` `settle`） */
   seenIn: LifecycleEventType[];
+  /** 要求所管: その項を載せた概算要求書の公開元の府省庁名（要求書の PDF のドメイン由来。年度推移・概算要求と当初予算の差の画面と同じ表）。複数の府省の書に載るとき（共管の特別会計など）は複数。概算要求書の無い年度・項は無い（所管は、予算書の原文で、別） */
+  publishers?: string[];
   /** 概算要求書にだけある項（予算書の項に突合できなかった）。`reqOnly` = 突合に候補が無い、`zero` = 前年度・要求とも 0、`noBudget` = その年度の予算書が基準データに無い（概算要求だけの年度）。予算書の項は無いので、項コードは空で、鍵は概算要求の側（所属・名前）で作る */
   requestOnly?: 'reqOnly' | 'zero' | 'noBudget';
 }

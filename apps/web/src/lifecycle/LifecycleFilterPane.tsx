@@ -7,6 +7,8 @@ import {
   lifecycleAcctOf,
   lifecycleGroupsOf,
   lifecycleIsJoint,
+  lifecycleIsPublishedJoint,
+  lifecyclePublishersOf,
   type LifecycleFilters,
   type LifecycleKou,
   type LifecyclePattern,
@@ -23,7 +25,9 @@ const count = 'ml-auto tabular-nums text-neutral-400';
  * 左のフィルタ（概算要求と当初予算の画面と同じ構成）。
  * `inYear` は選択年度の項。段階ごとの件数は、所管・会計・組織・項名で絞った項（`narrowed`）で数える。
  */
-export function LifecycleFilterPane({ inYear, patternCounts, unsettledCount, filters, onChange }: {
+export function LifecycleFilterPane({ allKous, inYear, patternCounts, unsettledCount, filters, onChange }: {
+  /** 全年度の項（選択肢を年度で変えないため） */
+  allKous: readonly LifecycleKou[];
   inYear: readonly LifecycleKou[];
   patternCounts: Record<LifecyclePattern, number>;
   /** 対応が確定していない項の数（所管〜項名で絞った項のうち） */
@@ -31,18 +35,30 @@ export function LifecycleFilterPane({ inYear, patternCounts, unsettledCount, fil
   filters: LifecycleFilters;
   onChange: (f: LifecycleFilters) => void;
 }) {
-  const tally = (names: string[]) => { const m = new Map<string, number>(); for (const n of names) m.set(n, (m.get(n) ?? 0) + 1); return m; };
-  // 所管の選択肢: 府省ごと（件数はその府省が所管する項。複数所管の項も数える）と、末尾に「複数所管」
+  const tally = (names: readonly string[]) => { const m = new Map<string, number>(); for (const n of names) m.set(n, (m.get(n) ?? 0) + 1); return m; };
+  // 選択肢（要求所管・予算所管・会計）は全年度の項から作り、年度を切り替えても変わらない（並びは全年度の件数順）。件数だけ、選択年度の項で数える
+  const options = (all: readonly string[], names: (k: LifecycleKou) => readonly string[], rank?: (n: string) => number): [string, number][] => {
+    const total = tally(all);
+    const now = tally(inYear.flatMap(names));
+    return [...total].sort((x, y) => (rank ? rank(x[0]) - rank(y[0]) : 0) || y[1] - x[1]).map(([n]) => [n, now.get(n) ?? 0] as [string, number]);
+  };
   const groups = useMemo(() => {
-    const list = [...tally(inYear.flatMap(lifecycleGroupsOf))].sort((a, b) => b[1] - a[1]);
-    const joint = inYear.filter(lifecycleIsJoint).length;
-    return joint > 0 ? [...list, [LIFECYCLE_JOINT, joint] as [string, number]] : list;
-  }, [inYear]);
-  const accts = useMemo(() => [...tally(inYear.map(lifecycleAcctOf))].sort((a, b) => (a[0] === '一般会計' ? -1 : b[0] === '一般会計' ? 1 : b[1] - a[1])), [inYear]);
-  const [open, setOpen] = useState<'group' | 'acct' | null>(null);
+    const list = options(allKous.flatMap(lifecycleGroupsOf), lifecycleGroupsOf);
+    return allKous.some(lifecycleIsJoint) ? [...list, [LIFECYCLE_JOINT, inYear.filter(lifecycleIsJoint).length] as [string, number]] : list;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allKous, inYear]);
+  const accts = useMemo(() => options(allKous.map(lifecycleAcctOf), k => [lifecycleAcctOf(k)], n => (n === '一般会計' ? 0 : 1)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [allKous, inYear]);
+  const publishers = useMemo(() => {
+    const list = options(allKous.flatMap(k => [...lifecyclePublishersOf(k)]), k => [...lifecyclePublishersOf(k)]);
+    return allKous.some(lifecycleIsPublishedJoint) ? [...list, [LIFECYCLE_JOINT, inYear.filter(lifecycleIsPublishedJoint).length] as [string, number]] : list;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allKous, inYear]);
+  const [open, setOpen] = useState<'publisher' | 'group' | 'acct' | null>(null);
   const set = (patch: Partial<LifecycleFilters>) => onChange({ ...filters, ...patch });
   // コンボの選択肢は「名称（件数）」。選択状態は名称で持つ（選んだのにこの年度に無い名前も、件数 0 の選択肢に残す）
-  const comboProps = (entries: [string, number][], selected: string[], key: 'groups' | 'accts', field: 'group' | 'acct') => {
+  const comboProps = (entries: [string, number][], selected: string[], key: 'publishers' | 'groups' | 'accts', field: 'publisher' | 'group' | 'acct') => {
     const all: [string, number][] = [...entries, ...selected.filter(v => v !== NONE_SELECTED && !entries.some(([n]) => n === v)).map(v => [v, 0] as [string, number])];
     const labelOf = new Map(all.map(([name, n]) => [name, `${name}（${n.toLocaleString()}）`]));
     const nameOf = new Map([...labelOf].map(([name, label]) => [label, name]));
@@ -65,8 +81,12 @@ export function LifecycleFilterPane({ inYear, patternCounts, unsettledCount, fil
       </div>
       <div className="min-h-0 flex-1 overflow-auto">
         <div className={section}>
-          <h3 className={heading}>所管</h3>
-          <MultiSelectCombo label="所管" {...comboProps(groups, filters.groups, 'groups', 'group')} />
+          <h3 className={heading}>要求所管</h3>
+          <MultiSelectCombo label="要求所管" {...comboProps(publishers, filters.publishers, 'publishers', 'publisher')} />
+        </div>
+        <div className={section}>
+          <h3 className={heading}>予算所管</h3>
+          <MultiSelectCombo label="予算所管" {...comboProps(groups, filters.groups, 'groups', 'group')} />
         </div>
         <div className={section}>
           <h3 className={heading}>会計</h3>

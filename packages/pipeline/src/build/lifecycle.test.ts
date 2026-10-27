@@ -31,7 +31,7 @@ for (const y of YEARS) {
   write(y, 'kou-special-hosei.csv', `${S},${HOSEI_HEAD.replace('補正要求', '補正予定')}\n内閣府,復興,,601,復興費,国,A,1,10,0,0,0,10\n`);
   write(y, 'kou-special-kessan.csv', `${S},${SETTLE_HEAD.replace('流用等', '予算総則の規定による経費増額(円)の合計,流用等')}\n内閣府,復興,,601,復興費,国,甲,1,6000,0,0,0,0,0,6000,6000,0,0\n内閣府,復興,,601,復興費,国,乙,1,4000,0,0,0,0,0,4000,3000,1000,0\n`);
 }
-const request = new Map([[`${YEARS[0]}|kou-general:1`, { req: 95, reqPrev: 88, merged: false }]]);
+const request = new Map([[`${YEARS[0]}|kou-general:1`, { req: 95, reqPrev: 88, merged: false, publishers: ['内閣府'] }]]);
 
 describe('buildLifecycle', () => {
   const r = buildLifecycle({ datasetDir: tmp, requestOfMofRow: request, sources: SOURCES });
@@ -81,7 +81,7 @@ describe('buildLifecycle', () => {
   });
 
   describe('with a request-only 項', () => {
-    const row = (o: Partial<LifecycleRequestOnlyRow>): LifecycleRequestOnlyRow => ({ y, kind: 'reqOnly', acct: 0, grp: '内閣府', min: '内閣府', sub: '', org: '本府', name: '要求だけの項', req: 70, reqPrev: 60, multiBook: false, ...o });
+    const row = (o: Partial<LifecycleRequestOnlyRow>): LifecycleRequestOnlyRow => ({ y, kind: 'reqOnly', acct: 0, grp: '内閣府', min: '内閣府', sub: '', org: '本府', name: '要求だけの項', req: 70, reqPrev: 60, multiBook: false, publishers: ['内閣府'], ...o });
     const rr = buildLifecycle({ datasetDir: tmp, requestOfMofRow: request, sources: SOURCES, requestOnlyRows: [row({}), row({ kind: 'zero', name: '額0の項', req: 0, reqPrev: 0 }), row({ name: '額が読めない項', req: null })] });
 
     it('adds the 項 with only the request stage, keeps a request of 0 as a value, and skips a row without an amount', () => {
@@ -106,7 +106,7 @@ describe('buildLifecycle', () => {
         const sources: LifecycleSource[] = [{ year: 2025, budget: 'v', supp: {}, settle: {} }, { year: 2027, budget: null, supp: {}, settle: {} }];
         const rows = requestOnlyFromRequestKou(
           [
-            { request_name: '共通費', acct: 'general', ministry: '内閣府', org: '本府', account: '', sub: '', request_amount: '120', previous_amount: '100' },
+            { request_name: '共通費', acct: 'general', ministry: '内閣府', org: '本府', account: '', sub: '', request_amount: '120', previous_amount: '100', request_source: 'www.cao.go.jp__a.pdf' },
             { request_name: '共通費', acct: 'general', ministry: '内閣府', org: '本府', account: '', sub: '', request_amount: '90', previous_amount: '100' },
             { request_name: '特会の項', acct: 'special', ministry: '財務省', org: '', account: '年金', sub: '基礎', request_amount: '0', previous_amount: '' },
           ],
@@ -121,6 +121,8 @@ describe('buildLifecycle', () => {
         // 同じ項が複数の書に載るときは、最も大きい額。読めない前年度予算額は、行を作らない（0 にしない）
         expect(d.events.filter(e => e[1] === 'request').map(e => [e[0], e[5], e[8]])).toEqual([[1, 'request_amount', 120000], [1, 'request_prev', 100000], [2, 'request_amount', 0]]);
         expect(d.events.some(e => e[1] === 'supp' || e[1] === 'settle')).toBe(false);
+        // 要求所管は、要求書の行の公開元から（書の slug の先頭）。予算書の項には付かない
+        expect(d.kous.map(k => k.publishers ?? null)).toEqual([null, ['内閣府'], null]);
         // 概算要求だけの年度の前年度予算額（要求書の値）で、前の年度の政府案の額と比べる
         expect(d.links.filter(l => l.from >= 0 && l.to >= 0).map(l => [l.evidence.join(';'), l.amount])).toEqual([['same_name_other_code;prev_amount_eq_budget', 'eq_budget']]);
       } finally {

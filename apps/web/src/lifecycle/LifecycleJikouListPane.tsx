@@ -1,5 +1,5 @@
 import { useEffect, useRef, type MouseEvent as ReactMouseEvent } from 'react';
-import { formatSen, lifecycleAcctOf, lifecycleGroupOf, lifecycleGroupsOf, lifecycleOrgOf, type JikouListRow, type JikouSortKey, type LifecycleSortDir } from '@nihon-no-yosan/core';
+import { formatSen, lifecycleAcctOf, lifecycleGroupOf, lifecycleGroupsOf, lifecycleOrgOf, lifecyclePublisherOf, lifecyclePublishersOf, type JikouListRow, type JikouSortKey, type LifecycleSortDir } from '@nihon-no-yosan/core';
 import { Icon } from '../components/Icon.tsx';
 
 /** ドラッグ中のカーソル（イベントの外から body を変えるので、関数にまとめる） */
@@ -9,10 +9,11 @@ function setBodyCursor(value: string): void {
 
 const MAX_ROWS = 600;
 const MIN_COLUMN_WIDTH = 48;
-export const DEFAULT_JIKOU_COLUMN_WIDTHS: Record<JikouSortKey, number> = { group: 110, acct: 110, org: 110, kou: 180, name: 240, request: 96, budget: 96, revised: 96, suppNet: 96, span: 112, size: 96 };
+export const DEFAULT_JIKOU_COLUMN_WIDTHS: Record<JikouSortKey, number> = { publisher: 110, group: 110, acct: 110, org: 110, kou: 180, name: 240, request: 96, budget: 96, revised: 96, suppNet: 96, span: 112, size: 96 };
 /** 一覧の列。順は、項の一覧に合わせる */
 const COLS: { key: JikouSortKey; label: string; left?: boolean; title?: string }[] = [
-  { key: 'group', label: '所管', left: true },
+  { key: 'publisher', label: '要求所管', left: true, title: '概算要求書の公開元の府省（要求書の PDF のドメイン由来）。複数の府省の書に載る項は「N所管」（ホバーで一覧）。概算要求書の無い年度・項は「—」' },
+  { key: 'group', label: '予算所管', left: true, title: '予算書の所管（原文を府省に分けたもの）。複数の府省が所管する項は「N所管」' },
   { key: 'acct', label: '会計', left: true },
   { key: 'org', label: '組織／勘定', left: true },
   { key: 'kou', label: '項名', left: true },
@@ -114,6 +115,7 @@ export function LifecycleJikouListPane({ items, loading, failed, sortKey, sortDi
                   onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(r); } }}
                   className={`cursor-pointer border-b border-neutral-100 dark:border-neutral-800 ${selected ? 'bg-emerald-50 dark:bg-emerald-950/40' : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/60'}`}
                 >
+                  <td className={`break-words px-2 py-1 text-left ${lifecyclePublishersOf(k).length > 1 ? 'text-neutral-500' : ''}`} title={lifecyclePublishersOf(k).length > 1 ? lifecyclePublishersOf(k).join('、') : undefined}>{lifecyclePublisherOf(k) || <span className="text-neutral-300 dark:text-neutral-600">—</span>}</td>
                   <td className={`break-words px-2 py-1 text-left ${lifecycleGroupsOf(k).length > 1 ? 'text-neutral-500' : ''}`} title={lifecycleGroupsOf(k).length > 1 ? lifecycleGroupsOf(k).join('、') : undefined}>{lifecycleGroupOf(k)}</td>
                   <td className="break-words px-2 py-1 text-left">{lifecycleAcctOf(k)}</td>
                   <td className="break-words px-2 py-1 text-left">{lifecycleOrgOf(k)}</td>
