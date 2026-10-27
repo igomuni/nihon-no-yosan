@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   MOKU_FLAG,
   MOKU_MEASURES,
@@ -123,12 +123,38 @@ function chosenRows(rows: readonly MokuKouRow[], picked: string[] | null): MokuK
   return sel.length > 0 ? sel : rows.slice(0, 1); // 別の項に移って、選んだ目が無いとき
 }
 
+/** 年度を縦にした表と、選んだ年度の内訳に出す値（事項のタブの `YEAR_COLS` に当たる。決算の値を足す） */
+const YEAR_COLS: { key: MokuMeasure; label: string }[] = [
+  { key: 'request', label: '要求' },
+  { key: 'budget', label: '政府案' },
+  { key: 'revised', label: '補正後' },
+  { key: 'current', label: '歳出予算現額' },
+  { key: 'spent', label: '支出済' },
+  { key: 'unused', label: '不用額' },
+];
+/** 項の額と照合する値（補正後は、外N目にまとめられた目に値が無く、目の計が項の額に届かないので、照合しない） */
+const CHECKED: readonly MokuMeasure[] = ['request', 'budget', 'current', 'spent', 'unused'];
+
+/** 合計のセル。値のある目だけを足す。額が分からない（値の無い目がある）ときは、値のある目の数を添える */
+function SumCell({ moku, nodes, measure, all, current }: { moku: MokuIndex; nodes: readonly number[]; measure: MokuMeasure; /** その年度の目を全部選んでいる（`chartSum` と同じ判定） */ all: boolean; current?: boolean }) {
+  const hl = current ? 'bg-emerald-50/60 dark:bg-emerald-950/20' : '';
+  if (nodes.length === 0) return <td className={`${num} ${hl} text-neutral-300 dark:text-neutral-600`} title="この年度に、選んだ目が無い">·</td>;
+  const { sum, missing } = mokuSum(moku, nodes, measure);
+  const unknown = missing > 0 && chartSum(moku.data, nodes, measure, all) === null;
+  return (
+    <td className={`${num} ${hl}`} title={sum === null ? '値のある目が無い' : `${exact(sum)}（値のある ${nodes.length - missing} 目の合計）`}>
+      {sum === null ? <span className="text-neutral-300 dark:text-neutral-600">—</span> : amount(sum)}
+      {sum !== null && unknown && <span className="block text-[10px] text-amber-700 dark:text-amber-400">{nodes.length - missing}/{nodes.length} 目</span>}
+    </td>
+  );
+}
+
 /**
- * 項の下の目（項の右ペインの「目」タブ）。
- * 最初: 目をコンボボックス（チェックボックス付きの複数選択）で選び、選んだ目の概算要求・政府案・補正後・決算（支出済）の年度推移をグラフで見る（2 つ以上なら、値のある目だけ足した合計）。
- * 次: 選んだ年度の目の、概算要求・政府案・補正後・決算の表。目の計と項の額を並べる（値の無い目は計に入れず、数を添える）。
- * 下: 項の確定した対応でたどった年度の、目 × 年度の表（値を切り替える）。目のそろえ方は `mokuKouTable`（目の改称・統合は見ていない）。
- * 目の行を選ぶと、中ペインの目の一覧で、その目を開く。値の無い所は「—」（0 とは別）で、ホバーで理由。
+ * 項の下の目（項の右ペインの「目」タブ）。年度推移・事項のタブと同じ構成。
+ * 目をコンボボックス（チェックボックス付きの複数選択）で選び、選んだ目の概算要求・政府案・補正後・決算（支出済）の年度推移をグラフと、年度を縦に並べた表で見る。
+ * 2 つ以上選ぶと、選んだ目の合計（値のある目だけ足す）と、選んだ年度の目ごとの内訳を出す。
+ * 目の計は項の額と照合する（折りたたみ）。この項のすべての目は、年度 × 値の表（折りたたみ）。
+ * 年度は項の確定した対応でたどった年度。目のそろえ方は `mokuKouTable`（目の改称・統合は見ていない）。値の無い所は「—」（0 とは別）で、ホバーで理由。
  */
 export function LifecycleMokuTab({ kou, chain, kous, valuesOf, moku, loading, failed, onNavigate, onOpenMoku }: {
   kou: LifecycleKou;
@@ -143,20 +169,11 @@ export function LifecycleMokuTab({ kou, chain, kous, valuesOf, moku, loading, fa
   /** 目を、中ペインの目の一覧で開く */
   onOpenMoku: (node: number) => void;
 }) {
-  const [measure, setMeasure] = useState<MokuMeasure>('budget');
   const [picked, setPicked] = useState<string[] | null>(null);
   const [open, setOpen] = useState(false);
+  const top = useRef<HTMLElement>(null);
   const members = useMemo(() => chain.members.map(i => ({ i, k: kous[i]! })), [chain, kous]);
   const table = useMemo(() => (moku ? mokuKouTable(moku, members.map(({ k }) => ({ id: k.id, year: k.year }))) : []), [moku, members]);
-  const self = members.find(m => m.k.id === kou.id);
-  const kouValues = self ? valuesOf.get(self.i) ?? {} : {};
-  const nodes = useMemo(() => {
-    if (!moku) return [];
-    const k = moku.kouOf.get(kou.id);
-    const list = k === undefined ? [] : [...(moku.nodesOf.get(k) ?? [])];
-    const size = (i: number) => { const n = moku.data.nodes[i]!; return Math.max(0, n[12] ?? 0, n[5] ?? 0, n[6] ?? 0, n[8] ?? 0); };
-    return list.sort((a, b) => size(b) - size(a) || a - b);
-  }, [moku, kou.id]);
   // 目の行: 選んだ年度の大きさ（概算要求・政府案・補正後・歳出予算現額の最大）の大きい順。その年度に無い目は、どこかの年度の大きさの順で後ろに
   const rows = useMemo(() => {
     if (!moku) return [];
@@ -169,6 +186,8 @@ export function LifecycleMokuTab({ kou, chain, kous, valuesOf, moku, loading, fa
   }, [moku, table, kou.year]);
   const labels = useMemo(() => (moku ? mokuLabels(rows, kou.year, moku.data) : []), [moku, rows, kou.year]);
   const chosen = useMemo(() => chosenRows(rows, picked), [rows, picked]);
+  const one = chosen.length === 1 ? chosen[0]! : null;
+  const nodesIn = (rs: readonly MokuKouRow[], year: number): number[] => rs.flatMap(r => (r.cells.has(year) ? [r.cells.get(year)!] : []));
   const points = useMemo<TrendPoint[]>(() => {
     if (!moku) return [];
     const yen = (key: MokuMeasure, year: number): number | undefined => {
@@ -178,13 +197,14 @@ export function LifecycleMokuTab({ kou, chain, kous, valuesOf, moku, loading, fa
     };
     return members.map(({ k }) => ({ year: k.year, request: yen('request', k.year), budget: yen('budget', k.year), revised: yen('revised', k.year), spent: yen('spent', k.year) }));
   }, [moku, rows, chosen, members]);
+  const select = (key: string): void => { setPicked([key]); top.current?.scrollIntoView({ block: 'start', behavior: 'smooth' }); };
+  const goYear = (y: number): void => { const t = members.find(x => x.k.year === y); if (t && t.k.id !== kou.id) onNavigate(t.k.id); };
 
   if (failed) return <p className="p-4 text-xs text-red-700">目の読み込みに失敗しました（<code>npm run build:data</code> で作る）。</p>;
   if (loading || !moku) return <p className="p-4 text-xs text-neutral-500">目を読み込み中…</p>;
   const { data } = moku;
   const coverage = moku.coverageOf.get(kou.id);
   const hasYear = data.years.includes(kou.year);
-  const m = mokuMeasure(measure);
 
   return (
     <div className="flex flex-col gap-5 p-4 text-xs">
@@ -193,7 +213,7 @@ export function LifecycleMokuTab({ kou, chain, kous, valuesOf, moku, loading, fa
         <h2 className="text-base font-semibold">{kou.name}</h2>
         <ul className="mt-1 list-disc space-y-0.5 pl-4 text-[11px] text-neutral-500">
           {!hasYear && <li>この年度の目は、データに無い（予算書が無い年度）</li>}
-          {hasYear && nodes.length === 0 && <li>この項の目は、データに無い{kou.requestOnly ? '（概算要求書にだけある項。概算要求書の目は、まだ入れていない）' : ''}</li>}
+          {hasYear && rows.length === 0 && <li>この項の目は、データに無い{kou.requestOnly ? '（概算要求書にだけある項。概算要求書の目は、まだ入れていない）' : ''}</li>}
           {kou.requestOnly ? null : data.requestYears.includes(kou.year)
             ? <li>概算要求の目の取れ方: {coverage ? MOKU_REQUEST_COVERAGE_LABEL[coverage] : '概算要求書の項と突合できていない項'}</li>
             : <li>この年度の概算要求の目は、データに無い</li>}
@@ -203,144 +223,237 @@ export function LifecycleMokuTab({ kou, chain, kous, valuesOf, moku, loading, fa
       </div>
 
       {rows.length > 0 && (
-        <section className="flex flex-col gap-1.5" aria-label="目の選択">
-          <p className="font-semibold">目（{rows.length}）</p>
-          <MultiSelectCombo
-            label="目"
-            options={labels}
-            selected={picked === null ? [labels[0]!] : picked.includes(NONE_SELECTED) ? [NONE_SELECTED] : picked.length === 0 ? [] : chosen.map(r => labels[rows.indexOf(r)]!)}
-            onChange={next => setPicked(next.includes(NONE_SELECTED) ? [NONE_SELECTED] : next.length === 0 ? [] : next.map(l => rowKey(rows[labels.indexOf(l)]!)))}
-            open={open}
-            onOpenChange={setOpen}
-          />
-          <p className="text-[11px] text-neutral-500">{chosen.length === 0 ? '目を選んでください' : chosen.length === 1 ? '年度は、項の確定した対応でたどった年度' : `選んだ ${chosen.length} 目の合計（値のある目だけ足す）`}</p>
+        <>
+          <section ref={top} className="flex flex-col gap-1.5" aria-label="目の選択">
+            <p className="font-semibold">目（{rows.length}）</p>
+            <MultiSelectCombo
+              label="目"
+              options={labels}
+              selected={picked === null ? [labels[0]!] : picked.includes(NONE_SELECTED) ? [NONE_SELECTED] : picked.length === 0 ? [] : chosen.map(r => labels[rows.indexOf(r)]!)}
+              onChange={next => setPicked(next.includes(NONE_SELECTED) ? [NONE_SELECTED] : next.length === 0 ? [] : next.map(l => rowKey(rows[labels.indexOf(l)]!)))}
+              open={open}
+              onOpenChange={setOpen}
+            />
+            <p className="text-[11px] text-neutral-500">
+              {one ? `${spanOf(one)}${one.byName ? ' · 年度で分類コードが違い、目名でそろえた' : ''}` : chosen.length === 0 ? '目を選んでください' : `選んだ ${chosen.length} 目の合計`}
+              {one && one.cells.has(kou.year) && <button type="button" onClick={() => onOpenMoku(one.cells.get(kou.year)!)} className="ml-2 underline decoration-dotted hover:text-neutral-800 dark:hover:text-neutral-200">目の一覧で開く</button>}
+            </p>
+          </section>
+
           {chosen.length > 0 && (
             <>
-              <h3 className="mt-2 font-semibold">段階ごとの額{chosen.length === 1 ? '' : '（選んだ目の合計）'}</h3>
-              <TrendChart points={points} current={kou.year} onSelect={y => { const t = members.find(x => x.k.year === y); if (t && t.k.id !== kou.id) onNavigate(t.k.id); }} />
-              <p className="text-[11px] text-neutral-500">決算は支出済歳出額。選んだ目のどれかに値が無く、額が分からない年度は点を描かない（例: 補正後は、外N目にまとめられた目や補正の無い項の目に値が無い）。共管別の行・概算要求書にだけある目・当初予算に無い目（補正・決算で出る目）は、その段階に無い目として、値が無くても描く。その年度の目を全部選んだときの概算要求・決算は、値のある目を全部足す（どの行も、目の行のどれか 1 つに置いているので、項の額になる）。</p>
+              <section className="flex flex-col gap-2" aria-label="段階ごとの額の年度推移">
+                <h3 className="font-semibold">段階ごとの額{one ? '' : '（選んだ目の合計）'}</h3>
+                <TrendChart points={points} current={kou.year} onSelect={goYear} />
+                <p className="text-[11px] text-neutral-500">決算は支出済歳出額。選んだ目のどれかに値が無く、額が分からない年度は点を描かない（例: 補正後は、外N目にまとめられた目や補正の無い項の目に値が無い）。共管別の行・概算要求書にだけある目・当初予算に無い目（補正・決算で出る目）は、その段階に無い目として、値が無くても描く。その年度の目を全部選んだときの概算要求・決算は、値のある目を全部足す（どの行も、目の行のどれか 1 つに置いているので、項の額になる）。</p>
+              </section>
+
+              <section className="flex flex-col gap-2" aria-label="年度の表">
+                <h3 className="font-semibold">年度ごとの額{one ? 'と対応' : '（選んだ目の合計）'}</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse">
+                    <thead>
+                      <tr className="text-left">
+                        <th className={th}>年度</th>
+                        <th className={`${th} min-w-[7rem]`}>{one ? '目名（対応）' : '合計'}</th>
+                        {YEAR_COLS.map(c => <th key={c.key} className={`${th} whitespace-nowrap text-right`} title={mokuMeasure(c.key).label}>{c.label}</th>)}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {members.map(({ k }) => {
+                        const selected = k.id === kou.id;
+                        const node = one?.cells.get(k.year);
+                        const n = node === undefined ? undefined : data.nodes[node]!;
+                        const ns = nodesIn(chosen, k.year);
+                        const all = rows.every(r => !r.cells.has(k.year) || chosen.includes(r));
+                        return (
+                          <tr
+                            key={k.id}
+                            tabIndex={0}
+                            aria-selected={selected}
+                            title={selected ? undefined : `FY${k.year} を開く`}
+                            onClick={() => { if (!selected) onNavigate(k.id); }}
+                            onKeyDown={e => { if ((e.key === 'Enter' || e.key === ' ') && !selected) { e.preventDefault(); onNavigate(k.id); } }}
+                            className={`border-t border-neutral-100 align-top dark:border-neutral-800 ${selected ? 'bg-emerald-50 dark:bg-emerald-950/40' : 'cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/60'}`}
+                          >
+                            <td className={`${td} whitespace-nowrap ${selected ? 'font-semibold' : ''}`}>FY{k.year}</td>
+                            <td className={td}>
+                              {one ? (n ? (
+                                <>
+                                  {n[2]}<Marks n={n} />
+                                  {n[3] && <span className="block text-[10px] text-neutral-500">分類コード: {n[3].split('|').join('-')}</span>}
+                                </>
+                              ) : <span className="text-neutral-400">{data.years.includes(k.year) ? 'この年度に目なし' : 'この年度の目は、データに無い'}</span>)
+                                : <span className="text-neutral-500">{ns.length}/{chosen.length} 目</span>}
+                            </td>
+                            {YEAR_COLS.map(c => (one
+                              ? <Cell key={c.key} data={data} node={node} measure={c.key} />
+                              : <SumCell key={c.key} moku={moku} nodes={ns} measure={c.key} all={all} />))}
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+
+              {!one && <MokuBreakdown rows={chosen} moku={moku} year={kou.year} onSelect={select} />}
             </>
           )}
-        </section>
-      )}
 
-      {nodes.length > 0 && (
-        <section className="flex flex-col gap-2" aria-label="この年度の目">
-          <h3 className="font-semibold">FY{kou.year} の目（{nodes.length}）</h3>
-          <p className="text-[11px] text-neutral-500">行を選ぶと、目の一覧でその目を開く。目の計は、値のある目だけを足した額（値の無い目の数を添える）。</p>
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="border-b border-neutral-200 text-left dark:border-neutral-800">
-                  <th className={`${th} min-w-[8rem]`}>目名</th>
-                  {MOKU_MEASURES.map(x => <th key={x.key} className={`${th} whitespace-nowrap text-right`}>{x.label}</th>)}
-                </tr>
-              </thead>
-              <tbody>
-                {nodes.map(i => {
-                  const n = data.nodes[i]!;
-                  return (
-                    <tr key={i} onClick={() => onOpenMoku(i)} className="cursor-pointer border-b border-neutral-100 hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-800/60">
-                      <td className={td}>{n[2]}<Marks n={n} /></td>
-                      {MOKU_MEASURES.map(x => <Cell key={x.key} data={data} node={i} measure={x.key} />)}
-                    </tr>
-                  );
-                })}
-              </tbody>
-              <tfoot>
-                <tr className="border-t border-neutral-300 font-medium dark:border-neutral-700">
-                  <td className={td}>目の計</td>
-                  {MOKU_MEASURES.map(x => {
-                    const { sum, missing } = mokuSum(moku, nodes, x.key);
-                    return (
-                      <td key={x.key} className={num} title={`${sum === null ? '値のある目なし' : exact(sum)}${missing > 0 ? `（値の無い目 ${missing}）` : ''}`}>
-                        {sum === null ? '—' : amount(sum)}
-                        {missing > 0 && sum !== null && <span className="ml-0.5 text-[10px] text-neutral-400">*</span>}
-                      </td>
-                    );
-                  })}
-                </tr>
-                <tr className="text-neutral-500">
-                  <td className={td}>項の額</td>
-                  {MOKU_MEASURES.map(x => {
-                    const yen = kouValues[x.kou];
-                    const { sum, missing } = mokuSum(moku, nodes, x.key);
-                    // 値の無い目があるときは、目の計が項の額に届かないのが当然なので、比べない
-                    const diff = yen !== undefined && sum !== null && missing === 0 ? sum - yen / 1000 : null;
-                    const off = diff !== null && Math.abs(diff) >= 0.5;
-                    const note = diff === null ? (missing > 0 && yen !== undefined ? '（値の無い目があるので、目の計とは比べない）' : '') : off ? `（目の計との差 ${exact(diff)}）` : '（目の計と一致）';
-                    return (
-                      <td key={x.key} className={`${num} ${off ? 'text-amber-700 dark:text-amber-400' : ''}`} title={yen === undefined ? '項の値なし' : `${exact(yen / 1000)}${note}`}>
-                        {yen === undefined ? '—' : amount(yen / 1000)}
-                      </td>
-                    );
-                  })}
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-          <p className="text-[11px] text-neutral-500">* 値の無い目がある（計に入れていない。項の額とは比べない）。値の無い目が無いのに、項の額が目の計と違う所は色を変えた（ホバーで差）。</p>
-        </section>
-      )}
-
-      {table.length > 0 && (
-        <section className="flex flex-col gap-2" aria-label="目の年度推移">
-          <h3 className="font-semibold">目の年度推移</h3>
-          <p className="text-[11px] text-neutral-500">項の確定した対応でたどった年度。目は目名でそろえ、同じ目名が 2 つ以上ある年度があれば、分類コードでも分ける（「名前」= 年度で分類コードが違う）。目の改称・統合は見ていない。「·」はその年度に目が無い、「—」は目はあるが値が無い（ホバーで理由）。</p>
-          <div role="radiogroup" aria-label="値" className="flex flex-wrap gap-1">
-            {MOKU_MEASURES.map(x => (
-              <button key={x.key} type="button" role="radio" aria-checked={measure === x.key} onClick={() => setMeasure(x.key)} className={`rounded border px-2 py-0.5 text-[11px] ${measure === x.key ? 'border-emerald-600 bg-emerald-50 font-semibold dark:bg-emerald-950/40' : 'border-neutral-300 text-neutral-600 hover:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800'}`}>{x.label}</button>
-            ))}
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="border-b border-neutral-200 text-left dark:border-neutral-800">
-                  <th className={`${th} sticky left-0 min-w-[8rem] bg-white dark:bg-neutral-900`}>目名</th>
-                  {members.map(({ k }) => (
-                    <th key={k.id} className={`${th} whitespace-nowrap text-right ${k.id === kou.id ? 'text-emerald-700 dark:text-emerald-400' : ''}`}>
-                      {k.id === kou.id ? `FY${k.year}` : <button type="button" className="underline decoration-dotted hover:text-neutral-800 dark:hover:text-neutral-200" title={`FY${k.year} の項（${k.name}）に移る`} onClick={() => onNavigate(k.id)}>FY{k.year}</button>}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map(r => {
-                  const isChosen = chosen.includes(r);
-                  const here = r.cells.get(kou.year);
-                  return (
-                    <tr key={rowKey(r)} className={`border-b border-neutral-100 dark:border-neutral-800 ${isChosen ? 'font-medium' : ''}`}>
-                      <td className={`${td} sticky left-0 bg-white dark:bg-neutral-900`}>
-                        {here !== undefined ? <button type="button" className="text-left hover:underline" title="目の一覧でこの目を開く" onClick={() => onOpenMoku(here)}>{r.name}</button> : r.name}
-                        {r.part && <span className="ml-1 rounded bg-neutral-100 px-1 text-[10px] text-neutral-500 dark:bg-neutral-800" title="決算の共管別の行">共管: {partLabel(r.part)}</span>}
-                        {r.byName && <span className="ml-1 text-[10px] text-neutral-400" title="年度で分類コードが違い、目名でそろえた">名前</span>}
-                      </td>
-                      {members.map(({ k }) => <Cell key={k.id} data={data} node={r.cells.get(k.year)} measure={measure} current={k.id === kou.id} />)}
-                    </tr>
-                  );
-                })}
-              </tbody>
-              <tfoot>
-                <tr className="border-t border-neutral-300 font-medium dark:border-neutral-700">
-                  <td className={`${td} sticky left-0 bg-white dark:bg-neutral-900`}>目の計</td>
-                  {members.map(({ k }) => {
-                    const ns = rows.flatMap(r => (r.cells.has(k.year) ? [r.cells.get(k.year)!] : []));
-                    const { sum, missing } = mokuSum(moku, ns, measure);
-                    return <td key={k.id} className={num} title={ns.length === 0 ? '目なし' : `${sum === null ? '値のある目なし' : exact(sum)}${missing > 0 ? `（値の無い目 ${missing}）` : ''}`}>{sum === null ? '—' : amount(sum)}{missing > 0 && sum !== null && <span className="ml-0.5 text-[10px] text-neutral-400">*</span>}</td>;
-                  })}
-                </tr>
-                <tr className="text-neutral-500">
-                  <td className={`${td} sticky left-0 bg-white dark:bg-neutral-900`}>項の{m.label}</td>
-                  {members.map(({ i, k }) => {
-                    const yen = valuesOf.get(i)?.[m.kou];
-                    return <td key={k.id} className={num} title={yen === undefined ? '項の値なし' : exact(yen / 1000)}>{yen === undefined ? '—' : amount(yen / 1000)}</td>;
-                  })}
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-        </section>
+          <Reconcile rows={rows} moku={moku} members={members} valuesOf={valuesOf} current={kou.year} />
+          <AllMoku rows={rows} moku={moku} members={members} kou={kou} onNavigate={onNavigate} onPick={select} picked={chosen.map(rowKey)} />
+        </>
       )}
     </div>
+  );
+}
+
+/** 目の年度の範囲（行の表示用） */
+function spanOf(r: MokuKouRow): string {
+  const ys = [...r.cells.keys()];
+  const from = Math.min(...ys), to = Math.max(...ys);
+  return `FY${from}${from === to ? '' : `〜FY${to}`}${r.part ? ` · 決算の共管: ${partLabel(r.part)}` : ''}`;
+}
+
+/** 選んだ年度の、選んだ目ごとの値（2 つ以上選んだとき）。行を押すと、その目だけにする */
+function MokuBreakdown({ rows, moku, year, onSelect }: { rows: readonly MokuKouRow[]; moku: MokuIndex; year: number; onSelect: (key: string) => void }) {
+  return (
+    <section className="flex flex-col gap-2" aria-label="選んだ目ごと">
+      <h3 className="font-semibold">FY{year} の選んだ目ごと</h3>
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse">
+          <thead>
+            <tr className="text-left">
+              <th className={`${th} min-w-[7rem]`}>目</th>
+              {YEAR_COLS.map(c => <th key={c.key} className={`${th} whitespace-nowrap text-right`}>{c.label}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map(r => {
+              const node = r.cells.get(year);
+              return (
+                <tr key={rowKey(r)} onClick={() => onSelect(rowKey(r))} title="この目だけにする" className="cursor-pointer border-t border-neutral-100 align-top hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-800/60">
+                  <td className={td}>
+                    {r.name}{node !== undefined && <Marks n={moku.data.nodes[node]!} />}
+                    {node === undefined && <span className="block text-[10px] text-neutral-500">この年度に目なし（{spanOf(r)}）</span>}
+                  </td>
+                  {YEAR_COLS.map(c => <Cell key={c.key} data={moku.data} node={node} measure={c.key} />)}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
+/** 目の計と、項の額の照合（項のすべての目を足す）。違う年度があれば、見出しに出す */
+function Reconcile({ rows, moku, members, valuesOf, current }: { rows: readonly MokuKouRow[]; moku: MokuIndex; members: readonly { i: number; k: LifecycleKou }[]; valuesOf: ReadonlyMap<number, LifecycleValues>; current: number }) {
+  const checks = useMemo(() => CHECKED.map(key => ({
+    key,
+    totals: members.map(({ i, k }) => {
+      const ns = rows.flatMap(r => (r.cells.has(k.year) ? [r.cells.get(k.year)!] : []));
+      const { sum } = mokuSum(moku, ns, key);
+      const yen = valuesOf.get(i)?.[mokuMeasure(key).kou];
+      const kouV = yen === undefined ? null : yen / 1000;
+      return { year: k.year, rows: ns.length, sum, kou: kouV, differs: kouV !== null && sum !== null && Math.abs(sum - kouV) >= 0.5 };
+    }),
+  })), [rows, moku, members, valuesOf]);
+  const nDiffer = checks.reduce((n, c) => n + c.totals.filter(t => t.differs).length, 0);
+  return (
+    <details className="rounded border border-neutral-200 p-2 dark:border-neutral-700">
+      <summary className="cursor-pointer font-semibold">
+        項の額との照合
+        {nDiffer > 0 && <span className="ml-2 font-normal text-amber-700 dark:text-amber-400">目の計と違う年度・値が {nDiffer} 件</span>}
+      </summary>
+      <div className="mt-2 flex flex-col gap-2">
+        <p className="text-[11px] text-neutral-500">項のすべての目の、値のある目を足した額（目の計）と、項の額。補正後は、外N目にまとめられた目に値が無く、目の計が項の額に届かないので、照合しない。</p>
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="text-left">
+                <th className={th}>年度</th>
+                {checks.map(c => <th key={c.key} className={`${th} text-right`}>{mokuMeasure(c.key).label}（目の計 / 項の額）</th>)}
+              </tr>
+            </thead>
+            <tbody>
+              {members.map(({ k }) => (
+                <tr key={k.id} className={`border-t border-neutral-100 dark:border-neutral-800 ${k.year === current ? 'bg-emerald-50/60 dark:bg-emerald-950/20' : ''}`}>
+                  <td className={`${td} whitespace-nowrap`}>FY{k.year}</td>
+                  {checks.map(c => {
+                    const t = c.totals.find(x => x.year === k.year)!;
+                    return (
+                      <td key={c.key} className={`${num} ${t.differs ? 'text-amber-700 dark:text-amber-400' : ''}`} title={t.sum === null ? undefined : `目の計 ${exact(t.sum)}${t.kou === null ? '' : ` / 項の額 ${exact(t.kou)}`}`}>
+                        {t.sum === null ? '—' : amount(t.sum)} / {t.kou === null ? '—' : amount(t.kou)}
+                        {t.differs && <span className="block text-[10px]">違う</span>}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </details>
+  );
+}
+
+/** この項のすべての目を、年度 × 値で並べた表。行を押すと、その目に選び直す */
+function AllMoku({ rows, moku, members, kou, onNavigate, onPick, picked }: { rows: readonly MokuKouRow[]; moku: MokuIndex; members: readonly { i: number; k: LifecycleKou }[]; kou: LifecycleKou; onNavigate: (id: string) => void; onPick: (key: string) => void; picked: readonly string[] }) {
+  const [shown, setShown] = useState(false);
+  const [measure, setMeasure] = useState<MokuMeasure>('budget');
+  const scroller = useRef<HTMLDivElement>(null);
+  // 年度の列が多いときは、選んだ年度の列が見える位置まで、表を横にずらす
+  useEffect(() => {
+    const box = scroller.current;
+    const head = box?.querySelector<HTMLElement>('[data-selected="true"]');
+    if (box && head) box.scrollLeft = Math.max(0, head.offsetLeft - box.clientWidth / 2);
+  }, [shown, kou.id, rows, measure]);
+  return (
+    <details className="rounded border border-neutral-200 p-2 dark:border-neutral-700" onToggle={e => setShown((e.currentTarget as HTMLDetailsElement).open)}>
+      <summary className="cursor-pointer font-semibold">この項のすべての目（{rows.length}）</summary>
+      {shown && (
+        <div className="mt-2 flex flex-col gap-2">
+          <div role="tablist" aria-label="目の値" className="flex flex-wrap gap-1">
+            {MOKU_MEASURES.map(m => (
+              <button key={m.key} type="button" role="tab" aria-selected={measure === m.key} onClick={() => setMeasure(m.key)} className={`rounded-full border px-2.5 py-0.5 ${measure === m.key ? 'border-emerald-600 bg-emerald-50 font-semibold text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300' : 'border-neutral-300 text-neutral-600 hover:bg-neutral-50 dark:border-neutral-600 dark:text-neutral-300 dark:hover:bg-neutral-800'}`}>{m.label}</button>
+            ))}
+          </div>
+          <p className="text-[11px] text-neutral-500">「·」はその年度に目が無い、「—」は目はあるが値が無い（ホバーで理由）。</p>
+          <div ref={scroller} className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="text-left">
+                  <th className={`${th} sticky left-0 min-w-[11rem] bg-white dark:bg-neutral-900`}>目</th>
+                  {members.map(({ k }) => {
+                    const selected = k.id === kou.id;
+                    return (
+                      <th key={k.id} data-selected={selected} className={`${th} whitespace-nowrap text-right ${selected ? 'bg-emerald-50 dark:bg-emerald-950/40' : ''}`}>
+                        <button type="button" disabled={selected} title={selected ? undefined : `FY${k.year} の項を開く`} onClick={() => onNavigate(k.id)} className={selected ? 'font-semibold text-neutral-900 dark:text-neutral-100' : 'underline decoration-dotted underline-offset-2 hover:text-neutral-900 dark:hover:text-neutral-100'}>FY{k.year}</button>
+                      </th>
+                    );
+                  })}
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map(r => (
+                  <tr key={rowKey(r)} onClick={() => onPick(rowKey(r))} title="この目だけにする" className={`cursor-pointer border-t border-neutral-100 hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-800/60 ${picked.includes(rowKey(r)) ? 'bg-neutral-50 dark:bg-neutral-800/60' : ''}`}>
+                    <td className={`${td} sticky left-0 bg-white dark:bg-neutral-900`}>
+                      {r.name}
+                      {r.part && <span className="ml-1 rounded bg-neutral-100 px-1 text-[10px] text-neutral-500 dark:bg-neutral-800" title="決算の共管別の行">共管: {partLabel(r.part)}</span>}
+                      {r.byName && <span className="ml-1 text-[10px] text-neutral-400" title="年度で分類コードが違い、目名でそろえた">名前</span>}
+                    </td>
+                    {members.map(({ k }) => <Cell key={k.id} data={moku.data} node={r.cells.get(k.year)} measure={measure} current={k.id === kou.id} />)}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </details>
   );
 }
