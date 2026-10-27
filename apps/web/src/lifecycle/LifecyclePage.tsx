@@ -161,7 +161,7 @@ export function LifecyclePage() {
   // 目（lifecycle/moku.json.gz。大きいので、目のタブを開いたとき、または目名で絞るときに読む）
   const [mokuResult, setMokuResult] = useState<{ index: MokuIndex } | { failed: true } | null>(null);
   const mokuRequested = useRef(false);
-  const needMoku = view === 'moku' || storedFilters.mokuName?.trim();
+  const needMoku = view === 'moku' || (view === 'list' && detailTab === 'moku') || storedFilters.mokuName?.trim();
   useEffect(() => {
     if (!needMoku || mokuRequested.current) return;
     mokuRequested.current = true;
@@ -314,7 +314,7 @@ export function LifecyclePage() {
               onOpenKou={k => { setYear(k.year); setSelectedId(k.id); setView('list'); setDetailTab('jikou'); }}
             />
           ) : (
-          <LifecycleDetailPane kou={kou} events={selectedIndex >= 0 ? byKou.get(selectedIndex) ?? [] : []} coverage={coverage} data={data} links={selectedIndex >= 0 ? linksByKou.get(selectedIndex) ?? [] : []} selfIndex={selectedIndex} onNavigate={id => { const t = data.kous.find(x => x.id === id); if (t) { setYear(t.year); setSelectedId(id); } }} tab={detailTab} onTab={setDetailTab} chain={selectedIndex >= 0 ? chainOf(selectedIndex) : null} valuesOf={valuesOf} jikou={jikou} jikouState={jikouState} />
+          <LifecycleDetailPane kou={kou} events={selectedIndex >= 0 ? byKou.get(selectedIndex) ?? [] : []} coverage={coverage} data={data} links={selectedIndex >= 0 ? linksByKou.get(selectedIndex) ?? [] : []} selfIndex={selectedIndex} onNavigate={id => { const t = data.kous.find(x => x.id === id); if (t) { setYear(t.year); setSelectedId(id); } }} tab={detailTab} onTab={setDetailTab} chain={selectedIndex >= 0 ? chainOf(selectedIndex) : null} valuesOf={valuesOf} jikou={jikou} jikouState={jikouState} moku={moku} mokuState={mokuState} onOpenMoku={node => { setSelectedMoku(mokuSelectionKey(moku!, node)); setView('moku'); }} />
           )}
         </section>
       </main>

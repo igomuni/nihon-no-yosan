@@ -10,6 +10,7 @@ import {
   lifecycleUse,
   lifecycleValues,
   type JikouIndex,
+  type MokuIndex,
   type LifecycleChain,
   type LifecycleCoverage,
   type LifecycleData,
@@ -26,6 +27,7 @@ import { ChangesChart, LevelsChart, UseChart } from './charts.tsx';
 import { kouTitle, num, td, th, yen } from './shared.ts';
 import { LinkBadge } from './LifecycleListPane.tsx';
 import { LifecycleJikouTab } from './LifecycleJikouTab.tsx';
+import { LifecycleMokuTab } from './LifecycleMokuTab.tsx';
 import { LifecycleTrendTab } from './LifecycleTrendTab.tsx';
 
 const EVENT_LABEL: Record<LifecycleEventType, string> = { request: '概算要求', budget: '政府案', supp: '補正', settle: '決算', derived: '導出' };
@@ -121,20 +123,20 @@ function LinksSection({ kou, data, links, selfIndex, onNavigate }: { kou: Lifecy
   );
 }
 
-export type DetailTab = 'life' | 'trend' | 'jikou';
+export type DetailTab = 'life' | 'trend' | 'jikou' | 'moku';
 
-/** 右ペインのタブ（項の一生 / 年度推移 / 事項） */
+/** 右ペインのタブ（項の一生 / 年度推移 / 事項 / 目） */
 function DetailTabs({ tab, onTab }: { tab: DetailTab; onTab: (t: DetailTab) => void }) {
   return (
     <div role="tablist" aria-label="項の表示" className="sticky top-0 z-10 flex gap-1 border-b border-neutral-200 bg-white px-3 pt-2 text-xs dark:border-neutral-800 dark:bg-neutral-900">
-      {([['life', '1年の推移', '選んだ年度の中で、概算要求 → 政府案 → 補正 → 決算と、額がどう動いたか'], ['trend', '年度推移', '年度をまたいで、同じ項と確認できた年度の額の推移'], ['jikou', '事項', '項の下の事項（概算要求・政府案・補正）を、年度をまたいでそろえて見る']] as const).map(([t, label, hint]) => (
+      {([['life', '1年の推移', '選んだ年度の中で、概算要求 → 政府案 → 補正 → 決算と、額がどう動いたか'], ['trend', '年度推移', '年度をまたいで、同じ項と確認できた年度の額の推移'], ['jikou', '事項', '項の下の事項（概算要求・政府案・補正）を、年度をまたいでそろえて見る'], ['moku', '目', '項の下の目（概算要求・政府案・補正・決算）を、選んだ年度と、年度をまたいで見る']] as const).map(([t, label, hint]) => (
         <button key={t} type="button" role="tab" aria-selected={tab === t} title={hint} onClick={() => onTab(t)} className={`rounded-t border-b-2 px-2.5 py-1 ${tab === t ? 'border-emerald-600 font-semibold text-neutral-900 dark:text-neutral-100' : 'border-transparent text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'}`}>{label}</button>
       ))}
     </div>
   );
 }
 
-export function LifecycleDetailPane({ kou, events: unsorted, coverage, data, links, selfIndex, onNavigate, tab, onTab, chain, valuesOf, jikou, jikouState }: { kou: LifecycleKou | null; events: LifecycleEventRow[]; coverage: LifecycleCoverage; data: LifecycleData; links: readonly LifecycleLink[]; selfIndex: number; onNavigate: (id: string) => void; tab: DetailTab; onTab: (t: DetailTab) => void; chain: LifecycleChain | null; valuesOf: ReadonlyMap<number, LifecycleValues>; jikou: JikouIndex | null; jikouState: 'loading' | 'ready' | 'error' }) {
+export function LifecycleDetailPane({ kou, events: unsorted, coverage, data, links, selfIndex, onNavigate, tab, onTab, chain, valuesOf, jikou, jikouState, moku, mokuState, onOpenMoku }: { kou: LifecycleKou | null; events: LifecycleEventRow[]; coverage: LifecycleCoverage; data: LifecycleData; links: readonly LifecycleLink[]; selfIndex: number; onNavigate: (id: string) => void; tab: DetailTab; onTab: (t: DetailTab) => void; chain: LifecycleChain | null; valuesOf: ReadonlyMap<number, LifecycleValues>; jikou: JikouIndex | null; jikouState: 'loading' | 'ready' | 'error'; moku: MokuIndex | null; mokuState: 'loading' | 'ready' | 'error'; onOpenMoku: (node: number) => void }) {
   // 出来事の順（概算要求 → 政府案 → 補正 → 決算 → 導出）。同じ出来事の中は、元の並び
   const events = useMemo(() => [...unsorted].sort((a, b) => EVENT_ORDER.indexOf(a[1]) - EVENT_ORDER.indexOf(b[1])), [unsorted]);
   const observedEvents = useMemo(() => events.filter(e => e[1] !== 'derived'), [events]);
@@ -149,6 +151,7 @@ export function LifecycleDetailPane({ kou, events: unsorted, coverage, data, lin
   const use = lifecycleUse(values);
   const base = values.budget_amount ?? values.current_amount ?? null;
   if (tab === 'jikou' && chain) return <><DetailTabs tab={tab} onTab={onTab} /><LifecycleJikouTab key={kou.requestOnly === 'noBudget' ? 'request' : 'budget'} kou={kou} chain={chain} kous={data.kous} valuesOf={valuesOf} jikou={jikou} loading={jikouState === 'loading'} failed={jikouState === 'error'} onNavigate={onNavigate} picked={jikouPick.chain === chainId ? jikouPick.picked : null} onPick={picked => setJikouPick({ chain: chainId, picked })} /></>;
+  if (tab === 'moku' && chain) return <><DetailTabs tab={tab} onTab={onTab} /><LifecycleMokuTab kou={kou} chain={chain} kous={data.kous} valuesOf={valuesOf} moku={moku} loading={mokuState === 'loading'} failed={mokuState === 'error'} onNavigate={onNavigate} onOpenMoku={onOpenMoku} /></>;
   if (tab === 'trend' && chain) return <><DetailTabs tab={tab} onTab={onTab} /><LifecycleTrendTab kou={kou} chain={chain} kous={data.kous} valuesOf={valuesOf} links={data.links} onNavigate={onNavigate} /></>;
   return (
     <>
