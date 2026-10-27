@@ -81,7 +81,7 @@ export function LifecycleMokuListPane({ items, loading, failed, sortKey, sortDir
     setBodyCursor('col-resize');
   }
 
-  const totals = ([['概算要求', 'request'], ['政府案', 'budget'], ['補正後', 'revised'], ['歳出予算現額', 'current'], ['支出済', 'spent']] as const).map(([label, k]) => {
+  const totals = ([['概算要求', 'request'], ['政府案', 'budget'], ['補正後', 'revised'], ['決算', 'spent']] as const).map(([label, k]) => {
     let sum = 0, n = 0;
     for (const r of items) { const v = r[k]; if (v !== null) { sum += v; n++; } }
     return { label, sum: n === 0 ? null : sum, n };
@@ -91,9 +91,8 @@ export function LifecycleMokuListPane({ items, loading, failed, sortKey, sortDir
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex flex-wrap gap-x-5 gap-y-1 border-b border-neutral-200 px-3 py-2 text-xs text-neutral-500 dark:border-neutral-800">
-        <span><b className="tabular-nums text-neutral-800 dark:text-neutral-100">{items.length.toLocaleString()}</b> 目</span>
-        {totals.map(t => t.sum !== null && <span key={t.label} title={`値のある ${t.n.toLocaleString()} 目の合計（${t.sum.toLocaleString('ja-JP', { maximumFractionDigits: 3 })} 千円）`}>{t.label} <b className="tabular-nums text-neutral-800 dark:text-neutral-100">{formatSen(t.sum)}</b><span className="ml-0.5 text-neutral-400">({t.n.toLocaleString()})</span></span>)}
-        <span className="text-neutral-400">「—」は値なし（0 ではない）。ホバーで理由</span>
+        <span title="額の列の「—」は値なし（0 ではない）。ホバーで理由"><b className="tabular-nums text-neutral-800 dark:text-neutral-100">{items.length.toLocaleString()}</b> 目</span>
+        {totals.map(t => t.sum !== null && <span key={t.label} title={`値のある ${t.n.toLocaleString()} 目の合計（${t.sum.toLocaleString('ja-JP', { maximumFractionDigits: 3 })} 千円）${t.label === '決算' ? '。支出済歳出額' : ''}`}>{t.label} <b className="tabular-nums text-neutral-800 dark:text-neutral-100">{formatSen(t.sum)}</b></span>)}
       </div>
       <div ref={scrollRef} className="min-h-0 flex-1 overflow-auto">
         <table className="border-collapse text-xs" style={{ width: tableWidth, tableLayout: 'fixed' }}>
