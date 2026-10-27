@@ -15,8 +15,7 @@ import {
   nameKey,
   pairByName,
   readCsv,
-  reqMokuCode,
-  type BudgetRequestMofDetail,
+  reqMokuClassCodes,
   type LifecycleKou,
   type LifecycleMokuData,
   type LifecycleMokuNode,
@@ -26,7 +25,7 @@ import {
 import type { LifecycleRequestOnlyRow, LifecycleSource } from './lifecycle.ts';
 import { requestOnlyKouId } from './lifecycle-jikou.ts';
 
-/** 予算書の項に対応する概算要求の目（`mof-ui.ts` の詳細の `m`: [名前, 目コード, 要求額, 予算書の額]。千円）。`noReq` = 要求側の明細が読めていない */
+/** 予算書の項に対応する概算要求の目（`mof-ui.ts` の詳細の `m`: [名前, 目コード, 要求額, 予算書の額]。千円）。`noReq` = 要求側の明細が読めていない。概算要求書にだけある項（`requestOnlyMoku`）は、目コードが予算書の分類コード（`|` つなぎ。直せない形は空） */
 export interface MokuRequest {
   m: readonly (readonly [string, string, number | null, number | null])[];
   noReq: boolean;
@@ -256,11 +255,12 @@ export function buildLifecycleMoku({ datasetDir, historyDir, sources, kous, requ
     if (!k.requestOnly) continue; // 予算書の項に結べたのに、予算書の目が 1 つも無い項（上の注記のとおり、数えない）
     requestYears.add(k.year);
     const placed = new Map<string, Node>();
-    for (const [name, , req] of q.m) {
+    for (const [name, code, req] of q.m) {
       if (req === null) continue;
-      const key = `${nameKey(name)}||`;
+      // 分類コードは、要求書の原文を直したもの（`requestOnlyMoku`）。直せない形は空
+      const key = `${nameKey(name)}|${code}|`;
       if (placed.has(key)) throw new Error(`概算要求のみの項の目が重複: ${kouId} ${name}`);
-      const n: Node = { kouId, year: k.year, name, key, codes: '', part: '', v: Array<number | null>(8).fill(null), flags: MOKU_FLAG.requestOnly };
+      const n: Node = { kouId, year: k.year, name, key, codes: code, part: '', v: Array<number | null>(8).fill(null), flags: MOKU_FLAG.requestOnly };
       n.v[V.request] = req;
       placed.set(key, n);
       nodes.push(n);
@@ -293,12 +293,13 @@ export function buildLifecycleMoku({ datasetDir, historyDir, sources, kous, requ
 }
 
 /**
- * 概算要求書にだけある項の、概算要求の目（`MokuRequest`。額は千円）。予算書に突合できなかった項（`reqOnly`・`zero`）は `mof-ui` の詳細の行（`mofRowKey`）から、
- * 予算書が基準データに無い年度の項（`noBudget`）は、年度推移の目（`trend-detail` の `moku/{年度}.csv`）から取る。後者は、同じ項が複数の要求書に載るとき、
- * 要求額の合計が最も大きい公開元の目だけを使う（`requestOnlyJikou` と同じ考え方）。項の id は `requestOnlyKouId`（年度内の突合で予算書の項に結んだ項は、その予算書の項の id）。
+ * 概算要求書にだけある項の、概算要求の目（`MokuRequest`。額は千円）。年度推移の目（`trend-detail` の `moku/{年度}.csv`）から取る。
+ * 予算書の項に突合できなかった項（`reqOnly`・`zero`）も、予算書が基準データに無い年度の項（`noBudget`）も、同じ CSV から取り、同じ項が複数の要求書に載るときは、
+ * 要求額の合計が最も大きい公開元の目だけを使う（`requestOnlyJikou` の `noBudget` と同じ考え方）。項の id は `requestOnlyKouId`（年度内の突合で予算書の項に結んだ項は、その予算書の項の id）。
+ * 目のコード（`m` の 2 番目）は、要求書の原文を予算書の分類コード（`|` つなぎ）に直したもの（`reqMokuClassCodes`）。直せない形は空。
  * 要求書に目の明細が無い項は、`noReq`（目なし）にする（項は捨てない）。
  */
-export function requestOnlyMoku(rows: readonly LifecycleRequestOnlyRow[], details: Readonly<Record<string, BudgetRequestMofDetail>>, mokuCsv: ReadonlyMap<number, string>, sameYear: ReadonlyMap<string, string> = new Map()): Map<string, MokuRequest> {
+export function requestOnlyMoku(rows: readonly LifecycleRequestOnlyRow[], mokuCsv: ReadonlyMap<number, string>, sameYear: ReadonlyMap<string, string> = new Map()): Map<string, MokuRequest> {
   const amount = (s: string | undefined): number | null => { const t = (s ?? '').replace(/[\s,]/g, ''); return /^\d+$/.test(t) ? Number(t) : null; };
   const trend = new Map<string, Map<string, { name: string; code: string; amt: number | null }[]>>();
   for (const [year, csv] of mokuCsv) {
@@ -307,7 +308,7 @@ export function requestOnlyMoku(rows: readonly LifecycleRequestOnlyRow[], detail
       const key = [year, special ? 1 : 0, nameKey(special ? r['特別会計'] : r['所管']), nameKey(special ? r['勘定'] : ''), nameKey(special ? '' : r['組織']), nameKey(r['項名'])].join('|');
       const host = (r['要求書'] ?? '').split('__')[0]!;
       const byHost = trend.get(key) ?? trend.set(key, new Map()).get(key)!;
-      (byHost.get(host) ?? byHost.set(host, []).get(host)!).push({ name: nameKey(r['目名']), code: reqMokuCode(r['目コード(原文)'] ?? ''), amt: amount(r['要求額_千円']) });
+      (byHost.get(host) ?? byHost.set(host, []).get(host)!).push({ name: nameKey(r['目名']), code: reqMokuClassCodes(r['目コード(原文)'] ?? '', special ? 'special' : 'general') ?? '', amt: amount(r['要求額_千円']) });
     }
   }
   const out = new Map<string, MokuRequest>();
@@ -315,16 +316,10 @@ export function requestOnlyMoku(rows: readonly LifecycleRequestOnlyRow[], detail
     if (r.req === null) continue;
     const id = sameYear.get(requestOnlyKouId(r)) ?? requestOnlyKouId(r);
     if (out.has(id)) throw new Error(`概算要求のみの項の目が重複: ${id}`);
-    if (r.kind === 'noBudget') {
-      const byHost = trend.get([r.y, r.acct, nameKey(r.min), nameKey(r.sub), nameKey(r.org), nameKey(r.name)].join('|'));
-      if (!byHost) { out.set(id, { m: [], noReq: true }); continue; }
-      const best = [...byHost.values()].reduce((a, b) => (b.reduce((s, x) => s + (x.amt ?? 0), 0) > a.reduce((s, x) => s + (x.amt ?? 0), 0) ? b : a));
-      out.set(id, { m: pairByName(best, []), noReq: false });
-    } else {
-      const d = details[[r.y, r.kind, r.acct, r.grp, r.min, r.sub, r.org, r.name].join('|')];
-      if (!d) throw new Error(`概算要求のみの項の詳細が無い: ${r.y} ${r.kind} ${r.name}`);
-      out.set(id, { m: d.m, noReq: d.noReq === 1 });
-    }
+    const byHost = trend.get([r.y, r.acct, nameKey(r.min), nameKey(r.sub), nameKey(r.org), nameKey(r.name)].join('|'));
+    if (!byHost) { out.set(id, { m: [], noReq: true }); continue; }
+    const best = [...byHost.values()].reduce((a, b) => (b.reduce((s, x) => s + (x.amt ?? 0), 0) > a.reduce((s, x) => s + (x.amt ?? 0), 0) ? b : a));
+    out.set(id, { m: pairByName(best, []), noReq: false });
   }
   return out;
 }

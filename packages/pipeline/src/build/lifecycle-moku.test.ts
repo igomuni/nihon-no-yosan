@@ -94,11 +94,11 @@ describe('buildLifecycleMoku', () => {
 describe('request-only 項', () => {
   const RK = '2027:general:request|内閣府|||新設費';
   const rk: LifecycleKou = { ...kou(RK), year: 2027, requestOnly: 'noBudget', seenIn: ['request'] };
-  const m: [string, string, number | null, number | null][] = [['職員基本給', '', 400, null], ['庁費', '', 90, null], ['不明', '', null, null]];
+  const m: [string, string, number | null, number | null][] = [['職員基本給', '95|016|2|11|1', 400, null], ['庁費', '', 90, null], ['不明', '', null, null]];
   const { data, stats } = buildLifecycleMoku({ datasetDir: tmp, sources: SOURCES, kous: [kou(GK), kou(SK), rk], request: new Map([...request, [RK, { m, noReq: false }]]) });
   it('makes a 目 of each request 目 with an amount, all marked as in the request book only, in the year of the 項', () => {
     const ns = data.nodes.filter(n => data.kous[n[0]] === RK);
-    expect(ns.map(n => [n[1], n[2], n[3], n[12], n[5], n[13]])).toEqual([[2027, '職員基本給', '', 400, null, MOKU_FLAG.requestOnly], [2027, '庁費', '', 90, null, MOKU_FLAG.requestOnly]]);
+    expect(ns.map(n => [n[1], n[2], n[3], n[12], n[5], n[13]])).toEqual([[2027, '職員基本給', '95|016|2|11|1', 400, null, MOKU_FLAG.requestOnly], [2027, '庁費', '', 90, null, MOKU_FLAG.requestOnly]]);
     expect(stats.requestOnlyKou).toBe(2);
     expect(data.years).toContain(2027);
     expect(data.requestYears).toContain(2027);
@@ -111,20 +111,20 @@ describe('request-only 項', () => {
 describe('requestOnlyMoku', () => {
   const row = (o: Partial<LifecycleRequestOnlyRow>): LifecycleRequestOnlyRow => ({ y: 2027, kind: 'noBudget', acct: 0, grp: '', min: '内閣府', sub: '', org: '本府', name: '新設費', req: 100, reqPrev: null, multiBook: false, publishers: [], ...o });
   const H = '年度,会計区分,所管,特別会計,勘定,組織,項名,項コード,事項名,主要経費目的別コード,目別コード,目名,目コード(原文),前年度予算額_千円,要求額_千円,行数,細分の合計を使った行,額の空き,要求書,PDF頁';
-  const line = (host: string, moku: string, amt: number) => `2027,一般,内閣府,,,本府,新設費,001,事項,95016,02,${moku},95016-2111-02-0000,,${amt},1,0,0,${host}__a,1`;
-  it('reads the 目 of a 項 without a budget book from the trend, using the book with the largest amount when the 項 is in several', () => {
-    const csv = [H, line('a.go.jp', '職員基本給', 400), line('a.go.jp', '庁費', 90), line('b.go.jp', '職員基本給', 10)].join('\n');
-    const out = requestOnlyMoku([row({})], {}, new Map([[2027, csv]]));
-    expect(out.get('2027:general:request|内閣府||本府|新設費')).toEqual({ m: [['職員基本給', '95016-02', 400, null], ['庁費', '95016-02', 90, null]], noReq: false });
+  const line = (year: number, host: string, moku: string, amt: number, code = '95016-2111-02-0000') => `${year},一般,内閣府,,,本府,新設費,001,事項,95016,02,${moku},${code},,${amt},1,0,0,${host}__a,1`;
+  it('reads the 目 of a 項, with the 分類コード made from the 要求書 code, using the book with the largest amount when the 項 is in several', () => {
+    const csv = [H, line(2027, 'a.go.jp', '職員基本給', 400), line(2027, 'a.go.jp', '庁費', 90, '95016-2123-09-0100'), line(2027, 'b.go.jp', '職員基本給', 10)].join('\n');
+    const out = requestOnlyMoku([row({})], new Map([[2027, csv]]));
+    expect(out.get('2027:general:request|内閣府||本府|新設費')).toEqual({ m: [['職員基本給', '95|016|2|11|1', 400, null], ['庁費', '95|016|2|12|3', 90, null]], noReq: false });
+  });
+  it('reads a 項 that did not match the 予算書 (reqOnly・zero) from the same CSV, and leaves the code empty for a form it cannot read', () => {
+    const csv = [H, line(2024, 'a.go.jp', '庁費', 50, '95016-111-09-0100')].join('\n');
+    const out = requestOnlyMoku([row({ kind: 'reqOnly', y: 2024, grp: '内閣府' })], new Map([[2024, csv]]));
+    expect(out.get('2024:general:request|内閣府||本府|新設費')).toEqual({ m: [['庁費', '', 50, null]], noReq: false });
   });
   it('marks a 項 without 目 lines as noReq, and puts a same-year pair on the 予算書 項', () => {
-    const out = requestOnlyMoku([row({}), row({ name: '別費' })], {}, new Map([[2027, H]]), new Map([['2027:general:request|内閣府||本府|別費', '2027:general:内閣府|本府|001|別費']]));
+    const out = requestOnlyMoku([row({}), row({ name: '別費' })], new Map([[2027, H]]), new Map([['2027:general:request|内閣府||本府|別費', '2027:general:内閣府|本府|001|別費']]));
     expect(out.get('2027:general:request|内閣府||本府|新設費')).toEqual({ m: [], noReq: true });
     expect(out.get('2027:general:内閣府|本府|001|別費')).toEqual({ m: [], noReq: true });
-  });
-  it('takes the 目 of a 項 that did not match the 予算書 from the 詳細 of the 概算要求と当初予算の差', () => {
-    const k = row({ kind: 'reqOnly', y: 2024, grp: '内閣府' });
-    const out = requestOnlyMoku([k], { '2024|reqOnly|0|内閣府|内閣府||本府|新設費': { j: [], m: [['庁費', '1-2', 50, null]] } }, new Map());
-    expect(out.get('2024:general:request|内閣府||本府|新設費')).toEqual({ m: [['庁費', '1-2', 50, null]], noReq: false });
   });
 });

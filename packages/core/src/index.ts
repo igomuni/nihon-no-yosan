@@ -24,6 +24,7 @@ export {
   mofKouKey,
   mofKouNameKey,
   mofMokuCode,
+  reqMokuClassCodes,
   reqMokuCode,
   type Account,
 } from './mof.ts';

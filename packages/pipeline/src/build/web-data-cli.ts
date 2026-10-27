@@ -71,7 +71,7 @@ const lifecycleMoku = buildLifecycleMoku({
   kous: lifecycle.kous,
   request: new Map([
     ...[...mof.mokuOfMofRow].map(([row, v]) => [kouIdOfMofRow.get(row) ?? fail(`予算書の項の行が無い: ${row}`), v] as const),
-    ...requestOnlyMoku(requestOnlyRows, mof.details, new Map([...Object.keys(detail.files)].flatMap(f => { const y = /^moku\/(\d{4})\.csv$/.exec(f); return y ? [[Number(y[1]), detail.files[f]!] as const] : []; })), sameYearPairsOf(lifecycle)),
+    ...requestOnlyMoku(requestOnlyRows, new Map([...Object.keys(detail.files)].flatMap(f => { const y = /^moku\/(\d{4})\.csv$/.exec(f); return y ? [[Number(y[1]), detail.files[f]!] as const] : []; })), sameYearPairsOf(lifecycle)),
   ]),
 });
 
