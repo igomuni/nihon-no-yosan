@@ -4,6 +4,8 @@ import {
   formatSen,
   lifecycleChanges,
   lifecycleLevels,
+  lifecycleNoDataNeighbor,
+  lifecycleSourcePresence,
   lifecycleStageStatuses,
   lifecycleUse,
   lifecycleValues,
@@ -65,10 +67,13 @@ function StageCard({ s }: { s: StageStatus }) {
 
 const EVIDENCE_LABEL: Record<LifecycleLinkEvidence, string> = {
   same_key: '同じ鍵（所管・組織・項コード・項名。特別会計は特別会計・勘定・項コード・項名。概算要求のみの項は、所属・項名）',
+  same_key_succession: '同じ鍵（所属は、金額の合計が一致する引き継ぎ先に読み替えた。項コード・項名が同じ）',
   same_name_other_code: '同じ所管・組織で項名が同じ（項コードが違う）',
   same_name_other_org: '項名が同じ（所管・組織が違う）',
   prev_amount_eq_revised: '次の年度の予算書の前年度予算額 = 前の年度の改予算額',
   prev_amount_eq_budget: '次の年度の前年度予算額 = 前の年度の政府案の額（補正が無い項。概算要求書の前年度予算額との比べ方も、これ）',
+  same_code_other_name: '同じ所管で、項コードが同じ（項名が違う。額が一致するときだけ）',
+  similar_name: '同じ所管で、項名が近い（額が一致するときだけ）',
 };
 const AMOUNT_LABEL: Record<LifecycleLinkAmount, string> = {
   eq_revised: '前年度予算額が、前の年度の改予算額と一致',
@@ -80,6 +85,7 @@ const AMOUNT_LABEL: Record<LifecycleLinkAmount, string> = {
 
 /** 年度をまたぐ対応。前の年度・次の年度の項との対応を、根拠と状態つきで並べる（対応先へ移れる） */
 function LinksSection({ kou, data, links, selfIndex, onNavigate }: { kou: LifecycleKou; data: LifecycleData; links: readonly LifecycleLink[]; selfIndex: number; onNavigate: (id: string) => void }) {
+  const presence = useMemo(() => lifecycleSourcePresence(data.kous), [data]);
   return (
     <section className="flex flex-col gap-2" aria-label="年度をまたぐ対応">
       <h3 className="font-semibold">年度をまたぐ対応</h3>
@@ -93,12 +99,12 @@ function LinksSection({ kou, data, links, selfIndex, onNavigate }: { kou: Lifecy
             <li key={n} className="flex flex-col gap-1 rounded border border-neutral-200 p-2 dark:border-neutral-700">
               <p className="flex flex-wrap items-center gap-1.5">
                 <span className="text-neutral-500">{dir}</span>
-                <LinkBadge status={l.status} />
+                <LinkBadge status={l.status} gap={l.status === 'UNRESOLVED' && lifecycleNoDataNeighbor(presence, data.years, kou, l.from === selfIndex ? 1 : -1)} />
                 {partner ? (
                   <button type="button" onClick={() => onNavigate(partner.id)} className="text-left font-medium text-blue-700 underline decoration-dotted underline-offset-2 hover:text-blue-900 dark:text-blue-400">
                     {partner.name}
                   </button>
-                ) : <span className="text-neutral-500">対応先の候補なし</span>}
+                ) : <span className="text-neutral-500">{l.status === 'UNRESOLVED' && lifecycleNoDataNeighbor(presence, data.years, kou, l.from === selfIndex ? 1 : -1) ? `FY${kou.year + (l.from === selfIndex ? 1 : -1)} に、この所管・会計の項が無い` : '対応先の候補なし'}</span>}
               </p>
               {partner && <p className="text-[11px] text-neutral-500">{kouTitle(partner)} · {partner.requestOnly ? '概算要求のみ（予算書の項コードなし）' : `項コード ${partner.code}`}</p>}
               {l.evidence.length > 0 && (

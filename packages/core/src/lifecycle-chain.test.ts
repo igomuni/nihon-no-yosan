@@ -25,6 +25,11 @@ describe('lifecycleChains', () => {
     expect(chainOf(5)).toEqual({ members: [5], before: 'ambiguous', after: 'none' });
   });
 
+  it('says nodata, not none, when the next year has no 項 at all of the same ministry', () => {
+    const k = [kou(2020, 'A'), { ...kou(2021, 'Z'), ministry: 'other' }];
+    expect(lifecycleChains(k, [link(0, -1, 'UNRESOLVED')], [2020, 2021])(0)).toEqual({ members: [0], before: 'edge', after: 'nodata' });
+  });
+
   it('stops at a resolved counterpart that is not unique', () => {
     const k = [kou(2020, 'A'), kou(2021, 'A'), kou(2021, 'A2')];
     const c = lifecycleChains(k, [link(0, 1, 'RESOLVED'), link(0, 2, 'RESOLVED')], [2020, 2021])(0);

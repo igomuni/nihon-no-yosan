@@ -7,10 +7,12 @@ import {
   lifecycleChainSpan,
   lifecycleChains,
   lifecycleCoverage,
+  lifecycleLinkGap,
   lifecycleLinkState,
   lifecycleLinksByKou,
   lifecyclePatternCounts,
   lifecycleRowAmounts,
+  lifecycleSourcePresence,
   filterJikouRows,
   jikouCounts,
   jikouIndex,
@@ -119,6 +121,7 @@ export function LifecyclePage() {
   }, [byKou]);
   const linksByKou = useMemo(() => lifecycleLinksByKou(data?.links ?? []), [data]);
   const coverage = useMemo(() => lifecycleCoverage(data?.kous ?? []), [data]);
+  const presence = useMemo(() => lifecycleSourcePresence(data?.kous ?? []), [data]);
   const chainOf = useMemo(() => lifecycleChains(data?.kous ?? [], data?.links ?? [], data?.years ?? []), [data]);
 
   // 事項（lifecycle/jikou.json.gz。項の一覧の「事項」列と、事項のタブが使う）は、項の一覧の表示を待たせず、後から読む。結果（索引か失敗）は、読み終えたときに入れる
@@ -135,7 +138,7 @@ export function LifecyclePage() {
   const jikouState = jikouResult === null ? 'loading' : 'index' in jikouResult ? 'ready' : 'error';
   const jikouCountOf = useMemo(() => (jikou ? jikouCounts(jikou) : null), [jikou]);
 
-  const years = data?.years ?? [];
+  const years = useMemo(() => data?.years ?? [], [data]);
   const activeYear = data ? (year !== null && years.includes(year) ? year : years[0]!) : null;
   // 年度・所管・会計・組織・項名で絞った項（値のある段階で絞る前）。段階ごとの件数は、この集合で数える
   const inYear = useMemo(() => (data && activeYear !== null ? data.kous.filter(k => k.year === activeYear) : []), [data, activeYear]);
@@ -152,12 +155,12 @@ export function LifecyclePage() {
   const list = useMemo(
     () => sortLifecycleRows(
       base
-        .map(({ k, i }) => { const chain = chainOf(i); const span = lifecycleChainSpan(data?.kous ?? [], chain); return { k, i, a: lifecycleRowAmounts(valuesOf.get(i) ?? {}), link: lifecycleLinkState(linksByKou.get(i)), chain, span, years: span.years, jikou: jikouCountOf?.get(k.id) ?? null }; })
+        .map(({ k, i }) => { const chain = chainOf(i); const span = lifecycleChainSpan(data?.kous ?? [], chain); return { k, i, a: lifecycleRowAmounts(valuesOf.get(i) ?? {}), link: lifecycleLinkState(linksByKou.get(i)), linkGap: lifecycleLinkGap(presence, years, data?.kous ?? [], i, linksByKou.get(i)), chain, span, years: span.years, jikou: jikouCountOf?.get(k.id) ?? null }; })
         .filter(({ k, link }) => matchesLifecyclePattern(k, filters) && matchesLifecycleLinks(link, filters)),
       sortKey,
       sortDir,
     ),
-    [base, data, chainOf, filters, valuesOf, linksByKou, jikouCountOf, sortKey, sortDir],
+    [base, data, chainOf, filters, valuesOf, linksByKou, jikouCountOf, presence, years, sortKey, sortDir],
   );
   // 事項の一覧: 選んだ年度の事項を、項の一覧と同じフィルタ（所管・会計・組織／勘定・項名）と事項名で絞る
   const kouById = useMemo(() => new Map((data?.kous ?? []).map(k => [k.id, k])), [data]);

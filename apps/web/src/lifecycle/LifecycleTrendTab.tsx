@@ -15,10 +15,13 @@ import { kouTitle, num, td, th } from './shared.ts';
 
 const SHORT_EVIDENCE: Record<LifecycleLinkEvidence, string> = {
   same_key: '同じ鍵',
+  same_key_succession: '同じ鍵（所属を引き継ぎ先に読み替え）',
   same_name_other_code: '同じ名前（項コードが違う）',
   same_name_other_org: '同じ名前（所管・組織が違う）',
   prev_amount_eq_revised: '前年度予算額 = 前年の改予算額',
   prev_amount_eq_budget: '前年度予算額 = 前年の政府案',
+  same_code_other_name: '同じ項コード（項名が違う）',
+  similar_name: '近い名前',
 };
 
 const cellAmount = (yen: number | undefined): string => (yen === undefined ? '—' : yen === 0 ? '0円' : formatSen(yen / 1000));
