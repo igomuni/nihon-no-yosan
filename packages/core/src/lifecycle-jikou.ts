@@ -40,7 +40,7 @@ export type JikouMeasure = 'request' | 'budget' | 'revised' | 'suppNet' | 'prev'
 export const JIKOU_MEASURES: readonly { key: JikouMeasure; label: string; hint: string }[] = [
   { key: 'request', label: '概算要求', hint: '概算要求書（総表）の事項の要求額。予算書の事項と、同じ項の中で名前でつないだもの。要求側の事項が読めた項だけ' },
   { key: 'budget', label: '政府案', hint: '当初予算（国会への提出時の政府案）の額' },
-  { key: 'revised', label: '補正後', hint: '改予算額。補正の事項の記録がある事項だけ（FY2024 まで）' },
+  { key: 'revised', label: '補正後', hint: '改予算額。補正の事項の記録がある事項だけ' },
   { key: 'suppNet', label: '補正の差引額', hint: '補正の差引額（追加額 + 修正減少額）。補正が複数回の年度は、その事項が載る最後の回の値' },
   { key: 'prev', label: '前年度予算額', hint: '予算書が載せる前年度予算額' },
 ];

@@ -13,7 +13,7 @@ node packages/pipeline/src/build/mof-archive-cli.ts build <zip のディレク�
 npm run build:data
 ```
 
-- zip のディレクトリには `DL{年}{帳票}.zip` が並ぶ。置き場は `data/dataset/mof-history-v0/`（git に入れない。基準データと同じ扱い）。git には、入力の記録 `datasets/mof-history-v0/inputs.json`（zip 44 本）・`jikou-inputs.json`（当初予算の XML の集合 12 帳票）・`jikou-hosei-inputs.json`（補正予算の XML の集合 24 帳票）と、出力全ファイルの SHA-256 `manifest.json`（138 ファイル）を入れる。
+- zip のディレクトリには `DL{年}{帳票}.zip` が並ぶ。置き場は `data/dataset/mof-history-v0/`（git に入れない。基準データと同じ扱い）。git には、入力の記録 `datasets/mof-history-v0/inputs.json`（zip 44 本）・`jikou-inputs.json`（当初予算の XML の集合 12 帳票）・`jikou-hosei-inputs.json`（補正予算の XML の集合 28 帳票）と、出力全ファイルの SHA-256 `manifest.json`（138 ファイル）を入れる。
 - 実装は `packages/pipeline/src/build/mof-archive.ts`。基準データの `mof-archive/` を作った処理と同じ規則（原本の形のまま、`source_row` を足すだけ。項は目を項のキーで集計。歳出の表は見出しに `主要経費別分類コード` を持つ csv）。
 - 読む帳票: 当初予算 `11001`（一般）・`12001`（特別）、補正予算 `21xxx`（一般）・`22xxx`（特別）（`xxx` は回）、決算 `77001`（一般）・`78001`（特別）。政府関係機関の帳票（`13001`・`23001`・`76001`）は読まない。歳入の表（`a.csv`）は読まない。
 - 出力は `mof-archive/{年度}/`。補正が年度に複数回あるときは、第 1 回が `kou-{general,special}-hosei.csv`・`moku-…`、第 2 回以降が `…-hosei-2.csv`、`…-hosei-3.csv`。
@@ -75,15 +75,18 @@ node packages/pipeline/src/build/mof-jikou-cli.ts build  <XML の置き場> data
 - 件数の記録（`jikou-inputs.json`）は、parser が最初に読んだ結果で、独立に確かめたものではない。「項との突き合わせ」が、独立の確認。
 - 事項の名前が年度をまたいで同じ事業を指すかは、確かめていない（事項に年度をまたぐ対応は作っていない）。
 
-## 補正予算の事項の CSV（FY2017〜FY2024）
+## 補正予算の事項の CSV（FY2017〜FY2026）
 
 財務省の予算書【XML版】の補正予算（一般会計 `{年}21xxx` の「組織別事項別内訳」、特別会計 `{年}22xxx` の「歳出事項別内訳」）から、事項ごとの補正の額の CSV を作る。補正が年度に複数回あるときは、回ごとのファイル（第 2 回以降は `-2`、`-3`）。
 
 ```bash
-node packages/pipeline/src/build/mof-jikou-hosei-cli.ts record <XML の置き場> datasets/mof-history-v0/jikou-hosei-inputs.json 2017 2018 2019 2020 2021 2022 2023 2024
-node packages/pipeline/src/build/mof-jikou-hosei-cli.ts build  <XML の置き場> datasets/mof-history-v0/jikou-hosei-inputs.json data/dataset/mof-history-v0 --reference=data/dataset/reference-v0 2017 2018 2019 2020 2021 2022 2023 2024
+node packages/pipeline/src/build/mof-jikou-hosei-cli.ts record <XML の置き場> datasets/mof-history-v0/jikou-hosei-inputs.json 2017 2018 2019 2020 2021 2022 2023 2024 2025 2026
+node packages/pipeline/src/build/mof-jikou-hosei-cli.ts build  <XML の置き場> datasets/mof-history-v0/jikou-hosei-inputs.json data/dataset/mof-history-v0 --reference=data/dataset/reference-v0 2017 2018 2019 2020 2021 2022 2023 2024 2025 2026
 ```
 
+- FY2025・FY2026 の XML（一般・特別、補正予算第 1 号。計 449 件、約 11.8 MB）は、`https://www.bb.mof.go.jp/server/{2025,2026}/xml/` から取得した（取得日 2026-10-27。置き場は `data/download/mof-xml/mof_{年}/xml/`）。帳票は `202521001`（一般 283 件）・`202522001`（特別 134 件）・`202621001`（一般 26 件）・`202622001`（特別 6 件）で、目次に載る XML の全件がサイトにあることを、取得前に確かめた。`jikou-hosei-inputs.json` に、目次と XML の集合の SHA-256 を足した。
+- FY2025・FY2026 の補正の事項の CSV は、手元の `data/dataset/mof-history-v0/` に作った。git の `manifest.json`（138 ファイル）と `release.json`（公開した tar.gz）は、FY2024 までの版のまま（更新は、データセットを出し直すときに行う）。
+- **FY2026 の特別会計は、事項の表が無い**（`202622001` の 6 件は、表紙・総目録・予算目録・参照書目録・予算総則補正・国債整理基金の年度末基金残高表で、「歳出事項別内訳」が無い）。基準データにも、この回の特別会計の項の補正の CSV が無い。事項の CSV は作らない（CLI は、事項の表も項の CSV も無い回に限り、その旨を出力して読み飛ばす）。歳出の補正が無いためと推測するが、確かめていない。
 - 出力は `mof-archive/{年度}/jikou-{general,special}-hosei{,-2,-3}.csv`。FY2023・FY2024 は、基準データ（`reference-v0`）に補正の事項が無いので、このデータセット（`mof-history-v0`）に、補正の事項の CSV だけを置く。
 - 列: 当初予算の事項の CSV と同じ識別の列（所管・組織／特別会計・勘定・項コード・項名・事項名・分類コード）、額 5 つ（成立予算額・追加額・修正減少額・差引額・改予算額。千円）、`行の種類`、`source_file`・`source_row`・`source_page`。年度の文字は、補正の見出しのまま（FY2019 は「令和元年度」。当初予算は「平成31年度」）。
 - 実装は `mof-xml-hosei.ts`（parser）、`mof-jikou-hosei.ts`、`mof-jikou-hosei-cli.ts`。想定外の構造は止まる。
@@ -116,7 +119,7 @@ node packages/pipeline/src/build/mof-jikou-hosei-cli.ts build  <XML の置き場
 node packages/pipeline/src/build/jikou-links-cli.ts data/dataset/reference-v0 data/dataset/mof-history-v0 <出力ディレクトリ>   # jikou-nodes.csv、jikou-links.csv、jikou-links-summary.json
 ```
 
-- 入力: 事項の CSV（当初予算。FY2017〜FY2022 は過去年度のデータセット、FY2023〜FY2026 は基準データ。FY2025 は国会への提出時の版）と、補正の事項の CSV（補正後の額。FY2017〜FY2024。補正が複数回あるときは、その事項が載る最後の回）。FY2025・FY2026 には補正後の額が無い（`prev_amount_eq_revised` は、前の年度が FY2024 以前の組だけ）。
+- 入力: 事項の CSV（当初予算。FY2017〜FY2022 は過去年度のデータセット、FY2023〜FY2026 は基準データ。FY2025 は国会への提出時の版）と、補正の事項の CSV（補正後の額。FY2017〜FY2026。補正が複数回あるときは、その事項が載る最後の回。FY2026 の特別会計は事項の表が無い）。
 - 実装は core の `jikou-links.ts`（純粋な関数とテスト）、`packages/pipeline/src/build/jikou-links.ts`（読み込み）、`jikou-links-cli.ts`。名前は `nameKey` で揃える。
 - **鍵**: 一般会計は 所管|組織|項コード|項名|事項名、特別会計は 特別会計|勘定|組織|項コード|項名|事項名。特別会計の所管は、目次の表記が年度で変わる（例: 関係府省の列挙が増える）ので鍵に入れない（入れると FY2025 の同じ鍵が 300 件、入れないと 330 件）。どちらの鍵も、各年度の中で一意（重複 0）。
 - **対応の探し方**（`jikou-links.ts` の冒頭にも書いた）:

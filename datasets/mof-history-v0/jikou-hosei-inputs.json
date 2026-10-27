@@ -217,6 +217,42 @@
    "targetFiles": 23,
    "notTargetFiles": 123,
    "records": 268
+  },
+  "202521001": {
+   "documentId": "202521001",
+   "menuSha256": "1f5681e04ad796435b983113a4a2b6452b92b24bcb60653504093032b9098501",
+   "xmlFiles": 283,
+   "xmlSetSha256": "ed680a18d94ab9183a0dbc6782d1a4b72706070bf39fa7485e2fb5713366b20f",
+   "targetFiles": 94,
+   "notTargetFiles": 189,
+   "records": 1231
+  },
+  "202522001": {
+   "documentId": "202522001",
+   "menuSha256": "b657be5e1edb0515082f986c6743793dd468e5ef3b1ac31e0ab93b92da94e4d3",
+   "xmlFiles": 134,
+   "xmlSetSha256": "ee443374f3c4b6c1e72fea5492e55a03e6e9c6a70f8f72af39e0eacc88efd4a6",
+   "targetFiles": 21,
+   "notTargetFiles": 113,
+   "records": 262
+  },
+  "202621001": {
+   "documentId": "202621001",
+   "menuSha256": "fdd1bcb360b85c29d6177e480a88211b7e5aea8ce95a4140511753c30355d207",
+   "xmlFiles": 26,
+   "xmlSetSha256": "b3caeaf5b6906ff6d1a7b780a66b8aa575a3530f00426c2154effa81196987f6",
+   "targetFiles": 2,
+   "notTargetFiles": 24,
+   "records": 55
+  },
+  "202622001": {
+   "documentId": "202622001",
+   "menuSha256": "f4263258a10eebf0aed4097601ef67fbe98fdd139806ded5cf0e938814fcab6b",
+   "xmlFiles": 6,
+   "xmlSetSha256": "79d5681829babe00ed56300fb05d6912011f3641681a9d9f4c9350e5f58a0266",
+   "targetFiles": 0,
+   "notTargetFiles": 6,
+   "records": 0
   }
  }
 }

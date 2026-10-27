@@ -60,6 +60,8 @@ if (mode === 'record') {
         const kouName = name.replace('jikou-', 'kou-');
         const own = path.join(outDir, 'mof-archive', y, kouName);
         const kouPath = fs.existsSync(own) ? own : reference ? path.join(reference, 'mof-archive', y, kouName) : '';
+        // 事項の表が XML に 1 行も無く、項の CSV も無い回（FY2026 の特別会計: 予算総則補正と参照書だけ）は、突き合わせる相手も出す行も無い。読み飛ばしたことを残す
+        if (b.record.records === 0 && (!kouPath || !fs.existsSync(kouPath))) { console.log(`${y} ${a} 第${round}回: 事項の表が無く、項の CSV も無いので、CSV を作らない`); continue; }
         if (!kouPath || !fs.existsSync(kouPath)) throw new Error(`STOP: ${y} の ${kouName} が無い（--reference が要る）`);
         const kr = parseCsv(fs.readFileSync(kouPath, 'utf8').replace(/^\uFEFF/, ''));
         const kh = kr[0]!;

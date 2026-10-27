@@ -2,7 +2,7 @@
  * 事項（当初予算）の年度をまたぐ対応と、事項の継続年数。仕様: docs/guides/mof-history.md（事項の年度をまたぐ対応）。
  *
  * 入力: 事項の CSV（`mof-archive/{年度}/jikou-{general,special}.csv`。FY2017〜FY2022 は過去年度のデータセット、FY2023〜FY2026 は基準データ。FY2025 は国会への提出時の版）と、
- * 補正の事項の CSV（`jikou-{general,special}-hosei{,-2,-3}.csv`。FY2017〜FY2024。補正後の額に使う）。名前は `nameKey` で揃える。
+ * 補正の事項の CSV（`jikou-{general,special}-hosei{,-2,-3}.csv`。FY2017〜FY2026。FY2026 の特別会計は事項の表が無く、ファイルが無い。補正後の額に使う）。名前は `nameKey` で揃える。
  */
 import { buildJikouLinks, jikouLinkKeyOf, jikouRunLengths, nameKey, parseCsv, type JikouLink, type JikouNode } from '@nihon-no-yosan/core';
 import * as fs from 'node:fs';
@@ -71,7 +71,7 @@ export function buildJikouLinkData(datasetDir: string, historyDir?: string): Jik
       }));
       // 補正後の額: 補正が複数回あるときは、その事項が載る最後の回
       const extra = new Map<string, JikouNode>();
-      if (historyDir && year <= 2024) {
+      if (historyDir) {
         const byKey = new Map(made.map(n => [jikouLinkKeyOf(n), n]));
         for (let round = 1; ; round++) {
           const f = path.join(historyDir, 'mof-archive', String(year), `jikou-${account}-hosei${round > 1 ? `-${round}` : ''}.csv`);
