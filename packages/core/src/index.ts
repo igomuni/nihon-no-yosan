@@ -116,6 +116,7 @@ export {
   type PageResult,
   type TocEntry,
 } from './request-toc.ts';
+export { lifecycleLinkGap, lifecycleNoDataNeighbor, lifecycleSourceOf, lifecycleSourcePresence } from './lifecycle-gap.ts';
 export { LIFECYCLE_CHAIN_END_LABEL, lifecycleChainSpan, lifecycleChains, type LifecycleChain, type LifecycleChainEnd } from './lifecycle-chain.ts';
 export { buildJikouLinks, jikouLinkKeyOf, jikouRunLengths, linkExtrasByKou, linkSuppOnly, type JikouLink, type JikouLinkAmount, type JikouLinkEvidence, type JikouLinkStatus, type JikouNode } from './jikou-links.ts';
 export { REDACTED_MIN, SOLID_DARK, kouOfPage, solidDark, type KouPageRow, type PageKouMatch, type SolidDark } from './redacted-pages.ts';

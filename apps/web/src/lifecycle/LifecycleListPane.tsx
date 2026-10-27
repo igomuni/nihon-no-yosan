@@ -34,7 +34,7 @@ const COLS: { key: LifecycleSortKey; label: string; left?: boolean; title?: stri
   { key: 'name', label: '項名', left: true },
   { key: 'jikou', label: '事項', title: '項の下の事項の数（その年度。概算要求・予算書の当初予算・補正の事項を合わせた数）。「—」は事項が無い（0 とは別）。決算は事項の単位が無い' },
   { key: 'stages', label: '段階', left: true, title: '値がある段階。要 = 概算要求、政 = 政府案、補 = 補正、決 = 決算（薄い字は、現行のデータに値が無い）' },
-  { key: 'links', label: '対応', left: true, title: '年度をまたぐ項の対応。確定 = 同じ鍵などで 1 対 1、未確定 = 候補はあるが根拠がそろわない、候補なし = 相手の年度に候補が無い（項が無くなった・新しくできたとは限らない）' },
+  { key: 'links', label: '対応', left: true, title: '年度をまたぐ項の対応。確定 = 同じ鍵などで 1 対 1、未確定 = 候補はあるが根拠がそろわない、候補なし = 相手の年度に候補が無い、所管なし = 相手の年度に、この所管・会計の項が 1 つも無い（項が無くなった・新しくできたとは限らない）' },
   { key: 'span', label: '確認済み年度', left: true, title: '確定した対応（同じ鍵、または名前と額の根拠がそろった 1 対 1）でたどれた年度の範囲と年数。候補・候補なしでは進まない。? は、その先に未確定の候補があること。事業が同じとは限らない' },
   { key: 'request', label: '概算要求', title: '要求額' },
   { key: 'budget', label: '政府案', title: '政府案の額' },
@@ -44,7 +44,8 @@ const COLS: { key: LifecycleSortKey; label: string; left?: boolean; title?: stri
 ];
 
 /** 対応の状態の表示。未確定・候補なしは目立たせすぎず、確定との違いが分かる程度にする */
-export function LinkBadge({ status }: { status: LifecycleLinkStatus }) {
+export function LinkBadge({ status, gap = false }: { status: LifecycleLinkStatus; /** 候補なしのうち、隣の年度に、この所管・会計の項が 1 つも無い（所管なし。項が無くなった・新しくできたとは言えない） */ gap?: boolean }) {
+  if (status === 'UNRESOLVED' && gap) return <span title="隣の年度に、この所管・会計の項が 1 つも無い（新設・廃止、またはその書が基準データに入っていない可能性がある）。項が無くなった・新しくできたとは言えない" className="rounded-full border border-dashed border-neutral-400 px-1.5 text-[10px] text-neutral-500">所管なし</span>;
   const [label, cls] = status === 'RESOLVED' ? ['確定', 'border-emerald-600 text-emerald-700 dark:text-emerald-400'] : status === 'AMBIGUOUS' ? ['未確定', 'border-amber-600 text-amber-700 dark:text-amber-400'] : ['候補なし', 'border-neutral-400 text-neutral-500'];
   return <span className={`rounded-full border px-1.5 text-[10px] ${cls}`}>{label}</span>;
 }
@@ -79,7 +80,7 @@ function Amount({ yen }: { yen: number | undefined }) {
 
 export function LifecycleListPane({ items, notice, jikouLoading, sortKey, sortDir, onSort, selectedId, onSelect, widths, onWidthsChange }: {
   /** 絞り込み・並べ替え済み */
-  items: readonly { k: LifecycleKou; a: LifecycleRowAmounts; link: LifecycleLinkStatus | null; chain: LifecycleChain; span: { from: number; to: number; years: number }; jikou: JikouCount | null }[];
+  items: readonly { k: LifecycleKou; a: LifecycleRowAmounts; link: LifecycleLinkStatus | null; chain: LifecycleChain; span: { from: number; to: number; years: number }; jikou: JikouCount | null; linkGap: boolean }[];
   /** 一覧の代わりに出す文（事項名で絞るのに、事項のデータが届いていないとき）。無ければ null */
   notice: string | null;
   /** 事項のデータ（`lifecycle/jikou.json.gz`）を読み込み中。このあいだ、事項の列は「…」 */
@@ -149,7 +150,7 @@ export function LifecycleListPane({ items, notice, jikouLoading, sortKey, sortDi
             </tr>
           </thead>
           <tbody>
-            {shown.map(({ k, a, link, chain, span, jikou }) => {
+            {shown.map(({ k, a, link, linkGap, chain, span, jikou }) => {
               const selected = k.id === selectedId;
               return (
                 <tr
@@ -171,7 +172,7 @@ export function LifecycleListPane({ items, notice, jikouLoading, sortKey, sortDi
                       <span key={s} className={k.seenIn.includes(s) ? 'text-emerald-700 dark:text-emerald-400' : 'text-neutral-300 dark:text-neutral-600'}>{BADGE[s]}</span>
                     ))}
                   </td>
-                  <td className="whitespace-nowrap px-2 py-1 text-left">{link === null ? '' : <LinkBadge status={link} />}</td>
+                  <td className="whitespace-nowrap px-2 py-1 text-left">{link === null ? '' : <LinkBadge status={link} gap={linkGap} />}</td>
                   <SpanCell chain={chain} span={span} />
                   <Amount yen={a.request} />
                   <Amount yen={a.budget} />

@@ -1,4 +1,5 @@
 import type { LifecycleKou } from './lifecycle.ts';
+import { lifecycleNoDataNeighbor, lifecycleSourcePresence } from './lifecycle-gap.ts';
 import type { LifecycleLink } from './lifecycle-links.ts';
 
 /**
@@ -6,8 +7,8 @@ import type { LifecycleLink } from './lifecycle-links.ts';
  * 仕様: docs/guides/budget-lifecycle.md（年度推移）。確定した対応が 1 つだけのときだけ進む。名前が似ているだけの候補（`AMBIGUOUS`）・候補なし（`UNRESOLVED`）では進まない（補完しない）。
  */
 
-/** たどれなくなった理由。`edge` = データの最初・最後の年度に着いた（その先の年度は、このデータに無い）、`none` = 相手の年度に候補が無い、`ambiguous` = 候補はあるが確定でない、`multiple` = 確定した相手が複数 */
-export type LifecycleChainEnd = 'edge' | 'none' | 'ambiguous' | 'multiple';
+/** たどれなくなった理由。`edge` = データの最初・最後の年度に着いた（その先の年度は、このデータに無い）、`nodata` = 相手の年度に、その所管・会計の項が 1 つも無い（新設・廃止、またはその書が基準データに入っていない可能性。`lifecycle-gap.ts`）、`none` = 相手の年度に候補が無い、`ambiguous` = 候補はあるが確定でない、`multiple` = 確定した相手が複数 */
+export type LifecycleChainEnd = 'edge' | 'nodata' | 'none' | 'ambiguous' | 'multiple';
 
 export interface LifecycleChain {
   /** 同じ項と確認できた年度の項（`kous` の添字）。年度の古い順。選んだ項を含む */
@@ -30,25 +31,26 @@ export function lifecycleChains(kous: readonly LifecycleKou[], links: readonly L
     }
   }
   const first = years[0], last = years[years.length - 1];
-  const step = (m: Map<number, Side>, i: number, edgeYear: number | undefined): { to: number } | { end: LifecycleChainEnd } => {
+  const presence = lifecycleSourcePresence(kous);
+  const step = (m: Map<number, Side>, i: number, edgeYear: number | undefined, dir: 1 | -1): { to: number } | { end: LifecycleChainEnd } => {
     if (kous[i]!.year === edgeYear) return { end: 'edge' };
     const s = m.get(i);
-    if (!s || (s.resolved.length === 0 && !s.ambiguous)) return { end: 'none' };
+    if (!s || (s.resolved.length === 0 && !s.ambiguous)) return { end: lifecycleNoDataNeighbor(presence, years, kous[i]!, dir) ? 'nodata' : 'none' };
     if (s.resolved.length === 1) return { to: s.resolved[0]! };
     return { end: s.resolved.length > 1 ? 'multiple' : 'ambiguous' };
   };
   /** 前（または次）の年度へ、確定した相手がちょうど 1 つの間たどる。たどった添字（近い順）と、止まった理由 */
-  const walk = (m: Map<number, Side>, from: number, edgeYear: number | undefined): { ids: number[]; end: LifecycleChainEnd } => {
+  const walk = (m: Map<number, Side>, from: number, edgeYear: number | undefined, dir: 1 | -1): { ids: number[]; end: LifecycleChainEnd } => {
     const ids: number[] = [];
     for (let i = from; ;) {
-      const r = step(m, i, edgeYear);
+      const r = step(m, i, edgeYear, dir);
       if ('end' in r) return { ids, end: r.end };
       ids.push(r.to);
       i = r.to;
     }
   };
   return index => {
-    const back = walk(prev, index, first), fwd = walk(next, index, last);
+    const back = walk(prev, index, first, -1), fwd = walk(next, index, last, 1);
     return { members: [...back.ids.reverse(), index, ...fwd.ids], before: back.end, after: fwd.end };
   };
 }
@@ -61,6 +63,7 @@ export function lifecycleChainSpan(kous: readonly LifecycleKou[], chain: Lifecyc
 
 export const LIFECYCLE_CHAIN_END_LABEL: Record<LifecycleChainEnd, string> = {
   edge: 'データの最初・最後の年度',
+  nodata: '隣の年度に、この所管・会計の項が 1 つも無い',
   none: '相手の年度に候補なし',
   ambiguous: '候補はあるが未確定',
   multiple: '確定した相手が複数',
