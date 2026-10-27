@@ -58,7 +58,7 @@ export function Marks({ n }: { n: LifecycleMokuNode }) {
     <>
       {n[13] & MOKU_FLAG.settlePart ? <span className="ml-1 rounded bg-neutral-100 px-1 text-[10px] text-neutral-500 dark:bg-neutral-800" title="決算の共管別の行">共管: {part}</span> : null}
       {n[13] & MOKU_FLAG.settleSplit ? <span className="ml-1 rounded bg-neutral-100 px-1 text-[10px] text-neutral-500 dark:bg-neutral-800" title="決算は共管の組織ごとの行に分かれている">決算は共管別</span> : null}
-      {n[13] & MOKU_FLAG.requestOnly ? <span className="ml-1 rounded bg-neutral-100 px-1 text-[10px] text-neutral-500 dark:bg-neutral-800" title="概算要求書にだけある目">要求のみ</span> : null}
+      {n[13] & MOKU_FLAG.requestOnly ? <span className="ml-1 rounded bg-neutral-100 px-1 text-[10px] text-neutral-500 dark:bg-neutral-800" title="概算要求書にだけある目（予算書に、同じ名前の目が無い。項が予算書に無い場合を含む）">要求のみ</span> : null}
       {n[13] & MOKU_FLAG.nameOnly ? <span className="ml-1 text-[10px] text-neutral-400" title="段階の間で分類コードが違い、目名だけで結んだ">名前</span> : null}
     </>
   );
@@ -213,8 +213,8 @@ export function LifecycleMokuTab({ kou, chain, kous, valuesOf, moku, loading, fa
         <h2 className="text-base font-semibold">{kou.name}</h2>
         <ul className="mt-1 list-disc space-y-0.5 pl-4 text-[11px] text-neutral-500">
           {!hasYear && <li>この年度の目は、データに無い（予算書が無い年度）</li>}
-          {hasYear && rows.length === 0 && <li>この項の目は、データに無い{kou.requestOnly ? '（概算要求書にだけある項。概算要求書の目は、まだ入れていない）' : ''}</li>}
-          {kou.requestOnly ? null : data.requestYears.includes(kou.year)
+          {hasYear && rows.length === 0 && <li>この項の目は、データに無い{kou.requestOnly ? '（概算要求書に、目の明細が無い、または読めていない）' : ''}</li>}
+          {kou.requestOnly ? <li>概算要求書にだけある項。目はすべて概算要求書の目（予算書の目・補正・決算は無い）</li> : data.requestYears.includes(kou.year)
             ? <li>概算要求の目の取れ方: {coverage ? MOKU_REQUEST_COVERAGE_LABEL[coverage] : '概算要求書の項と突合できていない項'}</li>
             : <li>この年度の概算要求の目は、データに無い</li>}
           {!data.suppYears.includes(kou.year) && <li>この年度の補正の書は、データに無い</li>}

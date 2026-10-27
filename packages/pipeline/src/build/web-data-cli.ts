@@ -20,7 +20,7 @@ import { buildBudgetRequestJikouYoukyu } from './jikou-youkyu.ts';
 import { buildJikouLinkData } from './jikou-links.ts';
 import { buildLifecycle, lifecycleRequestOnlyRows, lifecycleSources, sameYearPairsOf } from './lifecycle.ts';
 import { buildLifecycleJikou, mofRowKouIds, requestOnlyJikou } from './lifecycle-jikou.ts';
-import { buildLifecycleMoku } from './lifecycle-moku.ts';
+import { buildLifecycleMoku, requestOnlyMoku } from './lifecycle-moku.ts';
 import { buildBudgetRequestMofUi, mofUiMatchesFromDataset } from './mof-ui.ts';
 import { buildBudgetRequestTrend, matchesFromDataset } from './trend.ts';
 import { buildBudgetRequestTrendDetail } from './trend-detail.ts';
@@ -69,7 +69,10 @@ const lifecycleMoku = buildLifecycleMoku({
   historyDir,
   sources: lifecycleSources(historyDir),
   kous: lifecycle.kous,
-  request: new Map([...mof.mokuOfMofRow].map(([row, v]) => [kouIdOfMofRow.get(row) ?? fail(`予算書の項の行が無い: ${row}`), v])),
+  request: new Map([
+    ...[...mof.mokuOfMofRow].map(([row, v]) => [kouIdOfMofRow.get(row) ?? fail(`予算書の項の行が無い: ${row}`), v] as const),
+    ...requestOnlyMoku(requestOnlyRows, mof.details, new Map([...Object.keys(detail.files)].flatMap(f => { const y = /^moku\/(\d{4})\.csv$/.exec(f); return y ? [[Number(y[1]), detail.files[f]!] as const] : []; })), sameYearPairsOf(lifecycle)),
+  ]),
 });
 
 const outputs: [string, Buffer][] = [

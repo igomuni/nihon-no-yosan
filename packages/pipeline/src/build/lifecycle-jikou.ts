@@ -170,7 +170,7 @@ export function buildLifecycleJikou(
 }
 
 /** 概算要求にだけある項（`LifecycleKou.id`。鍵は `lifecycle.ts` と同じ）。要求額が読めない行は、項にならない */
-const requestOnlyKouId = (r: LifecycleRequestOnlyRow): string => `${r.y}:${r.acct === 0 ? 'general' : 'special'}:${['request', r.min, r.sub, r.org, r.name].join('|')}`;
+export const requestOnlyKouId = (r: LifecycleRequestOnlyRow): string => `${r.y}:${r.acct === 0 ? 'general' : 'special'}:${['request', r.min, r.sub, r.org, r.name].join('|')}`;
 
 /**
  * 概算要求にだけある項の、要求側の事項。予算書に突合できなかった項（`reqOnly`・`zero`）は `mof-ui` の詳細の行（`mofRowKey`）から、予算書が基準データに無い年度の項（`noBudget`）は

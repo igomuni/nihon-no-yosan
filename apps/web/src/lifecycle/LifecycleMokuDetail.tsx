@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { MOKU_FLAG, MOKU_REQUEST_COVERAGE_LABEL, mokuFlow, mokuMeasure, mokuSettleNote, mokuSuppNote, mokuValue, type LifecycleKou, type MokuIndex } from '@nihon-no-yosan/core';
+import { MOKU_FLAG, MOKU_REQUEST_COVERAGE_LABEL, mokuFlow, mokuMeasure, mokuSettleNote, mokuSpan, mokuSuppNote, mokuValue, type LifecycleKou, type MokuIndex } from '@nihon-no-yosan/core';
 import { TrendChart, type TrendPoint } from './charts.tsx';
 import { Cell, Marks, YEAR_COLS } from './LifecycleMokuTab.tsx';
 import { kouTitle, td, th } from './shared.ts';
@@ -42,15 +42,15 @@ export function LifecycleMokuDetail({ moku, loading, failed, node, kouOf, chainK
   });
   const yearNode = (y: number): number | null => flow.find(f => flowYear(f.kouId) === y)?.node ?? null;
   const goYear = (y: number): void => { const m = yearNode(y); if (m !== null && m !== node) onSelectNode(m); };
-  const first = flow.length > 0 ? flowYear(flow[0]!.kouId) : n[1];
-  const last = flow.length > 0 ? flowYear(flow[flow.length - 1]!.kouId) : n[1];
+  // 確認済み年度は、一覧の列と同じ（同じ目が続けて見つかった範囲）
+  const span = mokuSpan(moku, node, chainKouIds);
   return (
     <div className="flex flex-col gap-5 p-4 text-xs">
       <div>
         <p className="text-[11px] text-neutral-500">{kou ? `${kouTitle(kou)} › ${kou.name}` : ''} · FY{n[1]}</p>
         <h2 className="text-base font-semibold">{n[2]}<Marks n={n} /></h2>
         <p className="mt-0.5 text-[11px] text-neutral-500">
-          確認済みの年度: <b>FY{first}{first === last ? '' : `〜FY${last}`}</b>（{flow.length} 年。項の確定した対応でたどった年度）
+          確認済みの年度: <b>FY{span.from}{span.from === span.to ? '' : `〜FY${span.to}`}</b>（{span.years} 年。項の確定した対応でたどった年度のうち、この目が続けて見つかった範囲）
           {n[3] && <> · 分類コード: <span className="tabular-nums">{n[3].split('|').join('-')}</span></>}
           {part && <> · 決算の共管: {part}</>}
         </p>
@@ -119,9 +119,9 @@ export function LifecycleMokuDetail({ moku, loading, failed, node, kouOf, chainK
         <ul className="list-disc space-y-0.5 pl-4 text-neutral-600 dark:text-neutral-300">
           {suppWhy && <li>補正: {suppWhy}</li>}
           {settleWhy && <li>決算: {settleWhy}</li>}
-          {n[13] & MOKU_FLAG.requestOnly ? <li>概算要求書にだけある目（予算書の目に、名前で結べなかった）。名前の違う予算書の目と同じものかは、確かめていない</li> : null}
+          {n[13] & MOKU_FLAG.requestOnly ? <li>概算要求書にだけある目（予算書に、同じ名前の目が無い。項が予算書に無い場合を含む）。名前の違う予算書の目と同じものかは、確かめていない</li> : null}
           {n[13] & MOKU_FLAG.nameOnly ? <li>段階の間で分類コードが違い、目名だけで結んだ（その項で、この目名の目が 1 つだけ）</li> : null}
-          {data.requestYears.includes(n[1]) && <li>概算要求の目の取れ方（この項）: {coverage ? MOKU_REQUEST_COVERAGE_LABEL[coverage] : '概算要求書の項と突合できていない項'}</li>}
+          {data.requestYears.includes(n[1]) && <li>概算要求の目の取れ方（この項）: {coverage ? MOKU_REQUEST_COVERAGE_LABEL[coverage] : kou?.requestOnly ? '概算要求書にだけある項（目はすべて概算要求書の目）' : '概算要求書の項と突合できていない項'}</li>}
           {!data.requestYears.includes(n[1]) && <li>この年度の概算要求の目は、データに無い</li>}
         </ul>
       </section>

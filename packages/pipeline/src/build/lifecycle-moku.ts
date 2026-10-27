@@ -13,14 +13,18 @@ import * as path from 'node:path';
 import {
   MOKU_FLAG,
   nameKey,
+  pairByName,
   readCsv,
+  reqMokuCode,
+  type BudgetRequestMofDetail,
   type LifecycleKou,
   type LifecycleMokuData,
   type LifecycleMokuNode,
   type MokuRequestCoverage,
   type Rec,
 } from '@nihon-no-yosan/core';
-import type { LifecycleSource } from './lifecycle.ts';
+import type { LifecycleRequestOnlyRow, LifecycleSource } from './lifecycle.ts';
+import { requestOnlyKouId } from './lifecycle-jikou.ts';
 
 /** 予算書の項に対応する概算要求の目（`mof-ui.ts` の詳細の `m`: [名前, 目コード, 要求額, 予算書の額]。千円）。`noReq` = 要求側の明細が読めていない */
 export interface MokuRequest {
@@ -38,6 +42,8 @@ export interface LifecycleMokuStats {
   suppOnly: number;
   settleOnly: number;
   requestOnly: number;
+  /** 概算要求書にだけある項（予算書に無い項・年度）の目の数 */
+  requestOnlyKou: number;
   /** 目名だけで結んだ数（段階ごと） */
   nameOnly: Record<'supp' | 'settle' | 'request', number>;
   /** 決算で共管別に分けた識別の数と、共管別の行の数 */
@@ -87,9 +93,11 @@ export function buildLifecycleMoku({ datasetDir, historyDir, sources, kous, requ
 }): { data: LifecycleMokuData; stats: LifecycleMokuStats } {
   const kouIds = new Set(kous.map(k => k.id));
   const nodes: Node[] = [];
-  const stats: LifecycleMokuStats = { nodes: {}, suppAggregatedRows: 0, suppKouOnlyRows: 0, suppOnly: 0, settleOnly: 0, requestOnly: 0, nameOnly: { supp: 0, settle: 0, request: 0 }, settleSplit: 0, settleParts: 0, budgetDup: 0 };
+  const stats: LifecycleMokuStats = { nodes: {}, suppAggregatedRows: 0, suppKouOnlyRows: 0, suppOnly: 0, settleOnly: 0, requestOnly: 0, requestOnlyKou: 0, nameOnly: { supp: 0, settle: 0, request: 0 }, settleSplit: 0, settleParts: 0, budgetDup: 0 };
   const coverage = new Map<string, MokuRequestCoverage>();
   const suppYears = new Set<number>(), settleYears = new Set<number>(), requestYears = new Set<number>();
+  /** 概算要求の目を置いた、予算書の項 */
+  const requestPlaced = new Set<string>();
   const rootOf = (s: LifecycleSource): string => {
     if (s.root !== 'history') return datasetDir;
     if (!historyDir) throw new Error(`${s.year}: 過去年度のデータセット（historyDir）が無い`);
@@ -221,6 +229,7 @@ export function buildLifecycleMoku({ datasetDir, historyDir, sources, kous, requ
       for (const [kouId, m] of byKou) {
         const q = request.get(kouId);
         if (!q) continue;
+        requestPlaced.add(kouId);
         requestYears.add(year);
         if (q.noReq) { coverage.set(kouId, 'noReq'); continue; }
         const withReq = q.m.filter(p => p[2] !== null);
@@ -235,6 +244,27 @@ export function buildLifecycleMoku({ datasetDir, historyDir, sources, kous, requ
         }
       }
       // 予算書の項に突合できたのに、予算書の目が 1 つも無い項（目の CSV に無い項）は、ここでは数えない
+    }
+  }
+
+  // 概算要求書にだけある項（予算書の項に結べなかった項、予算書が基準データに無い年度の項）。目は、すべて概算要求書の目（予算書の目は無い）
+  const kouById = new Map(kous.map(k => [k.id, k]));
+  for (const [kouId, q] of request) {
+    if (requestPlaced.has(kouId)) continue;
+    const k = kouById.get(kouId);
+    if (!k) throw new Error(`概算要求の目の項が、予算の一生の表に無い: ${kouId}`);
+    if (!k.requestOnly) continue; // 予算書の項に結べたのに、予算書の目が 1 つも無い項（上の注記のとおり、数えない）
+    requestYears.add(k.year);
+    const placed = new Map<string, Node>();
+    for (const [name, , req] of q.m) {
+      if (req === null) continue;
+      const key = `${nameKey(name)}||`;
+      if (placed.has(key)) throw new Error(`概算要求のみの項の目が重複: ${kouId} ${name}`);
+      const n: Node = { kouId, year: k.year, name, key, codes: '', part: '', v: Array<number | null>(8).fill(null), flags: MOKU_FLAG.requestOnly };
+      n.v[V.request] = req;
+      placed.set(key, n);
+      nodes.push(n);
+      stats.requestOnlyKou++;
     }
   }
 
@@ -260,4 +290,41 @@ export function buildLifecycleMoku({ datasetDir, historyDir, sources, kous, requ
     },
     stats,
   };
+}
+
+/**
+ * 概算要求書にだけある項の、概算要求の目（`MokuRequest`。額は千円）。予算書に突合できなかった項（`reqOnly`・`zero`）は `mof-ui` の詳細の行（`mofRowKey`）から、
+ * 予算書が基準データに無い年度の項（`noBudget`）は、年度推移の目（`trend-detail` の `moku/{年度}.csv`）から取る。後者は、同じ項が複数の要求書に載るとき、
+ * 要求額の合計が最も大きい公開元の目だけを使う（`requestOnlyJikou` と同じ考え方）。項の id は `requestOnlyKouId`（年度内の突合で予算書の項に結んだ項は、その予算書の項の id）。
+ * 要求書に目の明細が無い項は、`noReq`（目なし）にする（項は捨てない）。
+ */
+export function requestOnlyMoku(rows: readonly LifecycleRequestOnlyRow[], details: Readonly<Record<string, BudgetRequestMofDetail>>, mokuCsv: ReadonlyMap<number, string>, sameYear: ReadonlyMap<string, string> = new Map()): Map<string, MokuRequest> {
+  const amount = (s: string | undefined): number | null => { const t = (s ?? '').replace(/[\s,]/g, ''); return /^\d+$/.test(t) ? Number(t) : null; };
+  const trend = new Map<string, Map<string, { name: string; code: string; amt: number | null }[]>>();
+  for (const [year, csv] of mokuCsv) {
+    for (const r of readCsv(csv)) {
+      const special = r['会計区分'] === '特別';
+      const key = [year, special ? 1 : 0, nameKey(special ? r['特別会計'] : r['所管']), nameKey(special ? r['勘定'] : ''), nameKey(special ? '' : r['組織']), nameKey(r['項名'])].join('|');
+      const host = (r['要求書'] ?? '').split('__')[0]!;
+      const byHost = trend.get(key) ?? trend.set(key, new Map()).get(key)!;
+      (byHost.get(host) ?? byHost.set(host, []).get(host)!).push({ name: nameKey(r['目名']), code: reqMokuCode(r['目コード(原文)'] ?? ''), amt: amount(r['要求額_千円']) });
+    }
+  }
+  const out = new Map<string, MokuRequest>();
+  for (const r of rows) {
+    if (r.req === null) continue;
+    const id = sameYear.get(requestOnlyKouId(r)) ?? requestOnlyKouId(r);
+    if (out.has(id)) throw new Error(`概算要求のみの項の目が重複: ${id}`);
+    if (r.kind === 'noBudget') {
+      const byHost = trend.get([r.y, r.acct, nameKey(r.min), nameKey(r.sub), nameKey(r.org), nameKey(r.name)].join('|'));
+      if (!byHost) { out.set(id, { m: [], noReq: true }); continue; }
+      const best = [...byHost.values()].reduce((a, b) => (b.reduce((s, x) => s + (x.amt ?? 0), 0) > a.reduce((s, x) => s + (x.amt ?? 0), 0) ? b : a));
+      out.set(id, { m: pairByName(best, []), noReq: false });
+    } else {
+      const d = details[[r.y, r.kind, r.acct, r.grp, r.min, r.sub, r.org, r.name].join('|')];
+      if (!d) throw new Error(`概算要求のみの項の詳細が無い: ${r.y} ${r.kind} ${r.name}`);
+      out.set(id, { m: d.m, noReq: d.noReq === 1 });
+    }
+  }
+  return out;
 }

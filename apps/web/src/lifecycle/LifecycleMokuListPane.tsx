@@ -40,7 +40,7 @@ function Amount({ v, why }: { v: number | null; why?: string | null }) {
 function Marks({ r }: { r: MokuListRow }) {
   const marks: [string, string][] = [];
   if (r.flags & MOKU_FLAG.settlePart) marks.push(['共管', `決算の共管別の行: ${r.part.replace(/#\d+$/, '').split('|').filter(Boolean).join(' / ') || '（共管の名前なし）'}`]);
-  if (r.flags & MOKU_FLAG.requestOnly) marks.push(['要求のみ', '概算要求書にだけある目（予算書の目に、名前で結べなかった）']);
+  if (r.flags & MOKU_FLAG.requestOnly) marks.push(['要求のみ', '概算要求書にだけある目（予算書に、同じ名前の目が無い。項が予算書に無い場合を含む）']);
   if (r.flags & MOKU_FLAG.settleSplit) marks.push(['決算は共管別', '決算は、共管の組織ごとの行に分かれている']);
   return <>{marks.map(([t, title]) => <span key={t} title={title} className="ml-1 rounded bg-neutral-100 px-1 text-[10px] font-normal text-neutral-500 dark:bg-neutral-800">{t}</span>)}</>;
 }
