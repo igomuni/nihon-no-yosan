@@ -1,6 +1,7 @@
 import { useEffect, useRef, type MouseEvent as ReactMouseEvent } from 'react';
 import { formatSen, lifecycleAcctOf, lifecycleGroupOf, lifecycleGroupsOf, lifecycleOrgOf, lifecyclePublisherOf, lifecyclePublishersOf, type JikouListRow, type JikouSortKey, type LifecycleSortDir } from '@nihon-no-yosan/core';
 import { Icon } from '../components/Icon.tsx';
+import { scrollRowIntoView } from '../components/scrollRowIntoView.ts';
 
 /** ドラッグ中のカーソル（イベントの外から body を変えるので、関数にまとめる） */
 function setBodyCursor(value: string): void {
@@ -51,7 +52,7 @@ export function LifecycleJikouListPane({ items, loading, failed, sortKey, sortDi
   useEffect(() => {
     if (selectedNode === null) return;
     const el = [...(scrollRef.current?.querySelectorAll<HTMLElement>('tr[data-row-key]') ?? [])].find(e => e.dataset.rowKey === String(selectedNode));
-    el?.scrollIntoView({ block: 'nearest' });
+    scrollRowIntoView(scrollRef.current, el);
   }, [selectedNode]);
   const widthOf = (k: JikouSortKey) => widths[k] ?? DEFAULT_JIKOU_COLUMN_WIDTHS[k];
   const tableWidth = COLS.reduce((n, c) => n + widthOf(c.key), 0);

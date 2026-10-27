@@ -18,6 +18,7 @@ import {
 } from '@nihon-no-yosan/core';
 import { Icon } from '../components/Icon.tsx';
 import { changeColor } from './format.ts';
+import { scrollRowIntoView } from '../components/scrollRowIntoView.ts';
 
 /** ドラッグ中のカーソル（イベントの外から body を変えるので、関数にまとめる） */
 function setBodyCursor(value: string): void {
@@ -85,7 +86,7 @@ export function TrendListPane({
   useEffect(() => {
     if (selectedKey === null) return;
     const el = [...(scrollRef.current?.querySelectorAll<HTMLElement>('tr[data-row-key]') ?? [])].find(e => e.dataset.rowKey === selectedKey);
-    el?.scrollIntoView({ block: 'nearest' });
+    scrollRowIntoView(scrollRef.current, el);
   }, [year, selectedKey]);
   const widthOf = (k: TrendSortKey) => widths[k] ?? DEFAULT_COLUMN_WIDTHS[k];
   const tableWidth = cols.reduce((n, c) => n + widthOf(c.key), 0);
