@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { mofAmountJikou, mofAmountKou, mofAmountMoku, mofKouKey, mofKouNameKey, mofMokuCode, reqMokuCode } from './mof.ts';
+import { mofAmountJikou, mofAmountKou, mofAmountMoku, mofKouKey, mofKouNameKey, mofMokuCode, reqMokuClassCodes, reqMokuCode } from './mof.ts';
 
 describe('mofKouKey / mofKouNameKey', () => {
   const general = { 所管: '内閣府', 組織: '内閣本府', 項コード: '01', 項名: '内閣本府共通費 ' };
@@ -29,5 +29,23 @@ describe('目のコード', () => {
     expect(reqMokuCode('65061-9-18-1010、65061-9-18-1020')).toBe('65061-18');
     expect(reqMokuCode('95016')).toBe('');
     expect(mofMokuCode({ 主要経費別分類コード: '95', 目的別分類コード: '016', 目別分類コード: '16' })).toBe('95016-16');
+  });
+});
+
+describe('reqMokuClassCodes', () => {
+  it('splits the 要求書 code of a 一般会計 目 into 主要経費・目的別・財政法・経済性質・使途', () => {
+    expect(reqMokuClassCodes('95016-2111-02-0000', 'general')).toBe('95|016|2|11|1');
+    expect(reqMokuClassCodes('95016\u20112111\u201103\u20110000', 'general')).toBe('95|016|2|11|1');
+  });
+  it('splits a 特別会計 code (no 財政法; 経済性質 is 2 digits, left out when 00)', () => {
+    expect(reqMokuClassCodes('63191-815-16-5209', 'special')).toBe('63|191|81|5');
+    expect(reqMokuClassCodes('65061-9-18-1010', 'special')).toBe('65|061|00|9');
+  });
+  it('takes the first of several codes, and gives null instead of guessing for a form it does not know', () => {
+    expect(reqMokuClassCodes('95016-2111-02-0000、95016-2111-02-0100', 'general')).toBe('95|016|2|11|1');
+    expect(reqMokuClassCodes('95016-111-02-0000', 'general')).toBeNull();
+    expect(reqMokuClassCodes('95016-2111-02', 'general')).toBeNull();
+    expect(reqMokuClassCodes('95016-11-02-0000', 'special')).toBeNull();
+    expect(reqMokuClassCodes('03-0300', 'general')).toBeNull();
   });
 });

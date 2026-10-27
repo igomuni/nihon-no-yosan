@@ -101,21 +101,40 @@ export interface MokuListRow {
   spent: number | null;
   unused: number | null;
   flags: number;
+  /** 確認済み年度: 項の確定した対応でたどった年度のうち、この目の識別（目名・分類コード。無ければ同じ目名が 1 つだけの目）が続けて見つかった範囲。`years` はその年数 */
+  span: { from: number; to: number; years: number };
   /** 並べ替えの大きさ（千円）: 概算要求・政府案・補正後・歳出予算現額のうち最大。どれも無ければ 0 */
   size: number;
 }
 
-/** 選んだ年度の目の行。項が見つからない目は作らない */
-export function mokuListRows(index: MokuIndex, kouById: ReadonlyMap<string, LifecycleKou>, year: number): MokuListRow[] {
+/**
+ * 選んだ年度の目の行。項が見つからない目は作らない。
+ * `chainOf` は、項（`LifecycleKou.id`）を通る、確定した対応でたどった項の id（年度の古い順）。確認済み年度（`span`）に使う。
+ */
+export function mokuListRows(index: MokuIndex, kouById: ReadonlyMap<string, LifecycleKou>, year: number, chainOf: (kouId: string) => readonly string[]): MokuListRow[] {
   const { data } = index;
   const rows: MokuListRow[] = [];
   data.nodes.forEach((n, node) => {
     if (n[1] !== year) return;
-    const k = kouById.get(data.kous[n[0]]!);
+    const kouId = data.kous[n[0]]!;
+    const k = kouById.get(kouId);
     if (!k) return;
-    rows.push({ node, k, name: n[2], part: n[4], budget: n[5], revised: n[6], suppNet: n[7], current: n[8], spent: n[9], unused: n[11], request: n[12], flags: n[13], size: Math.max(0, n[12] ?? 0, n[5] ?? 0, n[6] ?? 0, n[8] ?? 0) });
+    rows.push({ node, k, name: n[2], part: n[4], budget: n[5], revised: n[6], suppNet: n[7], current: n[8], spent: n[9], unused: n[11], request: n[12], flags: n[13], span: mokuSpan(index, node, chainOf(kouId)), size: Math.max(0, n[12] ?? 0, n[5] ?? 0, n[6] ?? 0, n[8] ?? 0) });
   });
   return rows;
+}
+
+/** 確認済み年度: `mokuFlow` でたどった年度のうち、選んだ目から続けて同じ目が見つかった範囲（途中で見つからない年度があれば、そこで止める） */
+export function mokuSpan(index: MokuIndex, node: number, chainKouIds: readonly string[]): { from: number; to: number; years: number } {
+  const flow = mokuFlow(index, node, chainKouIds);
+  const at = flow.findIndex(f => f.node === node);
+  const year = index.data.nodes[node]![1];
+  if (at < 0) return { from: year, to: year, years: 1 };
+  let lo = at, hi = at;
+  while (lo > 0 && flow[lo - 1]!.node !== null) lo--;
+  while (hi < flow.length - 1 && flow[hi + 1]!.node !== null) hi++;
+  const yearOf = (i: number): number => index.data.nodes[flow[i]!.node!]![1];
+  return { from: yearOf(lo), to: yearOf(hi), years: hi - lo + 1 };
 }
 
 /** 年度・所管・会計・組織／勘定・項名と、目名で絞る（項の一覧と同じフィルタ。「値のある段階」「年度をまたぐ対応」「事項名」は使わない） */
@@ -123,7 +142,7 @@ export function filterMokuRows(rows: readonly MokuListRow[], f: LifecycleFilters
   return filterLifecycleKous(rows, f, year).filter(r => textMatches(r.name, f.mokuName, f.mokuNameRegex));
 }
 
-export type MokuSortKey = 'publisher' | 'group' | 'acct' | 'org' | 'kou' | 'name' | 'request' | 'budget' | 'revised' | 'current' | 'spent' | 'unused' | 'size';
+export type MokuSortKey = 'publisher' | 'group' | 'acct' | 'org' | 'kou' | 'name' | 'span' | 'request' | 'budget' | 'revised' | 'current' | 'spent' | 'unused' | 'size';
 export const MOKU_TEXT_SORT_KEYS: readonly MokuSortKey[] = ['publisher', 'group', 'acct', 'org', 'kou', 'name'];
 
 /** 並べ替え。額の列は、値が無い目を、向きによらず末尾に置く（0 とは別） */
@@ -133,7 +152,8 @@ export function sortMokuRows(rows: readonly MokuListRow[], key: MokuSortKey, dir
   return [...rows].sort((x, y) => {
     if (MOKU_TEXT_SORT_KEYS.includes(key)) return dir * text(x).localeCompare(text(y), 'ja') || tie(x, y);
     if (key === 'size') return dir * (x.size - y.size) || tie(x, y);
-    const a = x[key as Exclude<MokuSortKey, 'publisher' | 'group' | 'acct' | 'org' | 'kou' | 'name' | 'size'>], b = y[key as Exclude<MokuSortKey, 'publisher' | 'group' | 'acct' | 'org' | 'kou' | 'name' | 'size'>];
+    if (key === 'span') return dir * (x.span.years - y.span.years) || tie(x, y);
+    const a = x[key as Exclude<MokuSortKey, 'publisher' | 'group' | 'acct' | 'org' | 'kou' | 'name' | 'size' | 'span'>], b = y[key as Exclude<MokuSortKey, 'publisher' | 'group' | 'acct' | 'org' | 'kou' | 'name' | 'size' | 'span'>];
     if (a === null || b === null) return a === b ? tie(x, y) : a === null ? 1 : -1;
     return dir * (a - b) || tie(x, y);
   });
@@ -183,4 +203,70 @@ export function mokuSettleNote(data: LifecycleMokuData, n: LifecycleMokuNode): s
   if (n[13] & MOKU_FLAG.settleSplit) return '決算は、共管の組織ごとの行に分かれている（共管別の行を見る）';
   if (n[13] & MOKU_FLAG.requestOnly) return '概算要求書にだけある目';
   return '決算の書に、この目が無い（目名・分類コードで結べない）';
+}
+
+/** 項の右ペインの目のタブで切り替える値: 目の値の位置（`LifecycleMokuNode`）と、照合する項の値（`LifecycleValues` のキー。円） */
+export const MOKU_MEASURES = [
+  { key: 'request', label: '概算要求', col: 12, kou: 'request_amount' },
+  { key: 'budget', label: '政府案', col: 5, kou: 'budget_amount' },
+  { key: 'revised', label: '補正後', col: 6, kou: 'revised_amount' },
+  { key: 'current', label: '歳出予算現額', col: 8, kou: 'current_amount' },
+  { key: 'spent', label: '支出済', col: 9, kou: 'spent' },
+  { key: 'unused', label: '不用額', col: 11, kou: 'unused' },
+] as const;
+export type MokuMeasure = (typeof MOKU_MEASURES)[number]['key'];
+export const mokuMeasure = (key: MokuMeasure) => MOKU_MEASURES.find(m => m.key === key)!;
+/** 目の値（千円）。無ければ null */
+export const mokuValue = (n: LifecycleMokuNode, key: MokuMeasure): number | null => n[mokuMeasure(key).col] as number | null;
+
+export interface MokuKouRow {
+  name: string;
+  /** 決算の共管別の行の共管。それ以外は空 */
+  part: string;
+  /** 年度 → 目（`nodes` の添字） */
+  cells: Map<number, number>;
+  /** 年度で分類コードが違い、目名でそろえた */
+  byName: boolean;
+}
+
+/**
+ * 項の流れ（確定した対応でたどった項。`kous` は年度の古い順）の目を、年度をまたいでそろえる。
+ * 同じ目名の目（共管別の行を除く）が、どの年度でもその項に 1 つ以下なら、目名でそろえる（分類コードは年度で変わることがある。`mokuFlow` と同じ考え方）。
+ * 同じ目名の目が 2 つ以上ある年度があれば、その目名は識別（目名・分類コード）でそろえる。共管別の行は識別（共管を含む）でそろえる。
+ * 目の改称・統合は見ていない（名前の違う目は別の行）。行は、最初に出てくる順。
+ */
+export function mokuKouTable(index: MokuIndex, kous: readonly { id: string; year: number }[]): MokuKouRow[] {
+  const perYear = kous.map(({ id, year }) => {
+    const k = index.kouOf.get(id);
+    return { year, nodes: k === undefined ? [] : index.nodesOf.get(k) ?? [] };
+  });
+  const most = new Map<string, number>();
+  for (const { nodes } of perYear) {
+    const count = new Map<string, number>();
+    for (const i of nodes) { const n = index.data.nodes[i]!; if (n[4] === '') count.set(n[2], (count.get(n[2]) ?? 0) + 1); }
+    for (const [name, c] of count) most.set(name, Math.max(most.get(name) ?? 0, c));
+  }
+  const rows = new Map<string, MokuKouRow & { codes: Set<string> }>();
+  for (const { year, nodes } of perYear) {
+    for (const i of nodes) {
+      const n = index.data.nodes[i]!;
+      const group = n[4] === '' && most.get(n[2]) === 1 ? `name|${n[2]}` : `key|${mokuKeyOf(n)}`;
+      const row = rows.get(group) ?? rows.set(group, { name: n[2], part: n[4], cells: new Map(), byName: false, codes: new Set() }).get(group)!;
+      row.cells.set(year, i);
+      row.codes.add(n[3]);
+    }
+  }
+  // 概算要求にだけある目（分類コードが空）は、分類コードの違いに数えない
+  return [...rows.values()].map(({ codes, ...r }) => ({ ...r, byName: [...codes].filter(c => c !== '').length > 1 }));
+}
+
+/** 目の値の計（千円）。値の無い目は足さず、数える */
+export function mokuSum(index: MokuIndex, nodes: readonly number[], key: MokuMeasure): { sum: number | null; missing: number } {
+  let sum: number | null = null, missing = 0;
+  for (const i of nodes) {
+    const v = mokuValue(index.data.nodes[i]!, key);
+    if (v === null) missing++;
+    else sum = (sum ?? 0) + v;
+  }
+  return { sum, missing };
 }

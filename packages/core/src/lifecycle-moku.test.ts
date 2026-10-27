@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { LifecycleKou } from './lifecycle.ts';
 import { INITIAL_LIFECYCLE_FILTERS } from './lifecycle-list.ts';
-import { MOKU_FLAG, filterMokuRows, kouIdsWithMoku, mokuFlow, mokuIndex, mokuListRows, mokuSelectionKey, mokuSettleNote, mokuSuppNote, sortMokuRows, type LifecycleMokuData, type LifecycleMokuNode } from './lifecycle-moku.ts';
+import { MOKU_FLAG, filterMokuRows, kouIdsWithMoku, mokuFlow, mokuIndex, mokuKouTable, mokuListRows, mokuSelectionKey, mokuSpan, mokuSettleNote, mokuSum, mokuSuppNote, sortMokuRows, type LifecycleMokuData, type LifecycleMokuNode } from './lifecycle-moku.ts';
 
 const kou = (id: string, o: Partial<LifecycleKou> = {}): LifecycleKou => ({ id, year: 2024, account: 'general', ministry: '財務省', org: '財務本省', specialAccount: '', subAccount: '', code: '001', name: id, seenIn: ['budget'], ...o });
 const A23 = kou('2023:general:A', { year: 2023, name: '項A' }), A24 = kou('2024:general:A', { name: '項A' }), B24 = kou('2024:general:B', { name: '項B', ministry: '法務省', org: '法務本省' });
@@ -35,7 +35,7 @@ const data: LifecycleMokuData = {
 const index = mokuIndex(data);
 
 describe('mokuListRows', () => {
-  const rows = mokuListRows(index, kouById, 2024);
+  const rows = mokuListRows(index, kouById, 2024, id => (id.endsWith(':A') ? [A23.id, A24.id] : [id]));
   it('makes a row of each 目 of the year, with null for missing values, and the size as the largest of request, 政府案, 補正後 and 現額', () => {
     expect(rows.map(r => r.name)).toEqual(['庁費', '委託費', '施設整備費', '調査費']);
     expect(rows[0]).toMatchObject({ k: A24, budget: 120, request: 130, revised: null, current: null, size: 130 });
@@ -44,7 +44,7 @@ describe('mokuListRows', () => {
 });
 
 describe('filterMokuRows and sortMokuRows', () => {
-  const rows = mokuListRows(index, kouById, 2024);
+  const rows = mokuListRows(index, kouById, 2024, id => [id]);
   it('filters by the 項 filters and the 目名', () => {
     expect(filterMokuRows(rows, { ...INITIAL_LIFECYCLE_FILTERS, mokuName: '費' }, 2024).length).toBe(4);
     expect(filterMokuRows(rows, { ...INITIAL_LIFECYCLE_FILTERS, mokuName: '^庁費$', mokuNameRegex: true }, 2024).map(r => r.name)).toEqual(['庁費']);
@@ -86,5 +86,46 @@ describe('notes and keys', () => {
     expect(mokuSelectionKey(index, 2)).toBe(`${A24.id}|庁費|1|9|`);
     expect(index.nodeByKey.get(mokuSelectionKey(index, 2))).toBe(2);
     expect(index.coverageOf.get(B24.id)).toBe('partial');
+  });
+});
+
+describe('mokuKouTable', () => {
+  it('aligns the 目 of the chained 項 by name when the name is unique in every year, and marks a change of the codes', () => {
+    const rows = mokuKouTable(index, [{ id: A23.id, year: 2023 }, { id: A24.id, year: 2024 }]);
+    expect(rows.map(r => [r.name, [...r.cells], r.byName])).toEqual([['庁費', [[2023, 0], [2024, 2]], true], ['委託費', [[2023, 1], [2024, 3]], false]]);
+  });
+  it('aligns by the name and the codes when a year has two 目 of the same name, and keeps the 共管 parts apart', () => {
+    const d: LifecycleMokuData = {
+      ...data,
+      kous: [A23.id, A24.id],
+      nodes: [
+        n(0, 2023, '庁費', '1|2', { budget: 1 }),
+        n(1, 2024, '庁費', '1|2', { budget: 2 }),
+        n(1, 2024, '庁費', '1|3', { budget: 3 }),
+        n(1, 2024, '庁費', '1|2', { current: 4 }, MOKU_FLAG.settlePart, '内閣府|内閣本府'),
+      ],
+      requestCoverage: [],
+    };
+    const rows = mokuKouTable(mokuIndex(d), [{ id: A23.id, year: 2023 }, { id: A24.id, year: 2024 }]);
+    expect(rows.map(r => [r.part, [...r.cells]])).toEqual([['', [[2023, 0], [2024, 1]]], ['', [[2024, 2]]], ['内閣府|内閣本府', [[2024, 3]]]]);
+  });
+});
+
+describe('mokuSum', () => {
+  it('adds the values and counts the 目 without a value', () => {
+    expect(mokuSum(index, [2, 3], 'budget')).toEqual({ sum: 180, missing: 0 });
+    expect(mokuSum(index, [2, 3], 'revised')).toEqual({ sum: null, missing: 2 });
+    expect(mokuSum(index, [0, 1], 'revised')).toEqual({ sum: 70, missing: 1 });
+  });
+});
+
+describe('mokuSpan', () => {
+  it('counts the years in which the same 目 is found in a row of the chained 項', () => {
+    expect(mokuSpan(index, 3, [A23.id, A24.id])).toEqual({ from: 2023, to: 2024, years: 2 });
+    expect(mokuSpan(index, 2, [A23.id, A24.id])).toEqual({ from: 2023, to: 2024, years: 2 });
+  });
+  it('stops at a year without the 目, and is the year alone for a 項 without a chain', () => {
+    expect(mokuSpan(index, 3, [A23.id, '2025:general:A', A24.id])).toEqual({ from: 2024, to: 2024, years: 1 });
+    expect(mokuSpan(index, 4, [B24.id])).toEqual({ from: 2024, to: 2024, years: 1 });
   });
 });

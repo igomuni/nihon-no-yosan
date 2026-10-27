@@ -44,6 +44,24 @@ export const mofKouNameKey = (r: Rec, a: Account): string =>
 export const mofMokuCode = (r: Rec): string =>
   `${r['主要経費別分類コード'] ?? ''}${r['目的別分類コード'] ?? ''}-${r['目別分類コード'] ?? ''}`;
 
+/**
+ * 要求書の目のコード（原文）を、予算書の分類コード（目の識別に使う `|` つなぎ）に直す。仕様: docs/guides/budget-codes.md
+ * 一般会計: `95016-2111-02-0000` → 主要経費別 `95`・目的別 `016`・財政法公債金 `2`・経済性質別 `11`・使途別 `1`（`95|016|2|11|1`）。
+ * 特別会計は財政法が無い。中央の桁は、経済性質別 2 桁 + 使途別 1 桁（`815` → `81|5`）、経済性質別が `00` のときは使途別 1 桁だけ（`9` → `00|9`）。
+ * 形が合わないもの（桁数が違う、複数のコードが並ぶ原文を除く）は、補わず null。複数のコードが「、」で並ぶときは最初のもの。末尾の 2 つ（目別・細目）は返さない（目別は `mofMokuCode` の後半）。
+ */
+export function reqMokuClassCodes(raw: string, account: 'general' | 'special'): string | null {
+  const p = (raw.split('、')[0] ?? '').split(/[-‑]/);
+  if (p.length !== 4) return null;
+  const [a, b] = p as [string, string, string, string];
+  if (!/^\d{5}$/.test(a) || !/^\d+$/.test(b)) return null;
+  const head = [a.slice(0, 2), a.slice(2)];
+  if (account === 'general') return b.length === 4 ? [...head, b.slice(0, 1), b.slice(1, 3), b.slice(3)].join('|') : null;
+  if (b.length === 3) return [...head, b.slice(0, 2), b.slice(2)].join('|');
+  if (b.length === 1) return [...head, '00', b].join('|');
+  return null;
+}
+
 /** 要求書の目のコード（原文。例: `95016-2111-02-0000`）から、`mofMokuCode` と同じ形を取る。複数のコードが「、」で並ぶときは最初のもの */
 export const reqMokuCode = (s: string): string => {
   const p = (s.split('、')[0] ?? '').split('-');

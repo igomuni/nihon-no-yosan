@@ -161,7 +161,7 @@ export function LifecyclePage() {
   // 目（lifecycle/moku.json.gz。大きいので、目のタブを開いたとき、または目名で絞るときに読む）
   const [mokuResult, setMokuResult] = useState<{ index: MokuIndex } | { failed: true } | null>(null);
   const mokuRequested = useRef(false);
-  const needMoku = view === 'moku' || storedFilters.mokuName?.trim();
+  const needMoku = view === 'moku' || (view === 'list' && detailTab === 'moku') || storedFilters.mokuName?.trim();
   useEffect(() => {
     if (!needMoku || mokuRequested.current) return;
     mokuRequested.current = true;
@@ -214,14 +214,24 @@ export function LifecyclePage() {
     else { setJikouSortKey(k); setJikouSortDir(k === 'publisher' || k === 'group' || k === 'acct' || k === 'org' || k === 'kou' || k === 'name' ? 1 : -1); }
   };
   // 目の一覧: 選んだ年度の目を、項の一覧と同じフィルタ（所管・会計・組織／勘定・項名）と目名で絞る
-  const mokuRows = useMemo(() => (moku && activeYear !== null ? mokuListRows(moku, kouById, activeYear) : []), [moku, kouById, activeYear]);
+  const kouIndexById = useMemo(() => new Map((data?.kous ?? []).map((k, i) => [k.id, i])), [data]);
+  // 目の確認済み年度に使う、項ごとの確定した対応でたどった項の id（年度の古い順）
+  const mokuRows = useMemo(() => {
+    if (!moku || activeYear === null || !data) return [];
+    const cache = new Map<string, string[]>();
+    const chainIds = (kouId: string): string[] => {
+      let ids = cache.get(kouId);
+      if (!ids) { const i = kouIndexById.get(kouId); ids = i === undefined ? [kouId] : chainOf(i).members.map(m => data.kous[m]!.id); cache.set(kouId, ids); }
+      return ids;
+    };
+    return mokuListRows(moku, kouById, activeYear, chainIds);
+  }, [moku, kouById, activeYear, data, kouIndexById, chainOf]);
   const mokuList = useMemo(() => (activeYear === null ? [] : sortMokuRows(filterMokuRows(mokuRows, filters, activeYear), mokuSortKey, mokuSortDir)), [mokuRows, filters, activeYear, mokuSortKey, mokuSortDir]);
   const selectedMokuNode = useMemo(() => {
     const node = moku && selectedMoku !== null ? moku.nodeByKey.get(selectedMoku) : undefined;
     return node !== undefined && moku!.data.nodes[node]![1] === activeYear ? node : null;
   }, [moku, selectedMoku, activeYear]);
   // 選んだ目の項を通る、確定した対応でたどった項（年度の古い順）
-  const kouIndexById = useMemo(() => new Map((data?.kous ?? []).map((k, i) => [k.id, i])), [data]);
   const mokuChainKouIds = useMemo(() => {
     if (!moku || selectedMokuNode === null || !data) return [];
     const i = kouIndexById.get(moku.data.kous[moku.data.nodes[selectedMokuNode]![0]]!);
@@ -314,7 +324,7 @@ export function LifecyclePage() {
               onOpenKou={k => { setYear(k.year); setSelectedId(k.id); setView('list'); setDetailTab('jikou'); }}
             />
           ) : (
-          <LifecycleDetailPane kou={kou} events={selectedIndex >= 0 ? byKou.get(selectedIndex) ?? [] : []} coverage={coverage} data={data} links={selectedIndex >= 0 ? linksByKou.get(selectedIndex) ?? [] : []} selfIndex={selectedIndex} onNavigate={id => { const t = data.kous.find(x => x.id === id); if (t) { setYear(t.year); setSelectedId(id); } }} tab={detailTab} onTab={setDetailTab} chain={selectedIndex >= 0 ? chainOf(selectedIndex) : null} valuesOf={valuesOf} jikou={jikou} jikouState={jikouState} />
+          <LifecycleDetailPane kou={kou} events={selectedIndex >= 0 ? byKou.get(selectedIndex) ?? [] : []} coverage={coverage} data={data} links={selectedIndex >= 0 ? linksByKou.get(selectedIndex) ?? [] : []} selfIndex={selectedIndex} onNavigate={id => { const t = data.kous.find(x => x.id === id); if (t) { setYear(t.year); setSelectedId(id); } }} tab={detailTab} onTab={setDetailTab} chain={selectedIndex >= 0 ? chainOf(selectedIndex) : null} valuesOf={valuesOf} jikou={jikou} jikouState={jikouState} moku={moku} mokuState={mokuState} onOpenMoku={node => { setSelectedMoku(mokuSelectionKey(moku!, node)); setView('moku'); }} />
           )}
         </section>
       </main>

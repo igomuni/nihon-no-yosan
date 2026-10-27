@@ -10,7 +10,7 @@ function setBodyCursor(value: string): void {
 
 const MAX_ROWS = 600;
 const MIN_COLUMN_WIDTH = 48;
-export const DEFAULT_MOKU_COLUMN_WIDTHS: Record<MokuSortKey, number> = { publisher: 100, group: 100, acct: 100, org: 110, kou: 170, name: 200, request: 92, budget: 92, revised: 92, current: 92, spent: 92, unused: 92, size: 92 };
+export const DEFAULT_MOKU_COLUMN_WIDTHS: Record<MokuSortKey, number> = { publisher: 100, group: 100, acct: 100, org: 110, kou: 170, name: 200, span: 112, request: 92, budget: 92, revised: 92, current: 92, spent: 92, unused: 92, size: 92 };
 /** 一覧の列。順は、事項の一覧に合わせ、決算の列を足す */
 const COLS: { key: MokuSortKey; label: string; left?: boolean; title?: string }[] = [
   { key: 'publisher', label: '要求所管', left: true, title: '概算要求書の公開元の府省（要求書の PDF のドメイン由来）。複数の府省の書に載る項は「N所管」' },
@@ -19,6 +19,7 @@ const COLS: { key: MokuSortKey; label: string; left?: boolean; title?: string }[
   { key: 'org', label: '組織／勘定', left: true },
   { key: 'kou', label: '項名', left: true },
   { key: 'name', label: '目名', left: true },
+  { key: 'span', label: '確認済み年度', left: true, title: '項の確定した対応でたどった年度のうち、この目（目名・分類コード。無ければ同じ目名が 1 つだけの目）が続けて見つかった範囲と年数。目の改称・統合は見ていない。事業が同じとは限らない' },
   { key: 'request', label: '概算要求', title: '概算要求書の明細の目の要求額（予算書の目と、同じ項の中で名前でつないだもの）' },
   { key: 'budget', label: '政府案', title: '予算書の当初予算（提出時）の目の額' },
   { key: 'revised', label: '補正後', title: '補正の書の改予算額（目の個別の行があるときだけ。「外N目」にまとめられた目、項の行だけの項は値なし）' },
@@ -39,7 +40,7 @@ function Amount({ v, why }: { v: number | null; why?: string | null }) {
 function Marks({ r }: { r: MokuListRow }) {
   const marks: [string, string][] = [];
   if (r.flags & MOKU_FLAG.settlePart) marks.push(['共管', `決算の共管別の行: ${r.part.replace(/#\d+$/, '').split('|').filter(Boolean).join(' / ') || '（共管の名前なし）'}`]);
-  if (r.flags & MOKU_FLAG.requestOnly) marks.push(['要求のみ', '概算要求書にだけある目（予算書の目に、名前で結べなかった）']);
+  if (r.flags & MOKU_FLAG.requestOnly) marks.push(['要求のみ', '概算要求書にだけある目（予算書に、同じ名前の目が無い。項が予算書に無い場合を含む）']);
   if (r.flags & MOKU_FLAG.settleSplit) marks.push(['決算は共管別', '決算は、共管の組織ごとの行に分かれている']);
   return <>{marks.map(([t, title]) => <span key={t} title={title} className="ml-1 rounded bg-neutral-100 px-1 text-[10px] font-normal text-neutral-500 dark:bg-neutral-800">{t}</span>)}</>;
 }
@@ -81,7 +82,7 @@ export function LifecycleMokuListPane({ items, loading, failed, sortKey, sortDir
     setBodyCursor('col-resize');
   }
 
-  const totals = ([['概算要求', 'request'], ['政府案', 'budget'], ['補正後', 'revised'], ['歳出予算現額', 'current'], ['支出済', 'spent']] as const).map(([label, k]) => {
+  const totals = ([['概算要求', 'request'], ['政府案', 'budget'], ['補正後', 'revised'], ['決算', 'spent']] as const).map(([label, k]) => {
     let sum = 0, n = 0;
     for (const r of items) { const v = r[k]; if (v !== null) { sum += v; n++; } }
     return { label, sum: n === 0 ? null : sum, n };
@@ -91,9 +92,8 @@ export function LifecycleMokuListPane({ items, loading, failed, sortKey, sortDir
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex flex-wrap gap-x-5 gap-y-1 border-b border-neutral-200 px-3 py-2 text-xs text-neutral-500 dark:border-neutral-800">
-        <span><b className="tabular-nums text-neutral-800 dark:text-neutral-100">{items.length.toLocaleString()}</b> 目</span>
-        {totals.map(t => t.sum !== null && <span key={t.label} title={`値のある ${t.n.toLocaleString()} 目の合計（${t.sum.toLocaleString('ja-JP', { maximumFractionDigits: 3 })} 千円）`}>{t.label} <b className="tabular-nums text-neutral-800 dark:text-neutral-100">{formatSen(t.sum)}</b><span className="ml-0.5 text-neutral-400">({t.n.toLocaleString()})</span></span>)}
-        <span className="text-neutral-400">「—」は値なし（0 ではない）。ホバーで理由</span>
+        <span title="額の列の「—」は値なし（0 ではない）。ホバーで理由"><b className="tabular-nums text-neutral-800 dark:text-neutral-100">{items.length.toLocaleString()}</b> 目</span>
+        {totals.map(t => t.sum !== null && <span key={t.label} title={`値のある ${t.n.toLocaleString()} 目の合計（${t.sum.toLocaleString('ja-JP', { maximumFractionDigits: 3 })} 千円）${t.label === '決算' ? '。支出済歳出額' : ''}`}>{t.label} <b className="tabular-nums text-neutral-800 dark:text-neutral-100">{formatSen(t.sum)}</b></span>)}
       </div>
       <div ref={scrollRef} className="min-h-0 flex-1 overflow-auto">
         <table className="border-collapse text-xs" style={{ width: tableWidth, tableLayout: 'fixed' }}>
@@ -137,6 +137,10 @@ export function LifecycleMokuListPane({ items, loading, failed, sortKey, sortDir
                   <td className="break-words px-2 py-1 text-left">{lifecycleOrgOf(k)}</td>
                   <td className="break-words px-2 py-1 text-left">{k.name}</td>
                   <td className="break-words px-2 py-1 text-left font-medium">{r.name}<Marks r={r} /></td>
+                  <td className="whitespace-nowrap px-2 py-1 text-left tabular-nums" title={`FY${r.span.from}${r.span.from === r.span.to ? '' : `〜FY${r.span.to}`}（${r.span.years} 年）。項の確定した対応でたどった年度のうち、この目が続けて見つかった範囲`}>
+                    {r.span.from === r.span.to ? r.span.from : `${r.span.from}–${r.span.to}`}
+                    <span className="ml-1 text-neutral-400">({r.span.years}年)</span>
+                  </td>
                   <Amount v={r.request} why={r.flags & MOKU_FLAG.settlePart ? '決算の共管別の行' : '概算要求の目が無い（要求書の明細に無い、名前で結べない、または概算要求書を読んでいない年度）'} />
                   <Amount v={r.budget} why={r.flags & MOKU_FLAG.settlePart ? '決算の共管別の行' : '当初予算に、この目が無い'} />
                   <Amount v={r.revised} why={why.supp} />
