@@ -17,7 +17,7 @@ Releases (dataset-reference-v0)          リポジトリ                       C
 
 `main` に入るたびに動く（手動でも動かせる）。過去年度のデータも、同じ流れで、もう 1 つの tar.gz（`dataset-mof-history-v0`）から取り込む（下の「過去年度のデータ」）。基準データを更新したときは、新しい tar.gz を同じ手順で作り直し、`release.json`・`published-manifest.json` を更新する。
 
-## 過去年度のデータ（FY2017〜FY2022）
+## 過去年度のデータ（FY2017〜FY2024 と、補正の事項 FY2025・FY2026）
 
 基準データ（FY2023 以降）とは別のデータセット `mof-history-v0`（`docs/guides/mof-history.md`）を、同じやり方で配る。財務省の予算書・決算書データベースの公式 CSV・XML から作った CSV だけ（PDF・原本は入れない）。
 
@@ -27,9 +27,9 @@ gh release create dataset-mof-history-v0 <出力ディレクトリ>/mof-history-
 cp <出力ディレクトリ>/release.json datasets/mof-history-v0/release.json
 ```
 
-- **入れるもの:** `datasets/mof-history-v0/manifest.json` の全ファイル（138 件）と `manifest.json`。計 139 ファイル、4.9 MB（tar.gz）。
+- **入れるもの:** `datasets/mof-history-v0/manifest.json` の全ファイル（143 件）と `manifest.json`。計 144 ファイル、4.7 MB（tar.gz）。中身を足して出し直すときは、タグを変える（例: `dataset-mof-history-v0-r2`。`package-history.ts` の最後の引数）。同じタグの tar.gz を差し替えると、`main` の CI が SHA-256 の不一致で失敗する。現在のタグは `datasets/mof-history-v0/release.json`。
 - **公開してよい条件:** `terms.json` で `bb.mof.go.jp` が `pdl1.0`・`page-read`（利用条件の本文を読んだ）。違えば `package-history.ts` が止まる。
-- **照合:** 作る前に、ディレクトリが manifest と全件一致することを確かめる。CI は、tar.gz の SHA-256 を `release.json` と照合し、展開して `verify.ts` で manifest と全件照合してから、`npm run build:data` に渡す（`build:data` は、過去年度のディレクトリがあるときだけ、FY2017〜FY2022 を足す）。
+- **照合:** 作る前に、ディレクトリが manifest と全件一致することを確かめる。CI は、tar.gz の SHA-256 を `release.json` と照合し、展開して `verify.ts` で manifest と全件照合してから、`npm run build:data` に渡す（`build:data` は、過去年度のディレクトリがあるときだけ、過去年度を足す）。
 - **順序:** Releases に tar.gz を置いてから、`release.json` をコミットした変更を `main` に入れる（置く前に入れると、`main` に入るたびに動く CI がダウンロードに失敗する）。
 - 画面の出典の 1 行と「出典と利用条件」のページは、財務省の予算書・決算書データベース（PDL1.0）の表記のまま（過去年度で変わらない）。
 

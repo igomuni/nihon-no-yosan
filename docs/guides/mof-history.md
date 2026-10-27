@@ -13,7 +13,7 @@ node packages/pipeline/src/build/mof-archive-cli.ts build <zip のディレク�
 npm run build:data
 ```
 
-- zip のディレクトリには `DL{年}{帳票}.zip` が並ぶ。置き場は `data/dataset/mof-history-v0/`（git に入れない。基準データと同じ扱い）。git には、入力の記録 `datasets/mof-history-v0/inputs.json`（zip 44 本）・`jikou-inputs.json`（当初予算の XML の集合 12 帳票）・`jikou-hosei-inputs.json`（補正予算の XML の集合 28 帳票）と、出力全ファイルの SHA-256 `manifest.json`（138 ファイル）を入れる。
+- zip のディレクトリには `DL{年}{帳票}.zip` が並ぶ。置き場は `data/dataset/mof-history-v0/`（git に入れない。基準データと同じ扱い）。git には、入力の記録 `datasets/mof-history-v0/inputs.json`（zip 44 本）・`jikou-inputs.json`（当初予算の XML の集合 12 帳票）・`jikou-hosei-inputs.json`（補正予算の XML の集合 28 帳票）と、出力全ファイルの SHA-256 `manifest.json`（143 ファイル）を入れる。
 - 実装は `packages/pipeline/src/build/mof-archive.ts`。基準データの `mof-archive/` を作った処理と同じ規則（原本の形のまま、`source_row` を足すだけ。項は目を項のキーで集計。歳出の表は見出しに `主要経費別分類コード` を持つ csv）。
 - 読む帳票: 当初予算 `11001`（一般）・`12001`（特別）、補正予算 `21xxx`（一般）・`22xxx`（特別）（`xxx` は回）、決算 `77001`（一般）・`78001`（特別）。政府関係機関の帳票（`13001`・`23001`・`76001`）は読まない。歳入の表（`a.csv`）は読まない。
 - 出力は `mof-archive/{年度}/`。補正が年度に複数回あるときは、第 1 回が `kou-{general,special}-hosei.csv`・`moku-…`、第 2 回以降が `…-hosei-2.csv`、`…-hosei-3.csv`。
@@ -85,7 +85,7 @@ node packages/pipeline/src/build/mof-jikou-hosei-cli.ts build  <XML の置き場
 ```
 
 - FY2025・FY2026 の XML（一般・特別、補正予算第 1 号。計 449 件、約 11.8 MB）は、`https://www.bb.mof.go.jp/server/{2025,2026}/xml/` から取得した（取得日 2026-10-27。置き場は `data/download/mof-xml/mof_{年}/xml/`）。帳票は `202521001`（一般 283 件）・`202522001`（特別 134 件）・`202621001`（一般 26 件）・`202622001`（特別 6 件）で、目次に載る XML の全件がサイトにあることを、取得前に確かめた。`jikou-hosei-inputs.json` に、目次と XML の集合の SHA-256 を足した。
-- FY2025・FY2026 の補正の事項の CSV は、手元の `data/dataset/mof-history-v0/` に作った。git の `manifest.json`（138 ファイル）と `release.json`（公開した tar.gz）は、FY2024 までの版のまま（更新は、データセットを出し直すときに行う）。
+- FY2025・FY2026 の補正の事項の CSV は、データセットに足して出し直した（タグ `dataset-mof-history-v0-r2`。`manifest.json` は 143 ファイル）。
 - **FY2026 の特別会計は、事項の表が無い**（`202622001` の 6 件は、表紙・総目録・予算目録・参照書目録・予算総則補正・国債整理基金の年度末基金残高表で、「歳出事項別内訳」が無い）。基準データにも、この回の特別会計の項の補正の CSV が無い。事項の CSV は作らない（CLI は、事項の表も項の CSV も無い回に限り、その旨を出力して読み飛ばす）。歳出の補正が無いためと推測するが、確かめていない。
 - 出力は `mof-archive/{年度}/jikou-{general,special}-hosei{,-2,-3}.csv`。FY2023・FY2024 は、基準データ（`reference-v0`）に補正の事項が無いので、このデータセット（`mof-history-v0`）に、補正の事項の CSV だけを置く。
 - 列: 当初予算の事項の CSV と同じ識別の列（所管・組織／特別会計・勘定・項コード・項名・事項名・分類コード）、額 5 つ（成立予算額・追加額・修正減少額・差引額・改予算額。千円）、`行の種類`、`source_file`・`source_row`・`source_page`。年度の文字は、補正の見出しのまま（FY2019 は「令和元年度」。当初予算は「平成31年度」）。

@@ -553,6 +553,26 @@
   "mof-archive/2024/jikou-special-hosei.csv": {
    "sha256": "83175fbe93515a0d1010177da2f706096489888e489063a5344f666ee360a4f4",
    "bytes": 52530
+  },
+  "mof-archive/2025/jikou-general-hosei.csv": {
+   "sha256": "9d88e98cc00d66850268682a0b70f4a83d8c7eb090c9a96e671be97d53c3176a",
+   "bytes": 232696
+  },
+  "mof-archive/2025/jikou-hosei-summary.json": {
+   "sha256": "e4b2d34ace9f079e1841ea712b91375e7a68f35570d2b344be5e7da490fd75f2",
+   "bytes": 354
+  },
+  "mof-archive/2025/jikou-special-hosei.csv": {
+   "sha256": "94f1fcfb98db1b292edad46129d6033f71ea46ae3729bf652506ea11d1cb0849",
+   "bytes": 54010
+  },
+  "mof-archive/2026/jikou-general-hosei.csv": {
+   "sha256": "79aedebfa1aca17081e7e78e4adcf2b6133760e7147af309cad0dd823b7bfd3f",
+   "bytes": 7399
+  },
+  "mof-archive/2026/jikou-hosei-summary.json": {
+   "sha256": "51bbd49881b1d2980dddb42b4a13c058babcc3179f526a4521b2707198136f4f",
+   "bytes": 153
   }
  }
 }
