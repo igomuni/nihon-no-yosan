@@ -15,20 +15,21 @@ export const lifecycleGroupsOf = (k: LifecycleKou): string[] => k.ministry.split
 
 /** 要求所管（概算要求書の公開元の府省庁名）。概算要求書に載らない項は空 */
 export const lifecyclePublishersOf = (k: LifecycleKou): readonly string[] => k.publishers ?? [];
-/** 要求所管の表示（一覧の列）。1 つはその名前、複数は「N府省」（府省名の一覧は、ツールチップ）。無ければ空 */
+/** 要求所管の表示（一覧の列）。1 つはその名前、複数は「N所管」（府省名の一覧は、ツールチップ）。無ければ空 */
 export function lifecyclePublisherOf(k: LifecycleKou): string {
   const p = lifecyclePublishersOf(k);
-  return p.length <= 1 ? p[0] ?? '' : `${p.length}府省`;
+  return p.length <= 1 ? p[0] ?? '' : `${p.length}所管`;
 }
 
 /** 所管の選択肢「複数所管」: 複数の府省が所管する項 */
 export const LIFECYCLE_JOINT = '複数所管';
+export const lifecycleIsPublishedJoint = (k: LifecycleKou): boolean => lifecyclePublishersOf(k).length > 1;
 export const lifecycleIsJoint = (k: LifecycleKou): boolean => lifecycleGroupsOf(k).length > 1;
 
 export interface LifecycleFilters {
-  /** 要求所管（空 = すべて）。選んだ府省の概算要求書に載る項（`LifecycleKou.publishers`。複数の府省の書に載る項も含む）。概算要求書の無い年度・項は、選ぶと外れる */
+  /** 要求所管（空 = すべて）。選んだ府省の概算要求書に載る項（`LifecycleKou.publishers`。複数の府省の書に載る項も含む）。「複数所管」を選ぶと、複数の府省の書に載る項。概算要求書の無い年度・項は、選ぶと外れる */
   publishers: string[];
-  /** 所管（空 = すべて）。選んだ府省が所管する項（複数の府省が所管する項も含む）。「複数所管」を選ぶと、複数の府省が所管する項 */
+  /** 予算所管（空 = すべて）。選んだ府省が所管する項（複数の府省が所管する項も含む）。「複数所管」を選ぶと、複数の府省が所管する項 */
   groups: string[];
   /** 会計（空 = すべて）。「一般会計」と「〇〇特別会計」 */
   accts: string[];
@@ -59,7 +60,7 @@ export const lifecycleOrgOf = (k: LifecycleKou): string => (k.account === 'gener
 export function filterLifecycleKous<T extends { k: LifecycleKou }>(items: readonly T[], f: LifecycleFilters, year: number): T[] {
   return items.filter(({ k }) =>
     k.year === year &&
-    (f.publishers.length === 0 || lifecyclePublishersOf(k).some(p => f.publishers.includes(p))) &&
+    (f.publishers.length === 0 || lifecyclePublishersOf(k).some(p => f.publishers.includes(p)) || (f.publishers.includes(LIFECYCLE_JOINT) && lifecycleIsPublishedJoint(k))) &&
     (f.groups.length === 0 || lifecycleGroupsOf(k).some(g => f.groups.includes(g)) || (f.groups.includes(LIFECYCLE_JOINT) && lifecycleIsJoint(k))) &&
     (f.accts.length === 0 || f.accts.includes(lifecycleAcctOf(k))) &&
     textMatches(lifecycleOrgOf(k), f.org, f.orgRegex) &&

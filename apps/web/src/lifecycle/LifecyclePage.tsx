@@ -186,7 +186,7 @@ export function LifecyclePage() {
   const checks = data.checks.filter(c => c.year === activeYear);
   const listed = (names: string[]): string => (names.length === 0 ? 'すべて' : names.join('、'));
   const text = (label: string, value: string, regex: boolean): string => (value.trim() === '' ? '' : ` · ${label}: 「${value.trim()}」${regex ? '（正規表現）' : ''}`);
-  const scope = `FY${activeYear}${filters.publishers.length > 0 ? ` · 要求所管: ${listed(filters.publishers)}` : ''} · 所管: ${listed(filters.groups)} · 会計: ${listed(filters.accts)}${text('組織／勘定', filters.org, filters.orgRegex)}${text('項名', filters.name, filters.nameRegex)}${text('事項名', filters.jikouName, filters.jikouNameRegex)} · 値のある段階: ${LIFECYCLE_PATTERNS.find(p => p.id === filters.pattern)!.label}${filters.links === 'unsettled' ? ' · 年度をまたぐ対応: 未確定のみ' : ''}`;
+  const scope = `FY${activeYear}${filters.publishers.length > 0 ? ` · 要求所管: ${listed(filters.publishers)}` : ''} · 予算所管: ${listed(filters.groups)} · 会計: ${listed(filters.accts)}${text('組織／勘定', filters.org, filters.orgRegex)}${text('項名', filters.name, filters.nameRegex)}${text('事項名', filters.jikouName, filters.jikouNameRegex)} · 値のある段階: ${LIFECYCLE_PATTERNS.find(p => p.id === filters.pattern)!.label}${filters.links === 'unsettled' ? ' · 年度をまたぐ対応: 未確定のみ' : ''}`;
 
   return (
     <div className="flex h-screen flex-col bg-neutral-50 text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">

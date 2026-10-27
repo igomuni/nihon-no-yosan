@@ -7,6 +7,7 @@ import {
   lifecycleAcctOf,
   lifecycleGroupsOf,
   lifecycleIsJoint,
+  lifecycleIsPublishedJoint,
   lifecyclePublishersOf,
   type LifecycleFilters,
   type LifecycleKou,
@@ -35,7 +36,7 @@ export function LifecycleFilterPane({ allKous, inYear, patternCounts, unsettledC
   onChange: (f: LifecycleFilters) => void;
 }) {
   const tally = (names: readonly string[]) => { const m = new Map<string, number>(); for (const n of names) m.set(n, (m.get(n) ?? 0) + 1); return m; };
-  // 選択肢（要求所管・所管・会計）は全年度の項から作り、年度を切り替えても変わらない（並びは全年度の件数順）。件数だけ、選択年度の項で数える
+  // 選択肢（要求所管・予算所管・会計）は全年度の項から作り、年度を切り替えても変わらない（並びは全年度の件数順）。件数だけ、選択年度の項で数える
   const options = (all: readonly string[], names: (k: LifecycleKou) => readonly string[], rank?: (n: string) => number): [string, number][] => {
     const total = tally(all);
     const now = tally(inYear.flatMap(names));
@@ -49,9 +50,11 @@ export function LifecycleFilterPane({ allKous, inYear, patternCounts, unsettledC
   const accts = useMemo(() => options(allKous.map(lifecycleAcctOf), k => [lifecycleAcctOf(k)], n => (n === '一般会計' ? 0 : 1)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [allKous, inYear]);
-  const publishers = useMemo(() => options(allKous.flatMap(k => [...lifecyclePublishersOf(k)]), k => [...lifecyclePublishersOf(k)]),
+  const publishers = useMemo(() => {
+    const list = options(allKous.flatMap(k => [...lifecyclePublishersOf(k)]), k => [...lifecyclePublishersOf(k)]);
+    return allKous.some(lifecycleIsPublishedJoint) ? [...list, [LIFECYCLE_JOINT, inYear.filter(lifecycleIsPublishedJoint).length] as [string, number]] : list;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [allKous, inYear]);
+  }, [allKous, inYear]);
   const [open, setOpen] = useState<'publisher' | 'group' | 'acct' | null>(null);
   const set = (patch: Partial<LifecycleFilters>) => onChange({ ...filters, ...patch });
   // コンボの選択肢は「名称（件数）」。選択状態は名称で持つ（選んだのにこの年度に無い名前も、件数 0 の選択肢に残す）
@@ -82,8 +85,8 @@ export function LifecycleFilterPane({ allKous, inYear, patternCounts, unsettledC
           <MultiSelectCombo label="要求所管" {...comboProps(publishers, filters.publishers, 'publishers', 'publisher')} />
         </div>
         <div className={section}>
-          <h3 className={heading}>所管</h3>
-          <MultiSelectCombo label="所管" {...comboProps(groups, filters.groups, 'groups', 'group')} />
+          <h3 className={heading}>予算所管</h3>
+          <MultiSelectCombo label="予算所管" {...comboProps(groups, filters.groups, 'groups', 'group')} />
         </div>
         <div className={section}>
           <h3 className={heading}>会計</h3>
