@@ -131,7 +131,12 @@ export function buildLifecycleJikou(
       const k = kouById.get(id);
       if (!k) { miss(Number(id.split(':')[0])); continue; }
       requestRead.add(id);
-      for (const { name, req } of items) if (req !== null) extra(k, name, req);
+      for (const { name, req } of items) {
+        if (req === null) continue;
+        // 年度内の突合で予算書の項に結んだ項（概算要求のみの項ではない）は、同じ名前の予算書の事項に要求額を置く
+        const at = k.requestOnly ? undefined : placed.get(`${id}|${name}`);
+        if (at !== undefined) request7[at] = req; else extra(k, name, req);
+      }
     }
   }
 
@@ -171,7 +176,7 @@ const requestOnlyKouId = (r: LifecycleRequestOnlyRow): string => `${r.y}:${r.acc
  * 概算要求にだけある項の、要求側の事項。予算書に突合できなかった項（`reqOnly`・`zero`）は `mof-ui` の詳細の行（`mofRowKey`）から、予算書が基準データに無い年度の項（`noBudget`）は
  * 年度推移の事項（`trend-detail` の `jikou.csv`）から取る。後者は、同じ項が複数の要求書に載るとき、要求額の合計が最も大きい公開元（要求書の先頭のドメイン）の事項だけを使う（`mof-ui` の統合と同じ考え方）。
  */
-export function requestOnlyJikou(rows: readonly LifecycleRequestOnlyRow[], details: Readonly<Record<string, BudgetRequestMofDetail>>, jikouCsv: string): Map<string, { name: string; req: number | null }[]> {
+export function requestOnlyJikou(rows: readonly LifecycleRequestOnlyRow[], details: Readonly<Record<string, BudgetRequestMofDetail>>, jikouCsv: string, sameYear: ReadonlyMap<string, string> = new Map()): Map<string, { name: string; req: number | null }[]> {
   const amount = (s: string | undefined): number | null => { const t = (s ?? '').replace(/[\s,]/g, ''); return /^\d+$/.test(t) ? Number(t) : null; };
   const trend = new Map<string, Map<string, { name: string; req: number | null }[]>>();
   for (const r of readCsv(jikouCsv)) {
@@ -188,10 +193,10 @@ export function requestOnlyJikou(rows: readonly LifecycleRequestOnlyRow[], detai
       const byHost = trend.get([r.y, r.acct, nameKey(r.min), nameKey(r.sub), nameKey(r.org), nameKey(r.name)].join('|'));
       if (!byHost) continue;
       const best = [...byHost.values()].reduce((a, b) => (b.reduce((s, x) => s + (x.req ?? 0), 0) > a.reduce((s, x) => s + (x.req ?? 0), 0) ? b : a));
-      out.set(requestOnlyKouId(r), best);
+      out.set(sameYear.get(requestOnlyKouId(r)) ?? requestOnlyKouId(r), best);
     } else {
       const d = details[[r.y, r.kind, r.acct, r.grp, r.min, r.sub, r.org, r.name].join('|')];
-      if (d) out.set(requestOnlyKouId(r), d.j.map(([name, , req]) => ({ name, req })));
+      if (d) out.set(sameYear.get(requestOnlyKouId(r)) ?? requestOnlyKouId(r), d.j.map(([name, , req]) => ({ name, req })));
     }
   }
   return out;

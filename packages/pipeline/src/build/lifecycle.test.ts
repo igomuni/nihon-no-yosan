@@ -2,7 +2,7 @@ import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
-import { buildLifecycle, requestOnlyFromRequestKou, type LifecycleRequestOnlyRow, type LifecycleSource } from './lifecycle.ts';
+import { buildLifecycle, requestOnlyFromRequestKou, sameYearPairsOf, type LifecycleRequestOnlyRow, type LifecycleSource } from './lifecycle.ts';
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'lifecycle-test-'));
 afterAll(() => fs.rmSync(tmp, { recursive: true, force: true }));
@@ -93,6 +93,30 @@ describe('buildLifecycle', () => {
 
     it('does not change the 項 built from the 予算書', () => {
       expect(rr.kous.filter(k => k.requestOnly === undefined)).toEqual(r.kous);
+    });
+  });
+
+  describe('with a request-only 項 that is the same 項 as a 予算書の項 of the same year', () => {
+    // 予算書の「共通費」（前年度予算額 90）と、概算要求書だけにある「共通費等」（要求書の前年度予算額 90）: 同じ所属・前年度予算額が同じ・名前が近い
+    const row = (o: Partial<LifecycleRequestOnlyRow>): LifecycleRequestOnlyRow => ({ y, kind: 'reqOnly', acct: 0, grp: '内閣府', min: '内閣府', sub: '', org: '本府', name: '共通費等', req: 95, reqPrev: 90, multiBook: false, publishers: ['内閣府'], ...o });
+    const same = (rows: LifecycleRequestOnlyRow[]) => buildLifecycle({ datasetDir: tmp, requestOfMofRow: new Map(), sources: SOURCES, requestOnlyRows: rows });
+
+    it('puts the request on the 予算書の項 instead of adding a request-only 項', () => {
+      const d = same([row({})]);
+      expect(d.kous.filter(k => k.requestOnly !== undefined)).toEqual([]);
+      const i = d.kous.findIndex(k => k.year === y && k.account === 'general' && k.code === '010');
+      expect(d.kous[i]!.seenIn).toContain('request');
+      expect(d.kous[i]!.publishers).toEqual(['内閣府']);
+      const e = d.events.find(x => x[0] === i && x[5] === 'request_amount')!;
+      expect(e.slice(6, 10)).toEqual(['95', '千円', 95000, 'original']);
+      expect(e[11]).toContain('年度内の突合');
+      expect([...sameYearPairsOf(d)]).toEqual([[`${y}:general:request|内閣府||本府|共通費等`, d.kous[i]!.id]]);
+    });
+
+    it('keeps it a request-only 項 when the 前年度予算額 differs', () => {
+      const d = same([row({ reqPrev: 91 })]);
+      expect(d.kous.filter(k => k.requestOnly !== undefined).map(k => k.name)).toEqual(['共通費等']);
+      expect(sameYearPairsOf(d).size).toBe(0);
     });
   });
 

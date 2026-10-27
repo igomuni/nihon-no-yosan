@@ -10,7 +10,7 @@ import * as path from 'node:path';
 import * as fs from 'node:fs';
 import {
   LIFECYCLE_MEASURES,
-  buildLifecycleLinks,
+  buildLifecycleLinks, pairSameYear,
   nameKey,
   lifecycleValues,
   publisherOf,
@@ -23,6 +23,7 @@ import {
   type BudgetRequestMofRow,
   type LifecycleMeasure,
   type Rec,
+  type SameYearItem,
 } from '@nihon-no-yosan/core';
 import type { MofRowRequest } from './mof-ui.ts';
 
@@ -251,6 +252,20 @@ export function buildLifecycle({ datasetDir, historyDir, requestOfMofRow, reques
         events.push([i, event, version, '', part, measure, orig, LIFECYCLE_MEASURES[measure].unit, yen, state, source, note]);
       };
 
+      // 年度内の突合: 概算要求書の項に突合できなかった予算書の項と、予算書の項に突合できなかった概算要求書の項で、同じ項と判定できる組（`pairSameYear`）。
+      // 組になった概算要求書の項は、予算書の項の概算要求として結び、概算要求のみの項にしない
+      const requestOnlyKey = (r: LifecycleRequestOnlyRow): string => [r.min, r.sub, r.org, r.name].join('|');
+      const requestOnlyHere = requestOnlyRows.filter(r => r.y === year && r.acct === (account === 'general' ? 0 : 1) && r.kind === 'reqOnly' && r.req !== null);
+      const sameYear = pairSameYear(
+        requestOnlyHere.map((r): SameYearItem => ({ id: requestOnlyKey(r), unit: account === 'general' ? `${r.min}|${r.org}` : `${r.min}|${r.sub}`, name: r.name, prev: r.reqPrev })),
+        base.flatMap((r, n): SameYearItem[] => {
+          if (requestOfMofRow.has(`${year}|kou-${account}:${n + 1}`)) return [];
+          const c = colOf(r, k => k.startsWith('前年度予算額'));
+          return [{ id: String(n), unit: account === 'general' ? `${nameKey(r['所管'] ?? '')}|${nameKey(r['組織'] ?? '')}` : `${nameKey(r['特別会計'] ?? '')}|${nameKey(r['勘定'] ?? '')}`, name: nameKey(r['項名'] ?? ''), prev: c === undefined ? null : intOf(r[c]) }];
+        }),
+      );
+      const sameYearOf = new Map([...sameYear].map(([rk, bn]) => [Number(bn), requestOnlyHere.find(r => requestOnlyKey(r) === rk)!]));
+
       // 政府案（予算書。国会への提出時）。額は千円
       const budgetIndex = new Map<string, number>();
       base.forEach((r, n) => {
@@ -265,11 +280,13 @@ export function buildLifecycle({ datasetDir, historyDir, requestOfMofRow, reques
           if (v !== null) push(i, 'budget', source.budgetVersion ?? 'submitted', '', m, String(r[c!]), v * 1000, 'derived', src, note);
         }
         // 概算要求（突合できたものだけ）
-        const rq = requestOfMofRow.get(`${year}|kou-${account}:${n + 1}`);
+        const sy = sameYearOf.get(n);
+        const rq: MofRowRequest | undefined = requestOfMofRow.get(`${year}|kou-${account}:${n + 1}`) ?? (sy ? { req: sy.req, reqPrev: sy.reqPrev, merged: false, publishers: sy.publishers } : undefined);
         if (rq) {
-          const rnote = rq.merged ? '概算要求書の項を足した額（統合）' : '概算要求書（MOF 突合）';
-          if (rq.req !== null) push(i, 'request', '', '', 'request_amount', String(rq.req), rq.req * 1000, rq.merged ? 'derived' : 'original', `mof-ui:${year}|kou-${account}:${n + 1}`, rnote);
-          if (rq.reqPrev !== null) push(i, 'request', '', '', 'request_prev', String(rq.reqPrev), rq.reqPrev * 1000, rq.merged ? 'derived' : 'original', `mof-ui:${year}|kou-${account}:${n + 1}`, rnote);
+          const rnote = sy ? `概算要求書（年度内の突合: 概算要求書の項「${sy.name}」。前年度予算額が一致し、名前が近い）` : rq.merged ? '概算要求書の項を足した額（統合）' : '概算要求書（MOF 突合）';
+          const rsrc = sy ? `mof-ui:${year}|${sy.kind}:${['request', sy.min, sy.sub, sy.org, sy.name].join('|')}` : `mof-ui:${year}|kou-${account}:${n + 1}`;
+          if (rq.req !== null) push(i, 'request', '', '', 'request_amount', String(rq.req), rq.req * 1000, rq.merged ? 'derived' : 'original', rsrc, rnote);
+          if (rq.reqPrev !== null) push(i, 'request', '', '', 'request_prev', String(rq.reqPrev), rq.reqPrev * 1000, rq.merged ? 'derived' : 'original', rsrc, rnote);
           seen.get(i)!.add('request');
           if (rq.publishers.length > 0) kous[i]!.publishers = [...rq.publishers];
         }
@@ -373,6 +390,7 @@ export function buildLifecycle({ datasetDir, historyDir, requestOfMofRow, reques
       // 概算要求書にだけある項（予算書の項に結べていない）。鍵は概算要求の側（所属・名前）。要求額が読めない行は、値が無いので項にしない
       for (const r of requestOnlyRows) {
         if (r.y !== year || r.acct !== (account === 'general' ? 0 : 1) || r.req === null) continue;
+        if (sameYear.has(requestOnlyKey(r))) continue; // 年度内の突合で、予算書の項に結んだ
         const key = ['request', r.min, r.sub, r.org, r.name].join('|');
         if (index.has(key)) throw new Error(`概算要求のみの項の鍵が重複: ${year} ${key}`);
         const i = kous.length;
@@ -408,6 +426,20 @@ export function buildLifecycle({ datasetDir, historyDir, requestOfMofRow, reques
   const years = sources.map(s => s.year);
   const links = buildLifecycleLinks(kous, values, years);
   return { years, kous, events, checks, links };
+}
+
+/**
+ * 年度内の突合で予算書の項に結んだ、概算要求書にだけある項: 概算要求のみの項の id（`LifecycleKou.id` と同じ形）→ 結んだ予算書の項の id。
+ * 結んだ項の概算要求の出来事の出典（`mof-ui:{年度}|{種別}:request|…`）から読む。
+ */
+export function sameYearPairsOf(data: Pick<LifecycleData, 'kous' | 'events'>): Map<string, string> {
+  const out = new Map<string, string>();
+  for (const e of data.events) {
+    const m = /^mof-ui:(\d+)\|(?:reqOnly|zero):(request\|.*)$/.exec(e[10]);
+    const k = data.kous[e[0]]!;
+    if (m && e[1] === 'request' && !k.requestOnly) out.set(`${m[1]}:${k.account}:${m[2]}`, k.id);
+  }
+  return out;
 }
 
 /** 項の添字ごとの出来事（順は events の順のまま） */
