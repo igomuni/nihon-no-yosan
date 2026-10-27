@@ -14,6 +14,19 @@ import {
   lifecycleRowAmounts,
   lifecycleSourcePresence,
   filterJikouRows,
+  filterMokuRows,
+  kouIdsWithMoku,
+  MOKU_TEXT_SORT_KEYS,
+  mokuIndex,
+  mokuListRows,
+  mokuSelectionKey,
+  mokuSettleNote,
+  mokuSuppNote,
+  sortMokuRows,
+  type LifecycleMokuData,
+  type MokuIndex,
+  type MokuListRow,
+  type MokuSortKey,
   jikouCounts,
   jikouIndex,
   jikouListRows,
@@ -43,6 +56,8 @@ import { LifecycleFilterPane } from './LifecycleFilterPane.tsx';
 import { LifecycleJikouDetail } from './LifecycleJikouDetail.tsx';
 import { LifecycleJikouListPane } from './LifecycleJikouListPane.tsx';
 import { LifecycleListPane } from './LifecycleListPane.tsx';
+import { LifecycleMokuDetail } from './LifecycleMokuDetail.tsx';
+import { LifecycleMokuListPane } from './LifecycleMokuListPane.tsx';
 import { LifecycleSummaryPane } from './LifecycleSummaryPane.tsx';
 
 /**
@@ -90,12 +105,17 @@ export function LifecyclePage() {
   const [sortDir, setSortDir] = usePersistedState<LifecycleSortDir>('lifecycle:sortDir', -1);
   const [selectedId, setSelectedId] = usePersistedState<string | null>('lifecycle:selected', null);
   const [columnWidths, setColumnWidths] = usePersistedState<Record<string, number>>('lifecycle:columnWidths', {});
-  const [view, setView] = usePersistedState<'list' | 'jikou' | 'summary'>('lifecycle:view', 'list');
+  const [view, setView] = usePersistedState<'list' | 'jikou' | 'moku' | 'summary'>('lifecycle:view', 'list');
   // 事項の一覧（中ペインの「事項」）。選んだ事項は、`${項の id}|${事項名}` で持つ（事項のデータの添字は、データを作り直すと変わるため）
   const [selectedJikou, setSelectedJikou] = usePersistedState<string | null>('lifecycle:selectedJikou', null);
   const [jikouSortKey, setJikouSortKey] = usePersistedState<JikouSortKey>('lifecycle:jikouSortKey', 'size');
   const [jikouSortDir, setJikouSortDir] = usePersistedState<LifecycleSortDir>('lifecycle:jikouSortDir', -1);
   const [jikouColumnWidths, setJikouColumnWidths] = usePersistedState<Record<string, number>>('lifecycle:jikouColumnWidths', {});
+  // 目の一覧（中ペインの「目」）。選んだ目は、`${項の id}|${目の識別}` で持つ（`mokuSelectionKey`）
+  const [selectedMoku, setSelectedMoku] = usePersistedState<string | null>('lifecycle:selectedMoku', null);
+  const [mokuSortKey, setMokuSortKey] = usePersistedState<MokuSortKey>('lifecycle:mokuSortKey', 'size');
+  const [mokuSortDir, setMokuSortDir] = usePersistedState<LifecycleSortDir>('lifecycle:mokuSortDir', -1);
+  const [mokuColumnWidths, setMokuColumnWidths] = usePersistedState<Record<string, number>>('lifecycle:mokuColumnWidths', {});
   const [detailTab, setDetailTab] = usePersistedState<DetailTab>('lifecycle:detailTab', 'life');
   const [filterWidth, setFilterWidth] = usePersistedState('lifecycle:filterWidth', FILTER_WIDTH.def);
   const [detailWidth, setDetailWidth] = usePersistedState('lifecycle:detailWidth', DETAIL_WIDTH.def);
@@ -138,18 +158,37 @@ export function LifecyclePage() {
   const jikouState = jikouResult === null ? 'loading' : 'index' in jikouResult ? 'ready' : 'error';
   const jikouCountOf = useMemo(() => (jikou ? jikouCounts(jikou) : null), [jikou]);
 
+  // 目（lifecycle/moku.json.gz。大きいので、目のタブを開いたとき、または目名で絞るときに読む）
+  const [mokuResult, setMokuResult] = useState<{ index: MokuIndex } | { failed: true } | null>(null);
+  const mokuRequested = useRef(false);
+  const needMoku = view === 'moku' || storedFilters.mokuName?.trim();
+  useEffect(() => {
+    if (!needMoku || mokuRequested.current) return;
+    mokuRequested.current = true;
+    loadGzJson<LifecycleMokuData>('lifecycle/moku.json.gz')
+      .then(d => setMokuResult({ index: mokuIndex(d) }))
+      .catch(() => setMokuResult({ failed: true }));
+  }, [needMoku]);
+  const moku = mokuResult && 'index' in mokuResult ? mokuResult.index : null;
+  const mokuState = mokuResult === null ? 'loading' : 'index' in mokuResult ? 'ready' : 'error';
+
   const years = useMemo(() => data?.years ?? [], [data]);
   const activeYear = data ? (year !== null && years.includes(year) ? year : years[0]!) : null;
   // 年度・所管・会計・組織・項名で絞った項（値のある段階で絞る前）。段階ごとの件数は、この集合で数える
   const inYear = useMemo(() => (data && activeYear !== null ? data.kous.filter(k => k.year === activeYear) : []), [data, activeYear]);
   // 事項名の絞り込みは、その年度に事項名が合う事項を持つ項に絞る（事項のデータが届くまでは絞れないので、項の一覧は読み込み中の表示にする）
   const jikouKouSet = useMemo(() => (jikou && activeYear !== null ? kouIdsWithJikou(jikou, activeYear, filters.jikouName, filters.jikouNameRegex) : null), [jikou, activeYear, filters.jikouName, filters.jikouNameRegex]);
-  const jikouFilterNotice = filters.jikouName.trim() === '' || jikouState === 'ready' ? null : jikouState === 'loading' ? '事項を読み込み中…' : '事項の読み込みに失敗しました（npm run build:data で作る）。';
+  const mokuKouSet = useMemo(() => (moku && activeYear !== null ? kouIdsWithMoku(moku, activeYear, filters.mokuName, filters.mokuNameRegex) : null), [moku, activeYear, filters.mokuName, filters.mokuNameRegex]);
+  const jikouFilterNotice = filters.jikouName.trim() !== '' && jikouState !== 'ready'
+    ? (jikouState === 'loading' ? '事項を読み込み中…' : '事項の読み込みに失敗しました（npm run build:data で作る）。')
+    : filters.mokuName.trim() !== '' && mokuState !== 'ready'
+      ? (mokuState === 'loading' ? '目を読み込み中…' : '目の読み込みに失敗しました（npm run build:data で作る）。')
+      : null;
   const base = useMemo(() => {
     if (!data || activeYear === null) return [];
     const kous = filterLifecycleKous(data.kous.map((k, i) => ({ k, i })), filters, activeYear);
-    return jikouKouSet === null ? kous : kous.filter(({ k }) => jikouKouSet.has(k.id));
-  }, [data, activeYear, filters, jikouKouSet]);
+    return kous.filter(({ k }) => (jikouKouSet === null || jikouKouSet.has(k.id)) && (mokuKouSet === null || mokuKouSet.has(k.id)));
+  }, [data, activeYear, filters, jikouKouSet, mokuKouSet]);
   const patternCounts = useMemo(() => lifecyclePatternCounts(base.map(x => x.k)), [base]);
   const unsettledCount = useMemo(() => base.filter(({ i }) => matchesLifecycleLinks(lifecycleLinkState(linksByKou.get(i)), { ...INITIAL_LIFECYCLE_FILTERS, links: 'unsettled' })).length, [base, linksByKou]);
   const list = useMemo(
@@ -174,6 +213,25 @@ export function LifecyclePage() {
     if (k === jikouSortKey) setJikouSortDir(d => (d === 1 ? -1 : 1));
     else { setJikouSortKey(k); setJikouSortDir(k === 'publisher' || k === 'group' || k === 'acct' || k === 'org' || k === 'kou' || k === 'name' ? 1 : -1); }
   };
+  // 目の一覧: 選んだ年度の目を、項の一覧と同じフィルタ（所管・会計・組織／勘定・項名）と目名で絞る
+  const mokuRows = useMemo(() => (moku && activeYear !== null ? mokuListRows(moku, kouById, activeYear) : []), [moku, kouById, activeYear]);
+  const mokuList = useMemo(() => (activeYear === null ? [] : sortMokuRows(filterMokuRows(mokuRows, filters, activeYear), mokuSortKey, mokuSortDir)), [mokuRows, filters, activeYear, mokuSortKey, mokuSortDir]);
+  const selectedMokuNode = useMemo(() => {
+    const node = moku && selectedMoku !== null ? moku.nodeByKey.get(selectedMoku) : undefined;
+    return node !== undefined && moku!.data.nodes[node]![1] === activeYear ? node : null;
+  }, [moku, selectedMoku, activeYear]);
+  // 選んだ目の項を通る、確定した対応でたどった項（年度の古い順）
+  const kouIndexById = useMemo(() => new Map((data?.kous ?? []).map((k, i) => [k.id, i])), [data]);
+  const mokuChainKouIds = useMemo(() => {
+    if (!moku || selectedMokuNode === null || !data) return [];
+    const i = kouIndexById.get(moku.data.kous[moku.data.nodes[selectedMokuNode]![0]]!);
+    return i === undefined ? [] : chainOf(i).members.map(m => data.kous[m]!.id);
+  }, [moku, selectedMokuNode, kouIndexById, chainOf, data]);
+  const mokuWhy = (r: MokuListRow) => (moku ? { supp: mokuSuppNote(moku.data, moku.data.nodes[r.node]!), settle: mokuSettleNote(moku.data, moku.data.nodes[r.node]!) } : { supp: null, settle: null });
+  const onMokuSort = (k: MokuSortKey) => {
+    if (k === mokuSortKey) setMokuSortDir(d => (d === 1 ? -1 : 1));
+    else { setMokuSortKey(k); setMokuSortDir(MOKU_TEXT_SORT_KEYS.includes(k) ? 1 : -1); }
+  };
   const jikouKeyOf = (node: number): string => `${jikou!.data.kous[jikou!.data.nodes[node]![0]]}|${jikou!.data.nodes[node]![2]}`;
   const onSort = (k: LifecycleSortKey) => {
     if (k === sortKey) setSortDir(d => (d === 1 ? -1 : 1));
@@ -189,7 +247,7 @@ export function LifecyclePage() {
   const checks = data.checks.filter(c => c.year === activeYear);
   const listed = (names: string[]): string => (names.length === 0 ? 'すべて' : names.join('、'));
   const text = (label: string, value: string, regex: boolean): string => (value.trim() === '' ? '' : ` · ${label}: 「${value.trim()}」${regex ? '（正規表現）' : ''}`);
-  const scope = `FY${activeYear}${filters.publishers.length > 0 ? ` · 要求所管: ${listed(filters.publishers)}` : ''} · 予算所管: ${listed(filters.groups)} · 会計: ${listed(filters.accts)}${text('組織／勘定', filters.org, filters.orgRegex)}${text('項名', filters.name, filters.nameRegex)}${text('事項名', filters.jikouName, filters.jikouNameRegex)} · 値のある段階: ${LIFECYCLE_PATTERNS.find(p => p.id === filters.pattern)!.label}${filters.links === 'unsettled' ? ' · 年度をまたぐ対応: 未確定のみ' : ''}`;
+  const scope = `FY${activeYear}${filters.publishers.length > 0 ? ` · 要求所管: ${listed(filters.publishers)}` : ''} · 予算所管: ${listed(filters.groups)} · 会計: ${listed(filters.accts)}${text('組織／勘定', filters.org, filters.orgRegex)}${text('項名', filters.name, filters.nameRegex)}${text('事項名', filters.jikouName, filters.jikouNameRegex)}${text('目名', filters.mokuName, filters.mokuNameRegex)} · 値のある段階: ${LIFECYCLE_PATTERNS.find(p => p.id === filters.pattern)!.label}${filters.links === 'unsettled' ? ' · 年度をまたぐ対応: 未確定のみ' : ''}`;
 
   return (
     <div className="flex h-screen flex-col bg-neutral-50 text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
@@ -198,25 +256,27 @@ export function LifecyclePage() {
           <h1 className="text-base font-semibold">予算の推移</h1>
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          <YearSelect value={String(activeYear)} onChange={y => { setYear(Number(y)); setSelectedId(null); setSelectedJikou(null); }} years={years} />
+          <YearSelect value={String(activeYear)} onChange={y => { setYear(Number(y)); setSelectedId(null); setSelectedJikou(null); setSelectedMoku(null); }} years={years} />
           <PageNavMenu current="lifecycle" />
         </div>
       </header>
       <main className="grid min-h-0 flex-1 grid-cols-1 gap-3 px-3 pb-3 lg:grid-cols-[240px_minmax(0,1fr)] xl:flex xl:gap-0">
         <section aria-label="フィルタ" className={`${pane} overflow-hidden xl:w-[var(--fw)] xl:shrink-0`} style={{ '--fw': `${filterWidth}px` } as CSSProperties}>
-          <LifecycleFilterPane allKous={data?.kous ?? NO_KOUS} inYear={inYear} patternCounts={patternCounts} unsettledCount={unsettledCount} filters={filters} onChange={f => { setFilters(f); setSelectedId(null); setSelectedJikou(null); }} />
+          <LifecycleFilterPane allKous={data?.kous ?? NO_KOUS} inYear={inYear} patternCounts={patternCounts} unsettledCount={unsettledCount} filters={filters} onChange={f => { setFilters(f); setSelectedId(null); setSelectedJikou(null); setSelectedMoku(null); }} />
         </section>
         <Splitter label="フィルタの幅" width={filterWidth} limits={FILTER_WIDTH} dir={1} onChange={setFilterWidth} />
         <section aria-label="項の一覧" className={`${pane} flex flex-col overflow-hidden xl:min-w-0 xl:flex-1`}>
           <div role="tablist" aria-label="表示" className="flex shrink-0 gap-1 border-b border-neutral-200 px-3 pt-2 text-xs dark:border-neutral-800">
-            {(['list', 'jikou', 'summary'] as const).map(v => (
+            {(['list', 'jikou', 'moku', 'summary'] as const).map(v => (
               <button key={v} type="button" role="tab" aria-selected={view === v} onClick={() => setView(v)} className={`rounded-t border-b-2 px-2.5 py-1 ${view === v ? 'border-emerald-600 font-semibold text-neutral-900 dark:text-neutral-100' : 'border-transparent text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'}`}>
-                {v === 'list' ? '項' : v === 'jikou' ? '事項' : '集計'}
+                {v === 'list' ? '項' : v === 'jikou' ? '事項' : v === 'moku' ? '目' : '集計'}
               </button>
             ))}
           </div>
           <div className={`min-h-0 flex-1 ${view === 'summary' ? 'overflow-auto' : 'overflow-hidden'}`}>
-            {view === 'jikou'
+            {view === 'moku'
+              ? <LifecycleMokuListPane items={mokuList} loading={mokuState === 'loading'} failed={mokuState === 'error'} sortKey={mokuSortKey} sortDir={mokuSortDir} onSort={onMokuSort} selectedNode={selectedMokuNode} onSelect={r => setSelectedMoku(mokuSelectionKey(moku!, r.node))} widths={mokuColumnWidths} onWidthsChange={setMokuColumnWidths} suppNote={mokuWhy} />
+              : view === 'jikou'
               ? <LifecycleJikouListPane items={jikouList} loading={jikouState === 'loading'} failed={jikouState === 'error'} sortKey={jikouSortKey} sortDir={jikouSortDir} onSort={onJikouSort} selectedNode={selectedJikouNode} onSelect={r => setSelectedJikou(`${r.k.id}|${r.name}`)} widths={jikouColumnWidths} onWidthsChange={setJikouColumnWidths} />
               : view === 'list'
               ? <LifecycleListPane items={list} notice={jikouFilterNotice} jikouLoading={jikouState === 'loading'} sortKey={sortKey} sortDir={sortDir} onSort={onSort} selectedId={kou?.id ?? null} onSelect={k => setSelectedId(k.id)} widths={columnWidths} onWidthsChange={setColumnWidths} />
@@ -231,8 +291,19 @@ export function LifecyclePage() {
           </div>
         </section>
         <Splitter label="詳細の幅" width={detailWidth} limits={DETAIL_WIDTH} dir={-1} onChange={setDetailWidth} />
-        <section aria-label={view === 'jikou' ? '事項の詳細' : '項の一生'} className={`${pane} overflow-auto lg:col-span-2 xl:col-span-1 xl:w-[var(--dw)] xl:shrink-0`} style={{ '--dw': `${detailWidth}px` } as CSSProperties}>
-          {view === 'jikou' ? (
+        <section aria-label={view === 'jikou' ? '事項の詳細' : view === 'moku' ? '目の詳細' : '項の一生'} className={`${pane} overflow-auto lg:col-span-2 xl:col-span-1 xl:w-[var(--dw)] xl:shrink-0`} style={{ '--dw': `${detailWidth}px` } as CSSProperties}>
+          {view === 'moku' ? (
+            <LifecycleMokuDetail
+              moku={moku}
+              loading={mokuState === 'loading'}
+              failed={mokuState === 'error'}
+              node={selectedMokuNode}
+              kouOf={kouById}
+              chainKouIds={mokuChainKouIds}
+              onSelectNode={node => { setYear(moku!.data.nodes[node]![1]); setSelectedMoku(mokuSelectionKey(moku!, node)); }}
+              onOpenKou={k => { setYear(k.year); setSelectedId(k.id); setView('list'); setDetailTab('life'); }}
+            />
+          ) : view === 'jikou' ? (
             <LifecycleJikouDetail
               jikou={jikou}
               loading={jikouState === 'loading'}

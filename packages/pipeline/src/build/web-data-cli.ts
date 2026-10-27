@@ -8,6 +8,7 @@
  *   mof/{kou,detail}.json.gz           概算要求と当初予算の差（`docs/guides/mof-ui.md`）
  *   lifecycle/data.json.gz             予算の一生の表（`docs/guides/budget-lifecycle.md`）
  *   lifecycle/jikou.json.gz            予算の一生の画面の事項タブ用（`docs/guides/lifecycle-jikou.md`。タブを開いたときに読む）
+ *   lifecycle/moku.json.gz             予算の一生の画面の目タブ用（`docs/guides/lifecycle-moku.md`。タブを開いたときに読む）
  *   about.json                         出典と利用条件（`docs/guides/web-publish.md`）
  * 出力ディレクトリは git に入れない（`.gitignore` の `data/`）。
  */
@@ -19,6 +20,7 @@ import { buildBudgetRequestJikouYoukyu } from './jikou-youkyu.ts';
 import { buildJikouLinkData } from './jikou-links.ts';
 import { buildLifecycle, lifecycleRequestOnlyRows, lifecycleSources, sameYearPairsOf } from './lifecycle.ts';
 import { buildLifecycleJikou, mofRowKouIds, requestOnlyJikou } from './lifecycle-jikou.ts';
+import { buildLifecycleMoku } from './lifecycle-moku.ts';
 import { buildBudgetRequestMofUi, mofUiMatchesFromDataset } from './mof-ui.ts';
 import { buildBudgetRequestTrend, matchesFromDataset } from './trend.ts';
 import { buildBudgetRequestTrendDetail } from './trend-detail.ts';
@@ -61,6 +63,14 @@ const lifecycleJikou = buildLifecycleJikou(
 );
 if (Object.keys(lifecycleJikou.unmatched).length > 0) throw new Error(`項に結べない事項がある: ${JSON.stringify(lifecycleJikou.unmatched)}`);
 if (lifecycleJikou.unplaced > 0) throw new Error(`予算書の事項に置けない概算要求の事項がある: ${lifecycleJikou.unplaced}`);
+// 目（当初予算・補正・決算・概算要求）。目の項が予算の一生の表に無ければ止まる
+const lifecycleMoku = buildLifecycleMoku({
+  datasetDir: dataset,
+  historyDir,
+  sources: lifecycleSources(historyDir),
+  kous: lifecycle.kous,
+  request: new Map([...mof.mokuOfMofRow].map(([row, v]) => [kouIdOfMofRow.get(row) ?? fail(`予算書の項の行が無い: ${row}`), v])),
+});
 
 const outputs: [string, Buffer][] = [
   ['trend/kou.json.gz', trend.uiGz],
@@ -70,6 +80,7 @@ const outputs: [string, Buffer][] = [
   ['mof/detail.json.gz', mof.detailGz],
   ['lifecycle/data.json.gz', gz(lifecycle)],
   ['lifecycle/jikou.json.gz', gz(lifecycleJikou.data)],
+  ['lifecycle/moku.json.gz', gz(lifecycleMoku.data)],
 ];
 for (const [name, bytes] of outputs) {
   fs.mkdirSync(path.dirname(path.join(outDir, name)), { recursive: true });
@@ -103,3 +114,4 @@ const about: SiteAbout = {
 };
 fs.writeFileSync(path.join(outDir, 'about.json'), JSON.stringify(about, null, 1) + '\n');
 console.log(`wrote ${outputs.length + 1} files to ${outDir}`);
+console.log(`目: ${JSON.stringify(lifecycleMoku.stats)}`);

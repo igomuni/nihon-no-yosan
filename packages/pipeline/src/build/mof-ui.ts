@@ -80,6 +80,8 @@ export interface MofUiResult {
   requestOfMofRow: Map<string, MofRowRequest>;
   /** 対応ありの予算書の項（`requestOfMofRow` と同じキー）→ その項の事項（名前でつないだ結果。`detail.json.gz` の `j` と同じ）。要求側の内訳が取れていない項は `noReq` */
   jikouOfMofRow: Map<string, { j: BudgetRequestMofDetail['j']; noReq: boolean }>;
+  /** 対応ありの予算書の項（`requestOfMofRow` と同じキー）→ その項の目（名前でつないだ結果。`detail.json.gz` の `m` と同じ） */
+  mokuOfMofRow: Map<string, { m: BudgetRequestMofDetail['m']; noReq: boolean }>;
 }
 
 /** 予算書の項に対応する概算要求の額（千円）。`merged` = 複数の要求の項を足した額（統合） */
@@ -117,6 +119,7 @@ export function buildBudgetRequestMofUi({ datasetDir, matches, mofMatches, trend
   const summary: Record<string, unknown> = {};
   const requestOfMofRow = new Map<string, MofRowRequest>();
   const jikouOfMofRow = new Map<string, { j: BudgetRequestMofDetail['j']; noReq: boolean }>();
+  const mokuOfMofRow = new Map<string, { m: BudgetRequestMofDetail['m']; noReq: boolean }>();
 
   for (const [year, ver] of MOF_UI_VERSIONS) {
     const Y = String(year);
@@ -250,6 +253,7 @@ export function buildBudgetRequestMofUi({ datasetDir, matches, mofMatches, trend
       requestOfMofRow.set(`${year}|${id}`, { req, reqPrev, merged: items.length > 1, publishers: [...new Set(books.map(([u]) => publisherOf(urls[u] ?? '')).filter(Boolean))] });
       const detail = detailOf(detailReq, id);
       jikouOfMofRow.set(`${year}|${id}`, { j: detail.j, noReq: detail.noReq === 1 });
+      mokuOfMofRow.set(`${year}|${id}`, { m: detail.m, noReq: detail.noReq === 1 });
       push({
         y: year, kind: 'matched', acct, grp: ns(r['所管']!), min: acct === 0 ? ns(r['所管']!) : ns(r['特別会計']!), sub: acct === 1 ? ns(r['勘定']!) : '', org: acct === 0 ? ns(r['組織']!) : '',
         name: names.length > 1 ? names.join(' ＋ ') : ns(top.m['request_name']!), mof: mofAmt(r), mofPrev: mofPrevOf(r), req, reqPrev, books, types: [...types],
@@ -298,5 +302,5 @@ export function buildBudgetRequestMofUi({ datasetDir, matches, mofMatches, trend
   }
 
   const data: BudgetRequestMofData = { years: MOF_UI_VERSIONS.map(([y]) => y), versions: Object.fromEntries(MOF_UI_VERSIONS.map(([y, v]) => [String(y), v])), urls, rows };
-  return { files: { 'summary.json': JSON.stringify(summary, null, 1) + '\n' }, data, details, kouGz: gz(data), detailGz: gz({ rows: details }), summary, requestOfMofRow, jikouOfMofRow };
+  return { files: { 'summary.json': JSON.stringify(summary, null, 1) + '\n' }, data, details, kouGz: gz(data), detailGz: gz({ rows: details }), summary, requestOfMofRow, jikouOfMofRow, mokuOfMofRow };
 }
