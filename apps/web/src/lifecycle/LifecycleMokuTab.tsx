@@ -24,7 +24,7 @@ import { TrendChart, type TrendPoint } from './charts.tsx';
 import { kouTitle, num, td, th } from './shared.ts';
 
 const exact = (v: number): string => `${v.toLocaleString('ja-JP', { maximumFractionDigits: 3 })} 千円`;
-const amount = (v: number): string => (v === 0 ? '0円' : formatSen(v));
+export const amount = (v: number): string => (v === 0 ? '0円' : formatSen(v));
 
 /** 目の値が無い理由（表示用） */
 function why(data: LifecycleMokuData, n: LifecycleMokuNode, key: MokuMeasure): string {
@@ -39,7 +39,7 @@ function why(data: LifecycleMokuData, n: LifecycleMokuNode, key: MokuMeasure): s
   return '当初予算に無い目（補正か決算で出る目）';
 }
 
-function Cell({ data, node, measure, current }: { data: LifecycleMokuData; node: number | undefined; measure: MokuMeasure; current?: boolean }) {
+export function Cell({ data, node, measure, current }: { data: LifecycleMokuData; node: number | undefined; measure: MokuMeasure; current?: boolean }) {
   const hl = current ? 'bg-emerald-50/60 dark:bg-emerald-950/20' : '';
   if (node === undefined) return <td className={`${num} ${hl} text-neutral-300 dark:text-neutral-600`} title="この年度に、この目は無い">·</td>;
   const n = data.nodes[node]!;
@@ -52,7 +52,7 @@ function Cell({ data, node, measure, current }: { data: LifecycleMokuData; node:
 /** 共管別の行の共管（所管 / 組織） */
 const partLabel = (part: string): string => part.replace(/#\d+$/, '').split('|').filter(Boolean).join(' / ');
 
-function Marks({ n }: { n: LifecycleMokuNode }) {
+export function Marks({ n }: { n: LifecycleMokuNode }) {
   const part = partLabel(n[4]);
   return (
     <>
@@ -124,7 +124,7 @@ function chosenRows(rows: readonly MokuKouRow[], picked: string[] | null): MokuK
 }
 
 /** 年度を縦にした表と、選んだ年度の内訳に出す値（事項のタブの `YEAR_COLS` に当たる。決算の値を足す） */
-const YEAR_COLS: { key: MokuMeasure; label: string }[] = [
+export const YEAR_COLS: { key: MokuMeasure; label: string }[] = [
   { key: 'request', label: '要求' },
   { key: 'budget', label: '政府案' },
   { key: 'revised', label: '補正後' },
