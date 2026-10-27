@@ -19,6 +19,7 @@ import {
   type LifecycleStage,
 } from '@nihon-no-yosan/core';
 import { Icon } from '../components/Icon.tsx';
+import { scrollRowIntoView } from '../components/scrollRowIntoView.ts';
 
 /** ドラッグ中のカーソル（イベントの外から body を変えるので、関数にまとめる） */
 function setBodyCursor(value: string): void {
@@ -108,7 +109,7 @@ export function LifecycleListPane({ items, notice, jikouLoading, sortKey, sortDi
   useEffect(() => {
     if (selectedId === null) return;
     const el = [...(scrollRef.current?.querySelectorAll<HTMLElement>('tr[data-row-key]') ?? [])].find(e => e.dataset.rowKey === selectedId);
-    el?.scrollIntoView({ block: 'nearest' });
+    scrollRowIntoView(scrollRef.current, el);
   }, [selectedId]);
   const widthOf = (k: LifecycleSortKey) => widths[k] ?? DEFAULT_COLUMN_WIDTHS[k];
   const tableWidth = COLS.reduce((n, c) => n + widthOf(c.key), 0);

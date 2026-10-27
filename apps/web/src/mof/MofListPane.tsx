@@ -19,6 +19,7 @@ import {
 import { Icon } from '../components/Icon.tsx';
 import { changeColor } from '../trend/format.ts';
 import { TYPE_INFO } from './typeInfo.ts';
+import { scrollRowIntoView } from '../components/scrollRowIntoView.ts';
 
 /** ドラッグ中のカーソル（イベントの外から body を変えるので、関数にまとめる） */
 function setBodyCursor(value: string): void {
@@ -71,7 +72,7 @@ export function MofListPane({
   useEffect(() => {
     if (selectedKey === null) return;
     const el = [...(scrollRef.current?.querySelectorAll<HTMLElement>('tr[data-row-key]') ?? [])].find(e => e.dataset.rowKey === selectedKey);
-    el?.scrollIntoView({ block: 'nearest' });
+    scrollRowIntoView(scrollRef.current, el);
   }, [selectedKey]);
   const widthOf = (k: MofSortKey) => widths[k] ?? DEFAULT_COLUMN_WIDTHS[k];
   const tableWidth = cols.reduce((n, c) => n + widthOf(c.key), 0);
