@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent as ReactMouseEvent } from 'react';
+import { usePaneKeys } from '../components/useListKeys.ts';
 import {
   INITIAL_LIFECYCLE_FILTERS,
   LIFECYCLE_PATTERNS,
@@ -95,6 +96,7 @@ function Splitter({ label, width, limits, dir, onChange }: { label: string; widt
 const NO_KOUS: readonly LifecycleKou[] = [];
 
 export function LifecyclePage() {
+  usePaneKeys();
   const [data, setData] = useState<LifecycleData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [year, setYear] = usePersistedState<number | null>('lifecycle:year', null);
@@ -283,7 +285,7 @@ export function LifecyclePage() {
               </button>
             ))}
           </div>
-          <div className={`min-h-0 flex-1 ${view === 'summary' ? 'overflow-auto' : 'overflow-hidden'}`}>
+          <div {...(view === 'summary' ? { 'data-pane': 'list', tabIndex: -1 } : {})} className={`min-h-0 flex-1 ${view === 'summary' ? `overflow-auto outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-500/50` : 'overflow-hidden'}`}>
             {view === 'moku'
               ? <LifecycleMokuListPane items={mokuList} loading={mokuState === 'loading'} failed={mokuState === 'error'} sortKey={mokuSortKey} sortDir={mokuSortDir} onSort={onMokuSort} selectedNode={selectedMokuNode} onSelect={r => setSelectedMoku(mokuSelectionKey(moku!, r.node))} widths={mokuColumnWidths} onWidthsChange={setMokuColumnWidths} suppNote={mokuWhy} />
               : view === 'jikou'
@@ -301,7 +303,7 @@ export function LifecyclePage() {
           </div>
         </section>
         <Splitter label="詳細の幅" width={detailWidth} limits={DETAIL_WIDTH} dir={-1} onChange={setDetailWidth} />
-        <section aria-label={view === 'jikou' ? '事項の詳細' : view === 'moku' ? '目の詳細' : '項の一生'} className={`${pane} overflow-auto lg:col-span-2 xl:col-span-1 xl:w-[var(--dw)] xl:shrink-0`} style={{ '--dw': `${detailWidth}px` } as CSSProperties}>
+        <section aria-label={view === 'jikou' ? '事項の詳細' : view === 'moku' ? '目の詳細' : '項の一生'} data-pane="detail" tabIndex={-1} className={`${pane} overflow-auto lg:col-span-2 xl:col-span-1 xl:w-[var(--dw)] xl:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-500/50`} style={{ '--dw': `${detailWidth}px` } as CSSProperties}>
           {view === 'moku' ? (
             <LifecycleMokuDetail
               moku={moku}
