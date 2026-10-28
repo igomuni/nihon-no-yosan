@@ -155,8 +155,8 @@ function Mark({ shape, x, y, className }: { shape: (typeof TREND_SERIES)[number]
  * 繰越額（前年度繰越・翌年度繰越）の値がある年度があれば、年度ごとの棒（0 から）を線の後ろに描き、右に棒の目盛りを置く（左は線の目盛り。繰越額は現額よりずっと小さいので、軸を分ける）。
  * このとき年度は、棒がはみ出さないよう、列の中央に置く。
  */
-export function TrendChart({ points, current, onSelect, series }: { points: readonly TrendPoint[]; current: number; onSelect?: (year: number) => void; /** 描く系列。省略すると 4 つすべて（事項は決算が無いので、決算を除く） */ series?: readonly TrendSeriesKey[] }) {
-  const shown = TREND_SERIES.filter(s => !series || series.includes(s.key));
+export function TrendChart({ points, current, onSelect, series, labels }: { points: readonly TrendPoint[]; current: number; onSelect?: (year: number) => void; /** 描く系列。省略すると 4 つすべて（事項は決算が無いので、決算を除く） */ series?: readonly TrendSeriesKey[]; /** 系列の名前を変える（RS は、政府案 = 当初予算、補正後 = 歳出予算現額、決算 = 執行額）。繰越額の棒は、同じ名前 */ labels?: Partial<Record<TrendSeriesKey, string>> }) {
+  const shown = TREND_SERIES.filter(s => !series || series.includes(s.key)).map(s => ({ ...s, label: labels?.[s.key] ?? s.label }));
   const bars = CARRY_BARS.filter(b => points.some(p => p[b.key] !== undefined));
   const W = 560, H = 230, top = 12, bottom = 30, left = 74, right = bars.length > 0 ? 66 : 14;
   const plotW = W - left - right, plotH = H - top - bottom;

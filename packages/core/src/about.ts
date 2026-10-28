@@ -19,4 +19,6 @@ export interface SiteAbout {
   authorities: SiteAboutAuthority[];
   /** 予算書の出どころ */
   budgetBook: { authority: string; domain: string; termsUrl: string };
+  /** RS（行政事業レビュー）の事業を載せた版だけ。出典と利用条件（`docs/guides/rs-tab.md`） */
+  rs?: { authority: string; domain: string; termsUrl: string; /** 事業の数 */ jigyo: number; /** 予算年度 */ years: number[] };
 }
