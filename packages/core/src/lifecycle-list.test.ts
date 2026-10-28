@@ -63,6 +63,11 @@ describe('sortLifecycleRows', () => {
     expect(sortLifecycleRows(withJikou, 'jikou', -1).map(r => r.k.id)).toEqual(['c', 'a', 'b', 'd']);
     expect(sortLifecycleRows(withJikou, 'jikou', 1).map(r => r.k.id)).toEqual(['a', 'c', 'b', 'd']);
   });
+  it('sorts by the number of 目 in the same way', () => {
+    const withMoku = [{ ...row('a', {}), moku: { total: 30 } }, { ...row('b', {}), moku: null }, { ...row('c', {}), moku: { total: 4 } }];
+    expect(sortLifecycleRows(withMoku, 'moku', -1).map(r => r.k.id)).toEqual(['a', 'c', 'b']);
+    expect(sortLifecycleRows(withMoku, 'moku', 1).map(r => r.k.id)).toEqual(['c', 'a', 'b']);
+  });
   it('size is the largest of the current, budget and request amounts', () => {
     expect(lifecycleRowAmounts({ request_amount: 3, budget_amount: 5, current_amount: 4 }).size).toBe(5);
     expect(lifecycleRowAmounts({}).size).toBe(0);

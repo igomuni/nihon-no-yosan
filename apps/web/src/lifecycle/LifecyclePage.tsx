@@ -16,6 +16,7 @@ import {
   filterMokuRows,
   kouIdsWithMoku,
   MOKU_TEXT_SORT_KEYS,
+  mokuCounts,
   mokuIndex,
   mokuListRows,
   mokuSelectionKey,
@@ -182,7 +183,7 @@ export function LifecyclePage() {
   // 目（lifecycle/moku.json.gz。大きいので、中ペインの「目」を開いたとき、または目名で絞るときに読む）
   const [mokuResult, setMokuResult] = useState<{ index: MokuIndex } | { failed: true } | null>(null);
   const mokuRequested = useRef(false);
-  const needMoku = view === 'moku' || (view === 'list' && selectedId !== null) || storedFilters.mokuName?.trim();
+  const needMoku = view === 'moku' || view === 'list' || storedFilters.mokuName?.trim();
   useEffect(() => {
     if (!needMoku || mokuRequested.current) return;
     mokuRequested.current = true;
@@ -192,6 +193,7 @@ export function LifecyclePage() {
   }, [needMoku]);
   const moku = mokuResult && 'index' in mokuResult ? mokuResult.index : null;
   const mokuState = mokuResult === null ? 'loading' : 'index' in mokuResult ? 'ready' : 'error';
+  const mokuCountOf = useMemo(() => (moku ? mokuCounts(moku.data) : null), [moku]);
 
   useEffect(() => {
     let alive = true;
@@ -233,12 +235,12 @@ export function LifecyclePage() {
   const list = useMemo(
     () => sortLifecycleRows(
       base
-        .map(({ k, i }) => { const chain = chainOf(i); const span = lifecycleChainSpan(data?.kous ?? [], chain); return { k, i, a: lifecycleRowAmounts(valuesOf.get(i) ?? {}), link: lifecycleLinkState(linksByKou.get(i)), linkGap: lifecycleLinkGap(presence, years, data?.kous ?? [], i, linksByKou.get(i)), chain, span, years: span.years, jikou: jikouCountOf?.get(k.id) ?? null }; })
+        .map(({ k, i }) => { const chain = chainOf(i); const span = lifecycleChainSpan(data?.kous ?? [], chain); return { k, i, a: lifecycleRowAmounts(valuesOf.get(i) ?? {}), link: lifecycleLinkState(linksByKou.get(i)), linkGap: lifecycleLinkGap(presence, years, data?.kous ?? [], i, linksByKou.get(i)), chain, span, years: span.years, jikou: jikouCountOf?.get(k.id) ?? null, moku: mokuCountOf?.get(k.id) ?? null }; })
         .filter(({ k, link }) => matchesLifecyclePattern(k, filters) && matchesLifecycleLinks(link, filters)),
       sortKey,
       sortDir,
     ),
-    [base, data, chainOf, filters, valuesOf, linksByKou, jikouCountOf, presence, years, sortKey, sortDir],
+    [base, data, chainOf, filters, valuesOf, linksByKou, jikouCountOf, mokuCountOf, presence, years, sortKey, sortDir],
   );
   // 事項の一覧: 選んだ年度の事項を、項の一覧と同じフィルタ（所管・会計・組織／勘定・項名）と事項名で絞る
   const kouById = useMemo(() => new Map((data?.kous ?? []).map(k => [k.id, k])), [data]);
@@ -335,7 +337,7 @@ export function LifecyclePage() {
               ? <LifecycleMokuListPane items={mokuList} loading={mokuState === 'loading'} failed={mokuState === 'error'} sortKey={mokuSortKey} sortDir={mokuSortDir} onSort={onMokuSort} selectedNode={selectedMokuNode} onSelect={r => setSelectedMoku(mokuSelectionKey(moku!, r.node))} widths={mokuColumnWidths} onWidthsChange={setMokuColumnWidths} suppNote={mokuWhy} />
               : view === 'jikou'
               ? <LifecycleJikouListPane items={jikouList} loading={jikouState === 'loading'} failed={jikouState === 'error'} sortKey={jikouSortKey} sortDir={jikouSortDir} onSort={onJikouSort} selectedNode={selectedJikouNode} onSelect={r => setSelectedJikou(`${r.k.id}|${r.name}`)} widths={jikouColumnWidths} onWidthsChange={setJikouColumnWidths} />
-              : <LifecycleListPane items={list} notice={jikouFilterNotice} jikouLoading={jikouState === 'loading'} sortKey={sortKey} sortDir={sortDir} onSort={onSort} selectedId={kou?.id ?? null} onSelect={k => setSelectedId(k.id)} widths={columnWidths} onWidthsChange={setColumnWidths} />}
+              : <LifecycleListPane items={list} notice={jikouFilterNotice} jikouLoading={jikouState === 'loading'} mokuLoading={mokuState === 'loading'} sortKey={sortKey} sortDir={sortDir} onSort={onSort} selectedId={kou?.id ?? null} onSelect={k => setSelectedId(k.id)} widths={columnWidths} onWidthsChange={setColumnWidths} />}
           </div>
         </section>
         <Splitter label="詳細の幅" width={detailWidth} limits={DETAIL_WIDTH} dir={-1} onChange={setDetailWidth} />

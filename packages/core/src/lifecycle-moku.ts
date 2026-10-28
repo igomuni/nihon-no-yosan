@@ -124,6 +124,26 @@ export function mokuListRows(index: MokuIndex, kouById: ReadonlyMap<string, Life
   return rows;
 }
 
+export interface MokuCount {
+  /** 項の下の目の数（その年度の項 1 つ分）。決算の共管別の行（元の目の決算を共管の組織ごとに分けた行）は、別の目として数えない */
+  total: number;
+  /** うち、概算要求書にだけある目（予算書に、同じ名前の目が無い） */
+  requestOnly: number;
+}
+
+/** 項（`LifecycleKou.id`）ごとの目の数。目の無い項は入らない（値なし）。目は、目名と分類コードで数える（共管別の行は、同じ目の行） */
+export function mokuCounts(data: LifecycleMokuData): Map<string, MokuCount> {
+  const keys = new Map<string, Set<string>>();
+  const requestOnly = new Map<string, Set<string>>();
+  for (const n of data.nodes) {
+    const id = data.kous[n[0]]!;
+    const key = `${n[2]}|${n[3]}`;
+    (keys.get(id) ?? keys.set(id, new Set()).get(id)!).add(key);
+    if (n[13] & MOKU_FLAG.requestOnly) (requestOnly.get(id) ?? requestOnly.set(id, new Set()).get(id)!).add(key);
+  }
+  return new Map([...keys].map(([id, set]) => [id, { total: set.size, requestOnly: requestOnly.get(id)?.size ?? 0 }]));
+}
+
 /** 確認済み年度: `mokuFlow` でたどった年度のうち、選んだ目から続けて同じ目が見つかった範囲（途中で見つからない年度があれば、そこで止める） */
 export function mokuSpan(index: MokuIndex, node: number, chainKouIds: readonly string[]): { from: number; to: number; years: number } {
   const flow = mokuFlow(index, node, chainKouIds);

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { LifecycleKou } from './lifecycle.ts';
 import { INITIAL_LIFECYCLE_FILTERS } from './lifecycle-list.ts';
-import { MOKU_FLAG, MOKU_MEASURES, filterMokuRows, isSettleMeasure, kouIdsWithMoku, mokuChartSum, mokuFlow, mokuIndex, mokuKouTable, mokuListRows, mokuSelectionKey, mokuSpan, mokuSettleNote, mokuSuppNote, mokuValue, sortMokuRows, type LifecycleMokuData, type LifecycleMokuNode } from './lifecycle-moku.ts';
+import { MOKU_FLAG, MOKU_MEASURES, filterMokuRows, isSettleMeasure, kouIdsWithMoku, mokuChartSum, mokuCounts, mokuFlow, mokuIndex, mokuKouTable, mokuListRows, mokuSelectionKey, mokuSpan, mokuSettleNote, mokuSuppNote, mokuValue, sortMokuRows, type LifecycleMokuData, type LifecycleMokuNode } from './lifecycle-moku.ts';
 
 const kou = (id: string, o: Partial<LifecycleKou> = {}): LifecycleKou => ({ id, year: 2024, account: 'general', ministry: '財務省', org: '財務本省', specialAccount: '', subAccount: '', code: '001', name: id, seenIn: ['budget'], ...o });
 const A23 = kou('2023:general:A', { year: 2023, name: '項A' }), A24 = kou('2024:general:A', { name: '項A' }), B24 = kou('2024:general:B', { name: '項B', ministry: '法務省', org: '法務本省' });
@@ -147,5 +147,19 @@ describe('mokuChartSum', () => {
   it('skips a 目 that is not in the stage (a 目 only in the 概算要求書 has no 政府案), and adds every 目 of the 概算要求 when all of them are chosen', () => {
     expect(mokuChartSum(data, [2, 5], 'budget', false)).toBe(120); // 調査費は概算要求書にだけある目
     expect(mokuChartSum(data, [2, 5], 'request', true)).toBe(170);
+  });
+});
+
+describe('mokuCounts', () => {
+  it('counts the 目 of each 項 by name and codes, and counts the 目 only in the 概算要求書 apart', () => {
+    const c = mokuCounts(data);
+    expect(c.get(A23.id)).toEqual({ total: 2, requestOnly: 0 });
+    expect(c.get(B24.id)).toEqual({ total: 2, requestOnly: 1 }); // 調査費は概算要求書にだけある目
+    expect(c.has('2099:general:none')).toBe(false); // 目の無い項は入らない
+  });
+
+  it('does not count a 共管 row of the 決算 as another 目', () => {
+    const d: LifecycleMokuData = { ...data, nodes: [n(0, 2023, '庁費', '1|2', { budget: 1 }), n(0, 2023, '庁費', '1|2', { current: 2 }, MOKU_FLAG.settlePart, '内閣府|内閣本府'), n(0, 2023, '庁費', '1|2', { current: 3 }, MOKU_FLAG.settlePart, '法務省|法務本省')] };
+    expect(mokuCounts(d).get(A23.id)).toEqual({ total: 1, requestOnly: 0 });
   });
 });
