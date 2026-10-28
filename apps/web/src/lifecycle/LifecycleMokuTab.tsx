@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   MOKU_FLAG,
   MOKU_MEASURES,
-  MOKU_REQUEST_COVERAGE_LABEL,
   formatSen,
   mokuKouTable,
   mokuMeasure,
@@ -203,7 +202,6 @@ export function LifecycleMokuTab({ kou, chain, kous, valuesOf, moku, loading, fa
   if (failed) return <p className="p-4 text-xs text-red-700">目の読み込みに失敗しました（<code>npm run build:data</code> で作る）。</p>;
   if (loading || !moku) return <p className="p-4 text-xs text-neutral-500">目を読み込み中…</p>;
   const { data } = moku;
-  const coverage = moku.coverageOf.get(kou.id);
   const hasYear = data.years.includes(kou.year);
 
   return (
@@ -214,11 +212,8 @@ export function LifecycleMokuTab({ kou, chain, kous, valuesOf, moku, loading, fa
         <ul className="mt-1 list-disc space-y-0.5 pl-4 text-[11px] text-neutral-500">
           {!hasYear && <li>この年度の目は、データに無い（予算書が無い年度）</li>}
           {hasYear && rows.length === 0 && <li>この項の目は、データに無い{kou.requestOnly ? '（概算要求書に、目の明細が無い、または読めていない）' : ''}</li>}
-          {kou.requestOnly ? <li>概算要求書にだけある項。目はすべて概算要求書の目（予算書の目・補正・決算は無い）</li> : data.requestYears.includes(kou.year)
-            ? <li>概算要求の目の取れ方: {coverage ? MOKU_REQUEST_COVERAGE_LABEL[coverage] : '概算要求書の項と突合できていない項'}</li>
-            : <li>この年度の概算要求の目は、データに無い</li>}
+          {kou.requestOnly ? <li>概算要求書にだけある項。目はすべて概算要求書の目（予算書の目・補正・決算は無い）</li> : !data.requestYears.includes(kou.year) && <li>この年度の概算要求の目は、データに無い</li>}
           {!data.suppYears.includes(kou.year) && <li>この年度の補正の書は、データに無い</li>}
-          {!data.settleYears.includes(kou.year) && <li>この年度の決算の書は、データに無い</li>}
         </ul>
       </div>
 
