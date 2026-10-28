@@ -29,12 +29,15 @@ const kouKey = (year: number, account: string, a: string, b: string, code: strin
 const keyOfKou = (k: LifecycleKou): string => (k.account === 'general' ? kouKey(k.year, k.account, k.ministry, k.org, k.code, k.name) : kouKey(k.year, k.account, k.specialAccount, k.subAccount, k.code, k.name));
 const keyOfNode = (n: JikouNode): string => (n.account === 'general' ? kouKey(n.year, n.account, n.ministry, n.org, n.itemCode, n.itemName) : kouKey(n.year, n.account, n.specialAccount, n.subAccount, n.itemCode, n.itemName));
 
+/** 要求書の事項コード（`NN-NN`。後ろ半分が主要経費別の分類コード）から、主要経費別のコード。読めなければ空 */
+export const majorOfRequestCode = (code: string | undefined): string => /^\d+[-\u2010-\u2015\u2212](\d+)$/.exec((code ?? '').trim())?.[1] ?? '';
+
 /** 概算要求の事項（要求側）。`mof-ui` の結果と、概算要求にだけある項の事項 */
 export interface LifecycleJikouRequest {
   /** 対応ありの予算書の項（`LifecycleKou.id`）→ その項の事項 [名前, コード, 要求額, 予算書の額]（名前でつないだ結果）。要求側の内訳が取れていない項は `noReq` */
   matched: ReadonlyMap<string, { j: readonly (readonly [string, string, number | null, number | null])[]; noReq: boolean }>;
   /** 概算要求にだけある項（`LifecycleKou.id`）→ その項の要求側の事項 */
-  requestOnly: ReadonlyMap<string, readonly { name: string; req: number | null }[]>;
+  requestOnly: ReadonlyMap<string, readonly { name: string; code?: string; req: number | null }[]>;
 }
 
 export interface LifecycleJikouBuild {
@@ -106,11 +109,11 @@ export function buildLifecycleJikou(
       placed.set(`${kouOfAll[i]}|${all[i]!.name}`, i);
       if (!unitOfKou.has(kouOfAll[i]!)) unitOfKou.set(kouOfAll[i]!, all[i]!);
     }
-    const extra = (k: LifecycleKou, name: string, req: number): void => {
+    const extra = (k: LifecycleKou, name: string, req: number, code?: string): void => {
       const base = unitOfKou.get(k.id);
       const n: JikouNode = base
-        ? { ...base, name, budget: null, prev: null, revised: undefined, suppNet: undefined }
-        : { year: k.year, account: k.account, ministry: k.account === 'general' ? nameKey(k.ministry) : '', specialAccount: nameKey(k.specialAccount), subAccount: nameKey(k.subAccount), org: nameKey(k.org), itemCode: k.code, itemName: nameKey(k.name), name, budget: null, prev: null };
+        ? { ...base, name, major: majorOfRequestCode(code), budget: null, prev: null, revised: undefined, suppNet: undefined }
+        : { year: k.year, account: k.account, ministry: k.account === 'general' ? nameKey(k.ministry) : '', specialAccount: nameKey(k.specialAccount), subAccount: nameKey(k.subAccount), org: nameKey(k.org), itemCode: k.code, itemName: nameKey(k.name), name, major: majorOfRequestCode(code), budget: null, prev: null };
       place(n, k.id, req);
     };
     for (const [id, { j, noReq }] of request.matched) {
@@ -118,24 +121,24 @@ export function buildLifecycleJikou(
       if (!k) { miss(Number(id.split(':')[0])); continue; }
       if (noReq) continue;
       requestRead.add(id);
-      for (const [name, , req, bud] of j) {
+      for (const [name, code, req, bud] of j) {
         if (req === null) continue;
         if (bud !== null) {
           const at = placed.get(`${id}|${name}`);
           if (at === undefined) { unplaced++; continue; }
           request7[at] = req;
-        } else extra(k, name, req);
+        } else extra(k, name, req, code);
       }
     }
     for (const [id, items] of request.requestOnly) {
       const k = kouById.get(id);
       if (!k) { miss(Number(id.split(':')[0])); continue; }
       requestRead.add(id);
-      for (const { name, req } of items) {
+      for (const { name, code, req } of items) {
         if (req === null) continue;
         // 年度内の突合で予算書の項に結んだ項（概算要求のみの項ではない）は、同じ名前の予算書の事項に要求額を置く
         const at = k.requestOnly ? undefined : placed.get(`${id}|${name}`);
-        if (at !== undefined) request7[at] = req; else extra(k, name, req);
+        if (at !== undefined) request7[at] = req; else extra(k, name, req, code);
       }
     }
   }
@@ -161,7 +164,7 @@ export function buildLifecycleJikou(
     const id = kouOfAll[i]!;
     let k = indexOfId.get(id);
     if (k === undefined) { k = kouIds.length; kouIds.push(id); indexOfId.set(id, k); }
-    return [k, n.year, n.name, n.budget, n.prev, n.revised ?? null, n.suppNet ?? null, request7[i] ?? null];
+    return [k, n.year, n.name, n.budget, n.prev, n.revised ?? null, n.suppNet ?? null, request7[i] ?? null, n.major];
   });
   const outLinks: LifecycleJikouLink[] = links.map(l => [l.from, l.to, jikouEvidenceMask(l.evidence), JIKOU_AMOUNT.indexOf(l.amount)]);
   const years = [...new Set(nodes.map(n => n[1]))].sort((a, b) => a - b);
@@ -178,15 +181,15 @@ export const requestOnlyKouId = (r: LifecycleRequestOnlyRow): string => `${r.y}:
  */
 export function requestOnlyJikou(rows: readonly LifecycleRequestOnlyRow[], details: Readonly<Record<string, BudgetRequestMofDetail>>, jikouCsv: string, sameYear: ReadonlyMap<string, string> = new Map()): Map<string, { name: string; req: number | null }[]> {
   const amount = (s: string | undefined): number | null => { const t = (s ?? '').replace(/[\s,]/g, ''); return /^\d+$/.test(t) ? Number(t) : null; };
-  const trend = new Map<string, Map<string, { name: string; req: number | null }[]>>();
+  const trend = new Map<string, Map<string, { name: string; code: string; req: number | null }[]>>();
   for (const r of readCsv(jikouCsv)) {
     const special = r['会計区分'] === '特別';
     const key = [r['年度'], special ? 1 : 0, nameKey(special ? r['特別会計'] : r['所管']), nameKey(special ? r['勘定'] : ''), nameKey(special ? '' : r['組織']), nameKey(r['項名'])].join('|');
     const host = (r['要求書'] ?? '').split('__')[0]!;
     const byHost = trend.get(key) ?? trend.set(key, new Map()).get(key)!;
-    (byHost.get(host) ?? byHost.set(host, []).get(host)!).push({ name: nameKey(r['事項名']), req: amount(r['要求額_千円']) });
+    (byHost.get(host) ?? byHost.set(host, []).get(host)!).push({ name: nameKey(r['事項名']), code: r['事項コード'] ?? '', req: amount(r['要求額_千円']) });
   }
-  const out = new Map<string, { name: string; req: number | null }[]>();
+  const out = new Map<string, { name: string; code: string; req: number | null }[]>();
   for (const r of rows) {
     if (r.req === null) continue;
     if (r.kind === 'noBudget') {
@@ -196,7 +199,7 @@ export function requestOnlyJikou(rows: readonly LifecycleRequestOnlyRow[], detai
       out.set(sameYear.get(requestOnlyKouId(r)) ?? requestOnlyKouId(r), best);
     } else {
       const d = details[[r.y, r.kind, r.acct, r.grp, r.min, r.sub, r.org, r.name].join('|')];
-      if (d) out.set(sameYear.get(requestOnlyKouId(r)) ?? requestOnlyKouId(r), d.j.map(([name, , req]) => ({ name, req })));
+      if (d) out.set(sameYear.get(requestOnlyKouId(r)) ?? requestOnlyKouId(r), d.j.map(([name, code, req]) => ({ name, code, req })));
     }
   }
   return out;

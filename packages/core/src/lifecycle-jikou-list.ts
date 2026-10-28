@@ -14,6 +14,8 @@ export interface JikouListRow {
   /** その事項がある項 */
   k: LifecycleKou;
   name: string;
+  /** 主要経費別の分類コード（無ければ空。名前は `codeNameOf`） */
+  major: string;
   /** 千円。値が無いときは null（0 とは別） */
   request: number | null;
   budget: number | null;
@@ -35,24 +37,30 @@ export function jikouListRows(index: JikouIndex, kouById: ReadonlyMap<string, Li
     if (!k) return;
     const chain = jikouChainNodes(index, node);
     const from = data.nodes[chain[0]!]![1], to = data.nodes[chain[chain.length - 1]!]![1];
-    rows.push({ node, k, name: n[2], budget: n[3], revised: n[5], suppNet: n[6], request: n[7], span: { from, to, years: chain.length }, size: Math.max(0, n[7] ?? 0, n[3] ?? 0, n[5] ?? 0) });
+    rows.push({ node, k, name: n[2], major: n[8], budget: n[3], revised: n[5], suppNet: n[6], request: n[7], span: { from, to, years: chain.length }, size: Math.max(0, n[7] ?? 0, n[3] ?? 0, n[5] ?? 0) });
   });
   return rows;
 }
 
-/** 年度・所管・会計・組織／勘定・項名と、事項名で絞る（項の一覧と同じフィルタ。「値のある段階」と「年度をまたぐ対応」は項の絞り込みなので、ここでは使わない） */
-export function filterJikouRows(rows: readonly JikouListRow[], f: LifecycleFilters, year: number): JikouListRow[] {
-  return filterLifecycleKous(rows, f, year).filter(r => textMatches(r.name, f.jikouName, f.jikouNameRegex));
+/**
+ * 年度・所管・会計・組織／勘定・項名と、事項名・主要経費別で絞る（項の一覧と同じフィルタ。「値のある段階」と「年度をまたぐ対応」は項の絞り込みなので、ここでは使わない）。
+ * 使途別は、事項に無いので、`usesKouSet`（使途別の絞り込みに合う目を持つ項。`kouIdsWithMoku`。絞り込みが無ければ null）に入る項の事項に絞る。
+ */
+export function filterJikouRows(rows: readonly JikouListRow[], f: LifecycleFilters, year: number, usesKouSet: ReadonlySet<string> | null = null): JikouListRow[] {
+  return filterLifecycleKous(rows, f, year).filter(r =>
+    textMatches(r.name, f.jikouName, f.jikouNameRegex)
+    && (f.majors.length === 0 || f.majors.includes(r.major))
+    && (usesKouSet === null || usesKouSet.has(r.k.id)));
 }
 
-export type JikouSortKey = 'publisher' | 'group' | 'acct' | 'org' | 'kou' | 'name' | 'request' | 'budget' | 'revised' | 'suppNet' | 'span' | 'size';
+export type JikouSortKey = 'publisher' | 'group' | 'acct' | 'org' | 'kou' | 'name' | 'major' | 'request' | 'budget' | 'revised' | 'suppNet' | 'span' | 'size';
 
 /** 並べ替え。額の列は、値が無い事項を、向きによらず末尾に置く（0 とは別） */
 export function sortJikouRows(rows: readonly JikouListRow[], key: JikouSortKey, dir: LifecycleSortDir): JikouListRow[] {
-  const text = (r: JikouListRow): string => (key === 'publisher' ? lifecyclePublisherOf(r.k) : key === 'group' ? lifecycleGroupOf(r.k) : key === 'acct' ? lifecycleAcctOf(r.k) : key === 'org' ? lifecycleOrgOf(r.k) : key === 'kou' ? r.k.name : r.name);
+  const text = (r: JikouListRow): string => (key === 'publisher' ? lifecyclePublisherOf(r.k) : key === 'group' ? lifecycleGroupOf(r.k) : key === 'acct' ? lifecycleAcctOf(r.k) : key === 'org' ? lifecycleOrgOf(r.k) : key === 'kou' ? r.k.name : key === 'major' ? r.major : r.name);
   const tie = (x: JikouListRow, y: JikouListRow): number => x.k.id.localeCompare(y.k.id) || x.name.localeCompare(y.name, 'ja');
   return [...rows].sort((x, y) => {
-    if (key === 'publisher' || key === 'group' || key === 'acct' || key === 'org' || key === 'kou' || key === 'name') return dir * text(x).localeCompare(text(y), 'ja') || tie(x, y);
+    if (key === 'publisher' || key === 'group' || key === 'acct' || key === 'org' || key === 'kou' || key === 'name' || key === 'major') return dir * text(x).localeCompare(text(y), 'ja') || tie(x, y);
     if (key === 'span') return dir * (x.span.years - y.span.years) || tie(x, y);
     if (key === 'size') return dir * (x.size - y.size) || tie(x, y);
     const a = x[key], b = y[key];

@@ -46,11 +46,15 @@ export interface LifecycleFilters {
   /** 目名（空 = すべて）。目の一覧では、目名が合う目、項の一覧では、その年度に目名が合う目を持つ項（目のデータが要る） */
   mokuName: string;
   mokuNameRegex: boolean;
+  /** 主要経費別のコード（空 = すべて）。目の一覧では目のコード、事項の一覧では事項のコード、項の一覧では、そのコードの目を持つ項（目のデータが要る） */
+  majors: string[];
+  /** 使途別のコード（空 = すべて）。目の一覧では目のコード、項の一覧では、そのコードの目を持つ項、事項の一覧では、そのコードの目を持つ項の事項（事項に使途別は無い。目のデータが要る） */
+  uses: string[];
   /** 年度をまたぐ対応。`unsettled` = 対応が確定していない項（`lifecycleLinkState` が AMBIGUOUS または UNRESOLVED） */
   links: 'all' | 'unsettled';
 }
 
-export const INITIAL_LIFECYCLE_FILTERS: LifecycleFilters = { publishers: [], groups: [], accts: [], org: '', orgRegex: false, name: '', nameRegex: false, jikouName: '', jikouNameRegex: false, mokuName: '', mokuNameRegex: false, pattern: 'all', links: 'all' };
+export const INITIAL_LIFECYCLE_FILTERS: LifecycleFilters = { publishers: [], groups: [], accts: [], org: '', orgRegex: false, name: '', nameRegex: false, jikouName: '', jikouNameRegex: false, mokuName: '', mokuNameRegex: false, majors: [], uses: [], pattern: 'all', links: 'all' };
 
 /** 所管の表示（一覧の列）。1 つの府省はその名前、複数は「N所管」（府省名の一覧は、ツールチップ・詳細に出す） */
 export function lifecycleGroupOf(k: LifecycleKou): string {

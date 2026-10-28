@@ -66,6 +66,7 @@ export function buildJikouLinkData(datasetDir: string, historyDir?: string): Jik
         itemCode: r[c('項コード')]!,
         itemName: at(r, '項名'),
         name: at(r, '事項名'),
+        major: (r[c(account === 'general' ? '主要経費別分類コード' : '分類コード')] ?? '').trim(),
         budget: int(r[iAmt]),
         prev: int(r[iPrev]),
       }));
@@ -92,6 +93,7 @@ export function buildJikouLinkData(datasetDir: string, historyDir?: string): Jik
               itemCode: r[hc('項コード')]!,
               itemName: nameKey(r[hc('項名')]),
               name: nameKey(r[hc('事項名')]),
+              major: (r[hc(account === 'general' ? '主要経費別分類コード' : '分類コード')] ?? '').trim(),
               budget: null, prev: null,
             };
             // 当初予算に無い事項は、補正にだけある事項として別に持つ（回が進んだら、最後の回の値）

@@ -65,6 +65,7 @@ export * from './lifecycle.ts';
 export * from './lifecycle-view.ts';
 export * from './lifecycle-status.ts';
 export * from './lifecycle-list.ts';
+export * from './lifecycle-codes.ts';
 export * from './lifecycle-links.ts';
 export * from './lifecycle-same-year.ts';
 export {
@@ -125,7 +126,7 @@ export { REDACTED_MIN, SOLID_DARK, kouOfPage, solidDark, type KouPageRow, type P
 export { SUPP_REQUEST_CLASSES, classifySuppRequest, suppRequestPairs, type SuppRequestClass, type SuppRequestPair } from './supp-request-pairs.ts';
 export { JIKOU_AMOUNT, JIKOU_EVIDENCE, JIKOU_EVIDENCE_LABEL, JIKOU_MEASURES, jikouAmount, jikouChainNodes, jikouCounts, jikouEvidenceMask, jikouEvidenceOf, jikouIndex, jikouRequestOnly, jikouRowOf, jikouSuppOnly, jikouTable, jikouTotals, type JikouCell, type JikouCount, type JikouIndex, type JikouMeasure, type JikouRow, type JikouTable, type JikouYearTotal, type LifecycleJikouData, type LifecycleJikouLink, type LifecycleJikouNode } from './lifecycle-jikou.ts';
 export { NEAR_NAME, NEAR_RATIO, SAME_AMOUNT_RATE, bigramDice, jikouKeyOfMofRow, requestJikouPairing, type JikouPairingYear } from './request-jikou-pairing.ts';
-export { MOKU_FLAG, MOKU_MEASURES, MOKU_REQUEST_COVERAGE_LABEL, MOKU_TEXT_SORT_KEYS, filterMokuRows, isSettleMeasure, kouIdsWithMoku, mokuFlow, mokuIndex, mokuKeyOf, mokuChartSum, mokuCounts, mokuKouTable, mokuListRows, mokuMeasure, mokuSpan, mokuSelectionKey, mokuSettleNote, mokuSuppNote, mokuValue, sortMokuRows, type MokuMeasure, type LifecycleMokuData, type LifecycleMokuNode, type MokuCount, type MokuIndex, type MokuKouRow, type MokuListRow, type MokuRequestCoverage, type MokuSortKey } from './lifecycle-moku.ts';
+export { MOKU_FLAG, MOKU_MEASURES, MOKU_REQUEST_COVERAGE_LABEL, MOKU_TEXT_SORT_KEYS, filterMokuRows, isSettleMeasure, kouIdsWithMoku, mokuFlow, mokuIndex, mokuKeyOf, codeMatches, mokuChartSum, mokuCodeCounts, mokuCounts, mokuKouTable, mokuListRows, mokuMeasure, mokuSpan, mokuSelectionKey, mokuSettleNote, mokuSuppNote, mokuValue, sortMokuRows, type MokuMeasure, type LifecycleMokuData, type LifecycleMokuNode, type MokuCount, type MokuIndex, type MokuKouRow, type MokuListRow, type MokuRequestCoverage, type MokuSortKey } from './lifecycle-moku.ts';
 export { filterJikouRows, jikouListRows, kouIdsWithJikou, sortJikouRows, type JikouListRow, type JikouSortKey } from './lifecycle-jikou-list.ts';
 export { CODE_TABLE_FORM_NAMES, codeName, codeNameChanges, codeTableFileInfo, codeTableOf, parseCodeNumberPage, type CodeTablePage, type CodeTableSection } from './code-tables.ts';
 export { INITIAL_RS_FILTERS, RS_AMOUNTS, RS_SPENT_UNFILLED_NOTE, RS_TEXT_SORT_KEYS, filterRsRows, rsAmount, rsAmountShown, rsIndex, rsListRows, sortRsRows, type RsAmountKey, type RsAmountRow, type RsFilters, type RsIndex, type RsJigyoData, type RsLinkEntry, type RsListRow, type RsSortKey } from './rs.ts';

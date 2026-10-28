@@ -16,7 +16,10 @@ import {
   filterMokuRows,
   kouIdsWithMoku,
   MOKU_TEXT_SORT_KEYS,
+  mokuCodeCounts,
   mokuCounts,
+  codeNameOf,
+  type LifecycleCodeTables,
   mokuIndex,
   mokuListRows,
   mokuSelectionKey,
@@ -183,7 +186,8 @@ export function LifecyclePage() {
   // 目（lifecycle/moku.json.gz。大きいので、中ペインの「目」を開いたとき、または目名で絞るときに読む）
   const [mokuResult, setMokuResult] = useState<{ index: MokuIndex } | { failed: true } | null>(null);
   const mokuRequested = useRef(false);
-  const needMoku = view === 'moku' || view === 'list' || storedFilters.mokuName?.trim();
+  // 目は、項・事項・目の一覧（目の数の列・分類コードの選択肢と絞り込み）が使うので、RS 以外のタブで読む
+  const needMoku = view !== 'rs' || storedFilters.mokuName?.trim();
   useEffect(() => {
     if (!needMoku || mokuRequested.current) return;
     mokuRequested.current = true;
@@ -195,6 +199,13 @@ export function LifecyclePage() {
   const mokuState = mokuResult === null ? 'loading' : 'index' in mokuResult ? 'ready' : 'error';
   const mokuCountOf = useMemo(() => (moku ? mokuCounts(moku.data) : null), [moku]);
 
+  // 分類コードの名前（lifecycle/codes.json.gz。小さい）
+  const [codeTables, setCodeTables] = useState<LifecycleCodeTables | null>(null);
+  useEffect(() => {
+    let alive = true;
+    loadGzJson<LifecycleCodeTables>('lifecycle/codes.json.gz').then(t => { if (alive) setCodeTables(t); }).catch(() => undefined);
+    return () => { alive = false; };
+  }, []);
   useEffect(() => {
     let alive = true;
     loadJson<SiteAbout>('about.json').then(a => { if (alive) setRsAvailable(a.rs !== undefined); }).catch(() => { if (alive) setRsAvailable(false); });
@@ -219,10 +230,10 @@ export function LifecyclePage() {
   const inYear = useMemo(() => (data && activeYear !== null ? data.kous.filter(k => k.year === activeYear) : []), [data, activeYear]);
   // 事項名の絞り込みは、その年度に事項名が合う事項を持つ項に絞る（事項のデータが届くまでは絞れないので、項の一覧は読み込み中の表示にする）
   const jikouKouSet = useMemo(() => (jikou && activeYear !== null ? kouIdsWithJikou(jikou, activeYear, filters.jikouName, filters.jikouNameRegex) : null), [jikou, activeYear, filters.jikouName, filters.jikouNameRegex]);
-  const mokuKouSet = useMemo(() => (moku && activeYear !== null ? kouIdsWithMoku(moku, activeYear, filters.mokuName, filters.mokuNameRegex) : null), [moku, activeYear, filters.mokuName, filters.mokuNameRegex]);
+  const mokuKouSet = useMemo(() => (moku && activeYear !== null ? kouIdsWithMoku(moku, activeYear, filters.mokuName, filters.mokuNameRegex, filters) : null), [moku, activeYear, filters]);
   const jikouFilterNotice = filters.jikouName.trim() !== '' && jikouState !== 'ready'
     ? (jikouState === 'loading' ? '事項を読み込み中…' : '事項の読み込みに失敗しました（npm run build:data で作る）。')
-    : filters.mokuName.trim() !== '' && mokuState !== 'ready'
+    : (filters.mokuName.trim() !== '' || filters.majors.length > 0 || filters.uses.length > 0) && mokuState !== 'ready'
       ? (mokuState === 'loading' ? '目を読み込み中…' : '目の読み込みに失敗しました（npm run build:data で作る）。')
       : null;
   const base = useMemo(() => {
@@ -245,14 +256,23 @@ export function LifecyclePage() {
   // 事項の一覧: 選んだ年度の事項を、項の一覧と同じフィルタ（所管・会計・組織／勘定・項名）と事項名で絞る
   const kouById = useMemo(() => new Map((data?.kous ?? []).map(k => [k.id, k])), [data]);
   const jikouRows = useMemo(() => (jikou && activeYear !== null ? jikouListRows(jikou, kouById, activeYear) : []), [jikou, kouById, activeYear]);
-  const jikouList = useMemo(() => (activeYear === null ? [] : sortJikouRows(filterJikouRows(jikouRows, filters, activeYear), jikouSortKey, jikouSortDir)), [jikouRows, filters, activeYear, jikouSortKey, jikouSortDir]);
+  // 事項の使途別の絞り込み: 事項に使途別は無いので、選んだ使途別の目を持つ項の事項に絞る（目のデータが届くまでは、空）
+  const usesKouSet = useMemo(() => (filters.uses.length === 0 || activeYear === null ? null : moku ? kouIdsWithMoku(moku, activeYear, '', false, { majors: [], uses: filters.uses }) : new Set<string>()), [moku, activeYear, filters.uses]);
+  const jikouList = useMemo(() => (activeYear === null ? [] : sortJikouRows(filterJikouRows(jikouRows, filters, activeYear, usesKouSet), jikouSortKey, jikouSortDir)), [jikouRows, filters, activeYear, usesKouSet, jikouSortKey, jikouSortDir]);
+  // 主要経費別・使途別の選択肢（選んだ年度の目のコードと、名前と、目の数）
+  const codeOptions = useMemo<Record<'major' | 'use', [string, string, number][]>>(() => {
+    if (!moku || !codeTables || activeYear === null) return { major: [], use: [] };
+    const counts = mokuCodeCounts(moku.data, activeYear);
+    const make = (axis: 'major' | 'use'): [string, string, number][] => [...counts[axis]].sort(([a], [b]) => a.localeCompare(b)).map(([c, n]) => [c, (codeNameOf(codeTables, axis, c, activeYear, 'general') ?? codeNameOf(codeTables, axis, c, activeYear, 'special'))?.name ?? c, n]);
+    return { major: make('major'), use: make('use') };
+  }, [moku, codeTables, activeYear]);
   const selectedJikouNode = useMemo(() => {
     const node = jikou && selectedJikou !== null ? jikou.nodeByKey.get(selectedJikou) : undefined;
     return node !== undefined && jikou!.data.nodes[node]![1] === activeYear ? node : null;
   }, [jikou, selectedJikou, activeYear]);
   const onJikouSort = (k: JikouSortKey) => {
     if (k === jikouSortKey) setJikouSortDir(d => (d === 1 ? -1 : 1));
-    else { setJikouSortKey(k); setJikouSortDir(k === 'publisher' || k === 'group' || k === 'acct' || k === 'org' || k === 'kou' || k === 'name' ? 1 : -1); }
+    else { setJikouSortKey(k); setJikouSortDir(k === 'publisher' || k === 'group' || k === 'acct' || k === 'org' || k === 'kou' || k === 'name' || k === 'major' ? 1 : -1); }
   };
   // 目の一覧: 選んだ年度の目を、項の一覧と同じフィルタ（所管・会計・組織／勘定・項名）と目名で絞る
   const kouIndexById = useMemo(() => new Map((data?.kous ?? []).map((k, i) => [k.id, i])), [data]);
@@ -319,7 +339,7 @@ export function LifecyclePage() {
         <section aria-label="フィルタ" className={`${pane} overflow-hidden xl:w-[var(--fw)] xl:shrink-0`} style={{ '--fw': `${filterWidth}px` } as CSSProperties}>
           {view === 'rs'
             ? <RsFilterPane ministries={rsMinistries} rows={rsYearRows} filters={rsFilters} onChange={setRsFilters} />
-            : <LifecycleFilterPane allKous={data?.kous ?? NO_KOUS} inYear={inYear} patternCounts={patternCounts} unsettledCount={unsettledCount} filters={filters} onChange={f => { setFilters(f); setSelectedId(null); setSelectedJikou(null); setSelectedMoku(null); }} />}
+            : <LifecycleFilterPane allKous={data?.kous ?? NO_KOUS} inYear={inYear} patternCounts={patternCounts} unsettledCount={unsettledCount} codeOptions={codeOptions} filters={filters} onChange={f => { setFilters(f); setSelectedId(null); setSelectedJikou(null); setSelectedMoku(null); }} />}
         </section>
         <Splitter label="フィルタの幅" width={filterWidth} limits={FILTER_WIDTH} dir={1} onChange={setFilterWidth} />
         <section aria-label="項の一覧" className={`${pane} flex flex-col overflow-hidden xl:min-w-0 xl:flex-1`}>
@@ -334,9 +354,9 @@ export function LifecyclePage() {
             {view === 'rs'
               ? <RsListPane items={rsList} loading={rsState === 'loading'} failed={rsState === 'error'} sortKey={rsSortKey} sortDir={rsSortDir} onSort={onRsSort} selectedId={selectedRs} onSelect={r => setSelectedRs(r.id)} widths={rsColumnWidths} onWidthsChange={setRsColumnWidths} spentNote={rs && rs.spentUnfilled.has(activeYear) ? RS_SPENT_UNFILLED_NOTE : null} yearNote={rs && !rs.data.years.includes(activeYear) ? `FY${activeYear} の RS のデータは無い（RS の予算年度は ${rs.data.years[0]}〜${rs.data.years[rs.data.years.length - 1]}）。` : null} />
               : view === 'moku'
-              ? <LifecycleMokuListPane items={mokuList} loading={mokuState === 'loading'} failed={mokuState === 'error'} sortKey={mokuSortKey} sortDir={mokuSortDir} onSort={onMokuSort} selectedNode={selectedMokuNode} onSelect={r => setSelectedMoku(mokuSelectionKey(moku!, r.node))} widths={mokuColumnWidths} onWidthsChange={setMokuColumnWidths} suppNote={mokuWhy} />
+              ? <LifecycleMokuListPane items={mokuList} codes={codeTables} loading={mokuState === 'loading'} failed={mokuState === 'error'} sortKey={mokuSortKey} sortDir={mokuSortDir} onSort={onMokuSort} selectedNode={selectedMokuNode} onSelect={r => setSelectedMoku(mokuSelectionKey(moku!, r.node))} widths={mokuColumnWidths} onWidthsChange={setMokuColumnWidths} suppNote={mokuWhy} />
               : view === 'jikou'
-              ? <LifecycleJikouListPane items={jikouList} loading={jikouState === 'loading'} failed={jikouState === 'error'} sortKey={jikouSortKey} sortDir={jikouSortDir} onSort={onJikouSort} selectedNode={selectedJikouNode} onSelect={r => setSelectedJikou(`${r.k.id}|${r.name}`)} widths={jikouColumnWidths} onWidthsChange={setJikouColumnWidths} />
+              ? <LifecycleJikouListPane items={jikouList} codes={codeTables} loading={jikouState === 'loading'} failed={jikouState === 'error'} sortKey={jikouSortKey} sortDir={jikouSortDir} onSort={onJikouSort} selectedNode={selectedJikouNode} onSelect={r => setSelectedJikou(`${r.k.id}|${r.name}`)} widths={jikouColumnWidths} onWidthsChange={setJikouColumnWidths} />
               : <LifecycleListPane items={list} notice={jikouFilterNotice} jikouLoading={jikouState === 'loading'} mokuLoading={mokuState === 'loading'} sortKey={sortKey} sortDir={sortDir} onSort={onSort} selectedId={kou?.id ?? null} onSelect={k => setSelectedId(k.id)} widths={columnWidths} onWidthsChange={setColumnWidths} />}
           </div>
         </section>

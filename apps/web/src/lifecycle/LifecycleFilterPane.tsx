@@ -25,13 +25,15 @@ const count = 'ml-auto tabular-nums text-neutral-400';
  * 左のフィルタ（概算要求と当初予算の画面と同じ構成）。
  * `inYear` は選択年度の項。段階ごとの件数は、所管・会計・組織・項名で絞った項（`narrowed`）で数える。
  */
-export function LifecycleFilterPane({ allKous, inYear, patternCounts, unsettledCount, filters, onChange }: {
+export function LifecycleFilterPane({ allKous, inYear, patternCounts, unsettledCount, codeOptions, filters, onChange }: {
   /** 全年度の項（選択肢を年度で変えないため） */
   allKous: readonly LifecycleKou[];
   inYear: readonly LifecycleKou[];
   patternCounts: Record<LifecyclePattern, number>;
   /** 対応が確定していない項の数（所管〜項名で絞った項のうち） */
   unsettledCount: number;
+  /** 主要経費別・使途別の選択肢（コードと名前と件数）。目のデータ・コード表を読み込み中は空 */
+  codeOptions: Record<'major' | 'use', [code: string, name: string, count: number][]>;
   filters: LifecycleFilters;
   onChange: (f: LifecycleFilters) => void;
 }) {
@@ -55,10 +57,10 @@ export function LifecycleFilterPane({ allKous, inYear, patternCounts, unsettledC
     return allKous.some(lifecycleIsPublishedJoint) ? [...list, [LIFECYCLE_JOINT, inYear.filter(lifecycleIsPublishedJoint).length] as [string, number]] : list;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allKous, inYear]);
-  const [open, setOpen] = useState<'publisher' | 'group' | 'acct' | null>(null);
+  const [open, setOpen] = useState<'publisher' | 'group' | 'acct' | 'major' | 'use' | null>(null);
   const set = (patch: Partial<LifecycleFilters>) => onChange({ ...filters, ...patch });
   // コンボの選択肢は「名称（件数）」。選択状態は名称で持つ（選んだのにこの年度に無い名前も、件数 0 の選択肢に残す）
-  const comboProps = (entries: [string, number][], selected: string[], key: 'publishers' | 'groups' | 'accts', field: 'publisher' | 'group' | 'acct') => {
+  const comboProps = (entries: [string, number][], selected: string[], key: 'publishers' | 'groups' | 'accts' | 'majors' | 'uses', field: 'publisher' | 'group' | 'acct' | 'major' | 'use') => {
     const all: [string, number][] = [...entries, ...selected.filter(v => v !== NONE_SELECTED && !entries.some(([n]) => n === v)).map(v => [v, 0] as [string, number])];
     const labelOf = new Map(all.map(([name, n]) => [name, `${name}（${n.toLocaleString()}）`]));
     const nameOf = new Map([...labelOf].map(([name, label]) => [label, name]));
@@ -68,6 +70,24 @@ export function LifecycleFilterPane({ allKous, inYear, patternCounts, unsettledC
       onChange: (next: string[]) => set({ [key]: next.map(l => (l === NONE_SELECTED ? l : nameOf.get(l) ?? l)) } as Partial<LifecycleFilters>),
       open: open === field,
       onOpenChange: (o: boolean) => setOpen(o ? field : open === field ? null : open),
+    };
+  };
+
+  // 主要経費別・使途別は、選択の値をコードで持ち、選択肢の表示名は「名前（件数）」。名前の無いコードは、コードを名前にする
+  const codeCombo = (axis: 'major' | 'use', key: 'majors' | 'uses') => {
+    const entries = codeOptions[axis];
+    const labelOf = new Map(entries.map(([c, n, k]) => [c, `${n}（${k.toLocaleString()}）`]));
+    const known = new Set(entries.map(([c]) => c));
+    const selected = filters[key];
+    const all = [...labelOf.values(), ...selected.filter(c => c !== NONE_SELECTED && !known.has(c)).map(c => `${c}（0）`)];
+    const codeOf = new Map([...labelOf].map(([c, l]) => [l, c]));
+    return {
+      options: all,
+      selected: selected.map(c => (c === NONE_SELECTED ? c : labelOf.get(c) ?? `${c}（0）`)),
+      onChange: (next: string[]) => set({ [key]: next.map(l => (l === NONE_SELECTED ? l : codeOf.get(l) ?? l.replace(/（0）$/, ''))) } as Partial<LifecycleFilters>),
+      open: open === axis,
+      onOpenChange: (o: boolean) => setOpen(o ? axis : open === axis ? null : open),
+      disabled: entries.length === 0,
     };
   };
 
@@ -91,6 +111,14 @@ export function LifecycleFilterPane({ allKous, inYear, patternCounts, unsettledC
         <div className={section}>
           <h3 className={heading}>会計</h3>
           <MultiSelectCombo label="会計" {...comboProps(accts, filters.accts, 'accts', 'acct')} />
+        </div>
+        <div className={section}>
+          <h3 className={heading} title="目・事項の分類コードで絞る。目の一覧は目のコード、事項の一覧は事項のコード（主要経費別だけ）、項の一覧はそのコードの目を持つ項。件数は、選んだ年度の目の数">主要経費別</h3>
+          <MultiSelectCombo label="主要経費別" {...codeCombo('major', 'majors')} />
+        </div>
+        <div className={section}>
+          <h3 className={heading} title="目の使途別の分類コードで絞る。目の一覧は目のコード、項の一覧はそのコードの目を持つ項、事項の一覧はそのコードの目を持つ項の事項（事項に使途別は無い）。件数は、選んだ年度の目の数">使途別</h3>
+          <MultiSelectCombo label="使途別" {...codeCombo('use', 'uses')} />
         </div>
         <div className={`${section} text-xs`}>
           <RegexTextFilter label="組織／勘定" value={filters.org} onChange={org => set({ org })} useRegex={filters.orgRegex} onToggleRegex={orgRegex => set({ orgRegex })} maxRegexLength={MAX_REGEX_PATTERN_LENGTH} />

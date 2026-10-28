@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { LifecycleKou } from './lifecycle.ts';
 import { INITIAL_LIFECYCLE_FILTERS } from './lifecycle-list.ts';
-import { MOKU_FLAG, MOKU_MEASURES, filterMokuRows, isSettleMeasure, kouIdsWithMoku, mokuChartSum, mokuCounts, mokuFlow, mokuIndex, mokuKouTable, mokuListRows, mokuSelectionKey, mokuSpan, mokuSettleNote, mokuSuppNote, mokuValue, sortMokuRows, type LifecycleMokuData, type LifecycleMokuNode } from './lifecycle-moku.ts';
+import { MOKU_FLAG, MOKU_MEASURES, filterMokuRows, isSettleMeasure, kouIdsWithMoku, mokuChartSum, mokuCodeCounts, mokuCounts, mokuFlow, mokuIndex, mokuKouTable, mokuListRows, mokuSelectionKey, mokuSpan, mokuSettleNote, mokuSuppNote, mokuValue, sortMokuRows, type LifecycleMokuData, type LifecycleMokuNode } from './lifecycle-moku.ts';
 
 const kou = (id: string, o: Partial<LifecycleKou> = {}): LifecycleKou => ({ id, year: 2024, account: 'general', ministry: '財務省', org: '財務本省', specialAccount: '', subAccount: '', code: '001', name: id, seenIn: ['budget'], ...o });
 const A23 = kou('2023:general:A', { year: 2023, name: '項A' }), A24 = kou('2024:general:A', { name: '項A' }), B24 = kou('2024:general:B', { name: '項B', ministry: '法務省', org: '法務本省' });
@@ -161,5 +161,48 @@ describe('mokuCounts', () => {
   it('does not count a 共管 row of the 決算 as another 目', () => {
     const d: LifecycleMokuData = { ...data, nodes: [n(0, 2023, '庁費', '1|2', { budget: 1 }), n(0, 2023, '庁費', '1|2', { current: 2 }, MOKU_FLAG.settlePart, '内閣府|内閣本府'), n(0, 2023, '庁費', '1|2', { current: 3 }, MOKU_FLAG.settlePart, '法務省|法務本省')] };
     expect(mokuCounts(d).get(A23.id)).toEqual({ total: 1, requestOnly: 0 });
+  });
+});
+
+describe('分類コード（主要経費別・使途別）', () => {
+  // 一般会計の目は 主要経費別|目的別|財政法|経済性質別|使途別
+  const d: LifecycleMokuData = {
+    ...data,
+    nodes: [
+      n(0, 2023, '職員基本給', '95|016|2|11|1', { budget: 10 }),
+      n(0, 2023, '庁費', '95|016|2|12|3', { budget: 20 }),
+      n(0, 2023, '防衛費', '35|030|2|12|3', { budget: 30 }),
+      n(0, 2023, '共管分', '35|030|2|12|3', { current: 1 }, MOKU_FLAG.settlePart, '内閣府|内閣本府'),
+      n(0, 2023, '調査費', '', { request: 5 }, MOKU_FLAG.requestOnly),
+    ],
+    requestCoverage: [],
+  };
+  const idx = mokuIndex(d);
+  const rows = mokuListRows(idx, kouById, 2023, id => [id]);
+
+  it('puts the codes of the 目 in the rows of the list (blank when the 目 has none)', () => {
+    expect(rows.map(r => [r.name, r.major, r.use])).toEqual([['職員基本給', '95', '1'], ['庁費', '95', '3'], ['防衛費', '35', '3'], ['共管分', '35', '3'], ['調査費', '', '']]);
+  });
+
+  it('filters the 目 by the codes: empty means all, the codes of both are ANDed, and a 目 without the code is out', () => {
+    const f = (o: Partial<typeof INITIAL_LIFECYCLE_FILTERS>) => filterMokuRows(rows, { ...INITIAL_LIFECYCLE_FILTERS, ...o }, 2023).map(r => r.name);
+    expect(f({})).toHaveLength(5);
+    expect(f({ majors: ['95'] })).toEqual(['職員基本給', '庁費']);
+    expect(f({ uses: ['3'] })).toEqual(['庁費', '防衛費', '共管分']);
+    expect(f({ majors: ['95'], uses: ['3'] })).toEqual(['庁費']);
+    expect(f({ majors: ['__none__'] })).toEqual([]);
+  });
+
+  it('finds the 項 that have a 目 with the codes (of the same 目), and counts the codes of the year without the 共管 rows', () => {
+    expect([...kouIdsWithMoku(idx, 2023, '', false, { majors: ['35'], uses: [] })!]).toEqual([A23.id]);
+    expect(kouIdsWithMoku(idx, 2023, '', false, { majors: ['35'], uses: ['1'] })!.size).toBe(0); // 35 で使途別 1 の目は無い
+    expect(kouIdsWithMoku(idx, 2023, '', false)).toBeNull();
+    const c = mokuCodeCounts(d, 2023);
+    expect([...c.major]).toEqual([['95', 2], ['35', 1]]);
+    expect([...c.use]).toEqual([['1', 1], ['3', 2]]);
+  });
+
+  it('sorts by the code', () => {
+    expect(sortMokuRows(rows, 'major', 1).map(r => r.name)).toEqual(['調査費', '共管分', '防衛費', '職員基本給', '庁費']); // 空は先頭、同じコードは名前の順
   });
 });
