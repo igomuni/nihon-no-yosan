@@ -47,6 +47,7 @@ import {
   type LifecycleSortKey,
   type LifecycleValues,
   INITIAL_RS_FILTERS,
+  RS_SPENT_UNFILLED_NOTE,
   RS_TEXT_SORT_KEYS,
   filterRsRows,
   rsIndex,
@@ -340,7 +341,7 @@ export function LifecyclePage() {
           </div>
           <div {...(view === 'summary' ? { 'data-pane': 'list', tabIndex: -1 } : {})} className={`min-h-0 flex-1 ${view === 'summary' ? `overflow-auto outline-0 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-emerald-500/50` : 'overflow-hidden'}`}>
             {view === 'rs'
-              ? <RsListPane items={rsList} loading={rsState === 'loading'} failed={rsState === 'error'} sortKey={rsSortKey} sortDir={rsSortDir} onSort={onRsSort} selectedId={selectedRs} onSelect={r => setSelectedRs(r.id)} widths={rsColumnWidths} onWidthsChange={setRsColumnWidths} yearNote={rs && !rs.data.years.includes(activeYear) ? `FY${activeYear} の RS のデータは無い（RS の予算年度は ${rs.data.years[0]}〜${rs.data.years[rs.data.years.length - 1]}）。` : null} />
+              ? <RsListPane items={rsList} loading={rsState === 'loading'} failed={rsState === 'error'} sortKey={rsSortKey} sortDir={rsSortDir} onSort={onRsSort} selectedId={selectedRs} onSelect={r => setSelectedRs(r.id)} widths={rsColumnWidths} onWidthsChange={setRsColumnWidths} spentNote={rs && rs.spentUnfilled.has(activeYear) ? RS_SPENT_UNFILLED_NOTE : null} yearNote={rs && !rs.data.years.includes(activeYear) ? `FY${activeYear} の RS のデータは無い（RS の予算年度は ${rs.data.years[0]}〜${rs.data.years[rs.data.years.length - 1]}）。` : null} />
               : view === 'moku'
               ? <LifecycleMokuListPane items={mokuList} loading={mokuState === 'loading'} failed={mokuState === 'error'} sortKey={mokuSortKey} sortDir={mokuSortDir} onSort={onMokuSort} selectedNode={selectedMokuNode} onSelect={r => setSelectedMoku(mokuSelectionKey(moku!, r.node))} widths={mokuColumnWidths} onWidthsChange={setMokuColumnWidths} suppNote={mokuWhy} />
               : view === 'jikou'

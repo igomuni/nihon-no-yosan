@@ -49,6 +49,17 @@ jobs:
           tar -xzf "$RUNNER_TEMP/mof-history-v0.tar.gz" -C data/dataset/mof-history-v0
       - name: Verify the past-years dataset against its manifest
         run: node packages/pipeline/src/migrate/verify.ts data/dataset/mof-history-v0 datasets/mof-history-v0/manifest.json
+      - name: Download the RS dataset (RS CSVs, FY2025 edition)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag=$(node -p "require('./datasets/rs-v0/release.json').tag")
+          gh release download "$tag" --pattern rs-v0.tar.gz --dir "$RUNNER_TEMP"
+          echo "$(node -p "require('./datasets/rs-v0/release.json').sha256")  $RUNNER_TEMP/rs-v0.tar.gz" | sha256sum --check
+          mkdir -p data/download/rs/2025
+          tar -xzf "$RUNNER_TEMP/rs-v0.tar.gz" -C data/download/rs/2025
+      - name: Verify the RS dataset against its manifest
+        run: node packages/pipeline/src/migrate/verify.ts data/download/rs/2025 datasets/rs-v0/manifest.json
       - run: npm run build:data
       - run: npm run build
       - uses: actions/upload-pages-artifact@v3
