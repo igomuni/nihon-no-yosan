@@ -27,14 +27,12 @@ export function LifecycleJikouDetail({ jikou, loading, failed, node, kouOf, onSe
   if (node === null || !table) return <p className="p-4 text-xs text-neutral-500">一覧から事項を選んでください。</p>;
   const n = jikou.data.nodes[node]!;
   const kou = kouOf.get(jikou.data.kous[n[0]]!);
-  const row = table.rows[0]!;
   const yearNode = (y: number): number => flow[table.years.indexOf(y)]!;
   return (
     <div className="flex flex-col gap-5 p-4 text-xs">
       <div>
         <p className="text-[11px] text-neutral-500">{kou ? `${kouTitle(kou)} › ${kou.name}` : ''} · FY{n[1]}</p>
         <h2 className="text-base font-semibold">{n[2]}</h2>
-        <p className="mt-0.5 text-[11px] text-neutral-500">確認済みの年度: <b>FY{row.firstYear}{row.firstYear === row.lastYear ? '' : `〜FY${row.lastYear}`}</b>（{flow.length} 年）</p>
         {kou && (
           <button type="button" onClick={() => onOpenKou(kou)} className="mt-1.5 rounded border border-neutral-300 px-2 py-0.5 text-[11px] text-neutral-700 hover:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800">
             この項（{kou.name}）の詳細を開く
