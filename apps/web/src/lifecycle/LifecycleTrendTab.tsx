@@ -1,8 +1,6 @@
 import { useMemo } from 'react';
 import {
-  LIFECYCLE_CHAIN_END_LABEL,
   formatSen,
-  lifecycleChainSpan,
   lifecycleRowAmounts,
   type LifecycleChain,
   type LifecycleKou,
@@ -56,18 +54,11 @@ export function LifecycleTrendTab({ kou, chain, kous, valuesOf, links, onNavigat
     for (const l of links) if (l.status === 'RESOLVED' && l.from >= 0 && l.to >= 0) m.set(l.to, l.evidence);
     return m;
   }, [links]);
-  const span = lifecycleChainSpan(kous, chain);
   return (
     <div className="flex flex-col gap-5 p-4 text-xs">
       <div>
         <p className="text-[11px] text-neutral-500">{kouTitle(kou)} · FY{kou.year}</p>
         <h2 className="text-base font-semibold">{kou.name}</h2>
-        <p className="mt-1">
-          確認済みの年度: <b>FY{span.from}{span.from === span.to ? '' : `〜FY${span.to}`}</b>（{span.years} 年）
-        </p>
-        <p className="mt-0.5 text-[11px] text-neutral-500">
-          前: {LIFECYCLE_CHAIN_END_LABEL[chain.before]} · 後: {LIFECYCLE_CHAIN_END_LABEL[chain.after]}
-        </p>
       </div>
 
       <section className="flex flex-col gap-2" aria-label="段階ごとの額の年度推移">
