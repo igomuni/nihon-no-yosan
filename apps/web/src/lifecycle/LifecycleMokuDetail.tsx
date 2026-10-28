@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { MOKU_FLAG, MOKU_REQUEST_COVERAGE_LABEL, mokuFlow, mokuMeasure, mokuSettleNote, mokuSuppNote, mokuValue, type LifecycleKou, type MokuIndex } from '@nihon-no-yosan/core';
 import { useYearKeys } from '../components/useListKeys.ts';
 import { TrendChart, type TrendPoint } from './charts.tsx';
-import { Cell, Marks, YEAR_COLS } from './LifecycleMokuTab.tsx';
+import { Cell, Marks, YEAR_COLS } from './MokuCells.tsx';
 import { kouTitle, td, th } from './shared.ts';
 
 /**
