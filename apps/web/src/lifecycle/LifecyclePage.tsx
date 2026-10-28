@@ -182,7 +182,7 @@ export function LifecyclePage() {
   // 目（lifecycle/moku.json.gz。大きいので、中ペインの「目」を開いたとき、または目名で絞るときに読む）
   const [mokuResult, setMokuResult] = useState<{ index: MokuIndex } | { failed: true } | null>(null);
   const mokuRequested = useRef(false);
-  const needMoku = view === 'moku' || storedFilters.mokuName?.trim();
+  const needMoku = view === 'moku' || (view === 'list' && selectedId !== null) || storedFilters.mokuName?.trim();
   useEffect(() => {
     if (!needMoku || mokuRequested.current) return;
     mokuRequested.current = true;
@@ -373,7 +373,7 @@ export function LifecyclePage() {
               onOpenKou={k => { setYear(k.year); setSelectedId(k.id); setView('list'); }}
             />
           ) : (
-          <LifecycleKouDetail kou={kou} chain={selectedIndex >= 0 ? chainOf(selectedIndex) : null} kous={data.kous} valuesOf={valuesOf} links={data.links} onNavigate={id => { const t = data.kous.find(x => x.id === id); if (t) { setYear(t.year); setSelectedId(id); } }} />
+          <LifecycleKouDetail kou={kou} chain={selectedIndex >= 0 ? chainOf(selectedIndex) : null} kous={data.kous} valuesOf={valuesOf} links={data.links} jikou={jikou} jikouFailed={jikouState === 'error'} moku={moku} mokuFailed={mokuState === 'error'} onNavigate={id => { const t = data.kous.find(x => x.id === id); if (t) { setYear(t.year); setSelectedId(id); } }} />
           )}
         </section>
       </main>
