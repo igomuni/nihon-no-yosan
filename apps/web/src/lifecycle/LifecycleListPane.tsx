@@ -10,6 +10,7 @@ import {
   lifecyclePublishersOf,
   LIFECYCLE_CHAIN_END_LABEL,
   type JikouCount,
+  type MokuCount,
   type LifecycleChain,
   type LifecycleKou,
   type LifecycleLinkStatus,
@@ -29,7 +30,7 @@ function setBodyCursor(value: string): void {
 
 const MAX_ROWS = 600;
 const MIN_COLUMN_WIDTH = 48;
-export const DEFAULT_COLUMN_WIDTHS: Record<LifecycleSortKey, number> = { publisher: 110, group: 130, acct: 130, org: 120, name: 220, jikou: 64, stages: 72, links: 72, span: 112, request: 96, budget: 96, revised: 96, spent: 96, size: 96 };
+export const DEFAULT_COLUMN_WIDTHS: Record<LifecycleSortKey, number> = { publisher: 110, group: 130, acct: 130, org: 120, name: 220, jikou: 64, moku: 64, stages: 72, links: 72, span: 112, request: 96, budget: 96, revised: 96, spent: 96, size: 96 };
 const BADGE: Record<LifecycleStage, string> = { request: '要', budget: '政', supp: '補', settle: '決' };
 const COLS: { key: LifecycleSortKey; label: string; left?: boolean; title?: string }[] = [
   { key: 'publisher', label: '要求所管', left: true, title: '概算要求書の公開元の府省（要求書の PDF のドメイン由来）。複数の府省の書に載る項は「N所管」（ホバーで一覧）。概算要求書の無い年度・項は「—」' },
@@ -38,6 +39,7 @@ const COLS: { key: LifecycleSortKey; label: string; left?: boolean; title?: stri
   { key: 'org', label: '組織／勘定', left: true },
   { key: 'name', label: '項名', left: true },
   { key: 'jikou', label: '事項', title: '項の下の事項の数（その年度。概算要求・予算書の当初予算・補正の事項を合わせた数）。「—」は事項が無い（0 とは別）。決算は事項の単位が無い' },
+  { key: 'moku', label: '目', title: '項の下の目の数（その年度。予算書の当初予算・補正・決算の目と、概算要求書にだけある目を合わせた数。決算の共管別の行は、別の目として数えない）。「—」は目が無い（0 とは別）' },
   { key: 'stages', label: '段階', left: true, title: '値がある段階。要 = 概算要求、政 = 政府案、補 = 補正、決 = 決算（薄い字は、現行のデータに値が無い）' },
   { key: 'links', label: '対応', left: true, title: '年度をまたぐ項の対応。確定 = 同じ鍵などで 1 対 1、未確定 = 候補はあるが根拠がそろわない、候補なし = 相手の年度に候補が無い、所管なし = 相手の年度に、この所管・会計の項が 1 つも無い（項が無くなった・新しくできたとは限らない）' },
   { key: 'span', label: '確認済み年度', left: true, title: '確定した対応（同じ鍵、または名前と額の根拠がそろった 1 対 1）でたどれた年度の範囲と年数。候補・候補なしでは進まない。? は、その先に未確定の候補があること。事業が同じとは限らない' },
@@ -70,6 +72,11 @@ function SpanCell({ chain, span }: { chain: LifecycleChain; span: { from: number
 }
 
 /** 事項の数。事項が無いときは「—」（0 とは別）、読み込み中は「…」。ツールチップに、補正にだけある事項と概算要求にだけある事項の数 */
+function MokuCountCell({ count, loading }: { count: MokuCount | null; loading: boolean }) {
+  if (count === null) return <td className="whitespace-nowrap px-2 py-1 text-right text-neutral-300 dark:text-neutral-600" title={loading ? '目を読み込み中' : '目なし（現行のデータに、この項の目が無い）'}>{loading ? '…' : '—'}</td>;
+  return <td className="whitespace-nowrap px-2 py-1 text-right tabular-nums" title={`目 ${count.total}${count.requestOnly > 0 ? `（うち概算要求書にだけある ${count.requestOnly}）` : ''}`}>{count.total}</td>;
+}
+
 function JikouCountCell({ count, loading }: { count: JikouCount | null; loading: boolean }) {
   if (count === null) return <td className="whitespace-nowrap px-2 py-1 text-right text-neutral-300 dark:text-neutral-600" title={loading ? '事項を読み込み中' : '事項なし（現行のデータに、この項の事項が無い）'}>{loading ? '…' : '—'}</td>;
   const extra = [count.suppOnly > 0 ? `補正にだけある ${count.suppOnly}` : '', count.requestOnly > 0 ? `概算要求にだけある ${count.requestOnly}` : ''].filter(Boolean).join('、');
@@ -83,13 +90,15 @@ function Amount({ yen }: { yen: number | undefined }) {
     : <td className="whitespace-nowrap px-2 py-1 text-right tabular-nums" title={`${yen.toLocaleString('ja-JP')} 円`}>{yen === 0 ? '0円' : formatSen(yen / 1000)}</td>;
 }
 
-export function LifecycleListPane({ items, notice, jikouLoading, sortKey, sortDir, onSort, selectedId, onSelect, widths, onWidthsChange }: {
+export function LifecycleListPane({ items, notice, jikouLoading, mokuLoading, sortKey, sortDir, onSort, selectedId, onSelect, widths, onWidthsChange }: {
   /** 絞り込み・並べ替え済み */
-  items: readonly { k: LifecycleKou; a: LifecycleRowAmounts; link: LifecycleLinkStatus | null; chain: LifecycleChain; span: { from: number; to: number; years: number }; jikou: JikouCount | null; linkGap: boolean }[];
+  items: readonly { k: LifecycleKou; a: LifecycleRowAmounts; link: LifecycleLinkStatus | null; chain: LifecycleChain; span: { from: number; to: number; years: number }; jikou: JikouCount | null; moku: MokuCount | null; linkGap: boolean }[];
   /** 一覧の代わりに出す文（事項名で絞るのに、事項のデータが届いていないとき）。無ければ null */
   notice: string | null;
   /** 事項のデータ（`lifecycle/jikou.json.gz`）を読み込み中。このあいだ、事項の列は「…」 */
   jikouLoading: boolean;
+  /** 目のデータ（`lifecycle/moku.json.gz`）を読み込み中。このあいだ、目の列は「…」 */
+  mokuLoading: boolean;
   sortKey: LifecycleSortKey;
   sortDir: LifecycleSortDir;
   onSort: (k: LifecycleSortKey) => void;
@@ -156,7 +165,7 @@ export function LifecycleListPane({ items, notice, jikouLoading, sortKey, sortDi
             </tr>
           </thead>
           <tbody>
-            {shown.map(({ k, a, link, linkGap, chain, span, jikou }) => {
+            {shown.map(({ k, a, link, linkGap, chain, span, jikou, moku }) => {
               const selected = k.id === selectedId;
               return (
                 <tr
@@ -174,6 +183,7 @@ export function LifecycleListPane({ items, notice, jikouLoading, sortKey, sortDi
                   <td className="break-words px-2 py-1 text-left">{lifecycleOrgOf(k)}</td>
                   <td className="break-words px-2 py-1 text-left font-medium">{k.name}</td>
                   <JikouCountCell count={jikou} loading={jikouLoading} />
+                  <MokuCountCell count={moku} loading={mokuLoading} />
                   <td className="whitespace-nowrap px-2 py-1 text-left font-mono">
                     {LIFECYCLE_STAGES.map(s => (
                       <span key={s} className={k.seenIn.includes(s) ? 'text-emerald-700 dark:text-emerald-400' : 'text-neutral-300 dark:text-neutral-600'}>{BADGE[s]}</span>
