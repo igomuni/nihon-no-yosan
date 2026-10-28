@@ -1,20 +1,21 @@
 import { describe, expect, it } from 'vitest';
 import type { LifecycleKou } from './lifecycle.ts';
 import { INITIAL_LIFECYCLE_FILTERS } from './lifecycle-list.ts';
-import { MOKU_FLAG, filterMokuRows, kouIdsWithMoku, mokuFlow, mokuIndex, mokuKouTable, mokuListRows, mokuSelectionKey, mokuSpan, mokuSettleNote, mokuSum, mokuSuppNote, sortMokuRows, type LifecycleMokuData, type LifecycleMokuNode } from './lifecycle-moku.ts';
+import { MOKU_FLAG, MOKU_MEASURES, filterMokuRows, isSettleMeasure, kouIdsWithMoku, mokuFlow, mokuIndex, mokuKouTable, mokuListRows, mokuSelectionKey, mokuSpan, mokuSettleNote, mokuSum, mokuSuppNote, mokuValue, sortMokuRows, type LifecycleMokuData, type LifecycleMokuNode } from './lifecycle-moku.ts';
 
 const kou = (id: string, o: Partial<LifecycleKou> = {}): LifecycleKou => ({ id, year: 2024, account: 'general', ministry: '財務省', org: '財務本省', specialAccount: '', subAccount: '', code: '001', name: id, seenIn: ['budget'], ...o });
 const A23 = kou('2023:general:A', { year: 2023, name: '項A' }), A24 = kou('2024:general:A', { name: '項A' }), B24 = kou('2024:general:B', { name: '項B', ministry: '法務省', org: '法務本省' });
 const kouById = new Map([A23, A24, B24].map(k => [k.id, k]));
 type V = [number | null, number | null, number | null, number | null, number | null, number | null, number | null, number | null];
 const none: V = [null, null, null, null, null, null, null, null];
-const n = (k: number, year: number, name: string, codes: string, v: Partial<Record<'budget' | 'revised' | 'current' | 'request', number>>, flags = 0, part = ''): LifecycleMokuNode => {
+const n = (k: number, year: number, name: string, codes: string, v: Partial<Record<'budget' | 'revised' | 'current' | 'request' | 'carried' | 'carriedIn', number>>, flags = 0, part = ''): LifecycleMokuNode => {
   const x: V = [...none];
   if (v.budget !== undefined) x[0] = v.budget;
   if (v.revised !== undefined) x[1] = v.revised;
   if (v.current !== undefined) x[3] = v.current;
+  if (v.carried !== undefined) x[5] = v.carried;
   if (v.request !== undefined) x[7] = v.request;
-  return [k, year, name, codes, part, ...x, flags];
+  return [k, year, name, codes, part, ...x, flags, v.carriedIn ?? null];
 };
 const data: LifecycleMokuData = {
   years: [2023, 2024],
@@ -24,7 +25,7 @@ const data: LifecycleMokuData = {
   kous: [A23.id, A24.id, B24.id],
   nodes: [
     n(0, 2023, '庁費', '1|2', { budget: 100, current: 90 }, MOKU_FLAG.suppAggregated), //  0
-    n(0, 2023, '委託費', '1|3', { budget: 50, revised: 70, current: 70 }, MOKU_FLAG.suppItem), //  1
+    n(0, 2023, '委託費', '1|3', { budget: 50, revised: 70, current: 70, carried: 8, carriedIn: 5 }, MOKU_FLAG.suppItem), //  1
     n(1, 2024, '庁費', '1|9', { budget: 120, request: 130 }, MOKU_FLAG.suppKouOnly), //  2（分類コードが変わる）
     n(1, 2024, '委託費', '1|3', { budget: 60 }), //  3
     n(2, 2024, '施設整備費', '2|4', { revised: 300 }, MOKU_FLAG.suppItem), //  4（補正で出る目）
@@ -127,5 +128,20 @@ describe('mokuSpan', () => {
   it('stops at a year without the 目, and is the year alone for a 項 without a chain', () => {
     expect(mokuSpan(index, 3, [A23.id, '2025:general:A', A24.id])).toEqual({ from: 2024, to: 2024, years: 1 });
     expect(mokuSpan(index, 4, [B24.id])).toEqual({ from: 2024, to: 2024, years: 1 });
+  });
+});
+
+describe('carry-over measures', () => {
+  it('reads the 翌年度繰越額 and the 前年度繰越額 of a 目, and null where the 決算 has none', () => {
+    expect(mokuValue(data.nodes[1]!, 'carried')).toBe(8);
+    expect(mokuValue(data.nodes[1]!, 'carriedIn')).toBe(5);
+    expect(mokuValue(data.nodes[0]!, 'carried')).toBeNull();
+    expect(mokuValue(data.nodes[0]!, 'carriedIn')).toBeNull();
+  });
+
+  it('treats them as values of the 決算 (the other stages do not have them) and ties them to the 項 values', () => {
+    expect(isSettleMeasure('carried') && isSettleMeasure('carriedIn') && isSettleMeasure('current')).toBe(true);
+    expect(isSettleMeasure('budget') || isSettleMeasure('request') || isSettleMeasure('revised')).toBe(false);
+    expect(MOKU_MEASURES.filter(m => m.key.startsWith('carried')).map(m => m.kou)).toEqual(['carryover_in', 'carryover_out']);
   });
 });

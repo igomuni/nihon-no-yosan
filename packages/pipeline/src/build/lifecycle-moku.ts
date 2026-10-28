@@ -78,8 +78,8 @@ const kouIdOf = (year: number, a: Account, r: Rec): string =>
 const partOf = (r: Rec): string => `${r['共管所管名'] ?? ''}|${r['共管組織名'] ?? ''}`;
 
 interface Node { kouId: string; year: number; name: string; key: string; codes: string; part: string; v: (number | null)[]; flags: number }
-// v の並び: 政府案, 補正後, 補正の差引額, 歳出予算現額, 支出済歳出額, 翌年度繰越額, 不用額, 概算要求
-const V = { budget: 0, revised: 1, suppNet: 2, current: 3, spent: 4, carried: 5, unused: 6, request: 7 } as const;
+// v の並び: 政府案, 補正後, 補正の差引額, 歳出予算現額, 支出済歳出額, 翌年度繰越額, 不用額, 概算要求, 前年度繰越額
+const V = { budget: 0, revised: 1, suppNet: 2, current: 3, spent: 4, carried: 5, unused: 6, request: 7, carriedIn: 8 } as const;
 
 export function buildLifecycleMoku({ datasetDir, historyDir, sources, kous, request }: {
   datasetDir: string;
@@ -122,7 +122,7 @@ export function buildLifecycleMoku({ datasetDir, historyDir, sources, kous, requ
       };
       const codesOf = (r: Rec): string => CODES[a].map(c => r[c] ?? '').join('|');
       const add = (kouId: string, m: Map<string, Node>, name: string, codes: string, part: string): Node => {
-        const n: Node = { kouId, year, name, key: `${nameKey(name)}|${codes}|${part}`, codes, part, v: Array<number | null>(8).fill(null), flags: 0 };
+        const n: Node = { kouId, year, name, key: `${nameKey(name)}|${codes}|${part}`, codes, part, v: Array<number | null>(9).fill(null), flags: 0 };
         m.set(n.key, n);
         nodes.push(n);
         return n;
@@ -191,7 +191,12 @@ export function buildLifecycleMoku({ datasetDir, historyDir, sources, kous, requ
       if (settle.length > 0) {
         settleYears.add(year);
         const cols = ['歳出予算現額(円)', '支出済歳出額(円)', '翌年度繰越額(円)', '不用額(円)'].map(c => colOf(settle[0]!, k => k === c, c));
-        const put = (n: Node, r: Rec): void => { cols.forEach((c, i) => { const v = intOf(r[c]); n.v[V.current + i] = v === null ? null : v / 1000; }); };
+        const inCol = colOf(settle[0]!, k => k === '前年度繰越額(円)', '前年度繰越額(円)');
+        const put = (n: Node, r: Rec): void => {
+          cols.forEach((c, i) => { const v = intOf(r[c]); n.v[V.current + i] = v === null ? null : v / 1000; });
+          const vi = intOf(r[inCol]);
+          n.v[V.carriedIn] = vi === null ? null : vi / 1000;
+        };
         const groups = new Map<string, Rec[]>();
         for (const r of settle) { kouOf(r); const g = `${kouIdOf(year, a, r)}\n${nameKey(r['目名'] ?? '')}|${codesOf(r)}`; (groups.get(g) ?? groups.set(g, []).get(g)!).push(r); }
         const taken = new Set<Node>();
@@ -260,7 +265,7 @@ export function buildLifecycleMoku({ datasetDir, historyDir, sources, kous, requ
       // 分類コードは、要求書の原文を直したもの（`requestOnlyMoku`）。直せない形は空
       const key = `${nameKey(name)}|${code}|`;
       if (placed.has(key)) throw new Error(`概算要求のみの項の目が重複: ${kouId} ${name}`);
-      const n: Node = { kouId, year: k.year, name, key, codes: code, part: '', v: Array<number | null>(8).fill(null), flags: MOKU_FLAG.requestOnly };
+      const n: Node = { kouId, year: k.year, name, key, codes: code, part: '', v: Array<number | null>(9).fill(null), flags: MOKU_FLAG.requestOnly };
       n.v[V.request] = req;
       placed.set(key, n);
       nodes.push(n);
@@ -274,7 +279,8 @@ export function buildLifecycleMoku({ datasetDir, historyDir, sources, kous, requ
     let k = kouIndex.get(n.kouId);
     if (k === undefined) { k = kouList.length; kouList.push(n.kouId); kouIndex.set(n.kouId, k); }
     stats.nodes[n.year] = (stats.nodes[n.year] ?? 0) + 1;
-    return [k, n.year, n.name, n.codes, n.part, ...(n.v as [number | null, number | null, number | null, number | null, number | null, number | null, number | null, number | null]), n.flags];
+    const [budget, revised, suppNet, current, spent, carried, unused, request, carriedIn] = n.v as [number | null, number | null, number | null, number | null, number | null, number | null, number | null, number | null, number | null];
+    return [k, n.year, n.name, n.codes, n.part, budget, revised, suppNet, current, spent, carried, unused, request, n.flags, carriedIn];
   });
   const years = [...new Set(out.map(n => n[1]))].sort((x, y) => x - y);
   const sorted = (s: Set<number>): number[] => [...s].sort((x, y) => x - y);

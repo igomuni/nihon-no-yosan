@@ -30,9 +30,9 @@ export const MOKU_FLAG = {
 
 /**
  * 目 1 件（1 年度）: [項の添字, 年度, 目名, 分類コード（`|` でつなぐ。概算要求にだけある目は空）, 共管（決算の共管別の行だけ。それ以外は空）,
- * 政府案, 補正後, 補正の差引額, 歳出予算現額, 支出済歳出額, 翌年度繰越額, 不用額, 概算要求, 状態のビット（`MOKU_FLAG`）]
+ * 政府案, 補正後, 補正の差引額, 歳出予算現額, 支出済歳出額, 翌年度繰越額, 不用額, 概算要求, 状態のビット（`MOKU_FLAG`）, 前年度繰越額]
  */
-export type LifecycleMokuNode = [number, number, string, string, string, number | null, number | null, number | null, number | null, number | null, number | null, number | null, number | null, number];
+export type LifecycleMokuNode = [number, number, string, string, string, number | null, number | null, number | null, number | null, number | null, number | null, number | null, number | null, number, number | null];
 
 /** 概算要求の目の取れ方（項ごと）。`full` = 全部の目で、要求と予算書の両方がある。`partial` = 片方にしか無い目がある。`none` = 要求側の目が 1 つも無い。`noReq` = 要求書に明細が無い・つながらない */
 export type MokuRequestCoverage = 'full' | 'partial' | 'none' | 'noReq';
@@ -210,11 +210,15 @@ export const MOKU_MEASURES = [
   { key: 'request', label: '概算要求', col: 12, kou: 'request_amount' },
   { key: 'budget', label: '政府案', col: 5, kou: 'budget_amount' },
   { key: 'revised', label: '補正後', col: 6, kou: 'revised_amount' },
+  { key: 'carriedIn', label: '前年度繰越', col: 14, kou: 'carryover_in' },
   { key: 'current', label: '歳出予算現額', col: 8, kou: 'current_amount' },
   { key: 'spent', label: '支出済', col: 9, kou: 'spent' },
+  { key: 'carried', label: '翌年度繰越', col: 10, kou: 'carryover_out' },
   { key: 'unused', label: '不用額', col: 11, kou: 'unused' },
 ] as const;
 export type MokuMeasure = (typeof MOKU_MEASURES)[number]['key'];
+/** 決算の値（決算の書にだけある値。概算要求・政府案・補正後の段階には無い） */
+export const isSettleMeasure = (key: MokuMeasure): boolean => key === 'current' || key === 'spent' || key === 'unused' || key === 'carried' || key === 'carriedIn';
 export const mokuMeasure = (key: MokuMeasure) => MOKU_MEASURES.find(m => m.key === key)!;
 /** 目の値（千円）。無ければ null */
 export const mokuValue = (n: LifecycleMokuNode, key: MokuMeasure): number | null => n[mokuMeasure(key).col] as number | null;

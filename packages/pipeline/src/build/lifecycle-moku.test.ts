@@ -30,7 +30,7 @@ write('moku-general-kessan.csv', `${G},目番号,項名,目名,${SETTLE}
 ${g},02,共通費,庁費,100000,0,0,0,0,100000,90000,0,10000,1
 ${g},03,共通費,委託費,70000,0,0,0,0,70000,70000,0,0,2
 ${g},04,共通費,旅費,30000,0,0,0,0,30000,29500,0,500,3
-${g},05,共通費,施設整備費,300000,0,0,0,0,300000,0,300000,0,4
+${g},05,共通費,施設整備費,300000,40000,0,0,0,340000,0,300000,40000,4
 ${g},06,共通費,情報処理業務庁費,0,0,0,0,5000,5000,5000,0,0,5
 `);
 // 特別会計: 当初に 交付金。決算は、同じ識別の行が共管の組織ごとに 2 つ
@@ -63,10 +63,19 @@ describe('buildLifecycleMoku', () => {
   });
 
   it('adds a 目 that appears only in the 補正 or only in the 決算, with the other stages empty, and converts the 決算 from 円 to 千円', () => {
-    expect(at('施設整備費').slice(5, 9)).toEqual([null, 300, 300, 300]);
+    expect(at('施設整備費').slice(5, 9)).toEqual([null, 300, 300, 340]);
     expect(at('情報処理業務庁費').slice(5, 12)).toEqual([null, null, null, 5, 5, 0, 0]);
     expect(at('庁費').slice(8, 12)).toEqual([100, 90, 0, 10]);
     expect([stats.suppOnly, stats.settleOnly]).toEqual([1, 1]);
+  });
+
+  it('keeps the 前年度繰越額 of the 決算 (千円) at the end of a 目, and leaves it empty for a 目 without a 決算', () => {
+    expect(at('施設整備費')[14]).toBe(40);
+    expect(at('庁費')[14]).toBe(0);
+    expect(at('庁費')[10]).toBe(0); // 翌年度繰越額
+    expect(at('施設整備費')[10]).toBe(300);
+    expect(data.nodes.every(n => n.length === 15)).toBe(true);
+    expect(data.nodes.filter(n => n[1] === 2024 && n[14] === null).length).toBe(data.nodes.filter(n => n[8] === null).length);
   });
 
   it('splits 決算 rows of the same 目 by the 共管 and leaves the 決算 of the 当初 目 empty', () => {
