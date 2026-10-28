@@ -243,9 +243,8 @@ export function LifecycleMokuTab({ kou, chain, kous, valuesOf, moku, loading, fa
           {chosen.length > 0 && (
             <>
               <section className="flex flex-col gap-2" aria-label="段階ごとの額の年度推移">
-                <h3 className="font-semibold">段階ごとの額{one ? '' : '（選んだ目の合計）'}</h3>
+                <h3 className="font-semibold" title="決算は支出済歳出額。選んだ目のどれかに値が無く、額が分からない年度は点を描かない（例: 補正後は、外N目にまとめられた目や補正の無い項の目に値が無い）。共管別の行・概算要求書にだけある目・当初予算に無い目（補正・決算で出る目）は、その段階に無い目として、値が無くても描く。その年度の目を全部選んだときの概算要求・決算は、値のある目を全部足す（どの行も、目の行のどれか 1 つに置いているので、項の額になる）。">段階ごとの額{one ? '' : '（選んだ目の合計）'}</h3>
                 <TrendChart points={points} current={kou.year} onSelect={goYear} />
-                <p className="text-[11px] text-neutral-500">決算は支出済歳出額。選んだ目のどれかに値が無く、額が分からない年度は点を描かない（例: 補正後は、外N目にまとめられた目や補正の無い項の目に値が無い）。共管別の行・概算要求書にだけある目・当初予算に無い目（補正・決算で出る目）は、その段階に無い目として、値が無くても描く。その年度の目を全部選んだときの概算要求・決算は、値のある目を全部足す（どの行も、目の行のどれか 1 つに置いているので、項の額になる）。</p>
               </section>
 
               <section className="flex flex-col gap-2" aria-label="年度の表">
@@ -364,12 +363,11 @@ function Reconcile({ rows, moku, members, valuesOf, current }: { rows: readonly 
   const nDiffer = checks.reduce((n, c) => n + c.totals.filter(t => t.differs).length, 0);
   return (
     <details className="rounded border border-neutral-200 p-2 dark:border-neutral-700">
-      <summary className="cursor-pointer font-semibold">
+      <summary className="cursor-pointer font-semibold" title="項のすべての目の、値のある目を足した額（目の計）と、項の額。補正後は、外N目にまとめられた目に値が無く、目の計が項の額に届かないので、照合しない。">
         項の額との照合
         {nDiffer > 0 && <span className="ml-2 font-normal text-amber-700 dark:text-amber-400">目の計と違う年度・値が {nDiffer} 件</span>}
       </summary>
       <div className="mt-2 flex flex-col gap-2">
-        <p className="text-[11px] text-neutral-500">項のすべての目の、値のある目を足した額（目の計）と、項の額。補正後は、外N目にまとめられた目に値が無く、目の計が項の額に届かないので、照合しない。</p>
         <div className="overflow-x-auto">
           <table className="w-full border-collapse">
             <thead>
@@ -422,7 +420,6 @@ function AllMoku({ rows, moku, members, kou, onNavigate, onPick, picked }: { row
               <button key={m.key} type="button" role="tab" aria-selected={measure === m.key} onClick={() => setMeasure(m.key)} className={`rounded-full border px-2.5 py-0.5 ${measure === m.key ? 'border-emerald-600 bg-emerald-50 font-semibold text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300' : 'border-neutral-300 text-neutral-600 hover:bg-neutral-50 dark:border-neutral-600 dark:text-neutral-300 dark:hover:bg-neutral-800'}`}>{m.label}</button>
             ))}
           </div>
-          <p className="text-[11px] text-neutral-500">「·」はその年度に目が無い、「—」は目はあるが値が無い（ホバーで理由）。</p>
           <div ref={scroller} className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
