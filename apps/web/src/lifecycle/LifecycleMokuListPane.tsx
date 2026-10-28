@@ -97,7 +97,7 @@ export function LifecycleMokuListPane({ items, loading, failed, sortKey, sortDir
         <span title="額の列の「—」は値なし（0 ではない）。ホバーで理由"><b className="tabular-nums text-neutral-800 dark:text-neutral-100">{items.length.toLocaleString()}</b> 目</span>
         {totals.map(t => t.sum !== null && <span key={t.label} title={`値のある ${t.n.toLocaleString()} 目の合計（${t.sum.toLocaleString('ja-JP', { maximumFractionDigits: 3 })} 千円）${t.label === '決算' ? '。支出済歳出額' : ''}`}>{t.label} <b className="tabular-nums text-neutral-800 dark:text-neutral-100">{formatSen(t.sum)}</b></span>)}
       </div>
-      <div ref={scrollRef} data-pane="list" tabIndex={-1} className="min-h-0 flex-1 overflow-auto outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-500/50">
+      <div ref={scrollRef} data-pane="list" tabIndex={-1} className="min-h-0 flex-1 overflow-auto outline-0 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-emerald-500/50">
         <table className="border-collapse text-xs" style={{ width: tableWidth, tableLayout: 'fixed' }}>
           <colgroup>{COLS.map(c => <col key={c.key} style={{ width: widthOf(c.key) }} />)}</colgroup>
           <thead>
