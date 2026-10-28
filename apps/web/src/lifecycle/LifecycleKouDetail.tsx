@@ -8,6 +8,7 @@ import {
   type LifecycleLinkEvidence,
   type LifecycleValues,
 } from '@nihon-no-yosan/core';
+import { useYearKeys } from '../components/useListKeys.ts';
 import { TrendChart, type TrendPoint } from './charts.tsx';
 import { kouTitle, num, td, th } from './shared.ts';
 
@@ -35,18 +36,19 @@ const COLS: { key: string; label: string; title: string; of: (a: ReturnType<type
 const cellAmount = (yen: number | undefined): string => (yen === undefined ? '—' : yen === 0 ? '0円' : formatSen(yen / 1000));
 
 /**
- * 項の年度推移。確定した対応でたどれた年度（連続）の、段階ごとの代表の額（概算要求 = 要求額、政府案、補正後 = 改予算額、決算 = 支出済額）を、折れ線と表で見る。
- * 値の無い段階は「—」（0 とは別）。年度の間の対応は、行ごとに根拠を書く。たどる範囲は、確定した対応だけ（候補・候補なしでは進まない）。
+ * 項の詳細（右ペイン。中ペインが「項」のとき）。事項の詳細・目の詳細と同じ構成: ヘッダー、段階ごとの額の年度推移のグラフ、年度を縦に並べた表。
+ * 確定した対応でたどれた年度（連続）の、段階ごとの代表の額（概算要求 = 要求額、政府案、補正後 = 改予算額、決算 = 支出済額）と、決算の繰越額。値の無い段階は「—」（0 とは別）。
+ * 年度の間の対応は、行ごとに根拠を書く。たどる範囲は、確定した対応だけ（候補・候補なしでは進まない）。J / K（右ペインにフォーカスがあるとき）で、前後の年度に移る。
  */
-export function LifecycleTrendTab({ kou, chain, kous, valuesOf, links, onNavigate }: {
-  kou: LifecycleKou;
-  chain: LifecycleChain;
+export function LifecycleKouDetail({ kou, chain, kous, valuesOf, links, onNavigate }: {
+  kou: LifecycleKou | null;
+  chain: LifecycleChain | null;
   kous: readonly LifecycleKou[];
   valuesOf: ReadonlyMap<number, LifecycleValues>;
   links: readonly LifecycleLink[];
   onNavigate: (id: string) => void;
 }) {
-  const rows = useMemo(() => chain.members.map(i => ({ i, k: kous[i]!, v: valuesOf.get(i), a: lifecycleRowAmounts(valuesOf.get(i) ?? {}) })), [chain, kous, valuesOf]);
+  const rows = useMemo(() => (chain ? chain.members.map(i => ({ i, k: kous[i]!, v: valuesOf.get(i), a: lifecycleRowAmounts(valuesOf.get(i) ?? {}) })) : []), [chain, kous, valuesOf]);
   const points = useMemo<TrendPoint[]>(() => rows.map(({ k, a, v }) => ({ year: k.year, request: a.request, budget: a.budget, revised: a.revised, spent: a.spent, carriedIn: v?.carryover_in, carried: v?.carryover_out })), [rows]);
   // 前の年度との対応（確定した 1 組）の根拠
   const evidenceTo = useMemo(() => {
@@ -54,6 +56,10 @@ export function LifecycleTrendTab({ kou, chain, kous, valuesOf, links, onNavigat
     for (const l of links) if (l.status === 'RESOLVED' && l.from >= 0 && l.to >= 0) m.set(l.to, l.evidence);
     return m;
   }, [links]);
+  // J / K で移る年度: 項の確定した対応でたどった年度
+  const years = useMemo(() => rows.map(r => r.k.year), [rows]);
+  useYearKeys(years, kou?.year ?? null, y => { const t = rows.find(r => r.k.year === y); if (t && t.k.id !== kou?.id) onNavigate(t.k.id); });
+  if (!kou || !chain) return <p className="p-4 text-xs text-neutral-500">一覧から項を選んでください。</p>;
   return (
     <div className="flex flex-col gap-5 p-4 text-xs">
       <div>
