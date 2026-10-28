@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { jikouChainNodes, jikouRowOf, type JikouIndex, type JikouTable, type LifecycleKou } from '@nihon-no-yosan/core';
+import { useYearKeys } from '../components/useListKeys.ts';
 import { JikouChart, JikouYearTable } from './JikouViews.tsx';
 import { kouTitle } from './shared.ts';
 
@@ -22,6 +23,8 @@ export function LifecycleJikouDetail({ jikou, loading, failed, node, kouOf, onSe
 }) {
   const flow = useMemo(() => (jikou && node !== null ? jikouChainNodes(jikou, node) : []), [jikou, node]);
   const table = useMemo<JikouTable | null>(() => (jikou && node !== null ? { years: flow.map(n => jikou.data.nodes[n]![1]), rows: [jikouRowOf(jikou, node)] } : null), [jikou, node, flow]);
+  const flowYears = useMemo(() => (jikou ? flow.map(n => jikou.data.nodes[n]![1]) : []), [jikou, flow]);
+  useYearKeys(flowYears, jikou && node !== null ? jikou.data.nodes[node]![1] : null, y => { const m = flow[flowYears.indexOf(y)]; if (m !== undefined && m !== node) onSelectNode(m); });
   if (failed) return <p className="p-4 text-xs text-red-700">事項の読み込みに失敗しました（<code>npm run build:data</code> で作る）。</p>;
   if (loading || !jikou) return <p className="p-4 text-xs text-neutral-500">事項を読み込み中…</p>;
   if (node === null || !table) return <p className="p-4 text-xs text-neutral-500">一覧から事項を選んでください。</p>;

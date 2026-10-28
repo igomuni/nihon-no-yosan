@@ -2,6 +2,7 @@ import { useEffect, useRef, type MouseEvent as ReactMouseEvent } from 'react';
 import { MOKU_FLAG, formatSen, lifecycleAcctOf, lifecycleGroupOf, lifecycleGroupsOf, lifecycleOrgOf, lifecyclePublisherOf, lifecyclePublishersOf, type LifecycleSortDir, type MokuListRow, type MokuSortKey } from '@nihon-no-yosan/core';
 import { Icon } from '../components/Icon.tsx';
 import { scrollRowIntoView } from '../components/scrollRowIntoView.ts';
+import { useListKeys } from '../components/useListKeys.ts';
 
 /** ドラッグ中のカーソル（イベントの外から body を変えるので、関数にまとめる） */
 function setBodyCursor(value: string): void {
@@ -61,6 +62,7 @@ export function LifecycleMokuListPane({ items, loading, failed, sortKey, sortDir
   suppNote: (r: MokuListRow) => { supp: string | null; settle: string | null };
 }) {
   const selectedIdx = selectedNode === null ? -1 : items.findIndex(x => x.node === selectedNode);
+  useListKeys(items.length, selectedIdx, i => onSelect(items[i]!));
   const shown = items.slice(0, Math.max(MAX_ROWS, selectedIdx + 1));
   const scrollRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -95,7 +97,7 @@ export function LifecycleMokuListPane({ items, loading, failed, sortKey, sortDir
         <span title="額の列の「—」は値なし（0 ではない）。ホバーで理由"><b className="tabular-nums text-neutral-800 dark:text-neutral-100">{items.length.toLocaleString()}</b> 目</span>
         {totals.map(t => t.sum !== null && <span key={t.label} title={`値のある ${t.n.toLocaleString()} 目の合計（${t.sum.toLocaleString('ja-JP', { maximumFractionDigits: 3 })} 千円）${t.label === '決算' ? '。支出済歳出額' : ''}`}>{t.label} <b className="tabular-nums text-neutral-800 dark:text-neutral-100">{formatSen(t.sum)}</b></span>)}
       </div>
-      <div ref={scrollRef} className="min-h-0 flex-1 overflow-auto">
+      <div ref={scrollRef} data-pane="list" tabIndex={-1} className="min-h-0 flex-1 overflow-auto outline-0 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-emerald-500/50">
         <table className="border-collapse text-xs" style={{ width: tableWidth, tableLayout: 'fixed' }}>
           <colgroup>{COLS.map(c => <col key={c.key} style={{ width: widthOf(c.key) }} />)}</colgroup>
           <thead>

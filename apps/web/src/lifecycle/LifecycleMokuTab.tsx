@@ -3,6 +3,7 @@ import {
   MOKU_FLAG,
   MOKU_MEASURES,
   formatSen,
+  isSettleMeasure,
   mokuKouTable,
   mokuMeasure,
   mokuSettleNote,
@@ -28,7 +29,7 @@ export const amount = (v: number): string => (v === 0 ? '0円' : formatSen(v));
 /** 目の値が無い理由（表示用） */
 function why(data: LifecycleMokuData, n: LifecycleMokuNode, key: MokuMeasure): string {
   if (key === 'revised') return mokuSuppNote(data, n) ?? '値なし';
-  if (key === 'current' || key === 'spent' || key === 'unused') return mokuSettleNote(data, n) ?? '値なし';
+  if (isSettleMeasure(key)) return mokuSettleNote(data, n) ?? '値なし';
   if (n[13] & MOKU_FLAG.settlePart) return `決算の共管別の行（${key === 'request' ? '概算要求' : '政府案'}は、共管別に分かれていない）`;
   if (key === 'request') {
     if (!data.requestYears.includes(n[1])) return 'この年度の概算要求の目は、データに無い';
@@ -99,7 +100,7 @@ function chartSum(data: LifecycleMokuData, nodes: readonly number[], key: MokuMe
     const n = data.nodes[i]!;
     const v = mokuValue(n, key);
     if (v !== null) { sum = (sum ?? 0) + v; continue; }
-    const settle = key === 'current' || key === 'spent' || key === 'unused';
+    const settle = isSettleMeasure(key);
     if (settle ? n[13] & (MOKU_FLAG.settleSplit | MOKU_FLAG.requestOnly) : n[13] & MOKU_FLAG.settlePart) continue;
     if (key === 'budget') continue; // 政府案の無い目は、当初予算に無い目（補正・決算で出る目）か、概算要求書にだけある目
     if (key === 'revised' && n[13] & MOKU_FLAG.requestOnly) continue;
@@ -127,12 +128,14 @@ export const YEAR_COLS: { key: MokuMeasure; label: string }[] = [
   { key: 'request', label: '要求' },
   { key: 'budget', label: '政府案' },
   { key: 'revised', label: '補正後' },
+  { key: 'carriedIn', label: '前年度繰越' },
   { key: 'current', label: '歳出予算現額' },
   { key: 'spent', label: '支出済' },
+  { key: 'carried', label: '翌年度繰越' },
   { key: 'unused', label: '不用額' },
 ];
 /** 項の額と照合する値（補正後は、外N目にまとめられた目に値が無く、目の計が項の額に届かないので、照合しない） */
-const CHECKED: readonly MokuMeasure[] = ['request', 'budget', 'current', 'spent', 'unused'];
+const CHECKED: readonly MokuMeasure[] = ['request', 'budget', 'carriedIn', 'current', 'spent', 'carried', 'unused'];
 
 /** 合計のセル。値のある目だけを足す。額が分からない（値の無い目がある）ときは、値のある目の数を添える */
 function SumCell({ moku, nodes, measure, all, current }: { moku: MokuIndex; nodes: readonly number[]; measure: MokuMeasure; /** その年度の目を全部選んでいる（`chartSum` と同じ判定） */ all: boolean; current?: boolean }) {
@@ -194,7 +197,7 @@ export function LifecycleMokuTab({ kou, chain, kous, valuesOf, moku, loading, fa
       const sum = chartSum(moku.data, chosen.flatMap(r => (r.cells.has(year) ? [r.cells.get(year)!] : [])), key, all);
       return sum === null ? undefined : sum * 1000;
     };
-    return members.map(({ k }) => ({ year: k.year, request: yen('request', k.year), budget: yen('budget', k.year), revised: yen('revised', k.year), spent: yen('spent', k.year) }));
+    return members.map(({ k }) => ({ year: k.year, request: yen('request', k.year), budget: yen('budget', k.year), revised: yen('revised', k.year), spent: yen('spent', k.year), carriedIn: yen('carriedIn', k.year), carried: yen('carried', k.year) }));
   }, [moku, rows, chosen, members]);
   const select = (key: string): void => { setPicked([key]); top.current?.scrollIntoView({ block: 'start', behavior: 'smooth' }); };
   const goYear = (y: number): void => { const t = members.find(x => x.k.year === y); if (t && t.k.id !== kou.id) onNavigate(t.k.id); };

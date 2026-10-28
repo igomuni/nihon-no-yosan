@@ -8,7 +8,7 @@ import {
   type LifecycleLinkEvidence,
   type LifecycleValues,
 } from '@nihon-no-yosan/core';
-import { TREND_SERIES, TrendChart, type TrendPoint } from './charts.tsx';
+import { TrendChart, type TrendPoint } from './charts.tsx';
 import { kouTitle, num, td, th } from './shared.ts';
 
 const SHORT_EVIDENCE: Record<LifecycleLinkEvidence, string> = {
@@ -21,6 +21,16 @@ const SHORT_EVIDENCE: Record<LifecycleLinkEvidence, string> = {
   same_code_other_name: '同じ項コード（項名が違う）',
   similar_name: '近い名前',
 };
+
+/** 表の列（概算要求 → 政府案 → 補正後 → 前年度繰越 → 決算 → 翌年度繰越） */
+const COLS: { key: string; label: string; title: string; of: (a: ReturnType<typeof lifecycleRowAmounts>, v: LifecycleValues | undefined) => number | undefined }[] = [
+  { key: 'request', label: '要求', title: '概算要求', of: a => a.request },
+  { key: 'budget', label: '政府案', title: '政府案', of: a => a.budget },
+  { key: 'revised', label: '補正後', title: '補正後', of: a => a.revised },
+  { key: 'carriedIn', label: '前年度繰越', title: '前年度繰越額（決算）', of: (_, v) => v?.carryover_in },
+  { key: 'spent', label: '決算', title: '決算（支出済）', of: a => a.spent },
+  { key: 'carried', label: '翌年度繰越', title: '翌年度繰越額（決算）', of: (_, v) => v?.carryover_out },
+];
 
 const cellAmount = (yen: number | undefined): string => (yen === undefined ? '—' : yen === 0 ? '0円' : formatSen(yen / 1000));
 
@@ -36,8 +46,8 @@ export function LifecycleTrendTab({ kou, chain, kous, valuesOf, links, onNavigat
   links: readonly LifecycleLink[];
   onNavigate: (id: string) => void;
 }) {
-  const rows = useMemo(() => chain.members.map(i => ({ i, k: kous[i]!, a: lifecycleRowAmounts(valuesOf.get(i) ?? {}) })), [chain, kous, valuesOf]);
-  const points = useMemo<TrendPoint[]>(() => rows.map(({ k, a }) => ({ year: k.year, request: a.request, budget: a.budget, revised: a.revised, spent: a.spent })), [rows]);
+  const rows = useMemo(() => chain.members.map(i => ({ i, k: kous[i]!, v: valuesOf.get(i), a: lifecycleRowAmounts(valuesOf.get(i) ?? {}) })), [chain, kous, valuesOf]);
+  const points = useMemo<TrendPoint[]>(() => rows.map(({ k, a, v }) => ({ year: k.year, request: a.request, budget: a.budget, revised: a.revised, spent: a.spent, carriedIn: v?.carryover_in, carried: v?.carryover_out })), [rows]);
   // 前の年度との対応（確定した 1 組）の根拠
   const evidenceTo = useMemo(() => {
     const m = new Map<number, LifecycleLinkEvidence[]>();
@@ -64,11 +74,11 @@ export function LifecycleTrendTab({ kou, chain, kous, valuesOf, links, onNavigat
               <tr className="text-left">
                 <th className={th}>年度</th>
                 <th className={`${th} min-w-[7rem]`}>項名（所属・対応）</th>
-                {TREND_SERIES.map(s => <th key={s.key} className={`${th} whitespace-nowrap text-right`} title={s.label}>{s.key === 'spent' ? '決算' : s.key === 'request' ? '要求' : s.label}</th>)}
+                {COLS.map(c => <th key={c.key} className={`${th} whitespace-nowrap text-right`} title={c.title}>{c.label}</th>)}
               </tr>
             </thead>
             <tbody>
-              {rows.map(({ i, k, a }, n) => {
+              {rows.map(({ i, k, a, v }, n) => {
                 const prev = n > 0 ? rows[n - 1]!.k : null;
                 const selected = k.id === kou.id;
                 const ev = evidenceTo.get(i);
@@ -89,10 +99,7 @@ export function LifecycleTrendTab({ kou, chain, kous, valuesOf, links, onNavigat
                       {(!prev || kouTitle(prev) !== kouTitle(k)) && <span className="block text-[10px] text-neutral-500">{kouTitle(k)}</span>}
                       {n > 0 && <span className="block text-[10px] text-neutral-500">対応: {ev ? ev.map(e => SHORT_EVIDENCE[e]).join('・') : ''}</span>}
                     </td>
-                    <td className={num}>{cellAmount(a.request)}</td>
-                    <td className={num}>{cellAmount(a.budget)}</td>
-                    <td className={num}>{cellAmount(a.revised)}</td>
-                    <td className={num}>{cellAmount(a.spent)}</td>
+                    {COLS.map(c => <td key={c.key} className={num}>{cellAmount(c.of(a, v))}</td>)}
                   </tr>
                 );
               })}
