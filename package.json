@@ -16,7 +16,7 @@
     "lint": "eslint .",
     "test": "vitest run",
     "check": "npm run typecheck && npm run lint && npm run test",
-    "build:data": "node packages/pipeline/src/build/web-data-cli.ts data/dataset/reference-v0 apps/web/public/data datasets/terms.json data/dataset/mof-history-v0",
+    "build:data": "node packages/pipeline/src/build/web-data-cli.ts data/dataset/reference-v0 apps/web/public/data datasets/terms.json data/dataset/mof-history-v0 data/download/rs/2025",
     "dev": "npm run -w @nihon-no-yosan/web dev",
     "build": "npm run -w @nihon-no-yosan/web build"
   },

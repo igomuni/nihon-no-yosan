@@ -83,6 +83,21 @@ export function AboutPage() {
                 </ul>
               </section>
             )}
+            {about.rs && (
+              <section className="flex flex-col gap-2">
+                <h2 className="font-semibold">行政事業レビュー（RS）</h2>
+                <p>
+                  出典: 行政事業レビュー見える化サイト（
+                  <a className={link} href="https://rssystem.go.jp" target="_blank" rel="noopener noreferrer">https://rssystem.go.jp</a>
+                  ）の CSV（レビューシート）を加工して作成。「RS」の画面の事業の一覧・予算額・執行額と、予算書の項・目へのつなぎは、このサイトの数値を読み取り、名前でそろえて作った加工物です。国や府省庁が作成した、加工していない情報ではありません。
+                </p>
+                <p>
+                  利用条件は
+                  <a className={link} href={about.rs.termsUrl} target="_blank" rel="noopener noreferrer">{about.rs.authority}の利用規約</a>
+                  （PDL1.0 に準拠）。事業 {about.rs.jigyo.toLocaleString()} 件、予算年度 FY{about.rs.years[0]}〜FY{about.rs.years[about.rs.years.length - 1]}。RS の事業数はシートの数で、予算事業の数と一致しないことがあります。RS の合計は、予算書・決算書の数値と必ずしも一致しません。
+                </p>
+              </section>
+            )}
             <section className="flex flex-col gap-2">
               <h2 className="font-semibold">取り込んだ資料</h2>
               <p>基準データ {about.dataset.version}: 概算要求書 {about.dataset.books} 書（FY2023〜FY2027）と、予算書の CSV。</p>

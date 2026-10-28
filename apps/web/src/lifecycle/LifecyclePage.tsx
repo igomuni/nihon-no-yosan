@@ -46,8 +46,21 @@ import {
   type LifecycleSortDir,
   type LifecycleSortKey,
   type LifecycleValues,
+  INITIAL_RS_FILTERS,
+  RS_TEXT_SORT_KEYS,
+  filterRsRows,
+  rsIndex,
+  rsListRows,
+  sortRsRows,
+  type RsFilters,
+  type RsIndex,
+  type RsJigyoData,
+  type RsListRow,
+  type RsSortKey,
+  type SiteAbout,
 } from '@nihon-no-yosan/core';
-import { loadGzJson } from '../data.ts';
+import { loadGzJson, loadJson } from '../data.ts';
+import { NONE_SELECTED } from '../components/MultiSelectCombo.tsx';
 import { PageNavMenu } from '../components/PageNavMenu.tsx';
 import { SourceNote } from '../components/SourceNote.tsx';
 import { YearSelect } from '../components/YearSelect.tsx';
@@ -60,6 +73,9 @@ import { LifecycleListPane } from './LifecycleListPane.tsx';
 import { LifecycleMokuDetail } from './LifecycleMokuDetail.tsx';
 import { LifecycleMokuListPane } from './LifecycleMokuListPane.tsx';
 import { LifecycleSummaryPane } from './LifecycleSummaryPane.tsx';
+import { RsDetail } from './RsDetail.tsx';
+import { RsFilterPane } from './RsFilterPane.tsx';
+import { RsListPane } from './RsListPane.tsx';
 
 /**
  * 予算の推移（項の粒度。年度ごとに、基準データにある段階だけ）。1 つの項について、概算要求 → 政府案 → 補正 → 決算の値を、段階ごとの状態・グラフ・表で見る。
@@ -107,7 +123,16 @@ export function LifecyclePage() {
   const [sortDir, setSortDir] = usePersistedState<LifecycleSortDir>('lifecycle:sortDir', -1);
   const [selectedId, setSelectedId] = usePersistedState<string | null>('lifecycle:selected', null);
   const [columnWidths, setColumnWidths] = usePersistedState<Record<string, number>>('lifecycle:columnWidths', {});
-  const [view, setView] = usePersistedState<'list' | 'jikou' | 'moku' | 'summary'>('lifecycle:view', 'list');
+  const [storedView, setView] = usePersistedState<'list' | 'jikou' | 'moku' | 'rs' | 'summary'>('lifecycle:view', 'list');
+  // RS の事業（中ペインの「RS」）。RS のデータを載せたビルドだけにある（`about.json` の `rs`）。選んだ事業は、予算事業 ID で持つ
+  const [rsAvailable, setRsAvailable] = useState<boolean | null>(null);
+  const view = storedView === 'rs' && rsAvailable === false ? 'list' : storedView;
+  const [selectedRs, setSelectedRs] = usePersistedState<string | null>('lifecycle:selectedRs', null);
+  const [storedRsFilters, setRsFilters] = usePersistedState<RsFilters>('lifecycle:rsFilters', INITIAL_RS_FILTERS);
+  const rsFilters = useMemo(() => ({ ...INITIAL_RS_FILTERS, ...storedRsFilters }), [storedRsFilters]);
+  const [rsSortKey, setRsSortKey] = usePersistedState<RsSortKey>('lifecycle:rsSortKey', 'current');
+  const [rsSortDir, setRsSortDir] = usePersistedState<LifecycleSortDir>('lifecycle:rsSortDir', -1);
+  const [rsColumnWidths, setRsColumnWidths] = usePersistedState<Record<string, number>>('lifecycle:rsColumnWidths', {});
   // 事項の一覧（中ペインの「事項」）。選んだ事項は、`${項の id}|${事項名}` で持つ（事項のデータの添字は、データを作り直すと変わるため）
   const [selectedJikou, setSelectedJikou] = usePersistedState<string | null>('lifecycle:selectedJikou', null);
   const [jikouSortKey, setJikouSortKey] = usePersistedState<JikouSortKey>('lifecycle:jikouSortKey', 'size');
@@ -174,6 +199,24 @@ export function LifecyclePage() {
   const moku = mokuResult && 'index' in mokuResult ? mokuResult.index : null;
   const mokuState = mokuResult === null ? 'loading' : 'index' in mokuResult ? 'ready' : 'error';
 
+  useEffect(() => {
+    let alive = true;
+    loadJson<SiteAbout>('about.json').then(a => { if (alive) setRsAvailable(a.rs !== undefined); }).catch(() => { if (alive) setRsAvailable(false); });
+    return () => { alive = false; };
+  }, []);
+  // RS の事業（rs/jigyo.json.gz。RS のタブを開いたときに読む）
+  const [rsResult, setRsResult] = useState<{ index: RsIndex } | { failed: true } | null>(null);
+  const rsRequested = useRef(false);
+  useEffect(() => {
+    if (view !== 'rs' || rsRequested.current) return;
+    rsRequested.current = true;
+    loadGzJson<RsJigyoData>('rs/jigyo.json.gz')
+      .then(d => setRsResult({ index: rsIndex(d) }))
+      .catch(() => setRsResult({ failed: true }));
+  }, [view]);
+  const rs = rsResult && 'index' in rsResult ? rsResult.index : null;
+  const rsState = rsResult === null ? 'loading' : 'index' in rsResult ? 'ready' : 'error';
+
   const years = useMemo(() => data?.years ?? [], [data]);
   const activeYear = data ? (year !== null && years.includes(year) ? year : years[0]!) : null;
   // 年度・所管・会計・組織・項名で絞った項（値のある段階で絞る前）。段階ごとの件数は、この集合で数える
@@ -229,6 +272,14 @@ export function LifecyclePage() {
     return mokuListRows(moku, kouById, activeYear, chainIds);
   }, [moku, kouById, activeYear, data, kouIndexById, chainOf]);
   const mokuList = useMemo(() => (activeYear === null ? [] : sortMokuRows(filterMokuRows(mokuRows, filters, activeYear), mokuSortKey, mokuSortDir)), [mokuRows, filters, activeYear, mokuSortKey, mokuSortDir]);
+  // RS の事業の一覧（選んだ年度の事業。項に結べない事業も含める）
+  const rsYearRows = useMemo<RsListRow[]>(() => (rs && activeYear !== null ? rsListRows(rs, activeYear) : []), [rs, activeYear]);
+  const rsList = useMemo(() => sortRsRows(filterRsRows(rsYearRows, rsFilters, NONE_SELECTED), rsSortKey, rsSortDir), [rsYearRows, rsFilters, rsSortKey, rsSortDir]);
+  const rsMinistries = useMemo(() => (rs ? rs.data.jigyo.map(j => j[2]) : []), [rs]);
+  const onRsSort = (k: RsSortKey) => {
+    if (k === rsSortKey) setRsSortDir(d => (d === 1 ? -1 : 1));
+    else { setRsSortKey(k); setRsSortDir(RS_TEXT_SORT_KEYS.includes(k) ? 1 : -1); }
+  };
   const selectedMokuNode = useMemo(() => {
     const node = moku && selectedMoku !== null ? moku.nodeByKey.get(selectedMoku) : undefined;
     return node !== undefined && moku!.data.nodes[node]![1] === activeYear ? node : null;
@@ -274,19 +325,23 @@ export function LifecyclePage() {
       </header>
       <main className="grid min-h-0 flex-1 grid-cols-1 gap-3 px-3 pb-3 lg:grid-cols-[240px_minmax(0,1fr)] xl:flex xl:gap-0">
         <section aria-label="フィルタ" className={`${pane} overflow-hidden xl:w-[var(--fw)] xl:shrink-0`} style={{ '--fw': `${filterWidth}px` } as CSSProperties}>
-          <LifecycleFilterPane allKous={data?.kous ?? NO_KOUS} inYear={inYear} patternCounts={patternCounts} unsettledCount={unsettledCount} filters={filters} onChange={f => { setFilters(f); setSelectedId(null); setSelectedJikou(null); setSelectedMoku(null); }} />
+          {view === 'rs'
+            ? <RsFilterPane ministries={rsMinistries} rows={rsYearRows} filters={rsFilters} onChange={setRsFilters} />
+            : <LifecycleFilterPane allKous={data?.kous ?? NO_KOUS} inYear={inYear} patternCounts={patternCounts} unsettledCount={unsettledCount} filters={filters} onChange={f => { setFilters(f); setSelectedId(null); setSelectedJikou(null); setSelectedMoku(null); }} />}
         </section>
         <Splitter label="フィルタの幅" width={filterWidth} limits={FILTER_WIDTH} dir={1} onChange={setFilterWidth} />
         <section aria-label="項の一覧" className={`${pane} flex flex-col overflow-hidden xl:min-w-0 xl:flex-1`}>
           <div role="tablist" aria-label="表示" className="flex shrink-0 gap-1 border-b border-neutral-200 px-3 pt-2 text-xs dark:border-neutral-800">
-            {(['list', 'jikou', 'moku', 'summary'] as const).map(v => (
+            {([...['list', 'jikou', 'moku'] as const, ...(rsAvailable ? ['rs' as const] : []), 'summary' as const]).map(v => (
               <button key={v} type="button" role="tab" aria-selected={view === v} onClick={() => setView(v)} className={`rounded-t border-b-2 px-2.5 py-1 ${view === v ? 'border-emerald-600 font-semibold text-neutral-900 dark:text-neutral-100' : 'border-transparent text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'}`}>
-                {v === 'list' ? '項' : v === 'jikou' ? '事項' : v === 'moku' ? '目' : '集計'}
+                {v === 'list' ? '項' : v === 'jikou' ? '事項' : v === 'moku' ? '目' : v === 'rs' ? 'RS' : '集計'}
               </button>
             ))}
           </div>
           <div {...(view === 'summary' ? { 'data-pane': 'list', tabIndex: -1 } : {})} className={`min-h-0 flex-1 ${view === 'summary' ? `overflow-auto outline-0 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-emerald-500/50` : 'overflow-hidden'}`}>
-            {view === 'moku'
+            {view === 'rs'
+              ? <RsListPane items={rsList} loading={rsState === 'loading'} failed={rsState === 'error'} sortKey={rsSortKey} sortDir={rsSortDir} onSort={onRsSort} selectedId={selectedRs} onSelect={r => setSelectedRs(r.id)} widths={rsColumnWidths} onWidthsChange={setRsColumnWidths} yearNote={rs && !rs.data.years.includes(activeYear) ? `FY${activeYear} の RS のデータは無い（RS の予算年度は ${rs.data.years[0]}〜${rs.data.years[rs.data.years.length - 1]}）。` : null} />
+              : view === 'moku'
               ? <LifecycleMokuListPane items={mokuList} loading={mokuState === 'loading'} failed={mokuState === 'error'} sortKey={mokuSortKey} sortDir={mokuSortDir} onSort={onMokuSort} selectedNode={selectedMokuNode} onSelect={r => setSelectedMoku(mokuSelectionKey(moku!, r.node))} widths={mokuColumnWidths} onWidthsChange={setMokuColumnWidths} suppNote={mokuWhy} />
               : view === 'jikou'
               ? <LifecycleJikouListPane items={jikouList} loading={jikouState === 'loading'} failed={jikouState === 'error'} sortKey={jikouSortKey} sortDir={jikouSortDir} onSort={onJikouSort} selectedNode={selectedJikouNode} onSelect={r => setSelectedJikou(`${r.k.id}|${r.name}`)} widths={jikouColumnWidths} onWidthsChange={setJikouColumnWidths} />
@@ -303,8 +358,19 @@ export function LifecyclePage() {
           </div>
         </section>
         <Splitter label="詳細の幅" width={detailWidth} limits={DETAIL_WIDTH} dir={-1} onChange={setDetailWidth} />
-        <section aria-label={view === 'jikou' ? '事項の詳細' : view === 'moku' ? '目の詳細' : '項の一生'} data-pane="detail" tabIndex={-1} className={`${pane} overflow-auto lg:col-span-2 xl:col-span-1 xl:w-[var(--dw)] xl:shrink-0 outline-0 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-emerald-500/50`} style={{ '--dw': `${detailWidth}px` } as CSSProperties}>
-          {view === 'moku' ? (
+        <section aria-label={view === 'rs' ? 'RS の事業の詳細' : view === 'jikou' ? '事項の詳細' : view === 'moku' ? '目の詳細' : '項の一生'} data-pane="detail" tabIndex={-1} className={`${pane} overflow-auto lg:col-span-2 xl:col-span-1 xl:w-[var(--dw)] xl:shrink-0 outline-0 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-emerald-500/50`} style={{ '--dw': `${detailWidth}px` } as CSSProperties}>
+          {view === 'rs' ? (
+            <RsDetail
+              rs={rs}
+              loading={rsState === 'loading'}
+              failed={rsState === 'error'}
+              id={selectedRs}
+              year={activeYear}
+              kouOf={kouById}
+              onYear={y => setYear(y)}
+              onOpenKou={k => { setYear(k.year); setSelectedId(k.id); setView('list'); setDetailTab('life'); }}
+            />
+          ) : view === 'moku' ? (
             <LifecycleMokuDetail
               moku={moku}
               loading={mokuState === 'loading'}
@@ -330,7 +396,7 @@ export function LifecyclePage() {
           )}
         </section>
       </main>
-      <SourceNote />
+      <SourceNote rs={view === 'rs'} />
     </div>
   );
 }
