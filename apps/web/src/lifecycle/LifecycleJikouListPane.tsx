@@ -2,6 +2,7 @@ import { useEffect, useRef, type MouseEvent as ReactMouseEvent } from 'react';
 import { formatSen, lifecycleAcctOf, lifecycleGroupOf, lifecycleGroupsOf, lifecycleOrgOf, lifecyclePublisherOf, lifecyclePublishersOf, type JikouListRow, type JikouSortKey, type LifecycleSortDir } from '@nihon-no-yosan/core';
 import { Icon } from '../components/Icon.tsx';
 import { scrollRowIntoView } from '../components/scrollRowIntoView.ts';
+import { useListKeys } from '../components/useListKeys.ts';
 
 /** ドラッグ中のカーソル（イベントの外から body を変えるので、関数にまとめる） */
 function setBodyCursor(value: string): void {
@@ -47,6 +48,7 @@ export function LifecycleJikouListPane({ items, loading, failed, sortKey, sortDi
   onWidthsChange: (updater: (prev: Record<string, number>) => Record<string, number>) => void;
 }) {
   const selectedIdx = selectedNode === null ? -1 : items.findIndex(x => x.node === selectedNode);
+  useListKeys(items.length, selectedIdx, i => onSelect(items[i]!));
   const shown = items.slice(0, Math.max(MAX_ROWS, selectedIdx + 1));
   const scrollRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
