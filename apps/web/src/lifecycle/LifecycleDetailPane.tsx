@@ -26,6 +26,7 @@ import {
 import { ChangesChart, LevelsChart, UseChart } from './charts.tsx';
 import { kouTitle, num, td, th, yen } from './shared.ts';
 import { LinkBadge } from './LifecycleListPane.tsx';
+import { useYearKeys } from '../components/useListKeys.ts';
 import { LifecycleJikouTab } from './LifecycleJikouTab.tsx';
 import { LifecycleMokuTab } from './LifecycleMokuTab.tsx';
 import { LifecycleTrendTab } from './LifecycleTrendTab.tsx';
@@ -145,6 +146,9 @@ export function LifecycleDetailPane({ kou, events: unsorted, coverage, data, lin
   // 事項のタブで選んだ事項は、タブを切り替えても、同じ項の別の年度に移っても残す（別の項に移ると、既定の選択に戻す）
   const [jikouPick, setJikouPick] = useState<{ chain: string; picked: string[] | null }>({ chain: '', picked: null });
   const chainId = chain ? data.kous[chain.members[0]!]!.id : '';
+  // J / K で移る年度: 項の確定した対応でたどった年度（どのタブでも同じ）
+  const chainYears = useMemo(() => (chain ? chain.members.map(i => data.kous[i]!.year) : []), [chain, data]);
+  useYearKeys(chainYears, kou?.year ?? null, y => { const m = chain?.members.find(i => data.kous[i]!.year === y); if (m !== undefined && data.kous[m]!.id !== kou?.id) onNavigate(data.kous[m]!.id); });
   if (!kou) return <p className="p-4 text-xs text-neutral-500">一覧から項を選んでください。</p>;
   const levels = lifecycleLevels(values);
   const { changes, zero } = lifecycleChanges(values);

@@ -20,6 +20,7 @@ import {
 } from '@nihon-no-yosan/core';
 import { Icon } from '../components/Icon.tsx';
 import { scrollRowIntoView } from '../components/scrollRowIntoView.ts';
+import { useListKeys } from '../components/useListKeys.ts';
 
 /** ドラッグ中のカーソル（イベントの外から body を変えるので、関数にまとめる） */
 function setBodyCursor(value: string): void {
@@ -104,6 +105,7 @@ export function LifecycleListPane({ items, notice, jikouLoading, sortKey, sortDi
     return { label, sum: n === 0 ? null : sum, n };
   });
   const selectedIdx = selectedId === null ? -1 : items.findIndex(x => x.k.id === selectedId);
+  useListKeys(items.length, selectedIdx, i => onSelect(items[i]!.k));
   const shown = items.slice(0, Math.max(MAX_ROWS, selectedIdx + 1));
   const scrollRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -132,7 +134,7 @@ export function LifecycleListPane({ items, notice, jikouLoading, sortKey, sortDi
         <span><b className="tabular-nums text-neutral-800 dark:text-neutral-100">{items.length.toLocaleString()}</b> 項</span>
         {totals.map(t => t.sum !== null && <span key={t.label} title={`値のある ${t.n.toLocaleString()} 項の合計（${t.sum.toLocaleString('ja-JP')} 円）`}>{t.label} <b className="tabular-nums text-neutral-800 dark:text-neutral-100">{formatSen(t.sum / 1000)}</b></span>)}
       </div>
-      <div ref={scrollRef} className="min-h-0 flex-1 overflow-auto">
+      <div ref={scrollRef} data-pane="list" tabIndex={-1} className="min-h-0 flex-1 overflow-auto outline-0 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-emerald-500/50">
         <table className="border-collapse text-xs" style={{ width: tableWidth, tableLayout: 'fixed' }}>
           <colgroup>{COLS.map(c => <col key={c.key} style={{ width: widthOf(c.key) }} />)}</colgroup>
           <thead>

@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { MOKU_FLAG, MOKU_REQUEST_COVERAGE_LABEL, mokuFlow, mokuMeasure, mokuSettleNote, mokuSpan, mokuSuppNote, mokuValue, type LifecycleKou, type MokuIndex } from '@nihon-no-yosan/core';
+import { useYearKeys } from '../components/useListKeys.ts';
 import { TrendChart, type TrendPoint } from './charts.tsx';
 import { Cell, Marks, YEAR_COLS } from './LifecycleMokuTab.tsx';
 import { kouTitle, td, th } from './shared.ts';
@@ -25,6 +26,10 @@ export function LifecycleMokuDetail({ moku, loading, failed, node, kouOf, chainK
   onOpenKou: (kou: LifecycleKou) => void;
 }) {
   const flow = useMemo(() => (moku && node !== null ? mokuFlow(moku, node, chainKouIds) : []), [moku, node, chainKouIds]);
+  // J / K で移る年度: 同じ目が見つかる年度（見つからない年度は飛ばす）
+  const flowYearOf = useMemo(() => (kouId: string): number => kouOf.get(kouId)?.year ?? Number(kouId.split(':')[0]), [kouOf]);
+  const hitYears = useMemo(() => flow.filter(f => f.node !== null).map(f => flowYearOf(f.kouId)), [flow, flowYearOf]);
+  useYearKeys(hitYears, moku && node !== null ? moku.data.nodes[node]![1] : null, y => { const m = flow.find(f => flowYearOf(f.kouId) === y)?.node ?? null; if (m !== null && m !== node) onSelectNode(m); });
   if (failed) return <p className="p-4 text-xs text-red-700">目の読み込みに失敗しました（<code>npm run build:data</code> で作る）。</p>;
   if (loading || !moku) return <p className="p-4 text-xs text-neutral-500">目を読み込み中…</p>;
   if (node === null) return <p className="p-4 text-xs text-neutral-500">一覧から目を選んでください。</p>;

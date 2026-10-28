@@ -120,3 +120,13 @@ export function sortLifecycleRows<T extends { k: LifecycleKou; a: LifecycleRowAm
     return dir * (a - b) || x.k.id.localeCompare(y.k.id);
   });
 }
+
+/**
+ * 一覧で、選んだ行を 1 つ前・次へ動かしたときの添字（キーボードの J / K。`dir` = 1 が次、-1 が前）。端では動かない（巻き戻さない）。
+ * 選んだ行が無い（`current` < 0）ときは、先頭を選ぶ。一覧が空のときは null。
+ */
+export function stepSelection(length: number, current: number, dir: 1 | -1): number | null {
+  if (length <= 0) return null;
+  if (current < 0) return 0;
+  return Math.min(length - 1, Math.max(0, current + dir));
+}
