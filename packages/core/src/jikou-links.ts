@@ -31,6 +31,8 @@ export interface JikouNode {
   itemCode: string;
   itemName: string;
   name: string;
+  /** 主要経費別の分類コード（予算書の事項の表の列。特別会計は「分類コード」の列）。無ければ空 */
+  major: string;
   /** その年度の当初の額（要求額・予定額） */
   budget: number | null;
   /** 予算書が載せる前年度予算額 */

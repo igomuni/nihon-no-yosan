@@ -9,6 +9,7 @@
  *   lifecycle/data.json.gz             予算の一生の表（`docs/guides/budget-lifecycle.md`）
  *   lifecycle/jikou.json.gz            予算の一生の画面の事項タブ用（`docs/guides/lifecycle-jikou.md`。タブを開いたときに読む）
  *   lifecycle/moku.json.gz             予算の一生の画面の目タブ用（`docs/guides/lifecycle-moku.md`。タブを開いたときに読む）
+ *   lifecycle/codes.json.gz            主要経費別・使途別のコードの名前（`datasets/mof-code-tables/code-tables.json` から。`docs/guides/budget-codes.md`）
  *   rs/jigyo.json.gz                   RS の事業の一覧（RS の CSV のディレクトリがあるときだけ。`docs/guides/rs-tab.md`。タブを開いたときに読む）
  *   about.json                         出典と利用条件（`docs/guides/web-publish.md`）
  * 出力ディレクトリは git に入れない（`.gitignore` の `data/`）。
@@ -16,7 +17,7 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as zlib from 'node:zlib';
-import { nameKey, readCsv, type Rec, type SiteAbout, type SiteAboutAuthority } from '@nihon-no-yosan/core';
+import { nameKey, readCsv, type LifecycleCodeTables, type Rec, type SiteAbout, type SiteAboutAuthority } from '@nihon-no-yosan/core';
 import { buildBudgetRequestJikouYoukyu } from './jikou-youkyu.ts';
 import { buildJikouLinkData } from './jikou-links.ts';
 import { buildLifecycle, lifecycleRequestOnlyRows, lifecycleSources, sameYearPairsOf } from './lifecycle.ts';
@@ -95,6 +96,14 @@ const rsBuilt = rsDir ? (() => {
   return buildRsJigyo(csv(/^1-2_.*基本情報_事業概要等\.csv$/), csv(/^2-1_.*予算・執行_サマリ\.csv$/), link.rows);
 })() : null;
 
+// 主要経費別・使途別のコードの名前。コード表のページごと（`code-tables-cli.ts` の出力）から、2 つの区分だけを取る
+const codeTables: LifecycleCodeTables = (() => {
+  const src = JSON.parse(fs.readFileSync(path.join(path.dirname(termsPath), 'mof-code-tables', 'code-tables.json'), 'utf8')) as { pages: { year: number; form: string; sections: { title: string; items: [string, string][] }[] }[] };
+  const items = (p: (typeof src.pages)[number], title: string): [string, string][] => p.sections.find(s => s.title === title)?.items ?? [];
+  return { pages: src.pages.map(p => ({ year: p.year, form: p.form, major: items(p, '主要経費別分類'), use: items(p, '使途別分類') })) };
+})();
+for (const form of ['11001', '12001']) if (!codeTables.pages.some(p => p.form === form && p.major.length > 0 && p.use.length > 0)) throw new Error(`コード表に、当初予算（${form}）の主要経費別・使途別が無い`);
+
 const outputs: [string, Buffer][] = [
   ['trend/kou.json.gz', trend.uiGz],
   ['trend/jikou.json.gz', jikou.uiGz],
@@ -104,6 +113,7 @@ const outputs: [string, Buffer][] = [
   ['lifecycle/data.json.gz', gz(lifecycle)],
   ['lifecycle/jikou.json.gz', gz(lifecycleJikou.data)],
   ['lifecycle/moku.json.gz', gz(lifecycleMoku.data)],
+  ['lifecycle/codes.json.gz', gz(codeTables)],
   ...(rsBuilt ? [['rs/jigyo.json.gz', gz(rsBuilt)] as [string, Buffer]] : []),
 ];
 for (const [name, bytes] of outputs) {

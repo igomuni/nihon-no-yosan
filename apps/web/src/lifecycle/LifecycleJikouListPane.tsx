@@ -1,6 +1,7 @@
 import { useEffect, useRef, type MouseEvent as ReactMouseEvent } from 'react';
-import { formatSen, lifecycleAcctOf, lifecycleGroupOf, lifecycleGroupsOf, lifecycleOrgOf, lifecyclePublisherOf, lifecyclePublishersOf, type JikouListRow, type JikouSortKey, type LifecycleSortDir } from '@nihon-no-yosan/core';
+import { formatSen, lifecycleAcctOf, lifecycleGroupOf, lifecycleGroupsOf, lifecycleOrgOf, lifecyclePublisherOf, lifecyclePublishersOf, type JikouListRow, type JikouSortKey, type LifecycleCodeTables, type LifecycleSortDir } from '@nihon-no-yosan/core';
 import { Icon } from '../components/Icon.tsx';
+import { CodeCell } from './CodeCell.tsx';
 import { scrollRowIntoView } from '../components/scrollRowIntoView.ts';
 import { useListKeys } from '../components/useListKeys.ts';
 
@@ -11,7 +12,7 @@ function setBodyCursor(value: string): void {
 
 const MAX_ROWS = 600;
 const MIN_COLUMN_WIDTH = 48;
-export const DEFAULT_JIKOU_COLUMN_WIDTHS: Record<JikouSortKey, number> = { publisher: 110, group: 110, acct: 110, org: 110, kou: 180, name: 240, request: 96, budget: 96, revised: 96, suppNet: 96, span: 112, size: 96 };
+export const DEFAULT_JIKOU_COLUMN_WIDTHS: Record<JikouSortKey, number> = { publisher: 110, group: 110, acct: 110, org: 110, kou: 180, name: 240, major: 120, request: 96, budget: 96, revised: 96, suppNet: 96, span: 112, size: 96 };
 /** 一覧の列。順は、項の一覧に合わせる */
 const COLS: { key: JikouSortKey; label: string; left?: boolean; title?: string }[] = [
   { key: 'publisher', label: '要求所管', left: true, title: '概算要求書の公開元の府省（要求書の PDF のドメイン由来）。複数の府省の書に載る項は「N所管」（ホバーで一覧）。概算要求書の無い年度・項は「—」' },
@@ -20,6 +21,7 @@ const COLS: { key: JikouSortKey; label: string; left?: boolean; title?: string }
   { key: 'org', label: '組織／勘定', left: true },
   { key: 'kou', label: '項名', left: true },
   { key: 'name', label: '事項名', left: true },
+  { key: 'major', label: '主要経費', left: true, title: '主要経費別の分類コードの名前（予算書の事項の表の列。概算要求書にだけある事項の一部は、コードが読めず「—」）。並べ替えは、コードの順' },
   { key: 'span', label: '確認済み年度', left: true, title: '確定した対応（同じ鍵、または名前と額の根拠がそろった 1 対 1）でたどれた年度の範囲と年数。項が変わった年度も含む。事業が同じとは限らない' },
   { key: 'request', label: '概算要求', title: '概算要求書（総表）の事項の要求額' },
   { key: 'budget', label: '政府案', title: '予算書の当初予算（提出時）の額' },
@@ -34,9 +36,11 @@ function Amount({ v }: { v: number | null }) {
     : <td className="whitespace-nowrap px-2 py-1 text-right tabular-nums" title={`${v.toLocaleString('ja-JP')} 千円`}>{v === 0 ? '0円' : formatSen(v)}</td>;
 }
 
-export function LifecycleJikouListPane({ items, loading, failed, sortKey, sortDir, onSort, selectedNode, onSelect, widths, onWidthsChange }: {
+export function LifecycleJikouListPane({ items, codes, loading, failed, sortKey, sortDir, onSort, selectedNode, onSelect, widths, onWidthsChange }: {
   /** 絞り込み・並べ替え済み */
   items: readonly JikouListRow[];
+  /** 分類コードの名前（`lifecycle/codes.json.gz`）。読み込み中は null */
+  codes: LifecycleCodeTables | null;
   loading: boolean;
   failed: boolean;
   sortKey: JikouSortKey;
@@ -124,6 +128,7 @@ export function LifecycleJikouListPane({ items, loading, failed, sortKey, sortDi
                   <td className="break-words px-2 py-1 text-left">{lifecycleOrgOf(k)}</td>
                   <td className="break-words px-2 py-1 text-left">{k.name}</td>
                   <td className="break-words px-2 py-1 text-left font-medium">{r.name}</td>
+                  <CodeCell tables={codes} axis="major" code={r.major} year={r.k.year} account={r.k.account} />
                   <td className="whitespace-nowrap px-2 py-1 text-left tabular-nums" title={`FY${r.span.from}${r.span.from === r.span.to ? '' : `〜FY${r.span.to}`}（${r.span.years} 年）。確定した対応だけでたどった範囲`}>
                     {r.span.from === r.span.to ? r.span.from : `${r.span.from}–${r.span.to}`}
                     <span className="ml-1 text-neutral-400">({r.span.years}年)</span>

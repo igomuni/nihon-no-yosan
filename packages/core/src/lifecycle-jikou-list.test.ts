@@ -7,14 +7,14 @@ import { INITIAL_LIFECYCLE_FILTERS } from './lifecycle-list.ts';
 const kou = (id: string, o: Partial<LifecycleKou> = {}): LifecycleKou => ({ id, year: 2024, account: 'general', ministry: '財務省', org: '財務本省', specialAccount: '', subAccount: '', code: '001', name: id, seenIn: ['budget'], ...o });
 const A = kou('2024:general:A', { name: '項A' }), B = kou('2024:general:B', { name: '項B', ministry: '法務省', org: '法務本省' });
 const kouById = new Map([[A.id, A], [B.id, B], ['2023:general:A', kou('2023:general:A', { year: 2023, name: '項A' })]]);
-const n = (k: number, year: number, name: string, budget: number | null, revised: number | null = null, request: number | null = null): LifecycleJikouNode => [k, year, name, budget, null, revised, null, request];
+const n = (k: number, year: number, name: string, budget: number | null, revised: number | null = null, request: number | null = null, major = ''): LifecycleJikouNode => [k, year, name, budget, null, revised, null, request, major];
 const data: LifecycleJikouData = {
   years: [2023, 2024],
   kous: ['2023:general:A', '2024:general:A', '2024:general:B'],
   nodes: [
     n(0, 2023, '研究費', 100), //  0 → 3（名称が変わる）
-    n(1, 2024, '研究費の推進', 300, 320, 280), //  3
-    n(1, 2024, '施設費', 50), //  2（前の年度に対応なし）
+    n(1, 2024, '研究費の推進', 300, 320, 280, '12'), //  3
+    n(1, 2024, '施設費', 50, null, null, '95'), //  2（前の年度に対応なし）
     n(2, 2024, '研究費の調査', null, null, 40), //  要求のみ
     n(2, 2024, '補正で新しい', null, 900), //  補正のみ
   ],
@@ -46,6 +46,27 @@ describe('filterJikouRows', () => {
     expect(f({ name: '項A' })).toEqual(['研究費の推進', '施設費']);
     expect(f({ jikouName: '研究費' })).toEqual(['研究費の推進', '研究費の調査']);
     expect(f({ jikouName: '^研究費の(推進|調査)$', jikouNameRegex: true })).toEqual(['研究費の推進', '研究費の調査']);
+  });
+});
+
+describe('主要経費別・使途別の絞り込み（事項）', () => {
+  const rows = jikouListRows(index, kouById, 2024);
+  const f = (o: Partial<typeof INITIAL_LIFECYCLE_FILTERS>, uses: ReadonlySet<string> | null = null) => filterJikouRows(rows, { ...INITIAL_LIFECYCLE_FILTERS, ...o }, 2024, uses).map(r => r.name);
+  it('puts the 主要経費別 code of the 事項 in the row, and filters by it (a 事項 without the code is out)', () => {
+    expect(rows.map(r => r.major)).toEqual(['12', '95', '', '']);
+    expect(f({ majors: ['95'] })).toEqual(['施設費']);
+    expect(f({ majors: ['12', '95'] })).toEqual(['研究費の推進', '施設費']);
+    expect(f({ majors: ['__none__'] })).toEqual([]);
+  });
+
+  it('filters by the 使途別 through the 項 that have a 目 with it (the 事項 have no 使途別), and the two filters are ANDed', () => {
+    expect(f({}, new Set([A.id]))).toEqual(['研究費の推進', '施設費']);
+    expect(f({ majors: ['95'] }, new Set([A.id]))).toEqual(['施設費']);
+    expect(f({}, new Set())).toEqual([]);
+  });
+
+  it('sorts by the code', () => {
+    expect(sortJikouRows(rows, 'major', 1).map(r => r.name)).toEqual(['研究費の調査', '補正で新しい', '研究費の推進', '施設費']);
   });
 });
 

@@ -1,6 +1,7 @@
 import { useEffect, useRef, type MouseEvent as ReactMouseEvent } from 'react';
-import { MOKU_FLAG, formatSen, lifecycleAcctOf, lifecycleGroupOf, lifecycleGroupsOf, lifecycleOrgOf, lifecyclePublisherOf, lifecyclePublishersOf, type LifecycleSortDir, type MokuListRow, type MokuSortKey } from '@nihon-no-yosan/core';
+import { MOKU_FLAG, formatSen, lifecycleAcctOf, lifecycleGroupOf, lifecycleGroupsOf, lifecycleOrgOf, lifecyclePublisherOf, lifecyclePublishersOf, type LifecycleCodeTables, type LifecycleSortDir, type MokuListRow, type MokuSortKey } from '@nihon-no-yosan/core';
 import { Icon } from '../components/Icon.tsx';
+import { CodeCell } from './CodeCell.tsx';
 import { scrollRowIntoView } from '../components/scrollRowIntoView.ts';
 import { useListKeys } from '../components/useListKeys.ts';
 
@@ -11,7 +12,7 @@ function setBodyCursor(value: string): void {
 
 const MAX_ROWS = 600;
 const MIN_COLUMN_WIDTH = 48;
-export const DEFAULT_MOKU_COLUMN_WIDTHS: Record<MokuSortKey, number> = { publisher: 100, group: 100, acct: 100, org: 110, kou: 170, name: 200, span: 112, request: 92, budget: 92, revised: 92, current: 92, spent: 92, unused: 92, size: 92 };
+export const DEFAULT_MOKU_COLUMN_WIDTHS: Record<MokuSortKey, number> = { publisher: 100, group: 100, acct: 100, org: 110, kou: 170, name: 200, major: 120, use: 100, span: 112, request: 92, budget: 92, revised: 92, current: 92, spent: 92, unused: 92, size: 92 };
 /** 一覧の列。順は、事項の一覧に合わせ、決算の列を足す */
 const COLS: { key: MokuSortKey; label: string; left?: boolean; title?: string }[] = [
   { key: 'publisher', label: '要求所管', left: true, title: '概算要求書の公開元の府省（要求書の PDF のドメイン由来）。複数の府省の書に載る項は「N所管」' },
@@ -20,6 +21,8 @@ const COLS: { key: MokuSortKey; label: string; left?: boolean; title?: string }[
   { key: 'org', label: '組織／勘定', left: true },
   { key: 'kou', label: '項名', left: true },
   { key: 'name', label: '目名', left: true },
+  { key: 'major', label: '主要経費', left: true, title: '主要経費別の分類コードの名前（目の分類コードの 1 つ目）。コードが無い目は「—」。並べ替えは、コードの順' },
+  { key: 'use', label: '使途別', left: true, title: '使途別の分類コードの名前（人件費・旅費・物件費・施設費・補助費・委託費・他会計へ繰入・その他）。コードが無い目は「—」。並べ替えは、コードの順' },
   { key: 'span', label: '確認済み年度', left: true, title: '項の確定した対応でたどった年度のうち、この目（目名・分類コード。無ければ同じ目名が 1 つだけの目）が続けて見つかった範囲と年数。目の改称・統合は見ていない。事業が同じとは限らない' },
   { key: 'request', label: '概算要求', title: '概算要求書の明細の目の要求額（予算書の目と、同じ項の中で名前でつないだもの）' },
   { key: 'budget', label: '政府案', title: '予算書の当初予算（提出時）の目の額' },
@@ -46,9 +49,11 @@ function Marks({ r }: { r: MokuListRow }) {
   return <>{marks.map(([t, title]) => <span key={t} title={title} className="ml-1 rounded bg-neutral-100 px-1 text-[10px] font-normal text-neutral-500 dark:bg-neutral-800">{t}</span>)}</>;
 }
 
-export function LifecycleMokuListPane({ items, loading, failed, sortKey, sortDir, onSort, selectedNode, onSelect, widths, onWidthsChange, suppNote }: {
+export function LifecycleMokuListPane({ items, codes, loading, failed, sortKey, sortDir, onSort, selectedNode, onSelect, widths, onWidthsChange, suppNote }: {
   /** 絞り込み・並べ替え済み */
   items: readonly MokuListRow[];
+  /** 分類コードの名前（`lifecycle/codes.json.gz`）。読み込み中は null */
+  codes: LifecycleCodeTables | null;
   loading: boolean;
   failed: boolean;
   sortKey: MokuSortKey;
@@ -139,6 +144,8 @@ export function LifecycleMokuListPane({ items, loading, failed, sortKey, sortDir
                   <td className="break-words px-2 py-1 text-left">{lifecycleOrgOf(k)}</td>
                   <td className="break-words px-2 py-1 text-left">{k.name}</td>
                   <td className="break-words px-2 py-1 text-left font-medium">{r.name}<Marks r={r} /></td>
+                  <CodeCell tables={codes} axis="major" code={r.major} year={r.k.year} account={r.k.account} />
+                  <CodeCell tables={codes} axis="use" code={r.use} year={r.k.year} account={r.k.account} />
                   <td className="whitespace-nowrap px-2 py-1 text-left tabular-nums" title={`FY${r.span.from}${r.span.from === r.span.to ? '' : `〜FY${r.span.to}`}（${r.span.years} 年）。項の確定した対応でたどった年度のうち、この目が続けて見つかった範囲`}>
                     {r.span.from === r.span.to ? r.span.from : `${r.span.from}–${r.span.to}`}
                     <span className="ml-1 text-neutral-400">({r.span.years}年)</span>

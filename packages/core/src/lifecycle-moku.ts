@@ -8,6 +8,7 @@
  */
 import type { LifecycleKou } from './lifecycle.ts';
 import { filterLifecycleKous, lifecycleAcctOf, lifecycleGroupOf, lifecycleOrgOf, lifecyclePublisherOf, type LifecycleFilters, type LifecycleSortDir } from './lifecycle-list.ts';
+import { codesOfMoku } from './lifecycle-codes.ts';
 import { textMatches } from './trend-view.ts';
 
 /** 状態のビット */
@@ -90,6 +91,9 @@ export interface MokuListRow {
   /** その目がある項 */
   k: LifecycleKou;
   name: string;
+  /** 主要経費別・使途別のコード（目の分類コードから。無ければ空。名前は `codeNameOf`） */
+  major: string;
+  use: string;
   /** 共管別の行の共管（共管所管名|共管組織名）。それ以外は空 */
   part: string;
   /** 千円。値が無いときは null（0 とは別） */
@@ -119,7 +123,7 @@ export function mokuListRows(index: MokuIndex, kouById: ReadonlyMap<string, Life
     const kouId = data.kous[n[0]]!;
     const k = kouById.get(kouId);
     if (!k) return;
-    rows.push({ node, k, name: n[2], part: n[4], budget: n[5], revised: n[6], suppNet: n[7], current: n[8], spent: n[9], unused: n[11], request: n[12], flags: n[13], span: mokuSpan(index, node, chainOf(kouId)), size: Math.max(0, n[12] ?? 0, n[5] ?? 0, n[6] ?? 0, n[8] ?? 0) });
+    rows.push({ node, k, name: n[2], ...codesOfMoku(n[3], k.account), part: n[4], budget: n[5], revised: n[6], suppNet: n[7], current: n[8], spent: n[9], unused: n[11], request: n[12], flags: n[13], span: mokuSpan(index, node, chainOf(kouId)), size: Math.max(0, n[12] ?? 0, n[5] ?? 0, n[6] ?? 0, n[8] ?? 0) });
   });
   return rows;
 }
@@ -144,6 +148,18 @@ export function mokuCounts(data: LifecycleMokuData): Map<string, MokuCount> {
   return new Map([...keys].map(([id, set]) => [id, { total: set.size, requestOnly: requestOnly.get(id)?.size ?? 0 }]));
 }
 
+/** 選んだ年度の目の、主要経費別・使途別のコードごとの数（左のフィルタの選択肢の件数）。決算の共管別の行は、別の目として数えない。コードの無い目は数えない */
+export function mokuCodeCounts(data: LifecycleMokuData, year: number): { major: Map<string, number>; use: Map<string, number> } {
+  const major = new Map<string, number>(), use = new Map<string, number>();
+  for (const n of data.nodes) {
+    if (n[1] !== year || n[13] & MOKU_FLAG.settlePart) continue;
+    const c = codesOfMoku(n[3], data.kous[n[0]]!.split(':')[1] === 'special' ? 'special' : 'general');
+    if (c.major !== '') major.set(c.major, (major.get(c.major) ?? 0) + 1);
+    if (c.use !== '') use.set(c.use, (use.get(c.use) ?? 0) + 1);
+  }
+  return { major, use };
+}
+
 /** 確認済み年度: `mokuFlow` でたどった年度のうち、選んだ目から続けて同じ目が見つかった範囲（途中で見つからない年度があれば、そこで止める） */
 export function mokuSpan(index: MokuIndex, node: number, chainKouIds: readonly string[]): { from: number; to: number; years: number } {
   const flow = mokuFlow(index, node, chainKouIds);
@@ -159,31 +175,39 @@ export function mokuSpan(index: MokuIndex, node: number, chainKouIds: readonly s
 
 /** 年度・所管・会計・組織／勘定・項名と、目名で絞る（項の一覧と同じフィルタ。「値のある段階」「年度をまたぐ対応」「事項名」は使わない） */
 export function filterMokuRows(rows: readonly MokuListRow[], f: LifecycleFilters, year: number): MokuListRow[] {
-  return filterLifecycleKous(rows, f, year).filter(r => textMatches(r.name, f.mokuName, f.mokuNameRegex));
+  return filterLifecycleKous(rows, f, year).filter(r => textMatches(r.name, f.mokuName, f.mokuNameRegex) && codeMatches(r, f));
 }
 
-export type MokuSortKey = 'publisher' | 'group' | 'acct' | 'org' | 'kou' | 'name' | 'span' | 'request' | 'budget' | 'revised' | 'current' | 'spent' | 'unused' | 'size';
-export const MOKU_TEXT_SORT_KEYS: readonly MokuSortKey[] = ['publisher', 'group', 'acct', 'org', 'kou', 'name'];
+/** 主要経費別・使途別の絞り込みに合う（空 = すべて。合うコードが無い行は合わない） */
+export const codeMatches = (r: { major: string; use: string }, f: Pick<LifecycleFilters, 'majors' | 'uses'>): boolean =>
+  (f.majors.length === 0 || f.majors.includes(r.major)) && (f.uses.length === 0 || f.uses.includes(r.use));
+
+export type MokuSortKey = 'publisher' | 'group' | 'acct' | 'org' | 'kou' | 'name' | 'major' | 'use' | 'span' | 'request' | 'budget' | 'revised' | 'current' | 'spent' | 'unused' | 'size';
+export const MOKU_TEXT_SORT_KEYS: readonly MokuSortKey[] = ['publisher', 'group', 'acct', 'org', 'kou', 'name', 'major', 'use'];
 
 /** 並べ替え。額の列は、値が無い目を、向きによらず末尾に置く（0 とは別） */
 export function sortMokuRows(rows: readonly MokuListRow[], key: MokuSortKey, dir: LifecycleSortDir): MokuListRow[] {
-  const text = (r: MokuListRow): string => (key === 'publisher' ? lifecyclePublisherOf(r.k) : key === 'group' ? lifecycleGroupOf(r.k) : key === 'acct' ? lifecycleAcctOf(r.k) : key === 'org' ? lifecycleOrgOf(r.k) : key === 'kou' ? r.k.name : r.name);
+  const text = (r: MokuListRow): string => (key === 'publisher' ? lifecyclePublisherOf(r.k) : key === 'group' ? lifecycleGroupOf(r.k) : key === 'acct' ? lifecycleAcctOf(r.k) : key === 'org' ? lifecycleOrgOf(r.k) : key === 'kou' ? r.k.name : key === 'major' ? r.major : key === 'use' ? r.use : r.name);
   const tie = (x: MokuListRow, y: MokuListRow): number => x.k.id.localeCompare(y.k.id) || x.name.localeCompare(y.name, 'ja') || x.part.localeCompare(y.part, 'ja') || x.node - y.node;
   return [...rows].sort((x, y) => {
     if (MOKU_TEXT_SORT_KEYS.includes(key)) return dir * text(x).localeCompare(text(y), 'ja') || tie(x, y);
     if (key === 'size') return dir * (x.size - y.size) || tie(x, y);
     if (key === 'span') return dir * (x.span.years - y.span.years) || tie(x, y);
-    const a = x[key as Exclude<MokuSortKey, 'publisher' | 'group' | 'acct' | 'org' | 'kou' | 'name' | 'size' | 'span'>], b = y[key as Exclude<MokuSortKey, 'publisher' | 'group' | 'acct' | 'org' | 'kou' | 'name' | 'size' | 'span'>];
+    const a = x[key as Exclude<MokuSortKey, 'publisher' | 'group' | 'acct' | 'org' | 'kou' | 'name' | 'major' | 'use' | 'size' | 'span'>], b = y[key as Exclude<MokuSortKey, 'publisher' | 'group' | 'acct' | 'org' | 'kou' | 'name' | 'major' | 'use' | 'size' | 'span'>];
     if (a === null || b === null) return a === b ? tie(x, y) : a === null ? 1 : -1;
     return dir * (a - b) || tie(x, y);
   });
 }
 
-/** 選んだ年度で、目名が検索に合う目を持つ項（`LifecycleKou.id`）。検索が空なら null（絞り込まない） */
-export function kouIdsWithMoku(index: MokuIndex, year: number, query: string, regex: boolean): Set<string> | null {
-  if (query.trim() === '') return null;
+/** 選んだ年度で、目名が検索に合い、主要経費別・使途別が絞り込みに合う目を持つ項（`LifecycleKou.id`）。検索が空で、コードの絞り込みも無ければ null（絞り込まない） */
+export function kouIdsWithMoku(index: MokuIndex, year: number, query: string, regex: boolean, codes: Pick<LifecycleFilters, 'majors' | 'uses'> = { majors: [], uses: [] }): Set<string> | null {
+  if (query.trim() === '' && codes.majors.length === 0 && codes.uses.length === 0) return null;
   const ids = new Set<string>();
-  for (const n of index.data.nodes) if (n[1] === year && textMatches(n[2], query, regex)) ids.add(index.data.kous[n[0]]!);
+  for (const n of index.data.nodes) {
+    if (n[1] !== year || !textMatches(n[2], query, regex)) continue;
+    const id = index.data.kous[n[0]]!;
+    if (codeMatches(codesOfMoku(n[3], id.split(':')[1] === 'special' ? 'special' : 'general'), codes)) ids.add(id);
+  }
   return ids;
 }
 

@@ -19,8 +19,8 @@ export const JIKOU_EVIDENCE_LABEL: Record<JikouLinkEvidence, string> = {
   same_name_linked_kou: '事項名が同じで、項が確定した対応でつながる（概算要求にだけある項）',
 };
 
-/** 事項 1 件（1 年度）: [項の添字, 年度, 事項名, 政府案, 予算書の前年度予算額, 補正後, 補正の差引額, 概算要求の要求額]。額は千円で、値が無ければ null */
-export type LifecycleJikouNode = [number, number, string, number | null, number | null, number | null, number | null, number | null];
+/** 事項 1 件（1 年度）: [項の添字, 年度, 事項名, 政府案, 予算書の前年度予算額, 補正後, 補正の差引額, 概算要求の要求額, 主要経費別の分類コード]。額は千円で、値が無ければ null。コードは、予算書の事項の表の列（概算要求にだけある事項は、要求書の事項コードの後ろ半分。読めなければ空） */
+export type LifecycleJikouNode = [number, number, string, number | null, number | null, number | null, number | null, number | null, string];
 
 /** 確定した年度をまたぐ対応: [前の年度の事項, 次の年度の事項, 根拠（`JIKOU_EVIDENCE` の添字を立てたビット）, 額の確認（`JIKOU_AMOUNT` の添字）] */
 export type LifecycleJikouLink = [number, number, number, number];
