@@ -235,6 +235,14 @@
       "basis": "page-read",
       "url": "https://www.reconstruction.go.jp/topics/post_38/",
       "checkedOn": "2026-10-23"
+    },
+    "rssystem.go.jp": {
+      "authority": "行政事業レビュー見える化サイト（RS システム）",
+      "status": "pdl1.0",
+      "basis": "page-read",
+      "url": "https://rssystem.go.jp/terms",
+      "note": "利用規約のページ本文に、PDL1.0 に準拠した利用条件とある。出典の書き方は「出典：行政事業レビュー見える化サイト（https://rssystem.go.jp）」。編集・加工したときは、そのことを書く。加工したものを国（府省庁）が作ったように見せない。法人番号（国税庁法人番号公表サイト）と根拠法令名（e-Gov 法令検索）は、それぞれの提供元の条件に従う。運営・公開元の機関名は、読んだページ（規約・留意事項・CSV のダウンロード）に書かれていない",
+      "checkedOn": "2026-10-28"
     }
   },
   "gate": "公開できるのは、status が pdl1.0 または diet-courts のドメインの分だけ。basis が search-summary のものは、ページ本文を読んでから公開する"
