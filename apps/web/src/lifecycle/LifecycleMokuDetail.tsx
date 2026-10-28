@@ -37,8 +37,8 @@ export function LifecycleMokuDetail({ moku, loading, failed, node, kouOf, chainK
   const flowYear = (kouId: string): number => kouOf.get(kouId)?.year ?? Number(kouId.split(':')[0]);
   const points: TrendPoint[] = flow.map(({ kouId, node: m }) => {
     const x = m === null ? null : data.nodes[m]!;
-    const yen = (key: 'request' | 'budget' | 'revised' | 'spent'): number | undefined => { const v = x ? mokuValue(x, key) : null; return v === null ? undefined : v * 1000; };
-    return { year: flowYear(kouId), request: yen('request'), budget: yen('budget'), revised: yen('revised'), spent: yen('spent') };
+    const yen = (key: 'request' | 'budget' | 'revised' | 'spent' | 'carriedIn' | 'carried'): number | undefined => { const v = x ? mokuValue(x, key) : null; return v === null ? undefined : v * 1000; };
+    return { year: flowYear(kouId), request: yen('request'), budget: yen('budget'), revised: yen('revised'), spent: yen('spent'), carriedIn: yen('carriedIn'), carried: yen('carried') };
   });
   const yearNode = (y: number): number | null => flow.find(f => flowYear(f.kouId) === y)?.node ?? null;
   const goYear = (y: number): void => { const m = yearNode(y); if (m !== null && m !== node) onSelectNode(m); };
