@@ -222,3 +222,69 @@ export const isSettleMeasure = (key: MokuMeasure): boolean => key === 'current' 
 export const mokuMeasure = (key: MokuMeasure) => MOKU_MEASURES.find(m => m.key === key)!;
 /** 目の値（千円）。無ければ null */
 export const mokuValue = (n: LifecycleMokuNode, key: MokuMeasure): number | null => n[mokuMeasure(key).col] as number | null;
+
+export interface MokuKouRow {
+  name: string;
+  /** 決算の共管別の行の共管。それ以外は空 */
+  part: string;
+  /** 年度 → 目（`nodes` の添字） */
+  cells: Map<number, number>;
+  /** 年度で分類コードが違い、目名でそろえた */
+  byName: boolean;
+}
+
+/**
+ * 項の流れ（確定した対応でたどった項。`kous` は年度の古い順）の目を、年度をまたいでそろえる。
+ * 同じ目名の目（共管別の行を除く）が、どの年度でもその項に 1 つ以下なら、目名でそろえる（分類コードは年度で変わることがある。`mokuFlow` と同じ考え方）。
+ * 同じ目名の目が 2 つ以上ある年度があれば、その目名は識別（目名・分類コード）でそろえる。共管別の行は識別（共管を含む）でそろえる。
+ * 目の改称・統合は見ていない（名前の違う目は別の行）。行は、最初に出てくる順。
+ */
+export function mokuKouTable(index: MokuIndex, kous: readonly { id: string; year: number }[]): MokuKouRow[] {
+  const perYear = kous.map(({ id, year }) => {
+    const k = index.kouOf.get(id);
+    return { year, nodes: k === undefined ? [] : index.nodesOf.get(k) ?? [] };
+  });
+  const most = new Map<string, number>();
+  for (const { nodes } of perYear) {
+    const count = new Map<string, number>();
+    for (const i of nodes) { const n = index.data.nodes[i]!; if (n[4] === '') count.set(n[2], (count.get(n[2]) ?? 0) + 1); }
+    for (const [name, c] of count) most.set(name, Math.max(most.get(name) ?? 0, c));
+  }
+  const rows = new Map<string, MokuKouRow & { codes: Set<string> }>();
+  for (const { year, nodes } of perYear) {
+    for (const i of nodes) {
+      const n = index.data.nodes[i]!;
+      const group = n[4] === '' && most.get(n[2]) === 1 ? `name|${n[2]}` : `key|${mokuKeyOf(n)}`;
+      const row = rows.get(group) ?? rows.set(group, { name: n[2], part: n[4], cells: new Map(), byName: false, codes: new Set() }).get(group)!;
+      row.cells.set(year, i);
+      row.codes.add(n[3]);
+    }
+  }
+  // 概算要求にだけある目（分類コードが空）は、分類コードの違いに数えない
+  return [...rows.values()].map(({ codes, ...r }) => ({ ...r, byName: [...codes].filter(c => c !== '').length > 1 }));
+}
+
+/**
+ * 選んだ目の値の計（千円）。グラフと表に出す。値の無い目が、その値を別の行で持つ（決算の共管別の行・その元の目）か、その段階に無い目（概算要求書にだけある目・当初予算に無い目）なら、足さずに進める。
+ * それ以外で値の無い目（外N目にまとめられた目の補正後、決算に無い目など）があれば、額が分からないので null（足さない。点を描かない）。
+ * ただし、その年度の目を全部選んだとき（`all`）の概算要求・決算は、値のある目を全部足す。概算要求書・決算書の目の行は、どれも目の行のどれか 1 つに置いている（名前の違う目は「要求のみ」の目に、共管別は共管別の行に）ので、足せば項の額になる。
+ * 補正後は、外N目にまとめられた目の行が無いので、全部選んでも足せない。
+ */
+export function mokuChartSum(data: LifecycleMokuData, nodes: readonly number[], key: MokuMeasure, all: boolean): number | null {
+  if (all && key !== 'revised') return nodes.reduce<number | null>((sum, i) => { const v = mokuValue(data.nodes[i]!, key); return v === null ? sum : (sum ?? 0) + v; }, null);
+  let sum: number | null = null;
+  for (const i of nodes) {
+    const n = data.nodes[i]!;
+    const v = mokuValue(n, key);
+    if (v !== null) { sum = (sum ?? 0) + v; continue; }
+    if (isSettleMeasure(key) ? n[13] & (MOKU_FLAG.settleSplit | MOKU_FLAG.requestOnly) : n[13] & MOKU_FLAG.settlePart) continue;
+    if (key === 'budget') continue; // 政府案の無い目は、当初予算に無い目（補正・決算で出る目）か、概算要求書にだけある目
+    if (key === 'revised' && n[13] & MOKU_FLAG.requestOnly) continue;
+    // 当初予算にも補正にも無い目（決算にだけある目）は、概算要求・補正後の段階に無い
+    if ((key === 'request' || key === 'revised') && n[5] === null && !(n[13] & (MOKU_FLAG.suppItem | MOKU_FLAG.requestOnly))) continue;
+    // 当初予算に無く補正で出る目は、概算要求の段階に無い
+    if (key === 'request' && n[5] === null && n[13] & MOKU_FLAG.suppItem) continue;
+    return null;
+  }
+  return sum;
+}

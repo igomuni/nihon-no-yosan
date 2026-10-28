@@ -40,7 +40,7 @@ export function Cell({ data, node, measure, current }: { data: LifecycleMokuData
 }
 
 /** 共管別の行の共管（所管 / 組織） */
-const partLabel = (part: string): string => part.replace(/#\d+$/, '').split('|').filter(Boolean).join(' / ');
+export const partLabel = (part: string): string => part.replace(/#\d+$/, '').split('|').filter(Boolean).join(' / ');
 
 export function Marks({ n }: { n: LifecycleMokuNode }) {
   const part = partLabel(n[4]);
