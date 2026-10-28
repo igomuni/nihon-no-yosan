@@ -42,7 +42,12 @@ export interface RsIndex {
   amountsOf: ReadonlyMap<number, readonly RsAmountRow[]>;
   /** `${事業の添字}|${予算年度}` → 項に結べた行 */
   linksOf: ReadonlyMap<string, readonly RsLinkEntry[]>;
+  /** 執行額が、値のある全事業で 0 の年度（`RS_SPENT_UNFILLED_NOTE`）。画面は、この年度の執行額を値なし（「—」）にする */
+  spentUnfilled: ReadonlySet<number>;
 }
+
+/** 執行額が全事業で 0 の年度の、画面の説明（ツールチップ） */
+export const RS_SPENT_UNFILLED_NOTE = 'RS の CSV では、この年度の執行額が、値のある全事業で 0。まだ入っていない値なのか、実際に 0 なのかは、CSV から区別できないので、値なしとして扱う';
 
 export function rsIndex(data: RsJigyoData): RsIndex {
   const amountsOf = new Map<number, RsAmountRow[]>();
@@ -50,10 +55,23 @@ export function rsIndex(data: RsJigyoData): RsIndex {
   for (const list of amountsOf.values()) list.sort((x, y) => x[1] - y[1]);
   const linksOf = new Map<string, RsLinkEntry[]>();
   for (const l of data.links) { const k = `${l[0]}|${l[1]}`; (linksOf.get(k) ?? linksOf.set(k, []).get(k)!).push(l); }
-  return { data, indexOf: new Map(data.jigyo.map((j, i) => [j[0], i])), amountsOf, linksOf };
+  // 執行額: 値のある事業が 1 つ以上あり、0 でない値が 1 つも無い年度
+  const spentCol = RS_AMOUNTS.find(m => m.key === 'spent')!.col;
+  const seen = new Map<number, { any: boolean; nonZero: boolean }>();
+  for (const a of data.amounts) {
+    const v = a[spentCol] as number | null;
+    if (v === null) continue;
+    const e = seen.get(a[1]) ?? seen.set(a[1], { any: false, nonZero: false }).get(a[1])!;
+    e.any = true;
+    if (v !== 0) e.nonZero = true;
+  }
+  const spentUnfilled = new Set([...seen].filter(([, e]) => e.any && !e.nonZero).map(([y]) => y));
+  return { data, indexOf: new Map(data.jigyo.map((j, i) => [j[0], i])), amountsOf, linksOf, spentUnfilled };
 }
 
 export const rsAmount = (row: RsAmountRow, key: RsAmountKey): number | null => row[RS_AMOUNTS.find(m => m.key === key)!.col] as number | null;
+/** 画面に出す額。執行額が全事業で 0 の年度（`spentUnfilled`）の執行額は、値なし（null） */
+export const rsAmountShown = (index: RsIndex, row: RsAmountRow, key: RsAmountKey): number | null => (key === 'spent' && index.spentUnfilled.has(row[1]) ? null : rsAmount(row, key));
 
 export interface RsListRow {
   /** 事業の添字 */
@@ -80,7 +98,7 @@ export function rsListRows(index: RsIndex, year: number): RsListRow[] {
     const a = index.amountsOf.get(idx)?.find(x => x[1] === year);
     if (!a) return;
     const kouCount = new Set((index.linksOf.get(`${idx}|${year}`) ?? []).map(l => l[2])).size;
-    rows.push({ idx, id, name, ministry, bureau, major, kouCount, initial: a[2], supp: a[3], current: a[6], spent: a[7], request: a[9] });
+    rows.push({ idx, id, name, ministry, bureau, major, kouCount, initial: a[2], supp: a[3], current: a[6], spent: rsAmountShown(index, a, 'spent'), request: a[9] });
   });
   return rows;
 }

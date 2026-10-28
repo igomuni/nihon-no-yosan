@@ -21,19 +21,19 @@ const COLS: { key: RsSortKey; label: string; left?: boolean; title?: string }[] 
   { key: 'initial', label: '当初予算', title: 'RS の予算・執行のサマリの当初予算（合計）' },
   { key: 'supp', label: '補正予算', title: '補正予算（合計）' },
   { key: 'current', label: '歳出予算現額', title: '歳出予算現額（合計）= 当初予算 + 補正予算 + 前年度からの繰越し + 予備費等' },
-  { key: 'spent', label: '執行額', title: '執行額（合計）' },
+  { key: 'spent', label: '執行額', title: '執行額（合計）。全事業で 0 の年度は、値なしとして扱う' },
   { key: 'request', label: '翌年度要求額', title: '翌年度要求額（合計）' },
 ];
 
 /** 額の列（円）。値が無いときは「—」（0 とは別） */
-function Amount({ v }: { v: number | null }) {
+function Amount({ v, why }: { v: number | null; why?: string | null }) {
   return v === null
-    ? <td className="whitespace-nowrap px-2 py-1 text-right text-neutral-300 dark:text-neutral-600" title="値なし（RS の欄が空）">—</td>
+    ? <td className="whitespace-nowrap px-2 py-1 text-right text-neutral-300 dark:text-neutral-600" title={why ?? '値なし（RS の欄が空）'}>—</td>
     : <td className="whitespace-nowrap px-2 py-1 text-right tabular-nums" title={`${v.toLocaleString('ja-JP')} 円`}>{v === 0 ? '0円' : formatSen(v / 1000)}</td>;
 }
 
 /** 事業の一覧（中ペインの「RS」）。項に結べない事業も含める */
-export function RsListPane({ items, loading, failed, sortKey, sortDir, onSort, selectedId, onSelect, widths, onWidthsChange, yearNote }: {
+export function RsListPane({ items, loading, failed, sortKey, sortDir, onSort, selectedId, onSelect, widths, onWidthsChange, yearNote, spentNote }: {
   /** 絞り込み・並べ替え済み */
   items: readonly RsListRow[];
   loading: boolean;
@@ -47,6 +47,8 @@ export function RsListPane({ items, loading, failed, sortKey, sortDir, onSort, s
   onWidthsChange: (updater: (prev: Record<string, number>) => Record<string, number>) => void;
   /** 選んだ年度に RS のデータが無いときの説明（あるときは null） */
   yearNote: string | null;
+  /** 選んだ年度の執行額が、値のある全事業で 0 のときの説明（そうでなければ null） */
+  spentNote: string | null;
 }) {
   const selectedIdx = selectedId === null ? -1 : items.findIndex(x => x.id === selectedId);
   useListKeys(items.length, selectedIdx, i => onSelect(items[i]!));
@@ -129,7 +131,7 @@ export function RsListPane({ items, loading, failed, sortKey, sortDir, onSort, s
                   <Amount v={r.initial} />
                   <Amount v={r.supp} />
                   <Amount v={r.current} />
-                  <Amount v={r.spent} />
+                  <Amount v={r.spent} why={spentNote} />
                   <Amount v={r.request} />
                 </tr>
               );

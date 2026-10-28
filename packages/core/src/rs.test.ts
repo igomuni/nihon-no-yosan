@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { INITIAL_RS_FILTERS, filterRsRows, rsIndex, rsListRows, sortRsRows, type RsJigyoData } from './rs.ts';
+import { INITIAL_RS_FILTERS, filterRsRows, rsAmountShown, rsIndex, rsListRows, sortRsRows, type RsJigyoData } from './rs.ts';
 
 const data: RsJigyoData = {
   years: [2024, 2025],
@@ -62,5 +62,22 @@ describe('sortRsRows', () => {
     const tie = rsListRows(rsIndex({ years: [2025], kous: [], jigyo: [['10', 'b', '総務省', '局', ''], ['2', 'a', '総務省', '局', '']], amounts: [[0, 2025, 1, null, null, null, null, null, null, null], [1, 2025, 1, null, null, null, null, null, null, null]], links: [] }), 2025);
     expect(sortRsRows(tie, 'initial', 1).map(r => r.id)).toEqual(['2', '10']); // 文字の順なら '10' が先
     expect(sortRsRows(tie, 'ministry', -1).map(r => r.id)).toEqual(['2', '10']);
+  });
+});
+
+describe('spentUnfilled (執行額が全事業で 0 の年度)', () => {
+  const mk = (rows: [number, number, number | null][]): RsJigyoData => ({ years: [2024, 2025], kous: [], jigyo: [['1', 'a', 'x', 'y', ''], ['2', 'b', 'x', 'y', '']], amounts: rows.map(([i, y, spent]) => [i, y, 10, null, null, null, 10, spent, null, null]), links: [] });
+
+  it('finds the 年度 whose 執行額 is 0 in every 事業 that has a value, and shows it as no value', () => {
+    const idx = rsIndex(mk([[0, 2024, 5], [1, 2024, 0], [0, 2025, 0], [1, 2025, 0]]));
+    expect([...idx.spentUnfilled]).toEqual([2025]);
+    expect(rsListRows(idx, 2025).map(r => r.spent)).toEqual([null, null]);
+    expect(rsListRows(idx, 2024).map(r => r.spent)).toEqual([5, 0]); // ほかの年度の 0 は値のまま
+    expect(rsAmountShown(idx, idx.data.amounts[2]!, 'spent')).toBeNull();
+    expect(rsAmountShown(idx, idx.data.amounts[2]!, 'initial')).toBe(10); // ほかの列は、そのまま
+  });
+
+  it('does not treat a 年度 without any value as unfilled', () => {
+    expect(rsIndex(mk([[0, 2025, null], [1, 2025, null]])).spentUnfilled.size).toBe(0);
   });
 });

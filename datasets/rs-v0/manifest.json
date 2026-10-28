@@ -1,0 +1,22 @@
+{
+ "schema": "nihon-no-yosan/rs-manifest/v0",
+ "note": "行政事業レビュー見える化サイト（RS システム）の CSV（2025 年度版）のうち、画面のデータ作りに使う 3 ファイルを、手を加えずに入れた。出典: 行政事業レビュー見える化サイト（https://rssystem.go.jp）。利用条件: https://rssystem.go.jp/terms（PDL1.0 に準拠）。取得日の記録は無い（サイトのページに「データは 2026 年 1 月 19 日時点」とある版と同じかは未確認。docs/guides/rs-link.md）",
+ "source": {
+  "page": "https://rssystem.go.jp/download-csv/2025",
+  "terms": "https://rssystem.go.jp/terms"
+ },
+ "files": {
+  "1-2_RS_2025_基本情報_事業概要等.csv": {
+   "sha256": "045829a3e3f4dbf93acd9da36bfd6107db5f39ebbd7241d8507cba1005355be9",
+   "bytes": 13317359
+  },
+  "2-1_RS_2025_予算・執行_サマリ.csv": {
+   "sha256": "ecd83db2378b8d177f9298e94c70a2d047a9b20959284eb1e5ed658dce473254",
+   "bytes": 15209120
+  },
+  "2-2_RS_2025_予算・執行_予算種別・歳出予算項目.csv": {
+   "sha256": "89243038ea005cdf04af58cc048d21a225d3aaa9252719e451ff6c392e6f8a9b",
+   "bytes": 21455463
+  }
+ }
+}

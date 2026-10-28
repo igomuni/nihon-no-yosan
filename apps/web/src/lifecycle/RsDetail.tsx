@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { RS_AMOUNTS, formatSen, rsAmount, type LifecycleKou, type RsIndex } from '@nihon-no-yosan/core';
+import { RS_AMOUNTS, RS_SPENT_UNFILLED_NOTE, formatSen, rsAmountShown, type LifecycleKou, type RsIndex } from '@nihon-no-yosan/core';
 import { useYearKeys } from '../components/useListKeys.ts';
 import { TrendChart, type TrendPoint } from './charts.tsx';
 import { kouTitle, num, td, th } from './shared.ts';
@@ -30,7 +30,7 @@ export function RsDetail({ rs, loading, failed, id, year, kouOf, onYear, onOpenK
   const rows = useMemo(() => (rs && idx !== undefined ? rs.amountsOf.get(idx) ?? [] : []), [rs, idx]);
   const years = useMemo(() => rows.map(r => r[1]), [rows]);
   useYearKeys(years, idx === undefined ? null : year, onYear);
-  const points = useMemo<TrendPoint[]>(() => rows.map(r => ({ year: r[1], request: undefined, budget: undef(rsAmount(r, 'initial')), revised: undef(rsAmount(r, 'current')), spent: undef(rsAmount(r, 'spent')), carriedIn: undef(rsAmount(r, 'carryIn')), carried: undef(rsAmount(r, 'carryOut')) })), [rows]);
+  const points = useMemo<TrendPoint[]>(() => rows.map(r => ({ year: r[1], request: undefined, budget: undef(rsAmountShown(rs!, r, 'initial')), revised: undef(rsAmountShown(rs!, r, 'current')), spent: undef(rsAmountShown(rs!, r, 'spent')), carriedIn: undef(rsAmountShown(rs!, r, 'carryIn')), carried: undef(rsAmountShown(rs!, r, 'carryOut')) })), [rows, rs]);
   if (failed) return <p className="p-4 text-xs text-red-700">RS の事業の読み込みに失敗しました（<code>npm run build:data</code> で作る）。</p>;
   if (loading || !rs) return <p className="p-4 text-xs text-neutral-500">RS の事業を読み込み中…</p>;
   if (idx === undefined) return <p className="p-4 text-xs text-neutral-500">一覧から事業を選んでください。</p>;
@@ -78,8 +78,9 @@ export function RsDetail({ rs, loading, failed, id, year, kouOf, onYear, onOpenK
                   >
                     <td className={`${td} whitespace-nowrap ${selected ? 'font-semibold' : ''}`}>FY{r[1]}</td>
                     {RS_AMOUNTS.map(m => {
-                      const v = rsAmount(r, m.key);
-                      return <td key={m.key} className={`${num} ${v === null ? 'text-neutral-300 dark:text-neutral-600' : ''}`} title={v === null ? '値なし（RS の欄が空）' : `${v.toLocaleString('ja-JP')} 円`}>{yen(v)}</td>;
+                      const v = rsAmountShown(rs, r, m.key);
+                      const why = m.key === 'spent' && rs.spentUnfilled.has(r[1]) ? RS_SPENT_UNFILLED_NOTE : '値なし（RS の欄が空）';
+                      return <td key={m.key} className={`${num} ${v === null ? 'text-neutral-300 dark:text-neutral-600' : ''}`} title={v === null ? why : `${v.toLocaleString('ja-JP')} 円`}>{yen(v)}</td>;
                     })}
                   </tr>
                 );
