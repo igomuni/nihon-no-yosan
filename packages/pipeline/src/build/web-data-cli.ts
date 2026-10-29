@@ -12,6 +12,7 @@
  *   lifecycle/codes.json.gz            主要経費別・使途別のコードの名前（`datasets/mof-code-tables/code-tables.json` から。`docs/guides/budget-codes.md`）
  *   rs/jigyo.json.gz                   RS の事業の一覧（RS の CSV のディレクトリがあるときだけ。`docs/guides/rs-tab.md`。タブを開いたときに読む）
  *   about.json                         出典と利用条件（`docs/guides/web-publish.md`）
+ *   index.json                         データの目録（各ファイルの説明・キーの形・大きさ・SHA-256、読み方の約束、元の CSV の置き場。`docs/guides/ai-access.md`）
  * 出力ディレクトリは git に入れない（`.gitignore` の `data/`）。
  */
 import * as fs from 'node:fs';
@@ -25,6 +26,7 @@ import { buildLifecycleJikou, mofRowKouIds, requestOnlyJikou } from './lifecycle
 import { buildLifecycleMoku, requestOnlyMoku } from './lifecycle-moku.ts';
 import { buildBudgetRequestMofUi, mofUiMatchesFromDataset } from './mof-ui.ts';
 import { buildRsJigyo } from './rs-jigyo.ts';
+import { buildDataCatalog } from './data-catalog.ts';
 import { buildRsLink } from './rs-link.ts';
 import { buildBudgetRequestTrend, matchesFromDataset } from './trend.ts';
 import { buildBudgetRequestTrendDetail } from './trend-detail.ts';
@@ -149,6 +151,20 @@ const about: SiteAbout = {
   ...(rsBuilt ? { rs: { authority: rsTerms('rssystem.go.jp').authority, domain: 'rssystem.go.jp', termsUrl: rsTerms('rssystem.go.jp').url, jigyo: rsBuilt.jigyo.length, years: rsBuilt.years } } : {}),
 };
 fs.writeFileSync(path.join(outDir, 'about.json'), JSON.stringify(about, null, 1) + '\n');
-console.log(`wrote ${outputs.length + 1} files to ${outDir}`);
+
+// データの目録。配る JSON（上の出力と about.json）を、すべて載せる。元の CSV（Releases のデータセット）の置き場は、`datasets/*/release.json` から
+const catalogFiles = new Map<string, Buffer>([...outputs.map(([name, bytes]) => [name, bytes] as const), ['about.json', fs.readFileSync(path.join(outDir, 'about.json'))]]);
+const releaseOf = (dir: string, name: string): { name: string; tag: string; asset: string; bytes: number; sha256: string } | null => {
+  const f = path.join(path.dirname(termsPath), dir, 'release.json');
+  if (!fs.existsSync(f)) return null;
+  const r = JSON.parse(fs.readFileSync(f, 'utf8')) as { tag: string; asset: string; bytes: number; sha256: string };
+  return { name, tag: r.tag, asset: r.asset, bytes: r.bytes, sha256: r.sha256 };
+};
+const catalog = buildDataCatalog({
+  files: catalogFiles,
+  releases: [releaseOf('reference-v0', '基準データ（概算要求書・予算書の CSV。公開分）'), releaseOf('mof-history-v0', '過去年度（FY2017〜FY2022 の予算書・決算書の CSV）'), releaseOf('rs-v0', '行政事業レビュー（RS）の CSV 3 ファイル')].filter(r => r !== null),
+});
+fs.writeFileSync(path.join(outDir, 'index.json'), JSON.stringify(catalog, null, 1) + '\n');
+console.log(`wrote ${outputs.length + 2} files to ${outDir}`);
 console.log(`目: ${JSON.stringify(lifecycleMoku.stats)}`);
 if (rsBuilt) console.log(`RS: 事業 ${rsBuilt.jigyo.length}、額 ${rsBuilt.amounts.length}、項に結べた行 ${rsBuilt.links.length}、つなぎ ${JSON.stringify(rsLinkStats)}`);

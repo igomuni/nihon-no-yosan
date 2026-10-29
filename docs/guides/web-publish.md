@@ -43,6 +43,10 @@ cp <出力ディレクトリ>/release.json datasets/mof-history-v0/release.json
 - **中身を足して出し直すときは、タグを変える**（過去年度と同じ。同じタグの差し替えは、`main` の CI が SHA-256 の不一致で失敗する）。**順序:** Releases に置いてから、`release.json` をコミットした変更を `main` に入れる。
 - **出典:** 出典は「行政事業レビュー見える化サイト（https://rssystem.go.jp）」。RS のタブの出典の表示と、「出典と利用条件」の RS の節は、`about.json` の `rs` から出す。
 
+## AI・プログラムから使うための入口
+
+`data/index.json`（データの目録）、`llms.txt`、`index.html` の説明は、`ai-access.md`。
+
 ## 基準データの公開分
 
 `packages/pipeline/src/migrate/package.ts` が、基準データ（`data/dataset/reference-v0/`、手元の全体）から、公開できる分だけの `reference-v0.tar.gz` を作る。

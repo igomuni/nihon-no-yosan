@@ -4,9 +4,23 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>日本の予算</title>
+    <meta name="description" content="日本の国の予算を、概算要求・当初予算・補正予算・決算でつなぎ、行政事業レビュー（RS）の事業とも結んで見るための、データと画面。データは JSON で直接取得できます。" />
+    <link rel="alternate" type="application/json" href="./data/index.json" title="データの目録" />
+    <link rel="alternate" type="text/plain" href="./llms.txt" title="llms.txt（AI 向けの案内）" />
   </head>
   <body>
     <div id="root"></div>
+    <noscript>
+      <h1>日本の予算</h1>
+      <p>日本の国の予算を、概算要求・当初予算（政府案）・補正予算・決算でつなぎ、行政事業レビュー（RS）の事業とも結んで見るための、データと画面です。画面は JavaScript で表示するので、JavaScript を無効にしていると、このページには画面が出ません。</p>
+      <p>データは、画面を介さず、直接取得できます。</p>
+      <ul>
+        <li><a href="./data/index.json">データの目録（data/index.json）</a>: 各ファイルの説明・キーの形・単位・読み方の約束・元の CSV の置き場</li>
+        <li><a href="./llms.txt">llms.txt</a>: AI 向けの案内</li>
+        <li><a href="./data/about.json">出典と利用条件（data/about.json）</a></li>
+        <li><a href="https://github.com/igomuni/nihon-no-yosan/tree/main/docs/guides">データの文書（GitHub）</a></li>
+      </ul>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
