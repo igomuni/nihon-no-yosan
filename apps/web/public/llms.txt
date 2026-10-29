@@ -11,6 +11,7 @@ English: Japan's national budget (FY2017–FY2027) linking budget requests, init
 - 出典と利用条件: https://igomuni.github.io/nihon-no-yosan/data/about.json
 - データの列・規則・検算の文書（Markdown）: https://github.com/igomuni/nihon-no-yosan/tree/main/docs/guides
 - 画面: https://igomuni.github.io/nihon-no-yosan/ （`#/lifecycle` = 予算の推移、`#/trend` = 概算要求の年度推移、`#/mof` = 概算要求と当初予算の差、`#/about` = 出典と利用条件）
+- 画面の状態は URL で共有できる。例（FY2024 の目で、主要経費別 = 防衛関係費、使途別 = 人件費）: https://igomuni.github.io/nihon-no-yosan/#/lifecycle?view=moku&year=2024&major=35&use=1 （パラメーターは `docs/guides/ai-access.md`）
 
 ## データ（`data/` 以下。gzip で圧縮した JSON）
 
