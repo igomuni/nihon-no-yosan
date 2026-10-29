@@ -1,0 +1,37 @@
+# 日本の予算（nihon-no-yosan）
+
+日本の国の予算を、概算要求・当初予算（政府案）・補正予算・決算でつなぎ、行政事業レビュー（RS）の事業とも結んで見るための、データと画面。
+画面は JavaScript で描くので、ページの HTML には中身が無い。**データは、画面を介さず、次の URL から直接取れる。**
+
+English: Japan's national budget (FY2017–FY2027) linking budget requests, initial budgets, supplementary budgets and settlements, and the administrative project reviews (RS). The pages are rendered by JavaScript; the data is available directly as JSON (see the catalog below).
+
+## 最初に読むもの
+
+- データの目録（各ファイルの説明・キーの形・単位・読み方の約束・元の CSV の置き場）: https://igomuni.github.io/nihon-no-yosan/data/index.json
+- 出典と利用条件: https://igomuni.github.io/nihon-no-yosan/data/about.json
+- データの列・規則・検算の文書（Markdown）: https://github.com/igomuni/nihon-no-yosan/tree/main/docs/guides
+- 画面: https://igomuni.github.io/nihon-no-yosan/ （`#/lifecycle` = 予算の推移、`#/trend` = 概算要求の年度推移、`#/mof` = 概算要求と当初予算の差、`#/about` = 出典と利用条件）
+
+## データ（`data/` 以下。gzip で圧縮した JSON）
+
+- `lifecycle/data.json.gz`: 予算の一生の表（項。概算要求・政府案・補正・決算の値と、年度をまたぐ対応）
+- `lifecycle/jikou.json.gz`: 事項（項の下の区分）
+- `lifecycle/moku.json.gz`: 目（項の下の区分。分類コード付き）
+- `lifecycle/codes.json.gz`: 主要経費別・使途別のコードの名前
+- `rs/jigyo.json.gz`: 行政事業レビューの事業と、予算書の項・目への結びつき
+- `trend/*.json.gz`・`mof/*.json.gz`: 概算要求の年度推移、概算要求と当初予算の差（古い画面のデータ）
+
+## 読み方の要点（詳しくは目録の `conventions`）
+
+- 値が無いことは `null`（0 とは別）。額の単位は、千円（円の列もある。目録に書いてある）。年度は西暦。
+- 項の id は `{年度}:{general|special}:{所管|組織|項コード|項名}`。目・事項・RS は、この id で項に結べる。
+- 配列の多くは、列名の無いタプル（位置で意味が決まる）。列の意味は、文書（`docs/guides/`）にある。
+- 数字は、公表資料を名前でそろえてつないだ加工物で、国や府省が作った、加工していない情報ではない。誤りを含みうるので、引用するときは、原本で確かめる。
+
+## 利用条件
+
+出典を書き、加工したことを書く（公共データ利用規約 第1.0版（PDL1.0）に準拠した資料を使っている）。詳しくは `about.json` と、画面の「出典と利用条件」。コードは MIT ライセンス。
+
+## リポジトリ
+
+https://github.com/igomuni/nihon-no-yosan
