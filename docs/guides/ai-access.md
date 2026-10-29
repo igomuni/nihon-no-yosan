@@ -17,8 +17,21 @@
 - 年度は西暦。値が無いことは `null`（0 とは別）。
 - 額の単位は、`lifecycle/jikou`・`lifecycle/moku`・`trend/*`・`mof/*` が千円、`rs/jigyo` と `lifecycle/data` の events の「円」の列が円。決算の目の額は、原本が円なので千円に直した値（小数がありうる）。
 - 項の id は `{年度}:{general|special}:{鍵}`。`lifecycle/*` と `rs/jigyo` は、この id で結べる。
-- 配列の多くは、列名の無い配列（位置で意味が決まる）。列の意味は、各ファイルの `docs` の文書にある。
+- 配列の多くは、列名の無い配列（タプル。位置で意味が決まる）。列の名前・型・単位・意味は、**データ自身のトップレベルの `columns`**（キー → 列の配列）と、目録の `files[].columns` にある（次の「列の定義」）。
 - 目の分類コードの位置は、一般会計と特別会計で違う（特別会計は、財政法の区分が無い）。コードの名前は `lifecycle/codes.json.gz`（主要経費別・使途別だけ）。
+
+## 列の定義（`columns`）
+
+タプルの配列を持つファイル（`lifecycle/data`・`lifecycle/jikou`・`lifecycle/moku`・`rs/jigyo`）は、トップレベルに `columns` を持つ。`columns[キー]` は、そのキーの配列の列の定義の配列。
+
+```json
+{ "name": "flags", "type": "number", "description": "状態（ビット）", "bits": { "suppItem": 1, "requestOnly": 32 } }
+```
+
+- `name`: 列の名前。`type`: `number`・`string`（値が無いことがあるときは `| null`）。`unit`: 額の単位（千円・円。額でない列は無し）。`description`: 意味。
+- `values`: 取りうる値（出来事の種類、概算要求の目の取れ方、年度をまたぐ対応の額の確認など）。`valueLabels`: その日本語名。`bits`: ビットの列で、立てるビットの値（`flags` の目の状態、`evidence` の対応の根拠）。
+- 定義は、`packages/core/src/data-columns.ts`（`DATA_COLUMNS`）に 1 か所で持つ。ビルド（`withColumns`）が、**全行の長さと列の数を照合して、合わなければ止まる**。配列の並びを変えたときは、定義も変える。
+- 定義の無いもの: オブジェクトの配列（`lifecycle/data` の `kous`・`checks`・`links`）は、キーが名前なので不要。`trend/*`・`mof/*`（古い画面のデータ）は、短いキーのオブジェクトで、`docs` の文書（`trend.md`・`mof-ui.md`）にある。`lifecycle/codes` の `[コード, 名前]` の組は、`description` で説明している。
 
 ## 目録の作り方
 
@@ -39,4 +52,4 @@
 
 ## このあと（予定）
 
-列名を、データ自身に添える（`columns`）。画面の状態（タブ・年度・フィルタ・選択）を URL で共有する。
+画面の状態（タブ・年度・フィルタ・選択）を URL で共有する。

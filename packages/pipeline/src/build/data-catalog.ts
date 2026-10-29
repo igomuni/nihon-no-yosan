@@ -6,6 +6,7 @@
  */
 import { createHash } from 'node:crypto';
 import * as zlib from 'node:zlib';
+import { DATA_COLUMNS, type DataColumn } from '@nihon-no-yosan/core';
 
 export const SITE_URL = 'https://igomuni.github.io/nihon-no-yosan/';
 export const REPO_URL = 'https://github.com/igomuni/nihon-no-yosan';
@@ -95,7 +96,7 @@ export const CONVENTIONS: string[] = [
   '値が無いことは `null`（0 とは別）。画面は「—」で出す。0 は、観測した値が 0。',
   '額の単位は、`lifecycle/jikou.json.gz`・`lifecycle/moku.json.gz`・`trend/*`・`mof/*` が千円、`rs/jigyo.json.gz` と `lifecycle/data.json.gz` の events の「円」の列が円。決算の目の額は、原本が円なので、千円に直した値で、小数がありうる。',
   '項の id は `{年度}:{general|special}:{鍵}`。一般会計の鍵は `所管|組織|項コード|項名`、特別会計は `特別会計|勘定|項コード|項名`、概算要求書にだけある項は `request|所管|勘定|組織|項名`。`lifecycle/*` と `rs/jigyo.json.gz` の項は、この id で結べる（`kous` の配列と、その添字）。',
-  '多くの配列は、列名の無い配列（位置で意味が決まる）。列の意味は、各ファイルの `docs` の文書にある。',
+  '多くの配列は、列名の無い配列（タプル。位置で意味が決まる）。列の名前・型・単位・意味は、各ファイルのトップレベルの `columns`（キー → 列の配列）と、この目録の `files[].columns` にある。ビットの列は `bits`、取りうる値が決まっている列は `values`。',
   '分類コード（目）: 一般会計は 主要経費別|目的別|財政法|経済性質別|使途別、特別会計は 主要経費別|目的別|経済性質別|使途別（財政法の区分が無い）。コードの名前は `lifecycle/codes.json.gz`（主要経費別・使途別だけ）。',
   '数字は、各府省・財務省・RS の公表資料を、名前でそろえてつないだ加工物で、国や府省が作成した、加工していない情報ではない。出典と利用条件は `about.json`。',
 ];
@@ -108,6 +109,8 @@ export interface CatalogFile {
   sha256: string;
   description: string;
   docs: string[];
+  /** タプルの配列の、列の定義（キー → 列）。データ自身のトップレベルの `columns` と同じ */
+  columns?: Record<string, DataColumn[]>;
   /** トップレベルのキーごとの、形（`array` と件数、`object` とキー数、など）と説明 */
   keys: Record<string, { type: string; length?: number; item?: string; description: string }>;
 }
@@ -142,11 +145,11 @@ export function buildDataCatalog(input: {
     const spec = DATA_FILE_SPECS[path];
     if (!spec) throw new Error(`データの目録に説明が無いファイル: ${path}（data-catalog.ts の DATA_FILE_SPECS に足す）`);
     const gz = path.endsWith('.gz');
-    const body = JSON.parse((gz ? zlib.gunzipSync(bytes) : bytes).toString('utf8')) as Record<string, unknown>;
+    const { columns, ...body } = JSON.parse((gz ? zlib.gunzipSync(bytes) : bytes).toString('utf8')) as Record<string, unknown> & { columns?: Record<string, DataColumn[]> };
     const keys: CatalogFile['keys'] = {};
     for (const [k, v] of Object.entries(body)) keys[k] = { ...shapeOf(v), description: spec.keys[k] ?? '' };
     for (const k of Object.keys(spec.keys)) if (!(k in body) && !spec.optionalKeys?.includes(k)) throw new Error(`目録の説明にあるキーが、データに無い: ${path} ${k}`);
-    files.push({ path, encoding: gz ? 'gzip-json' : 'json', bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex'), description: spec.description, docs: spec.docs, keys });
+    files.push({ path, encoding: gz ? 'gzip-json' : 'json', bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex'), description: spec.description, docs: spec.docs, ...(columns ? { columns } : {}), keys });
   }
   return {
     schema: 'nihon-no-yosan/data-catalog/v0',
@@ -156,4 +159,21 @@ export function buildDataCatalog(input: {
     releases: input.releases.map(r => ({ ...r, url: `${REPO_URL}/releases/tag/${r.tag}` })),
     guides: { url: `${REPO_URL}/tree/main/docs/guides`, note: 'データの列・規則・検算の文書（Markdown）。目録の各ファイルの docs は、ここの文書' },
   };
+}
+
+/**
+ * 配るデータに、タプルの配列の列の定義（`columns`）を添える。定義（`DATA_COLUMNS`）の配列は、全行が配列で、長さが列の数と同じでなければならない（違えば止まる）。
+ * 定義の無いファイルは、そのまま返す。
+ */
+export function withColumns<T extends object>(path: string, data: T): T & { columns?: Record<string, DataColumn[]> } {
+  const spec = DATA_COLUMNS[path];
+  if (!spec) return data;
+  for (const [key, cols] of Object.entries(spec)) {
+    const rows = (data as Record<string, unknown>)[key];
+    if (!Array.isArray(rows)) throw new Error(`列の定義があるキーが、配列でない: ${path} ${key}`);
+    rows.forEach((r: unknown, i) => {
+      if (!Array.isArray(r) || r.length !== cols.length) throw new Error(`列の数が合わない: ${path} ${key}[${i}] は ${Array.isArray(r) ? r.length : '配列でない'}、定義は ${cols.length}`);
+    });
+  }
+  return { ...data, columns: spec };
 }

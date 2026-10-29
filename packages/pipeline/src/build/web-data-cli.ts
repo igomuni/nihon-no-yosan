@@ -26,7 +26,7 @@ import { buildLifecycleJikou, mofRowKouIds, requestOnlyJikou } from './lifecycle
 import { buildLifecycleMoku, requestOnlyMoku } from './lifecycle-moku.ts';
 import { buildBudgetRequestMofUi, mofUiMatchesFromDataset } from './mof-ui.ts';
 import { buildRsJigyo } from './rs-jigyo.ts';
-import { buildDataCatalog } from './data-catalog.ts';
+import { buildDataCatalog, withColumns } from './data-catalog.ts';
 import { buildRsLink } from './rs-link.ts';
 import { buildBudgetRequestTrend, matchesFromDataset } from './trend.ts';
 import { buildBudgetRequestTrendDetail } from './trend-detail.ts';
@@ -112,11 +112,11 @@ const outputs: [string, Buffer][] = [
   ['trend/detail.json.gz', detail.uiGz],
   ['mof/kou.json.gz', mof.kouGz],
   ['mof/detail.json.gz', mof.detailGz],
-  ['lifecycle/data.json.gz', gz(lifecycle)],
-  ['lifecycle/jikou.json.gz', gz(lifecycleJikou.data)],
-  ['lifecycle/moku.json.gz', gz(lifecycleMoku.data)],
+  ['lifecycle/data.json.gz', gz(withColumns('lifecycle/data.json.gz', lifecycle))],
+  ['lifecycle/jikou.json.gz', gz(withColumns('lifecycle/jikou.json.gz', lifecycleJikou.data))],
+  ['lifecycle/moku.json.gz', gz(withColumns('lifecycle/moku.json.gz', lifecycleMoku.data))],
   ['lifecycle/codes.json.gz', gz(codeTables)],
-  ...(rsBuilt ? [['rs/jigyo.json.gz', gz(rsBuilt)] as [string, Buffer]] : []),
+  ...(rsBuilt ? [['rs/jigyo.json.gz', gz(withColumns('rs/jigyo.json.gz', rsBuilt))] as [string, Buffer]] : []),
 ];
 for (const [name, bytes] of outputs) {
   fs.mkdirSync(path.dirname(path.join(outDir, name)), { recursive: true });
