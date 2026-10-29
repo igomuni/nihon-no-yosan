@@ -3,9 +3,11 @@ import { useEffect, useState, type Dispatch, type SetStateAction } from 'react';
 /**
  * 状態を localStorage に保存する。初回は保存値（なければ既定値）で始め、更新のたびに書く。
  * 読み書きに失敗しても（プライベートモードなど）、画面は既定値のまま動く。キーは固定で使う。
+ * `override` があるときは、保存値を使わず、その値で始める（URL で渡された状態。以降は、これまでどおり保存する）。
  */
-export function usePersistedState<T>(key: string, defaultValue: T): [T, Dispatch<SetStateAction<T>>] {
+export function usePersistedState<T>(key: string, defaultValue: T, override?: { value: T }): [T, Dispatch<SetStateAction<T>>] {
   const [state, setState] = useState<T>(() => {
+    if (override) return override.value;
     try {
       const raw = localStorage.getItem(key);
       return raw === null ? defaultValue : (JSON.parse(raw) as T);

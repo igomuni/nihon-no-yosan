@@ -49,6 +49,8 @@ import {
   type LifecycleSortKey,
   type LifecycleValues,
   INITIAL_RS_FILTERS,
+  decodeLifecycleUrl,
+  encodeLifecycleUrl,
   RS_SPENT_UNFILLED_NOTE,
   RS_TEXT_SORT_KEYS,
   filterRsRows,
@@ -115,31 +117,33 @@ export function LifecyclePage() {
   usePaneKeys();
   const [data, setData] = useState<LifecycleData | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [year, setYear] = usePersistedState<number | null>('lifecycle:year', null);
+  // URL に状態があるとき（`#/lifecycle?view=moku&year=2024`）は、それが状態のすべて。保存した前回の状態は使わない
+  const [urlState] = useState(() => decodeLifecycleUrl(window.location.hash));
+  const [year, setYear] = usePersistedState<number | null>('lifecycle:year', null, urlState ? { value: urlState.year } : undefined);
   // フィルタは保存値を既定値の上に重ねる（項目が増えた後に、古い保存値を読んでも欠けないように）
-  const [storedFilters, setFilters] = usePersistedState<LifecycleFilters>('lifecycle:filters', INITIAL_LIFECYCLE_FILTERS);
+  const [storedFilters, setFilters] = usePersistedState<LifecycleFilters>('lifecycle:filters', INITIAL_LIFECYCLE_FILTERS, urlState ? { value: urlState.filters } : undefined);
   const filters = useMemo(() => ({ ...INITIAL_LIFECYCLE_FILTERS, ...storedFilters }), [storedFilters]);
   const [sortKey, setSortKey] = usePersistedState<LifecycleSortKey>('lifecycle:sortKey', 'size');
   const [sortDir, setSortDir] = usePersistedState<LifecycleSortDir>('lifecycle:sortDir', -1);
-  const [selectedId, setSelectedId] = usePersistedState<string | null>('lifecycle:selected', null);
+  const [selectedId, setSelectedId] = usePersistedState<string | null>('lifecycle:selected', null, urlState ? { value: urlState.view === 'list' ? urlState.selected : null } : undefined);
   const [columnWidths, setColumnWidths] = usePersistedState<Record<string, number>>('lifecycle:columnWidths', {});
-  const [storedView, setView] = usePersistedState<'list' | 'jikou' | 'moku' | 'rs' | 'summary'>('lifecycle:view', 'list'); // 'summary'（集計）は廃止。保存していた値は、項に戻す
+  const [storedView, setView] = usePersistedState<'list' | 'jikou' | 'moku' | 'rs' | 'summary'>('lifecycle:view', 'list', urlState ? { value: urlState.view } : undefined); // 'summary'（集計）は廃止。保存していた値は、項に戻す
   // RS の事業（中ペインの「RS」）。RS のデータを載せたビルドだけにある（`about.json` の `rs`）。選んだ事業は、予算事業 ID で持つ
   const [rsAvailable, setRsAvailable] = useState<boolean | null>(null);
   const view: 'list' | 'jikou' | 'moku' | 'rs' = storedView === 'summary' || (storedView === 'rs' && rsAvailable === false) ? 'list' : storedView;
-  const [selectedRs, setSelectedRs] = usePersistedState<string | null>('lifecycle:selectedRs', null);
-  const [storedRsFilters, setRsFilters] = usePersistedState<RsFilters>('lifecycle:rsFilters', INITIAL_RS_FILTERS);
+  const [selectedRs, setSelectedRs] = usePersistedState<string | null>('lifecycle:selectedRs', null, urlState ? { value: urlState.view === 'rs' ? urlState.selected : null } : undefined);
+  const [storedRsFilters, setRsFilters] = usePersistedState<RsFilters>('lifecycle:rsFilters', INITIAL_RS_FILTERS, urlState ? { value: urlState.rsFilters } : undefined);
   const rsFilters = useMemo(() => ({ ...INITIAL_RS_FILTERS, ...storedRsFilters }), [storedRsFilters]);
   const [rsSortKey, setRsSortKey] = usePersistedState<RsSortKey>('lifecycle:rsSortKey', 'current');
   const [rsSortDir, setRsSortDir] = usePersistedState<LifecycleSortDir>('lifecycle:rsSortDir', -1);
   const [rsColumnWidths, setRsColumnWidths] = usePersistedState<Record<string, number>>('lifecycle:rsColumnWidths', {});
   // 事項の一覧（中ペインの「事項」）。選んだ事項は、`${項の id}|${事項名}` で持つ（事項のデータの添字は、データを作り直すと変わるため）
-  const [selectedJikou, setSelectedJikou] = usePersistedState<string | null>('lifecycle:selectedJikou', null);
+  const [selectedJikou, setSelectedJikou] = usePersistedState<string | null>('lifecycle:selectedJikou', null, urlState ? { value: urlState.view === 'jikou' ? urlState.selected : null } : undefined);
   const [jikouSortKey, setJikouSortKey] = usePersistedState<JikouSortKey>('lifecycle:jikouSortKey', 'size');
   const [jikouSortDir, setJikouSortDir] = usePersistedState<LifecycleSortDir>('lifecycle:jikouSortDir', -1);
   const [jikouColumnWidths, setJikouColumnWidths] = usePersistedState<Record<string, number>>('lifecycle:jikouColumnWidths', {});
   // 目の一覧（中ペインの「目」）。選んだ目は、`${項の id}|${目の識別}` で持つ（`mokuSelectionKey`）
-  const [selectedMoku, setSelectedMoku] = usePersistedState<string | null>('lifecycle:selectedMoku', null);
+  const [selectedMoku, setSelectedMoku] = usePersistedState<string | null>('lifecycle:selectedMoku', null, urlState ? { value: urlState.view === 'moku' ? urlState.selected : null } : undefined);
   const [mokuSortKey, setMokuSortKey] = usePersistedState<MokuSortKey>('lifecycle:mokuSortKey', 'size');
   const [mokuSortDir, setMokuSortDir] = usePersistedState<LifecycleSortDir>('lifecycle:mokuSortDir', -1);
   const [mokuColumnWidths, setMokuColumnWidths] = usePersistedState<Record<string, number>>('lifecycle:mokuColumnWidths', {});
@@ -226,6 +230,14 @@ export function LifecyclePage() {
 
   const years = useMemo(() => data?.years ?? [], [data]);
   const activeYear = data ? (year !== null && years.includes(year) ? year : years[0]!) : null;
+  // 画面の状態を URL に書く（共有・再現のため。履歴は増やさない）。データを読む前は、年度が決まらないので書かない
+  const selectedOfView = view === 'rs' ? selectedRs : view === 'moku' ? selectedMoku : view === 'jikou' ? selectedJikou : selectedId;
+  useEffect(() => {
+    if (activeYear === null) return;
+    const q = encodeLifecycleUrl({ view, year: activeYear, filters, rsFilters, selected: selectedOfView });
+    const next = `#/lifecycle?${q}`;
+    if (window.location.hash !== next) window.history.replaceState(null, '', next);
+  }, [view, activeYear, filters, rsFilters, selectedOfView]);
   // 年度・所管・会計・組織・項名で絞った項（値のある段階で絞る前）。段階ごとの件数は、この集合で数える
   const inYear = useMemo(() => (data && activeYear !== null ? data.kous.filter(k => k.year === activeYear) : []), [data, activeYear]);
   // 事項名の絞り込みは、その年度に事項名が合う事項を持つ項に絞る（事項のデータが届くまでは絞れないので、項の一覧は読み込み中の表示にする）

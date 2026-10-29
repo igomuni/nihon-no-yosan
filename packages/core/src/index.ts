@@ -67,6 +67,7 @@ export * from './lifecycle-status.ts';
 export * from './lifecycle-list.ts';
 export * from './lifecycle-codes.ts';
 export * from './data-columns.ts';
+export * from './lifecycle-url.ts';
 export * from './lifecycle-links.ts';
 export * from './lifecycle-same-year.ts';
 export {

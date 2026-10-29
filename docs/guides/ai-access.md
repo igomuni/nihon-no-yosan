@@ -33,6 +33,27 @@
 - 定義は、`packages/core/src/data-columns.ts`（`DATA_COLUMNS`）に 1 か所で持つ。ビルド（`withColumns`）が、**全行の長さと列の数を照合して、合わなければ止まる**。配列の並びを変えたときは、定義も変える。
 - 定義の無いもの: オブジェクトの配列（`lifecycle/data` の `kous`・`checks`・`links`）は、キーが名前なので不要。`trend/*`・`mof/*`（古い画面のデータ）は、短いキーのオブジェクトで、`docs` の文書（`trend.md`・`mof-ui.md`）にある。`lifecycle/codes` の `[コード, 名前]` の組は、`description` で説明している。
 
+## 画面の状態を URL で共有する（`#/lifecycle?...`）
+
+「予算の推移」の画面（`#/lifecycle`）は、状態（タブ・年度・フィルタ・選んだ行）を、URL のハッシュのクエリに書く。URL を渡せば、同じ画面（同じ一覧・同じ合計）を再現できる。実装は `packages/core/src/lifecycle-url.ts`（`encodeLifecycleUrl`・`decodeLifecycleUrl`。テストあり）。
+
+| パラメーター | 意味 |
+|---|---|
+| `view` | タブ: `list`（項。既定は書かない）・`jikou`（事項）・`moku`（目）・`rs`（RS） |
+| `year` | 年度（西暦）。画面は、いつも書く（既定の年度が変わっても、再現できるように） |
+| `sel` | 選んだ行（見ているタブのもの）。項は項の id、事項は `{項の id}\|{事項名}`、目は `{項の id}\|{目の識別}`、RS は予算事業 ID |
+| `publisher`・`group`・`acct`・`major`・`use` | 要求所管・予算所管・会計・主要経費別（コード）・使途別（コード）。複数は、同じ名前を繰り返す（`major=35&major=95`）。`__none__` は「なし」 |
+| `org`・`name`・`jikou`・`moku` | 組織／勘定・項名・事項名・目名の検索語。正規表現のときは `org_re=1` のように、`_re=1` を付ける |
+| `pattern`・`links` | 値のある段階（`all_stages`・`partial`・`no_budget`・`request_only`・`settle_only`）、年度をまたぐ対応（`unsettled`） |
+| `ministry`・`bureau`・`name`・`link`（RS のとき） | 府省庁（繰り返し）・局・庁・事業名（`bureau_re=1`・`name_re=1`）・項への結び（`linked`・`unlinked`） |
+
+- 書くのは、既定と違う値だけ（`year` を除く）。**URL にクエリがあるときは、それが状態のすべて**で、書かれていない項目は既定になる（ブラウザに保存した前回の状態は使わない）。クエリが無い `#/lifecycle` は、これまでどおり、保存した状態で始める。
+- 知らないパラメーターと、不正な値は、無視して既定にする（落とさない）。
+- **並べ替えと、列の幅は、URL に入れない**（一覧の合計・件数は変わらない。一覧は最大 600 行で、並びは既定）。
+- 画面は、状態を変えるたびに、URL を書き換える（履歴は増やさない。戻るボタンで状態は戻らない）。
+- 例: FY2024 の目で、主要経費別 = 防衛関係費（コード 35）かつ 使途別 = 人件費（コード 1）: `#/lifecycle?view=moku&year=2024&major=35&use=1`（32 件、政府案 1.94 兆円）。
+- ほかの画面（`#/trend`・`#/mof`）の状態は、URL に入れない（まだ）。
+
 ## 目録の作り方
 
 - `npm run build:data`（`packages/pipeline/src/build/web-data-cli.ts`）が、配る JSON を書いたあとに、`data-catalog.ts` の `buildDataCatalog` で `index.json` を作る。大きさ・SHA-256・キーの形と件数は、出力したバイト列から数える。説明・文書・約束は、`DATA_FILE_SPECS` と `CONVENTIONS`（`data-catalog.ts`）に 1 か所で持つ。
@@ -52,4 +73,4 @@
 
 ## このあと（予定）
 
-画面の状態（タブ・年度・フィルタ・選択）を URL で共有する。
+ほかの画面（`#/trend`・`#/mof`）の状態の URL 化。分類別の内訳を、事前に計算して配る（`data/agg/`）。分類別の集計の画面。
