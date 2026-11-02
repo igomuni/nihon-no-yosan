@@ -89,6 +89,7 @@ export function LifecycleJikouListPane({ items, codes, loading, failed, sortKey,
     request: sumCell(items.map(r => r.request), 'sen'),
     budget: sumCell(items.map(r => r.budget), 'sen'),
     revised: sumCell(items.map(r => r.revised), 'sen'),
+    size: sumCell(items.map(r => r.size), 'sen'),
   };
   if (failed) return <p className="p-4 text-xs text-red-700">事項の読み込みに失敗しました（<code>npm run build:data</code> で作る）。</p>;
   if (loading) return <p className="p-4 text-xs text-neutral-500">事項を読み込み中…</p>;

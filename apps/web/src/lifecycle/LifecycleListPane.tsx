@@ -149,6 +149,7 @@ export function LifecycleListPane({ items, notice, jikouLoading, mokuLoading, so
     budget: sumCell(items.map(x => x.a.budget), 'yen'),
     revised: sumCell(items.map(x => x.a.revised), 'yen'),
     spent: sumCell(items.map(x => x.a.spent), 'yen'),
+    size: sumCell(items.map(x => x.a.size), 'yen'),
   };
   if (notice !== null) return <p className="p-4 text-xs text-neutral-500">{notice}</p>;
   return (

@@ -107,6 +107,7 @@ export function LifecycleMokuListPane({ items, codes, loading, failed, sortKey, 
     current: sumCell(items.map(r => r.current), 'sen'),
     spent: sumCell(items.map(r => r.spent), 'sen'),
     unused: sumCell(items.map(r => r.unused), 'sen'),
+    size: sumCell(items.map(r => r.size), 'sen'),
   };
   if (failed) return <p className="p-4 text-xs text-red-700">目の読み込みに失敗しました（<code>npm run build:data</code> で作る）。</p>;
   if (loading) return <p className="p-4 text-xs text-neutral-500">目を読み込み中…</p>;
