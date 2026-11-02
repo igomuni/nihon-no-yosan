@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { LifecycleKou } from './lifecycle.ts';
-import { INITIAL_LIFECYCLE_FILTERS, LIFECYCLE_JOINT, filterLifecycleKous, lifecycleGroupOf, lifecyclePublisherOf, lifecycleGroupsOf, lifecycleRowAmounts, sortLifecycleRows, stepSelection } from './lifecycle-list.ts';
+import { INITIAL_LIFECYCLE_FILTERS, LIFECYCLE_JOINT, filterLifecycleKous, lifecycleGroupOf, lifecycleListCounts, lifecyclePublisherOf, lifecycleGroupsOf, lifecycleRowAmounts, sortLifecycleRows, stepSelection, sumAmounts } from './lifecycle-list.ts';
 
 const kou = (id: string, o: Partial<LifecycleKou> = {}): LifecycleKou => ({ id, year: 2024, account: 'general', ministry: '内閣府', org: '本府', specialAccount: '', subAccount: '', code: '001', name: id, seenIn: ['budget'], ...o });
 const a = kou('a');
@@ -98,5 +98,16 @@ describe('stepSelection', () => {
     expect(stepSelection(5, -1, 1)).toBe(0);
     expect(stepSelection(5, -1, -1)).toBe(0);
     expect(stepSelection(0, -1, 1)).toBeNull();
+  });
+});
+
+describe('一覧の集計行', () => {
+  it('sumAmounts: 値なしは数えず、0 は値', () => {
+    expect(sumAmounts([1, null, undefined, 0, 4])).toEqual({ sum: 5, n: 3 });
+    expect(sumAmounts([null, undefined])).toEqual({ sum: null, n: 0 });
+    expect(sumAmounts([0])).toEqual({ sum: 0, n: 1 });
+  });
+  it('lifecycleListCounts: 所管は府省ごと、会計が違えば組織／勘定は別、項は id で数える', () => {
+    expect(lifecycleListCounts([a, b, s, a])).toEqual({ publishers: 0, groups: 4, accts: 2, orgs: 3, kous: 3 });
   });
 });

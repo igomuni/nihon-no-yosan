@@ -1,9 +1,10 @@
 import { useEffect, useRef, type MouseEvent as ReactMouseEvent } from 'react';
-import { formatSen, lifecycleAcctOf, lifecycleGroupOf, lifecycleGroupsOf, lifecycleOrgOf, lifecyclePublisherOf, lifecyclePublishersOf, type JikouListRow, type JikouSortKey, type LifecycleCodeTables, type LifecycleSortDir } from '@nihon-no-yosan/core';
+import { formatSen, lifecycleAcctOf, lifecycleGroupOf, lifecycleGroupsOf, lifecycleListCounts, lifecycleOrgOf, lifecyclePublisherOf, lifecyclePublishersOf, type JikouListRow, type JikouSortKey, type LifecycleCodeTables, type LifecycleSortDir } from '@nihon-no-yosan/core';
 import { Icon } from '../components/Icon.tsx';
 import { CodeCell } from './CodeCell.tsx';
 import { scrollRowIntoView } from '../components/scrollRowIntoView.ts';
 import { useListKeys } from '../components/useListKeys.ts';
+import { ListFoot, sumCell } from './ListFoot.tsx';
 
 /** ドラッグ中のカーソル（イベントの外から body を変えるので、関数にまとめる） */
 function setBodyCursor(value: string): void {
@@ -74,19 +75,22 @@ export function LifecycleJikouListPane({ items, codes, loading, failed, sortKey,
     setBodyCursor('col-resize');
   }
 
-  const totals = ([['概算要求', 'request'], ['政府案', 'budget'], ['補正後', 'revised']] as const).map(([label, k]) => {
-    let sum = 0, n = 0;
-    for (const r of items) { const v = r[k]; if (v !== null) { sum += v; n++; } }
-    return { label, sum: n === 0 ? null : sum, n };
-  });
+  const counts = lifecycleListCounts(items.map(r => r.k));
+  const foot = {
+    publisher: { text: `${counts.publishers}所管`, title: '要求所管の府省の数（概算要求書の無い項は数えない）' },
+    group: { text: `${counts.groups}所管`, title: '予算所管の府省の数（複数の府省が所管する項は、府省ごとに数える）' },
+    acct: { text: `${counts.accts}会計` },
+    org: { text: `${counts.orgs}組織/勘定`, title: '組織（一般会計）と勘定（特別会計）の数' },
+    kou: { text: `${counts.kous.toLocaleString()}項` },
+    name: { text: `${items.length.toLocaleString()}事項` },
+    request: sumCell(items.map(r => r.request), 'sen'),
+    budget: sumCell(items.map(r => r.budget), 'sen'),
+    revised: sumCell(items.map(r => r.revised), 'sen'),
+  };
   if (failed) return <p className="p-4 text-xs text-red-700">事項の読み込みに失敗しました（<code>npm run build:data</code> で作る）。</p>;
   if (loading) return <p className="p-4 text-xs text-neutral-500">事項を読み込み中…</p>;
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="flex flex-wrap gap-x-5 gap-y-1 border-b border-neutral-200 px-3 py-2 text-xs text-neutral-500 dark:border-neutral-800">
-        <span><b className="tabular-nums text-neutral-800 dark:text-neutral-100">{items.length.toLocaleString()}</b> 事項</span>
-        {totals.map(t => t.sum !== null && <span key={t.label} title={`値のある ${t.n.toLocaleString()} 事項の合計（${t.sum.toLocaleString('ja-JP')} 千円）`}>{t.label} <b className="tabular-nums text-neutral-800 dark:text-neutral-100">{formatSen(t.sum)}</b></span>)}
-      </div>
       <div ref={scrollRef} data-pane="list" tabIndex={-1} className="min-h-0 flex-1 overflow-auto outline-0 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-emerald-500/50">
         <table className="border-collapse text-xs" style={{ width: tableWidth, tableLayout: 'fixed' }}>
           <colgroup>{COLS.map(c => <col key={c.key} style={{ width: widthOf(c.key) }} />)}</colgroup>
@@ -143,6 +147,7 @@ export function LifecycleJikouListPane({ items, codes, loading, failed, sortKey,
             {items.length > shown.length && <tr><td colSpan={COLS.length} className="px-2 py-2 text-neutral-500">上位 {shown.length.toLocaleString()} 事項を表示（全 {items.length.toLocaleString()} 事項）。絞り込みで減らしてください。</td></tr>}
             {items.length === 0 && <tr><td colSpan={COLS.length} className="px-2 py-8 text-center text-neutral-500">条件に合う事項がありません。</td></tr>}
           </tbody>
+          {items.length > 0 && <ListFoot cols={COLS} cells={foot} />}
         </table>
       </div>
     </div>

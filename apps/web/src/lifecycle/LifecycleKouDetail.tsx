@@ -132,8 +132,11 @@ export function LifecycleKouDetail({ kou, chain, kous, valuesOf, links, jikou, j
   const goYear = (y: number): void => { const t = rows.find(r => r.k.year === y); if (t && t.k.id !== kou.id) onNavigate(t.k.id); };
   const setJikou = (next: string[]): void => setSel({ chain: chainId, jikou: next, moku: next.length > 0 ? [] : picked.moku });
   const setMoku = (next: string[]): void => setSel({ chain: chainId, jikou: next.length > 0 ? [] : picked.jikou, moku: next });
-  const caption = mode === 'jikou' ? (jChosen.length === 0 ? '事項を選んでください' : `選んだ ${jChosen.length} 事項の合計（決算は事項の単位が無いので、値なし）`)
-    : mode === 'moku' ? (mChosen.length === 0 ? '目を選んでください' : `選んだ ${mChosen.length} 目の合計`) : null;
+  const caption = mode === 'jikou' && jChosen.length === 0 ? '事項を選んでください' : mode === 'moku' && mChosen.length === 0 ? '目を選んでください' : null;
+  // 選択の集計: 開いている年度の、選んだ事項・目の数（母数はその年度にあるもの）と、額の合計（グラフ・表と同じ値）
+  const inYear = <T extends { cells: ReadonlyMap<number, unknown> }>(rs: readonly T[]): number => rs.filter(r => r.cells.has(kou.year)).length;
+  const nowAmounts = amounts[rows.findIndex(r => r.k.id === kou.id)] ?? NO_AMOUNTS;
+  const countText = (chosen: number, all: number, unit: string): string => `${chosen === all ? '' : `${chosen.toLocaleString()}/`}${all.toLocaleString()}${unit}`;
   const sum = mode === 'kou' ? '' : mode === 'jikou' ? '（選んだ事項の合計）' : '（選んだ目の合計）';
   const noValue = (col: ColKey): string => (mode === 'jikou' && !(col in JIKOU_KEY) ? '事項に決算は無い（決算は項と目の単位）' : '値なし');
 
@@ -174,6 +177,14 @@ export function LifecycleKouDetail({ kou, chain, kous, valuesOf, links, jikou, j
         {(jikouFailed || mokuFailed) && <p className="text-[11px] text-red-700">{jikouFailed ? '事項' : '目'}の読み込みに失敗しました（<code>npm run build:data</code> で作る）。</p>}
         {!jikouFailed && !mokuFailed && (!jikou || !moku) && <p className="text-[11px] text-neutral-500">{!jikou ? '事項' : '目'}を読み込み中…</p>}
         {caption && <p className="text-[11px] text-neutral-500">{caption}</p>}
+        {jikou && moku && !caption && (
+          <p className="flex flex-wrap gap-x-4 gap-y-0.5 rounded bg-neutral-100 px-2 py-1.5 font-semibold tabular-nums text-neutral-700 dark:bg-neutral-800 dark:text-neutral-200" aria-label="選択の集計">
+            <span>FY{kou.year}</span>
+            <span title="選んだ事項の数 / その年度の事項の数">{countText(inYear(jChosen), inYear(jRows), '事項')}</span>
+            <span title="選んだ目の数 / その年度の目の数">{countText(inYear(mChosen), inYear(mRows), '目')}</span>
+            {COLS.map(c => <span key={c.key} className={nowAmounts[c.key] === undefined ? 'font-normal text-neutral-400' : ''} title={nowAmounts[c.key] === undefined ? noValue(c.key) : `${nowAmounts[c.key]!.toLocaleString('ja-JP')} 円`}>{c.label} {cellAmount(nowAmounts[c.key])}</span>)}
+          </p>
+        )}
       </section>
 
       <section className="flex flex-col gap-2" aria-label="段階ごとの額の年度推移">
