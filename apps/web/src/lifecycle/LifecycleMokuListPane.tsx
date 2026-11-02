@@ -115,14 +115,14 @@ export function LifecycleMokuListPane({ items, codes, loading, failed, sortKey, 
       <div ref={scrollRef} data-pane="list" tabIndex={-1} className="min-h-0 flex-1 overflow-auto outline-0 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-emerald-500/50">
         <table className="border-collapse text-xs" style={{ width: tableWidth, tableLayout: 'fixed' }}>
           <colgroup>{COLS.map(c => <col key={c.key} style={{ width: widthOf(c.key) }} />)}</colgroup>
-          <thead>
+          <thead className="sticky top-0 z-10">
             <tr>
               {COLS.map(c => (
                 <th
                   key={c.key}
                   scope="col"
                   aria-sort={sortKey === c.key ? (sortDir > 0 ? 'ascending' : 'descending') : undefined}
-                  className={`sticky top-0 z-10 cursor-pointer select-none overflow-hidden whitespace-nowrap border-b border-neutral-200 bg-neutral-100 px-2 py-1.5 font-semibold text-neutral-500 dark:border-neutral-800 dark:bg-neutral-800 ${c.left ? 'text-left' : 'text-right'}`}
+                  className={`relative cursor-pointer select-none overflow-hidden whitespace-nowrap border-b border-neutral-200 bg-neutral-100 px-2 py-1.5 font-semibold text-neutral-500 dark:border-neutral-800 dark:bg-neutral-800 ${c.left ? 'text-left' : 'text-right'}`}
                   onClick={() => onSort(c.key)}
                   title={c.title}
                 >
@@ -132,6 +132,7 @@ export function LifecycleMokuListPane({ items, codes, loading, failed, sortKey, 
                 </th>
               ))}
             </tr>
+            {items.length > 0 && <ListFoot cols={COLS} cells={foot} selected={summarySelected} onSelect={onSelectSummary} />}
           </thead>
           <tbody>
             {shown.map(r => {
@@ -173,7 +174,6 @@ export function LifecycleMokuListPane({ items, codes, loading, failed, sortKey, 
             {items.length > shown.length && <tr><td colSpan={COLS.length} className="px-2 py-2 text-neutral-500">上位 {shown.length.toLocaleString()} 目を表示（全 {items.length.toLocaleString()} 目）。絞り込みで減らしてください。</td></tr>}
             {items.length === 0 && <tr><td colSpan={COLS.length} className="px-2 py-8 text-center text-neutral-500">条件に合う目がありません。</td></tr>}
           </tbody>
-          {items.length > 0 && <ListFoot cols={COLS} cells={foot} selected={summarySelected} onSelect={onSelectSummary} />}
         </table>
       </div>
     </div>
