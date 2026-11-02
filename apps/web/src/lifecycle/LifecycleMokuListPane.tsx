@@ -50,7 +50,7 @@ function Marks({ r }: { r: MokuListRow }) {
   return <>{marks.map(([t, title]) => <span key={t} title={title} className="ml-1 rounded bg-neutral-100 px-1 text-[10px] font-normal text-neutral-500 dark:bg-neutral-800">{t}</span>)}</>;
 }
 
-export function LifecycleMokuListPane({ items, codes, loading, failed, sortKey, sortDir, onSort, selectedNode, onSelect, widths, onWidthsChange, suppNote }: {
+export function LifecycleMokuListPane({ items, codes, loading, failed, sortKey, sortDir, onSort, selectedNode, onSelect, summarySelected, onSelectSummary, widths, onWidthsChange, suppNote }: {
   /** 絞り込み・並べ替え済み */
   items: readonly MokuListRow[];
   /** 分類コードの名前（`lifecycle/codes.json.gz`）。読み込み中は null */
@@ -64,6 +64,9 @@ export function LifecycleMokuListPane({ items, codes, loading, failed, sortKey, 
   onSelect: (row: MokuListRow) => void;
   widths: Record<string, number>;
   onWidthsChange: (updater: (prev: Record<string, number>) => Record<string, number>) => void;
+  /** 集計行を選んでいるか。選ぶと、右ペインに一覧全体の年度推移 */
+  summarySelected: boolean;
+  onSelectSummary: () => void;
   /** 補正・決算の値が無い理由（表示用） */
   suppNote: (r: MokuListRow) => { supp: string | null; settle: string | null };
 }) {
@@ -170,7 +173,7 @@ export function LifecycleMokuListPane({ items, codes, loading, failed, sortKey, 
             {items.length > shown.length && <tr><td colSpan={COLS.length} className="px-2 py-2 text-neutral-500">上位 {shown.length.toLocaleString()} 目を表示（全 {items.length.toLocaleString()} 目）。絞り込みで減らしてください。</td></tr>}
             {items.length === 0 && <tr><td colSpan={COLS.length} className="px-2 py-8 text-center text-neutral-500">条件に合う目がありません。</td></tr>}
           </tbody>
-          {items.length > 0 && <ListFoot cols={COLS} cells={foot} />}
+          {items.length > 0 && <ListFoot cols={COLS} cells={foot} selected={summarySelected} onSelect={onSelectSummary} />}
         </table>
       </div>
     </div>

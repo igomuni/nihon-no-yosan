@@ -34,7 +34,7 @@ function Amount({ v, why }: { v: number | null; why?: string | null }) {
 }
 
 /** 事業の一覧（中ペインの「RS」）。項に結べない事業も含める */
-export function RsListPane({ items, loading, failed, sortKey, sortDir, onSort, selectedId, onSelect, widths, onWidthsChange, yearNote, spentNote }: {
+export function RsListPane({ items, loading, failed, sortKey, sortDir, onSort, selectedId, onSelect, summarySelected, onSelectSummary, widths, onWidthsChange, yearNote, spentNote }: {
   /** 絞り込み・並べ替え済み */
   items: readonly RsListRow[];
   loading: boolean;
@@ -46,6 +46,9 @@ export function RsListPane({ items, loading, failed, sortKey, sortDir, onSort, s
   onSelect: (row: RsListRow) => void;
   widths: Record<string, number>;
   onWidthsChange: (updater: (prev: Record<string, number>) => Record<string, number>) => void;
+  /** 集計行を選んでいるか。選ぶと、右ペインに一覧全体の年度推移 */
+  summarySelected: boolean;
+  onSelectSummary: () => void;
   /** 選んだ年度に RS のデータが無いときの説明（あるときは null） */
   yearNote: string | null;
   /** 選んだ年度の執行額が、値のある全事業で 0 のときの説明（そうでなければ null） */
@@ -140,7 +143,7 @@ export function RsListPane({ items, loading, failed, sortKey, sortDir, onSort, s
             {items.length > shown.length && <tr><td colSpan={COLS.length} className="px-2 py-2 text-neutral-500">上位 {shown.length.toLocaleString()} 事業を表示（全 {items.length.toLocaleString()} 事業）。絞り込みで減らしてください。</td></tr>}
             {items.length === 0 && <tr><td colSpan={COLS.length} className="px-2 py-8 text-center text-neutral-500">{yearNote ?? '条件に合う事業がありません。'}</td></tr>}
           </tbody>
-          {items.length > 0 && <ListFoot cols={COLS} cells={foot} />}
+          {items.length > 0 && <ListFoot cols={COLS} cells={foot} selected={summarySelected} onSelect={onSelectSummary} />}
         </table>
       </div>
     </div>

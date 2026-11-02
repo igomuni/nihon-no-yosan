@@ -92,7 +92,7 @@ function Amount({ yen }: { yen: number | undefined }) {
     : <td className="whitespace-nowrap px-2 py-1 text-right tabular-nums" title={`${yen.toLocaleString('ja-JP')} 円`}>{yen === 0 ? '0円' : formatSen(yen / 1000)}</td>;
 }
 
-export function LifecycleListPane({ items, notice, jikouLoading, mokuLoading, sortKey, sortDir, onSort, selectedId, onSelect, widths, onWidthsChange }: {
+export function LifecycleListPane({ items, notice, jikouLoading, mokuLoading, sortKey, sortDir, onSort, selectedId, onSelect, summarySelected, onSelectSummary, widths, onWidthsChange }: {
   /** 絞り込み・並べ替え済み */
   items: readonly { k: LifecycleKou; a: LifecycleRowAmounts; link: LifecycleLinkStatus | null; chain: LifecycleChain; span: { from: number; to: number; years: number }; jikou: JikouCount | null; moku: MokuCount | null; linkGap: boolean }[];
   /** 一覧の代わりに出す文（事項名で絞るのに、事項のデータが届いていないとき）。無ければ null */
@@ -108,6 +108,9 @@ export function LifecycleListPane({ items, notice, jikouLoading, mokuLoading, so
   onSelect: (k: LifecycleKou) => void;
   widths: Record<string, number>;
   onWidthsChange: (updater: (prev: Record<string, number>) => Record<string, number>) => void;
+  /** 集計行を選んでいるか。選ぶと、右ペインに一覧全体の年度推移 */
+  summarySelected: boolean;
+  onSelectSummary: () => void;
 }) {
   const selectedIdx = selectedId === null ? -1 : items.findIndex(x => x.k.id === selectedId);
   useListKeys(items.length, selectedIdx, i => onSelect(items[i]!.k));
@@ -209,7 +212,7 @@ export function LifecycleListPane({ items, notice, jikouLoading, mokuLoading, so
             {items.length > shown.length && <tr><td colSpan={COLS.length} className="px-2 py-2 text-neutral-500">上位 {shown.length.toLocaleString()} 項を表示（全 {items.length.toLocaleString()} 項）。絞り込みで減らしてください。</td></tr>}
             {items.length === 0 && <tr><td colSpan={COLS.length} className="px-2 py-8 text-center text-neutral-500">条件に合う項がありません。</td></tr>}
           </tbody>
-          {items.length > 0 && <ListFoot cols={COLS} cells={foot} />}
+          {items.length > 0 && <ListFoot cols={COLS} cells={foot} selected={summarySelected} onSelect={onSelectSummary} />}
         </table>
       </div>
     </div>

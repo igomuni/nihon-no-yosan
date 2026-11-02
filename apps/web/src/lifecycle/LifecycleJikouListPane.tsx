@@ -37,7 +37,7 @@ function Amount({ v }: { v: number | null }) {
     : <td className="whitespace-nowrap px-2 py-1 text-right tabular-nums" title={`${v.toLocaleString('ja-JP')} 千円`}>{v === 0 ? '0円' : formatSen(v)}</td>;
 }
 
-export function LifecycleJikouListPane({ items, codes, loading, failed, sortKey, sortDir, onSort, selectedNode, onSelect, widths, onWidthsChange }: {
+export function LifecycleJikouListPane({ items, codes, loading, failed, sortKey, sortDir, onSort, selectedNode, onSelect, summarySelected, onSelectSummary, widths, onWidthsChange }: {
   /** 絞り込み・並べ替え済み */
   items: readonly JikouListRow[];
   /** 分類コードの名前（`lifecycle/codes.json.gz`）。読み込み中は null */
@@ -51,6 +51,9 @@ export function LifecycleJikouListPane({ items, codes, loading, failed, sortKey,
   onSelect: (row: JikouListRow) => void;
   widths: Record<string, number>;
   onWidthsChange: (updater: (prev: Record<string, number>) => Record<string, number>) => void;
+  /** 集計行を選んでいるか。選ぶと、右ペインに一覧全体の年度推移 */
+  summarySelected: boolean;
+  onSelectSummary: () => void;
 }) {
   const selectedIdx = selectedNode === null ? -1 : items.findIndex(x => x.node === selectedNode);
   useListKeys(items.length, selectedIdx, i => onSelect(items[i]!));
@@ -147,7 +150,7 @@ export function LifecycleJikouListPane({ items, codes, loading, failed, sortKey,
             {items.length > shown.length && <tr><td colSpan={COLS.length} className="px-2 py-2 text-neutral-500">上位 {shown.length.toLocaleString()} 事項を表示（全 {items.length.toLocaleString()} 事項）。絞り込みで減らしてください。</td></tr>}
             {items.length === 0 && <tr><td colSpan={COLS.length} className="px-2 py-8 text-center text-neutral-500">条件に合う事項がありません。</td></tr>}
           </tbody>
-          {items.length > 0 && <ListFoot cols={COLS} cells={foot} />}
+          {items.length > 0 && <ListFoot cols={COLS} cells={foot} selected={summarySelected} onSelect={onSelectSummary} />}
         </table>
       </div>
     </div>
