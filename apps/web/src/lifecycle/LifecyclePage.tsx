@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent as ReactMouseEvent } from 'react';
 import { usePaneKeys } from '../components/useListKeys.ts';
+import { AGG_JIKOU, AGG_KOU, AGG_RS, AggregateDetail } from './AggregateDetail.tsx';
 import {
   INITIAL_LIFECYCLE_FILTERS,
   type LifecycleKou,
@@ -12,6 +13,10 @@ import {
   lifecyclePatternCounts,
   lifecycleRowAmounts,
   lifecycleSourcePresence,
+  aggregateYears,
+  rsAmountShown,
+  lifecycleListCounts,
+  mokuValue,
   filterJikouRows,
   filterMokuRows,
   kouIdsWithMoku,
@@ -112,6 +117,11 @@ function Splitter({ label, width, limits, dir, onChange }: { label: string; widt
 }
 
 const NO_KOUS: readonly LifecycleKou[] = [];
+/** RS の事業の、その予算年度の繰越額（円）。行が無ければ null */
+const rsCarry = (rs: RsIndex, idx: number, year: number, key: 'carryIn' | 'carryOut'): number | null => {
+  const row = rs.amountsOf.get(idx)?.find(x => x[1] === year);
+  return row ? rsAmountShown(rs, row, key) : null;
+};
 
 export function LifecyclePage() {
   usePaneKeys();
@@ -147,6 +157,8 @@ export function LifecyclePage() {
   const [mokuSortKey, setMokuSortKey] = usePersistedState<MokuSortKey>('lifecycle:mokuSortKey', 'size');
   const [mokuSortDir, setMokuSortDir] = usePersistedState<LifecycleSortDir>('lifecycle:mokuSortDir', -1);
   const [mokuColumnWidths, setMokuColumnWidths] = usePersistedState<Record<string, number>>('lifecycle:mokuColumnWidths', {});
+  // 集計行を選んでいる画面（選ぶと、右ペインに一覧全体の年度推移。行を選ぶ・画面を変えると外れる）
+  const [aggView, setAggView] = useState<string | null>(null);
   const [filterWidth, setFilterWidth] = usePersistedState('lifecycle:filterWidth', FILTER_WIDTH.def);
   const [detailWidth, setDetailWidth] = usePersistedState('lifecycle:detailWidth', DETAIL_WIDTH.def);
 
@@ -288,17 +300,12 @@ export function LifecyclePage() {
   };
   // 目の一覧: 選んだ年度の目を、項の一覧と同じフィルタ（所管・会計・組織／勘定・項名）と目名で絞る
   const kouIndexById = useMemo(() => new Map((data?.kous ?? []).map((k, i) => [k.id, i])), [data]);
-  // 目の確認済み年度に使う、項ごとの確定した対応でたどった項の id（年度の古い順）
-  const mokuRows = useMemo(() => {
-    if (!moku || activeYear === null || !data) return [];
-    const cache = new Map<string, string[]>();
-    const chainIds = (kouId: string): string[] => {
-      let ids = cache.get(kouId);
-      if (!ids) { const i = kouIndexById.get(kouId); ids = i === undefined ? [kouId] : chainOf(i).members.map(m => data.kous[m]!.id); cache.set(kouId, ids); }
-      return ids;
-    };
-    return mokuListRows(moku, kouById, activeYear, chainIds);
-  }, [moku, kouById, activeYear, data, kouIndexById, chainOf]);
+  // 項ごとの、確定した対応でたどった項の id（年度の古い順）。目の確認済み年度と、集計行の年度推移に使う
+  const chainIdsOf = useMemo(() => (kouId: string): string[] => {
+    const i = kouIndexById.get(kouId);
+    return i === undefined || !data ? [kouId] : chainOf(i).members.map(m => data.kous[m]!.id);
+  }, [kouIndexById, chainOf, data]);
+  const mokuRows = useMemo(() => (moku && activeYear !== null && data ? mokuListRows(moku, kouById, activeYear, chainIdsOf) : []), [moku, kouById, activeYear, data, chainIdsOf]);
   const mokuList = useMemo(() => (activeYear === null ? [] : sortMokuRows(filterMokuRows(mokuRows, filters, activeYear), mokuSortKey, mokuSortDir)), [mokuRows, filters, activeYear, mokuSortKey, mokuSortDir]);
   // RS の事業の一覧（選んだ年度の事業。項に結べない事業も含める）
   const rsYearRows = useMemo<RsListRow[]>(() => (rs && activeYear !== null ? rsListRows(rs, activeYear) : []), [rs, activeYear]);
@@ -318,6 +325,51 @@ export function LifecyclePage() {
     const i = kouIndexById.get(moku.data.kous[moku.data.nodes[selectedMokuNode]![0]]!);
     return i === undefined ? [] : chainOf(i).members.map(m => data.kous[m]!.id);
   }, [moku, selectedMokuNode, kouIndexById, chainOf, data]);
+  // 何も選んでいないときは、集計行を選んだ状態にする（右ペインに一覧全体の年度推移）
+  const nothingSelected = view === 'rs' ? selectedRs === null : view === 'moku' ? selectedMokuNode === null : view === 'jikou' ? selectedJikouNode === null : !(selectedId !== null && data?.kous.some(k => k.id === selectedId && k.year === activeYear));
+  const agg = aggView === view || nothingSelected;
+  // 集計行を選んだときの右ペイン: 今の絞り込みを、年度ごとにそのまま掛けて、その年度の一覧の集計行と同じ足し方で並べる
+  const aggRows = useMemo(() => {
+    if (!agg || !data || jikouFilterNotice !== null) return [];
+    const yen = (v: number | null): number | null => (v === null ? null : v * 1000);
+    if (view === 'list') {
+      const all = data.kous.map((k, i) => ({ k, i }));
+      return aggregateYears(years, y => {
+        const jset = jikou ? kouIdsWithJikou(jikou, y, filters.jikouName, filters.jikouNameRegex) : null;
+        const mset = moku ? kouIdsWithMoku(moku, y, filters.mokuName, filters.mokuNameRegex, filters) : null;
+        return filterLifecycleKous(all, filters, y).filter(({ k, i }) => (jset === null || jset.has(k.id)) && (mset === null || mset.has(k.id)) && matchesLifecyclePattern(k, filters) && matchesLifecycleLinks(lifecycleLinkState(linksByKou.get(i)), filters));
+      }, ({ i }) => {
+        const v = valuesOf.get(i);
+        const a = lifecycleRowAmounts(v ?? {});
+        return { request: a.request, budget: a.budget, revised: a.revised, spent: a.spent, carriedIn: v?.carryover_in, carried: v?.carryover_out };
+      });
+    }
+    if (view === 'jikou') {
+      if (!jikou) return [];
+      return aggregateYears(jikou.data.years, y => filterJikouRows(jikouListRows(jikou, kouById, y), filters, y, filters.uses.length === 0 ? null : moku ? kouIdsWithMoku(moku, y, '', false, { majors: [], uses: filters.uses }) : new Set<string>()), r => ({ request: yen(r.request), budget: yen(r.budget), revised: yen(r.revised) }));
+    }
+    if (view === 'moku') {
+      if (!moku) return [];
+      return aggregateYears(moku.data.years, y => filterMokuRows(mokuListRows(moku, kouById, y, id => [id]), filters, y), r => {
+        const n = moku.data.nodes[r.node]!;
+        return { request: yen(mokuValue(n, 'request')), budget: yen(mokuValue(n, 'budget')), revised: yen(mokuValue(n, 'revised')), carriedIn: yen(mokuValue(n, 'carriedIn')), spent: yen(mokuValue(n, 'spent')), carried: yen(mokuValue(n, 'carried')) };
+      });
+    }
+    if (!rs) return [];
+    return aggregateYears(rs.data.years, y => filterRsRows(rsListRows(rs, y), rsFilters, NONE_SELECTED), (r, y) => ({ budget: r.initial, revised: r.current, spent: r.spent, carriedIn: rsCarry(rs, r.idx, y, 'carryIn'), carried: rsCarry(rs, r.idx, y, 'carryOut') }));
+  }, [agg, data, view, years, filters, rsFilters, jikouFilterNotice, valuesOf, linksByKou, jikou, moku, rs, kouById]);
+  // 右ペインの見出し（集計行を選んだとき）: 一覧の行の数と、内訳
+  const aggHead = useMemo(() => {
+    const n = (v: number): string => v.toLocaleString();
+    if (view === 'rs') return { title: `${n(rsList.length)}事業`, facts: [`${n(new Set(rsList.map(r => r.ministry)).size)}府省庁`, `${n(new Set(rsList.map(r => `${r.ministry}|${r.bureau}`)).size)}局・庁`, `項に結べた ${n(rsList.filter(r => r.kouCount > 0).length)}事業`] };
+    const ks = view === 'moku' ? mokuList.map(r => r.k) : view === 'jikou' ? jikouList.map(r => r.k) : list.map(x => x.k);
+    const c = lifecycleListCounts(ks);
+    const common = [`要求${n(c.publishers)}所管`, `予算${n(c.groups)}所管`, `${n(c.accts)}会計`, `${n(c.generalOrgs)}組織/${n(c.specialSubs)}勘定`];
+    if (view === 'moku') return { title: `${n(mokuList.length)}目`, facts: [...common, `${n(c.kous)}項`] };
+    if (view === 'jikou') return { title: `${n(jikouList.length)}事項`, facts: [...common, `${n(c.kous)}項`] };
+    const jikouSum = list.reduce((s, x) => s + (x.jikou?.total ?? 0), 0), mokuSum = list.reduce((s, x) => s + (x.moku?.total ?? 0), 0);
+    return { title: `${n(list.length)}項`, facts: [...common, jikouState === 'ready' ? `${n(jikouSum)}事項` : '事項 …', mokuState === 'ready' ? `${n(mokuSum)}目` : '目 …'] };
+  }, [view, list, jikouList, mokuList, rsList, jikouState, mokuState]);
   const mokuWhy = (r: MokuListRow) => (moku ? { supp: mokuSuppNote(moku.data, moku.data.nodes[r.node]!), settle: mokuSettleNote(moku.data, moku.data.nodes[r.node]!) } : { supp: null, settle: null });
   const onMokuSort = (k: MokuSortKey) => {
     if (k === mokuSortKey) setMokuSortDir(d => (d === 1 ? -1 : 1));
@@ -357,24 +409,36 @@ export function LifecyclePage() {
         <section aria-label="項の一覧" className={`${pane} flex flex-col overflow-hidden xl:min-w-0 xl:flex-1`}>
           <div role="tablist" aria-label="表示" className="flex shrink-0 gap-1 border-b border-neutral-200 px-3 pt-2 text-xs dark:border-neutral-800">
             {([...['list', 'jikou', 'moku'] as const, ...(rsAvailable ? ['rs' as const] : [])]).map(v => (
-              <button key={v} type="button" role="tab" aria-selected={view === v} onClick={() => setView(v)} className={`rounded-t border-b-2 px-2.5 py-1 ${view === v ? 'border-emerald-600 font-semibold text-neutral-900 dark:text-neutral-100' : 'border-transparent text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'}`}>
+              <button key={v} type="button" role="tab" aria-selected={view === v} onClick={() => { setView(v); setAggView(null); }} className={`rounded-t border-b-2 px-2.5 py-1 ${view === v ? 'border-emerald-600 font-semibold text-neutral-900 dark:text-neutral-100' : 'border-transparent text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'}`}>
                 {v === 'list' ? '項' : v === 'jikou' ? '事項' : v === 'moku' ? '目' : 'RS'}
               </button>
             ))}
           </div>
           <div className="min-h-0 flex-1 overflow-hidden">
             {view === 'rs'
-              ? <RsListPane items={rsList} loading={rsState === 'loading'} failed={rsState === 'error'} sortKey={rsSortKey} sortDir={rsSortDir} onSort={onRsSort} selectedId={selectedRs} onSelect={r => setSelectedRs(r.id)} widths={rsColumnWidths} onWidthsChange={setRsColumnWidths} spentNote={rs && rs.spentUnfilled.has(activeYear) ? RS_SPENT_UNFILLED_NOTE : null} yearNote={rs && !rs.data.years.includes(activeYear) ? `FY${activeYear} の RS のデータは無い（RS の予算年度は ${rs.data.years[0]}〜${rs.data.years[rs.data.years.length - 1]}）。` : null} />
+              ? <RsListPane items={rsList} loading={rsState === 'loading'} failed={rsState === 'error'} sortKey={rsSortKey} sortDir={rsSortDir} onSort={onRsSort} selectedId={agg ? null : selectedRs} onSelect={r => { setAggView(null); setSelectedRs(r.id); }} summarySelected={agg} onSelectSummary={() => { setSelectedRs(null); setAggView(view); }} widths={rsColumnWidths} onWidthsChange={setRsColumnWidths} spentNote={rs && rs.spentUnfilled.has(activeYear) ? RS_SPENT_UNFILLED_NOTE : null} yearNote={rs && !rs.data.years.includes(activeYear) ? `FY${activeYear} の RS のデータは無い（RS の予算年度は ${rs.data.years[0]}〜${rs.data.years[rs.data.years.length - 1]}）。` : null} />
               : view === 'moku'
-              ? <LifecycleMokuListPane items={mokuList} codes={codeTables} loading={mokuState === 'loading'} failed={mokuState === 'error'} sortKey={mokuSortKey} sortDir={mokuSortDir} onSort={onMokuSort} selectedNode={selectedMokuNode} onSelect={r => setSelectedMoku(mokuSelectionKey(moku!, r.node))} widths={mokuColumnWidths} onWidthsChange={setMokuColumnWidths} suppNote={mokuWhy} />
+              ? <LifecycleMokuListPane items={mokuList} codes={codeTables} loading={mokuState === 'loading'} failed={mokuState === 'error'} sortKey={mokuSortKey} sortDir={mokuSortDir} onSort={onMokuSort} selectedNode={agg ? null : selectedMokuNode} onSelect={r => { setAggView(null); setSelectedMoku(mokuSelectionKey(moku!, r.node)); }} summarySelected={agg} onSelectSummary={() => { setSelectedMoku(null); setAggView(view); }} widths={mokuColumnWidths} onWidthsChange={setMokuColumnWidths} suppNote={mokuWhy} />
               : view === 'jikou'
-              ? <LifecycleJikouListPane items={jikouList} codes={codeTables} loading={jikouState === 'loading'} failed={jikouState === 'error'} sortKey={jikouSortKey} sortDir={jikouSortDir} onSort={onJikouSort} selectedNode={selectedJikouNode} onSelect={r => setSelectedJikou(`${r.k.id}|${r.name}`)} widths={jikouColumnWidths} onWidthsChange={setJikouColumnWidths} />
-              : <LifecycleListPane items={list} notice={jikouFilterNotice} jikouLoading={jikouState === 'loading'} mokuLoading={mokuState === 'loading'} sortKey={sortKey} sortDir={sortDir} onSort={onSort} selectedId={kou?.id ?? null} onSelect={k => setSelectedId(k.id)} widths={columnWidths} onWidthsChange={setColumnWidths} />}
+              ? <LifecycleJikouListPane items={jikouList} codes={codeTables} loading={jikouState === 'loading'} failed={jikouState === 'error'} sortKey={jikouSortKey} sortDir={jikouSortDir} onSort={onJikouSort} selectedNode={agg ? null : selectedJikouNode} onSelect={r => { setAggView(null); setSelectedJikou(`${r.k.id}|${r.name}`); }} summarySelected={agg} onSelectSummary={() => { setSelectedJikou(null); setAggView(view); }} widths={jikouColumnWidths} onWidthsChange={setJikouColumnWidths} />
+              : <LifecycleListPane items={list} notice={jikouFilterNotice} jikouLoading={jikouState === 'loading'} mokuLoading={mokuState === 'loading'} sortKey={sortKey} sortDir={sortDir} onSort={onSort} selectedId={agg ? null : kou?.id ?? null} onSelect={k => { setAggView(null); setSelectedId(k.id); }} summarySelected={agg} onSelectSummary={() => { setSelectedId(null); setAggView(view); }} widths={columnWidths} onWidthsChange={setColumnWidths} />}
           </div>
         </section>
         <Splitter label="詳細の幅" width={detailWidth} limits={DETAIL_WIDTH} dir={-1} onChange={setDetailWidth} />
         <section aria-label={view === 'rs' ? 'RS の事業の詳細' : view === 'jikou' ? '事項の詳細' : view === 'moku' ? '目の詳細' : '項の詳細'} data-pane="detail" tabIndex={-1} className={`${pane} overflow-auto lg:col-span-2 xl:col-span-1 xl:w-[var(--dw)] xl:shrink-0 outline-0 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-emerald-500/50`} style={{ '--dw': `${detailWidth}px` } as CSSProperties}>
-          {view === 'rs' ? (
+          {agg && (view === 'jikou' ? jikou === null : view === 'moku' ? moku === null : view === 'rs' ? rs === null : false) ? (
+            <p className="p-4 text-xs text-neutral-500">読み込み中…</p>
+          ) : agg ? (
+            <AggregateDetail
+              title={aggHead.title}
+              facts={aggHead.facts}
+              unit={view === 'rs' ? '事業' : view === 'moku' ? '目' : view === 'jikou' ? '事項' : '項'}
+              rows={aggRows}
+              year={activeYear}
+              spec={view === 'rs' ? AGG_RS : view === 'jikou' ? AGG_JIKOU : AGG_KOU}
+              onYear={y => setYear(y)}
+            />
+          ) : view === 'rs' ? (
             <RsDetail
               rs={rs}
               loading={rsState === 'loading'}

@@ -134,3 +134,36 @@ export function stepSelection(length: number, current: number, dir: 1 | -1): num
   if (current < 0) return 0;
   return Math.min(length - 1, Math.max(0, current + dir));
 }
+
+/** 一覧の集計行の、項の種類ごとの数（一覧に出ている全項。重複は 1 と数える）。所管は、複数所管の項を府省ごとに分けて数える */
+export interface LifecycleListCounts {
+  publishers: number;
+  groups: number;
+  accts: number;
+  orgs: number;
+  /** 組織（一般会計）の数と、勘定（特別会計。特別会計の名称と勘定の組）の数。`orgs` はこの 2 つの和 */
+  generalOrgs: number;
+  specialSubs: number;
+  kous: number;
+}
+
+export function lifecycleListCounts(ks: Iterable<LifecycleKou>): LifecycleListCounts {
+  const publishers = new Set<string>(), groups = new Set<string>(), accts = new Set<string>(), orgs = new Set<string>(), kous = new Set<string>(), generalOrgs = new Set<string>(), specialSubs = new Set<string>();
+  for (const k of ks) {
+    for (const p of lifecyclePublishersOf(k)) publishers.add(p);
+    for (const g of lifecycleGroupsOf(k)) groups.add(g);
+    accts.add(lifecycleAcctOf(k));
+    // 組織／勘定は、会計が違えば別（一般会計の組織と特別会計の勘定は同じ名前でも別）
+    orgs.add(`${lifecycleAcctOf(k)}|${lifecycleOrgOf(k)}`);
+    (k.account === 'general' ? generalOrgs : specialSubs).add(lifecycleOrgOf(k) + (k.account === 'general' ? '' : `|${k.specialAccount}`));
+    kous.add(k.id);
+  }
+  return { publishers: publishers.size, groups: groups.size, accts: accts.size, orgs: orgs.size, generalOrgs: generalOrgs.size, specialSubs: specialSubs.size, kous: kous.size };
+}
+
+/** 額の列の合計。値のある行だけを足す（0 は値。値なしは数えない）。値のある行が無ければ sum は null */
+export function sumAmounts(values: Iterable<number | null | undefined>): { sum: number | null; n: number } {
+  let sum = 0, n = 0;
+  for (const v of values) if (v !== null && v !== undefined) { sum += v; n++; }
+  return { sum: n === 0 ? null : sum, n };
+}

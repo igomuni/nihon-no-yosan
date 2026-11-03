@@ -132,3 +132,4 @@ export { MOKU_FLAG, MOKU_MEASURES, MOKU_REQUEST_COVERAGE_LABEL, MOKU_TEXT_SORT_K
 export { filterJikouRows, jikouListRows, kouIdsWithJikou, sortJikouRows, type JikouListRow, type JikouSortKey } from './lifecycle-jikou-list.ts';
 export { CODE_TABLE_FORM_NAMES, codeName, codeNameChanges, codeTableFileInfo, codeTableOf, parseCodeNumberPage, type CodeTablePage, type CodeTableSection } from './code-tables.ts';
 export { INITIAL_RS_FILTERS, RS_AMOUNTS, RS_SPENT_UNFILLED_NOTE, RS_TEXT_SORT_KEYS, filterRsRows, rsAmount, rsAmountShown, rsIndex, rsListRows, sortRsRows, type RsAmountKey, type RsAmountRow, type RsFilters, type RsIndex, type RsJigyoData, type RsLinkEntry, type RsListRow, type RsSortKey } from './rs.ts';
+export * from './lifecycle-aggregate.ts';

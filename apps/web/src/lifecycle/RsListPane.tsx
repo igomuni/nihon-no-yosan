@@ -3,6 +3,7 @@ import { formatSen, type LifecycleSortDir, type RsListRow, type RsSortKey } from
 import { Icon } from '../components/Icon.tsx';
 import { scrollRowIntoView } from '../components/scrollRowIntoView.ts';
 import { useListKeys } from '../components/useListKeys.ts';
+import { ListFoot, sumCell } from './ListFoot.tsx';
 
 /** ドラッグ中のカーソル（イベントの外から body を変えるので、関数にまとめる） */
 function setBodyCursor(value: string): void {
@@ -33,7 +34,7 @@ function Amount({ v, why }: { v: number | null; why?: string | null }) {
 }
 
 /** 事業の一覧（中ペインの「RS」）。項に結べない事業も含める */
-export function RsListPane({ items, loading, failed, sortKey, sortDir, onSort, selectedId, onSelect, widths, onWidthsChange, yearNote, spentNote }: {
+export function RsListPane({ items, loading, failed, sortKey, sortDir, onSort, selectedId, onSelect, summarySelected, onSelectSummary, widths, onWidthsChange, yearNote, spentNote }: {
   /** 絞り込み・並べ替え済み */
   items: readonly RsListRow[];
   loading: boolean;
@@ -45,6 +46,9 @@ export function RsListPane({ items, loading, failed, sortKey, sortDir, onSort, s
   onSelect: (row: RsListRow) => void;
   widths: Record<string, number>;
   onWidthsChange: (updater: (prev: Record<string, number>) => Record<string, number>) => void;
+  /** 集計行を選んでいるか。選ぶと、右ペインに一覧全体の年度推移 */
+  summarySelected: boolean;
+  onSelectSummary: () => void;
   /** 選んだ年度に RS のデータが無いときの説明（あるときは null） */
   yearNote: string | null;
   /** 選んだ年度の執行額が、値のある全事業で 0 のときの説明（そうでなければ null） */
@@ -73,32 +77,32 @@ export function RsListPane({ items, loading, failed, sortKey, sortDir, onSort, s
     setBodyCursor('col-resize');
   }
 
-  const totals = ([['当初予算', 'initial'], ['歳出予算現額', 'current'], ['執行額', 'spent']] as const).map(([label, k]) => {
-    let sum = 0, n = 0;
-    for (const r of items) { const v = r[k]; if (v !== null) { sum += v; n++; } }
-    return { label, sum: n === 0 ? null : sum, n };
-  });
-  const linked = items.filter(r => r.kouCount > 0).length;
+  const foot = {
+    ministry: { text: `${new Set(items.map(r => r.ministry)).size}府省庁` },
+    bureau: { text: `${new Set(items.map(r => `${r.ministry}|${r.bureau}`)).size}局・庁`, title: '府省庁ごとの局・庁の数の合計' },
+    name: { text: `${items.length.toLocaleString()}事業`, title: 'RS のシート（レビューシート）の数。予算事業の数とは一致しないことがある' },
+    kou: { text: items.reduce((n, r) => n + r.kouCount, 0).toLocaleString(), title: '各事業が結べた項の数の合計（同じ項に結べた事業は重複して数える）。項に結べた事業は ' + items.filter(r => r.kouCount > 0).length.toLocaleString() },
+    initial: sumCell(items.map(r => r.initial), 'yen'),
+    supp: sumCell(items.map(r => r.supp), 'yen'),
+    current: sumCell(items.map(r => r.current), 'yen'),
+    spent: sumCell(items.map(r => r.spent), 'yen'),
+    request: sumCell(items.map(r => r.request), 'yen'),
+  };
   if (failed) return <p className="p-4 text-xs text-red-700">RS の事業の読み込みに失敗しました（<code>npm run build:data</code> で作る）。</p>;
   if (loading) return <p className="p-4 text-xs text-neutral-500">RS の事業を読み込み中…</p>;
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="flex flex-wrap gap-x-5 gap-y-1 border-b border-neutral-200 px-3 py-2 text-xs text-neutral-500 dark:border-neutral-800">
-        <span title="RS のシート（レビューシート）の数。予算事業の数とは一致しないことがある"><b className="tabular-nums text-neutral-800 dark:text-neutral-100">{items.length.toLocaleString()}</b> 事業</span>
-        <span title="予算書の項に 1 つ以上結べた事業">項に結べた <b className="tabular-nums text-neutral-800 dark:text-neutral-100">{linked.toLocaleString()}</b></span>
-        {totals.map(t => t.sum !== null && <span key={t.label} title={`値のある ${t.n.toLocaleString()} 事業の合計（${t.sum.toLocaleString('ja-JP')} 円）。事業単位の集計で、予算書の数値と必ずしも一致しない`}>{t.label} <b className="tabular-nums text-neutral-800 dark:text-neutral-100">{formatSen(t.sum / 1000)}</b></span>)}
-      </div>
       <div ref={scrollRef} data-pane="list" tabIndex={-1} className="min-h-0 flex-1 overflow-auto outline-0 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-emerald-500/50">
         <table className="border-collapse text-xs" style={{ width: tableWidth, tableLayout: 'fixed' }}>
           <colgroup>{COLS.map(c => <col key={c.key} style={{ width: widthOf(c.key) }} />)}</colgroup>
-          <thead>
+          <thead className="sticky top-0 z-10">
             <tr>
               {COLS.map(c => (
                 <th
                   key={c.key}
                   scope="col"
                   aria-sort={sortKey === c.key ? (sortDir > 0 ? 'ascending' : 'descending') : undefined}
-                  className={`sticky top-0 z-10 cursor-pointer select-none overflow-hidden whitespace-nowrap border-b border-neutral-200 bg-neutral-100 px-2 py-1.5 font-semibold text-neutral-500 dark:border-neutral-800 dark:bg-neutral-800 ${c.left ? 'text-left' : 'text-right'}`}
+                  className={`relative cursor-pointer select-none overflow-hidden whitespace-nowrap border-b border-neutral-200 bg-neutral-100 px-2 py-1.5 font-semibold text-neutral-500 dark:border-neutral-800 dark:bg-neutral-800 ${c.left ? 'text-left' : 'text-right'}`}
                   onClick={() => onSort(c.key)}
                   title={c.title}
                 >
@@ -108,6 +112,7 @@ export function RsListPane({ items, loading, failed, sortKey, sortDir, onSort, s
                 </th>
               ))}
             </tr>
+            {items.length > 0 && <ListFoot cols={COLS} cells={foot} selected={summarySelected} onSelect={onSelectSummary} />}
           </thead>
           <tbody>
             {shown.map(r => {

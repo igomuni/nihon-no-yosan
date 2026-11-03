@@ -7,6 +7,7 @@ import {
   lifecycleGroupsOf,
   lifecycleOrgOf,
   lifecyclePublisherOf,
+  lifecycleListCounts,
   lifecyclePublishersOf,
   LIFECYCLE_CHAIN_END_LABEL,
   type JikouCount,
@@ -22,6 +23,7 @@ import {
 import { Icon } from '../components/Icon.tsx';
 import { scrollRowIntoView } from '../components/scrollRowIntoView.ts';
 import { useListKeys } from '../components/useListKeys.ts';
+import { ListFoot, sumCell } from './ListFoot.tsx';
 
 /** ドラッグ中のカーソル（イベントの外から body を変えるので、関数にまとめる） */
 function setBodyCursor(value: string): void {
@@ -90,7 +92,7 @@ function Amount({ yen }: { yen: number | undefined }) {
     : <td className="whitespace-nowrap px-2 py-1 text-right tabular-nums" title={`${yen.toLocaleString('ja-JP')} 円`}>{yen === 0 ? '0円' : formatSen(yen / 1000)}</td>;
 }
 
-export function LifecycleListPane({ items, notice, jikouLoading, mokuLoading, sortKey, sortDir, onSort, selectedId, onSelect, widths, onWidthsChange }: {
+export function LifecycleListPane({ items, notice, jikouLoading, mokuLoading, sortKey, sortDir, onSort, selectedId, onSelect, summarySelected, onSelectSummary, widths, onWidthsChange }: {
   /** 絞り込み・並べ替え済み */
   items: readonly { k: LifecycleKou; a: LifecycleRowAmounts; link: LifecycleLinkStatus | null; chain: LifecycleChain; span: { from: number; to: number; years: number }; jikou: JikouCount | null; moku: MokuCount | null; linkGap: boolean }[];
   /** 一覧の代わりに出す文（事項名で絞るのに、事項のデータが届いていないとき）。無ければ null */
@@ -106,13 +108,10 @@ export function LifecycleListPane({ items, notice, jikouLoading, mokuLoading, so
   onSelect: (k: LifecycleKou) => void;
   widths: Record<string, number>;
   onWidthsChange: (updater: (prev: Record<string, number>) => Record<string, number>) => void;
+  /** 集計行を選んでいるか。選ぶと、右ペインに一覧全体の年度推移 */
+  summarySelected: boolean;
+  onSelectSummary: () => void;
 }) {
-  // 一覧の項の、段階ごとの額の合計（値のある項だけ。0 は値）
-  const totals = ([['概算要求', 'request'], ['政府案', 'budget'], ['補正後', 'revised'], ['決算', 'spent']] as const).map(([label, k]) => {
-    let sum = 0, n = 0;
-    for (const x of items) { const v = x.a[k]; if (v !== undefined) { sum += v; n++; } }
-    return { label, sum: n === 0 ? null : sum, n };
-  });
   const selectedIdx = selectedId === null ? -1 : items.findIndex(x => x.k.id === selectedId);
   useListKeys(items.length, selectedIdx, i => onSelect(items[i]!.k));
   const shown = items.slice(0, Math.max(MAX_ROWS, selectedIdx + 1));
@@ -136,24 +135,36 @@ export function LifecycleListPane({ items, notice, jikouLoading, mokuLoading, so
     setBodyCursor('col-resize');
   }
 
+  const counts = lifecycleListCounts(items.map(x => x.k));
+  const jikouSum = items.reduce((n, x) => n + (x.jikou?.total ?? 0), 0), mokuSum = items.reduce((n, x) => n + (x.moku?.total ?? 0), 0);
+  const foot = {
+    publisher: { text: `${counts.publishers}所管`, title: '要求所管の府省の数（概算要求書の無い項は数えない）' },
+    group: { text: `${counts.groups}所管`, title: '予算所管の府省の数（複数の府省が所管する項は、府省ごとに数える）' },
+    acct: { text: `${counts.accts}会計` },
+    org: { text: `${counts.orgs}組織/勘定`, title: '組織（一般会計）と勘定（特別会計）の数' },
+    name: { text: `${counts.kous.toLocaleString()}項` },
+    jikou: jikouLoading ? { text: '…' } : { text: jikouSum.toLocaleString(), title: '事項の数の合計' },
+    moku: mokuLoading ? { text: '…' } : { text: mokuSum.toLocaleString(), title: '目の数の合計' },
+    request: sumCell(items.map(x => x.a.request), 'yen'),
+    budget: sumCell(items.map(x => x.a.budget), 'yen'),
+    revised: sumCell(items.map(x => x.a.revised), 'yen'),
+    spent: sumCell(items.map(x => x.a.spent), 'yen'),
+    size: sumCell(items.map(x => x.a.size), 'yen'),
+  };
   if (notice !== null) return <p className="p-4 text-xs text-neutral-500">{notice}</p>;
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="flex flex-wrap gap-x-5 gap-y-1 border-b border-neutral-200 px-3 py-2 text-xs text-neutral-500 dark:border-neutral-800">
-        <span><b className="tabular-nums text-neutral-800 dark:text-neutral-100">{items.length.toLocaleString()}</b> 項</span>
-        {totals.map(t => t.sum !== null && <span key={t.label} title={`値のある ${t.n.toLocaleString()} 項の合計（${t.sum.toLocaleString('ja-JP')} 円）`}>{t.label} <b className="tabular-nums text-neutral-800 dark:text-neutral-100">{formatSen(t.sum / 1000)}</b></span>)}
-      </div>
       <div ref={scrollRef} data-pane="list" tabIndex={-1} className="min-h-0 flex-1 overflow-auto outline-0 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-emerald-500/50">
         <table className="border-collapse text-xs" style={{ width: tableWidth, tableLayout: 'fixed' }}>
           <colgroup>{COLS.map(c => <col key={c.key} style={{ width: widthOf(c.key) }} />)}</colgroup>
-          <thead>
+          <thead className="sticky top-0 z-10">
             <tr>
               {COLS.map(c => (
                 <th
                   key={c.key}
                   scope="col"
                   aria-sort={sortKey === c.key ? (sortDir > 0 ? 'ascending' : 'descending') : undefined}
-                  className={`sticky top-0 z-10 cursor-pointer select-none overflow-hidden whitespace-nowrap border-b border-neutral-200 bg-neutral-100 px-2 py-1.5 font-semibold text-neutral-500 dark:border-neutral-800 dark:bg-neutral-800 ${c.left ? 'text-left' : 'text-right'}`}
+                  className={`relative cursor-pointer select-none overflow-hidden whitespace-nowrap border-b border-neutral-200 bg-neutral-100 px-2 py-1.5 font-semibold text-neutral-500 dark:border-neutral-800 dark:bg-neutral-800 ${c.left ? 'text-left' : 'text-right'}`}
                   onClick={() => onSort(c.key)}
                   title={c.title}
                 >
@@ -163,6 +174,7 @@ export function LifecycleListPane({ items, notice, jikouLoading, mokuLoading, so
                 </th>
               ))}
             </tr>
+            {items.length > 0 && <ListFoot cols={COLS} cells={foot} selected={summarySelected} onSelect={onSelectSummary} />}
           </thead>
           <tbody>
             {shown.map(({ k, a, link, linkGap, chain, span, jikou, moku }) => {
