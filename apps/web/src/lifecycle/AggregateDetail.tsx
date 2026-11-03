@@ -18,12 +18,13 @@ const yen = (v: number | undefined): string => (v === undefined ? '—' : v === 
  * 一覧全体の詳細（右ペイン。中ペインの集計行を選んだとき）。一覧の各行を年度をまたいでたどり、年度ごとに足した額を、グラフと、年度を縦に並べた表で見る。
  * 値の無い所は「—」（0 とは別）。年度を押す・J / K で、中ペインの年度が移る。
  */
-export function AggregateDetail({ heading, unit, count, rows, year, spec, onYear }: {
-  heading: string;
+export function AggregateDetail({ title, facts, unit, rows, year, spec, onYear }: {
+  /** 見出し。一覧の行の数（例: 「1,341項」。中ペインで選んでいる年度） */
+  title: string;
+  /** 見出しの下に並べる、一覧の内訳（例: 「要求 31所管」「14会計」） */
+  facts: readonly string[];
   /** 一覧の行の単位（項・事項・目・事業） */
   unit: string;
-  /** 一覧の行の数（中ペインで選んでいる年度） */
-  count: number;
   rows: readonly AggYear[];
   /** 中ペインで選んでいる年度 */
   year: number;
@@ -36,8 +37,8 @@ export function AggregateDetail({ heading, unit, count, rows, year, spec, onYear
   return (
     <div className="flex flex-col gap-5 p-4 text-xs">
       <div>
-        <p className="text-[11px] text-neutral-500">FY{year} の一覧</p>
-        <h2 className="text-base font-semibold">{heading}<span className="ml-2 text-xs font-normal tabular-nums text-neutral-500">{count.toLocaleString()}{unit}</span></h2>
+        <p className="flex flex-wrap gap-x-3 text-[11px] tabular-nums text-neutral-500">{facts.map(f => <span key={f}>{f}</span>)}</p>
+        <h2 className="text-base font-semibold tabular-nums">{title}</h2>
       </div>
 
       <section className="flex flex-col gap-2" aria-label="段階ごとの額の年度推移">

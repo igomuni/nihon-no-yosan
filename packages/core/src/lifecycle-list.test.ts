@@ -108,6 +108,6 @@ describe('一覧の集計行', () => {
     expect(sumAmounts([0])).toEqual({ sum: 0, n: 1 });
   });
   it('lifecycleListCounts: 所管は府省ごと、会計が違えば組織／勘定は別、項は id で数える', () => {
-    expect(lifecycleListCounts([a, b, s, a])).toEqual({ publishers: 0, groups: 4, accts: 2, orgs: 3, kous: 3 });
+    expect(lifecycleListCounts([a, b, s, a])).toEqual({ publishers: 0, groups: 4, accts: 2, orgs: 3, generalOrgs: 2, specialSubs: 1, kous: 3 });
   });
 });

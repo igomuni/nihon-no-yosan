@@ -14,6 +14,7 @@ import {
   lifecycleRowAmounts,
   lifecycleSourcePresence,
   aggregateJikou,
+  lifecycleListCounts,
   aggregateKous,
   aggregateMoku,
   aggregateRs,
@@ -330,6 +331,18 @@ export function LifecyclePage() {
     if (view === 'moku') return moku ? aggregateMoku(moku, mokuList.map(r => r.node), chainIdsOf) : [];
     return rs ? aggregateRs(rs, rsList.map(r => r.idx)) : [];
   }, [agg, data, view, list, valuesOf, jikou, jikouList, moku, mokuList, chainIdsOf, rs, rsList]);
+  // 右ペインの見出し（集計行を選んだとき）: 一覧の行の数と、内訳
+  const aggHead = useMemo(() => {
+    const n = (v: number): string => v.toLocaleString();
+    if (view === 'rs') return { title: `${n(rsList.length)}事業`, facts: [`${n(new Set(rsList.map(r => r.ministry)).size)}府省庁`, `${n(new Set(rsList.map(r => `${r.ministry}|${r.bureau}`)).size)}局・庁`, `項に結べた ${n(rsList.filter(r => r.kouCount > 0).length)}事業`] };
+    const ks = view === 'moku' ? mokuList.map(r => r.k) : view === 'jikou' ? jikouList.map(r => r.k) : list.map(x => x.k);
+    const c = lifecycleListCounts(ks);
+    const common = [`要求${n(c.publishers)}所管`, `予算${n(c.groups)}所管`, `${n(c.accts)}会計`, `${n(c.generalOrgs)}組織/${n(c.specialSubs)}勘定`];
+    if (view === 'moku') return { title: `${n(mokuList.length)}目`, facts: [...common, `${n(c.kous)}項`] };
+    if (view === 'jikou') return { title: `${n(jikouList.length)}事項`, facts: [...common, `${n(c.kous)}項`] };
+    const jikouSum = list.reduce((s, x) => s + (x.jikou?.total ?? 0), 0), mokuSum = list.reduce((s, x) => s + (x.moku?.total ?? 0), 0);
+    return { title: `${n(list.length)}項`, facts: [...common, jikouState === 'ready' ? `${n(jikouSum)}事項` : '事項 …', mokuState === 'ready' ? `${n(mokuSum)}目` : '目 …'] };
+  }, [view, list, jikouList, mokuList, rsList, jikouState, mokuState]);
   const mokuWhy = (r: MokuListRow) => (moku ? { supp: mokuSuppNote(moku.data, moku.data.nodes[r.node]!), settle: mokuSettleNote(moku.data, moku.data.nodes[r.node]!) } : { supp: null, settle: null });
   const onMokuSort = (k: MokuSortKey) => {
     if (k === mokuSortKey) setMokuSortDir(d => (d === 1 ? -1 : 1));
@@ -390,9 +403,9 @@ export function LifecyclePage() {
             <p className="p-4 text-xs text-neutral-500">読み込み中…</p>
           ) : agg ? (
             <AggregateDetail
-              heading={view === 'rs' ? '一覧全体（事業）' : view === 'moku' ? '一覧全体（目）' : view === 'jikou' ? '一覧全体（事項）' : '一覧全体（項）'}
+              title={aggHead.title}
+              facts={aggHead.facts}
               unit={view === 'rs' ? '事業' : view === 'moku' ? '目' : view === 'jikou' ? '事項' : '項'}
-              count={view === 'rs' ? rsList.length : view === 'moku' ? mokuList.length : view === 'jikou' ? jikouList.length : list.length}
               rows={aggRows}
               year={activeYear}
               spec={view === 'rs' ? AGG_RS : view === 'jikou' ? AGG_JIKOU : AGG_KOU}

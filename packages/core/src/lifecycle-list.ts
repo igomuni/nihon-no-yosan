@@ -141,20 +141,24 @@ export interface LifecycleListCounts {
   groups: number;
   accts: number;
   orgs: number;
+  /** 組織（一般会計）の数と、勘定（特別会計。特別会計の名称と勘定の組）の数。`orgs` はこの 2 つの和 */
+  generalOrgs: number;
+  specialSubs: number;
   kous: number;
 }
 
 export function lifecycleListCounts(ks: Iterable<LifecycleKou>): LifecycleListCounts {
-  const publishers = new Set<string>(), groups = new Set<string>(), accts = new Set<string>(), orgs = new Set<string>(), kous = new Set<string>();
+  const publishers = new Set<string>(), groups = new Set<string>(), accts = new Set<string>(), orgs = new Set<string>(), kous = new Set<string>(), generalOrgs = new Set<string>(), specialSubs = new Set<string>();
   for (const k of ks) {
     for (const p of lifecyclePublishersOf(k)) publishers.add(p);
     for (const g of lifecycleGroupsOf(k)) groups.add(g);
     accts.add(lifecycleAcctOf(k));
     // 組織／勘定は、会計が違えば別（一般会計の組織と特別会計の勘定は同じ名前でも別）
     orgs.add(`${lifecycleAcctOf(k)}|${lifecycleOrgOf(k)}`);
+    (k.account === 'general' ? generalOrgs : specialSubs).add(lifecycleOrgOf(k) + (k.account === 'general' ? '' : `|${k.specialAccount}`));
     kous.add(k.id);
   }
-  return { publishers: publishers.size, groups: groups.size, accts: accts.size, orgs: orgs.size, kous: kous.size };
+  return { publishers: publishers.size, groups: groups.size, accts: accts.size, orgs: orgs.size, generalOrgs: generalOrgs.size, specialSubs: specialSubs.size, kous: kous.size };
 }
 
 /** 額の列の合計。値のある行だけを足す（0 は値。値なしは数えない）。値のある行が無ければ sum は null */
