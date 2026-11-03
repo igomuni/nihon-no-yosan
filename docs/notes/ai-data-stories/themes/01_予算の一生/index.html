@@ -1,0 +1,242 @@
+<title>予算の一生</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Zen+Kaku+Gothic+New:wght@700;900&display=swap">
+<style>
+/* layout: 1 本の読み物の列（最大 780px）。入る側と出る側の 2 本の棒が、いつも同じ高さになる帳簿の形 */
+:root {
+  --bg: #f6f7f9; --surface: #ffffff; --ink: #18202b; --muted: #5b6573; --line: #d9dee5; --tag: #eef1f5;
+  --c-budget: #2a78d6; --c-supp: #eb6834; --c-in: #9aa3b2; --c-spent: #1baf7a; --c-out: #8f6fe0; --c-unused: #eda100;
+  --display: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", sans-serif;
+  --body: "BIZ UDPGothic", "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #12161c; --surface: #1a2029; --ink: #e8ecf1; --muted: #9aa5b3; --line: #2c3440; --tag: #232b36;
+  --c-budget: #3987e5; --c-supp: #d95926; --c-in: #6b7385; --c-spent: #199e70; --c-out: #7d5fd0; --c-unused: #c98500; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #12161c; --surface: #1a2029; --ink: #e8ecf1; --muted: #9aa5b3; --line: #2c3440; --tag: #232b36;
+  --c-budget: #3987e5; --c-supp: #d95926; --c-in: #6b7385; --c-spent: #199e70; --c-out: #7d5fd0; --c-unused: #c98500; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.8;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 32px 64px; }
+main { max-width: 780px; margin: 0 auto; display: flex; flex-direction: column; gap: 56px; }
+h1, h2 { font-family: var(--display); text-wrap: balance; line-height: 1.35; margin: 0; }
+h1 { font-size: clamp(28px, 6vw, 42px); font-weight: 900; }
+h2 { font-size: 22px; font-weight: 700; }
+p { margin: 0; max-width: 65ch; }
+section { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; color: var(--muted); }
+.num { font-variant-numeric: tabular-nums; }
+.small { font-size: 13px; color: var(--muted); }
+.hero { display: flex; flex-direction: column; gap: 16px; }
+.equation { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 14px; font-family: var(--display); font-weight: 900; }
+.equation .term { display: flex; flex-direction: column; min-width: 0; }
+.equation .v { font-size: clamp(26px, 6vw, 40px); line-height: 1.1; font-variant-numeric: tabular-nums; }
+.equation .k { font-family: var(--body); font-weight: 400; font-size: 12px; color: var(--muted); }
+.equation .op { font-size: 28px; color: var(--muted); }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; min-width: 0; }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { fill: var(--muted); font-family: var(--body); font-size: 11px; }
+.chart .lbl { fill: var(--ink); font-size: 12px; }
+.chart .val { font-variant-numeric: tabular-nums; }
+.grid line { stroke: var(--line); stroke-width: 1; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.tag { display: inline-block; font-size: 11px; padding: 0 8px; border-radius: 999px; background: var(--tag); color: var(--muted); margin-right: 6px; white-space: nowrap; }
+.tag.src::before { content: "原資料"; } .tag.proc::before { content: "加工"; } .tag.ai::before { content: "AIの計算・解釈"; }
+.claims { display: flex; flex-direction: column; gap: 12px; padding: 0; margin: 0; list-style: none; }
+.claims li { display: grid; gap: 4px; }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; width: 100%; }
+th, td { padding: 5px 8px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+thead th { color: var(--muted); font-weight: 400; }
+td.bar { width: 34%; min-width: 140px; }
+.meter { display: flex; height: 10px; border-radius: 3px; overflow: hidden; background: var(--tag); gap: 2px; }
+.meter b { display: block; height: 100%; }
+.notes { padding-left: 1.2em; margin: 0; display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--muted); }
+.questions { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.questions li { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+footer { font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+#tip { position: fixed; pointer-events: none; background: var(--ink); color: var(--bg); font-size: 12px; padding: 6px 8px; border-radius: 6px; line-height: 1.5; max-width: 280px; z-index: 5; }
+@media (prefers-reduced-motion: no-preference) { .chart rect.seg { transition: opacity .15s; } }
+</style>
+
+<main>
+  <header class="hero">
+    <span class="eyebrow">一般会計・FY2017〜FY2024（決算がある 8 年度）</span>
+    <h1>当初予算は、決算までに<br>どう姿を変えるのか</h1>
+    <p>予算は、成立した後も動きます。補正予算で足され、前の年度からの繰越が加わり、使い切れなかった分は翌年度に持ち越されるか、使われずに終わります。8 年度分の決算で、その流れを追いました。</p>
+    <div class="equation" aria-label="8 年度の合計の式">
+      <div class="term"><span class="v" style="color:var(--c-budget)" id="eqBudget"></span><span class="k">当初予算</span></div>
+      <span class="op">＋</span>
+      <div class="term"><span class="v" style="color:var(--c-supp)" id="eqSupp"></span><span class="k">補正による増減</span></div>
+      <span class="op">→</span>
+      <div class="term"><span class="v" style="color:var(--c-spent)" id="eqSpent"></span><span class="k">実際に支出した額</span></div>
+    </div>
+    <p class="small">8 年度の合計（兆円）。支出した額には、前の年度から繰り越した分を使ったものも含みます。</p>
+  </header>
+
+  <section>
+    <h2>入る側と出る側は、毎年ぴったり同じ高さになる</h2>
+    <p>各年度の左の棒は「使えるお金」（当初予算・補正・前年度からの繰越）、右の棒は「その行き先」（支出・翌年度への繰越・不用）です。決算では、この 2 つが円単位で一致します。</p>
+    <div class="legend" id="legend"></div>
+    <div class="panel scroll"><svg class="chart" id="flow" role="img" aria-label="年度ごとの、使えるお金とその行き先"></svg></div>
+    <p class="small">棒にカーソルを当てると、その年度の内訳が出ます。予備費の使用・流用・移替は、一般会計の中での付け替えなので、合計には現れません（下の予備費の節）。</p>
+  </section>
+
+  <section>
+    <h2>FY2020 からの 3 年間、予算は「使い切れない」大きさになった</h2>
+    <ul class="claims">
+      <li><strong>FY2020: 当初 102.7兆円が、使えるお金 182.3兆円に</strong><span>補正予算で 73.0兆円が足され、使えるお金は当初の 1.8 倍になりました。支出したのは 147.6兆円（81.0%）。30.8兆円が翌年度に繰り越され、3.9兆円は使われませんでした。</span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+      <li><strong>繰越が、翌年度の予算をふくらませた</strong><span>FY2020 の繰越 30.8兆円は、そのまま FY2021 の「前年度からの繰越」になります。FY2021 の使えるお金 173.4兆円のうち、18% が前の年度からの持ち越しでした。各年度の翌年度繰越と、次の年度の前年度繰越は、8 年度とも円単位で一致しています。</span><span><span class="tag src"></span><span class="tag ai"></span></span></li>
+      <li><strong>FY2022: 不用が 11.3兆円</strong><span>8 年度で最大です。使えるお金の 7.0% にあたります。FY2017〜FY2019 の不用は毎年 1.4〜1.8兆円（1.4〜1.6%）でした。</span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+    </ul>
+    <div class="panel"><svg class="chart" id="rate" viewBox="0 0 640 210" role="img" aria-label="支出済の割合の推移"></svg></div>
+    <p class="small">支出済の割合 = 支出済歳出額 ÷ 歳出予算現額。残りは翌年度への繰越か不用です。</p>
+  </section>
+
+  <section>
+    <h2>予備費は、どこで使われたか</h2>
+    <p>予備費は、使うと、使った府省の項に付け替えられます。決算の「予備費使用額」を府省ごとに足しました。</p>
+    <div class="panel"><svg class="chart" id="reserve" viewBox="0 0 640 230" role="img" aria-label="年度ごとの予備費の使用額"></svg></div>
+    <div class="panel scroll"><table id="reserveTbl"></table></div>
+    <p class="small">予備費の項の「使われずに残った額」は、その項の不用額です。</p>
+  </section>
+
+  <section>
+    <h2>持ち越しが多い経費、使い残しが多い経費</h2>
+    <p>8 年度の合計で、使えるお金に対する翌年度への繰越と不用の割合を、主要経費別に並べました（使えるお金が 1兆円以上の経費）。繰越が多いのは公共事業、不用が多いのは中小企業対策や社会保障の給付です。</p>
+    <div class="legend"><span><i style="background:var(--c-spent)"></i>支出済</span><span><i style="background:var(--c-out)"></i>翌年度へ繰越</span><span><i style="background:var(--c-unused)"></i>不用</span></div>
+    <div class="panel scroll"><table id="majorTbl"></table></div>
+    <p class="small">予備費の区分（使った分は他の経費に付け替わるので、残った分だけが不用として残る）は除いています。</p>
+  </section>
+
+  <section>
+    <h2>府省ごとの 8 年間</h2>
+    <div class="panel scroll"><table id="minTbl"></table></div>
+    <p class="small">府省は、予算書の所管を分けたもの。内閣府の外局（こども家庭庁など）は、それぞれの府省として数えています。8 年度の合計が 0.1兆円以上の府省。</p>
+  </section>
+
+  <section>
+    <h2>この数字の作り方と、確かめられないこと</h2>
+    <ul class="notes">
+      <li><span class="tag src"></span>財務省「予算書・決算書データベース」の予算書（当初予算の項）と決算書（一般会計の項・目）。決算の列は、歳出予算額・前年度繰越額・予備費使用額・流用等増減額・移替増減額・歳出予算現額・支出済歳出額・翌年度繰越額・不用額。</li>
+      <li><span class="tag proc"></span>nihon-no-yosan が項・目の行を抽出・構造化したもの。年度ごとの合計は、決算の項の CSV を直接足した値と、全 8 年度・全 6 列で円単位まで一致しました。目の合計も項の合計と一致します。決算のある 7,314 項のすべてで、「現額 = 歳出予算額 + 前年度繰越 + 予備費使用 + 流用等 + 移替」と「現額 = 支出済 + 翌年度繰越 + 不用」が成り立つことを確かめました。</li>
+      <li><span class="tag ai"></span>「補正による増減」は、決算の歳出予算額から、予算書の当初予算額を引いた値です。補正予算書の数字そのものではありません。予算書と決算書では項の数が違う（例: FY2024 は 784 項と 978 項）ので、項ごとに見ると対応しないものがあります。合計だけを使っています。</li>
+      <li><span class="tag ai"></span>割合・合計・順位は、この探索で計算したものです。政府の公表する決算の概要の数字とは、照合していません。</li>
+      <li>当初予算の版は年度で違います（FY2017〜FY2021 は国会提出時か成立後かを判定できていない。`budget-lifecycle.md`）。名目の金額で、物価は調整していません。特別会計は含めていません。</li>
+      <li>不用額が多いことは、それだけで「無駄」を意味しません。見積もりより給付が少なかった、事業が後ろにずれた、などの理由があり得ますが、このデータからは理由を確かめられません。</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>次に、聞かせてください</h2>
+    <ol class="questions">
+      <li>FY2020〜FY2022 の繰越と不用は、どの事業で生まれたのか。項・目の単位で、繰越・不用の大きい順に並べますか。</li>
+      <li>予備費で付け替えられたお金（FY2020 の 9.4兆円など）が、使った府省の側で、さらに繰り越されたり不用になったりしていないか、追いますか。</li>
+      <li>公共事業の繰越率が 3〜5 割になるのは、毎年の当たり前なのか、特定の年度に偏っているのか。年度ごとに見ますか。</li>
+      <li>特別会計（年金・交付税・国債整理基金など）にも同じ流れがあります。二重計上を除いたうえで、そちらも見たいですか。</li>
+    </ol>
+  </section>
+
+  <footer>
+    <span>出典：財務省「予算書・決算書データベース」を加工して作成。国や各府省が作成した加工していない情報ではありません。</span>
+    <span>nihon-no-yosan の AI Data Stories PoC。金額は兆円（円単位の値から計算し、表示で丸め）。</span>
+  </footer>
+</main>
+<div id="tip" hidden></div>
+
+<script>
+const D = {"years":[{"y":2017,"budget":974547,"approp":991095,"carryIn":47390,"current":1038485,"spent":981156,"carryOut":42970,"unused":14358,"reserve":872},{"y":2018,"budget":977128,"approp":1013581,"carryIn":42970,"current":1056551,"spent":989747,"carryOut":50767,"unused":16037,"reserve":1945},{"y":2019,"budget":1014571,"approp":1046517,"carryIn":50767,"current":1097283,"spent":1013665,"carryOut":65781,"unused":17838,"reserve":4669},{"y":2020,"budget":1026580,"approp":1756878,"carryIn":65781,"current":1822658,"spent":1475974,"carryOut":307804,"unused":38880,"reserve":94259},{"y":2021,"budget":1066097,"approp":1425992,"carryIn":307804,"current":1733797,"spent":1446495,"carryOut":224273,"unused":63029,"reserve":50667},{"y":2022,"budget":1075964,"approp":1392196,"carryIn":224273,"current":1616468,"spent":1323855,"carryOut":179528,"unused":113085,"reserve":76072},{"y":2023,"budget":1143812,"approp":1275804,"carryIn":179528,"current":1455332,"spent":1275788,"carryOut":110633,"unused":68911,"reserve":14388},{"y":2024,"budget":1125717,"approp":1265150,"carryIn":110633,"current":1375782,"spent":1230240,"carryOut":102433,"unused":43110,"reserve":16850}],"reserve":[{"y":2017,"kou":[{"n":"予備費","ap":3000,"use":872,"unused":2128}],"to":[["総務省",632],["国土交通省",224],["法務省",14],["外務省",2]]},{"y":2018,"kou":[{"n":"予備費","ap":4500,"use":1945,"unused":2555}],"to":[["国土交通省",747],["経済産業省",500],["内閣府",323],["農林水産省",125]]},{"y":2019,"kou":[{"n":"予備費","ap":5000,"use":4669,"unused":331}],"to":[["厚生労働省",1748],["経済産業省",802],["防衛省",468],["財務省",408]]},{"y":2020,"kou":[{"n":"予備費","ap":5000,"use":2839,"unused":2161},{"n":"新型コロナウイルス感染症対策予備費","ap":96500,"use":91420,"unused":5080}],"to":[["厚生労働省",41671],["内閣府",34086],["経済産業省",16406],["国土交通省",737]]},{"y":2021,"kou":[{"n":"新型コロナウイルス感染症対策予備費","ap":50000,"use":46186,"unused":3814},{"n":"予備費","ap":5000,"use":4481,"unused":519}],"to":[["厚生労働省",32100],["内閣府",13467],["経済産業省",4127],["国土交通省",319]]},{"y":2022,"kou":[{"n":"予備費","ap":9000,"use":5257,"unused":3743},{"n":"新型コロナウイルス感染症及び原油価格・物価高騰対策予備費","ap":98600,"use":70815,"unused":27785}],"to":[["内閣府",32545],["厚生労働省",19237],["経済産業省",18687],["農林水産省",3366]]},{"y":2023,"kou":[{"n":"予備費","ap":5000,"use":3077,"unused":1923},{"n":"原油価格・物価高騰対策及び賃上げ促進環境整備対応予備費","ap":20000,"use":11311,"unused":8689}],"to":[["内閣府",11946],["国土交通省",1282],["経済産業省",412],["農林水産省",289]]},{"y":2024,"kou":[{"n":"原油価格・物価高騰対策及び賃上げ促進環境整備対応予備費","ap":10000,"use":9892,"unused":108},{"n":"予備費","ap":10000,"use":6958,"unused":3042}],"to":[["経済産業省",9856],["国土交通省",3065],["内閣府",1467],["総務省",844]]}],"mins":[{"g":"厚生労働省","cur":3059664,"spent":2830400,"out":123151,"unused":106113},{"g":"財務省","cur":2315703,"spent":2147028,"out":59598,"unused":109077},{"g":"総務省","cur":1874204,"spent":1764592,"out":95633,"unused":13979},{"g":"国土交通省","cur":938785,"spent":627501,"out":297890,"unused":13394},{"g":"経済産業省","cur":788975,"spent":557987,"out":186742,"unused":44246},{"g":"文部科学省","cur":580698,"spent":517054,"out":44663,"unused":18982},{"g":"防衛省","cur":538552,"spent":492195,"out":37563,"unused":8793},{"g":"内閣府","cur":393325,"spent":222078,"out":131164,"unused":40083},{"g":"農林水産省","cur":324422,"spent":242590,"out":71486,"unused":10347},{"g":"外務省","cur":82095,"spent":72396,"out":8302,"unused":1397},{"g":"こども家庭庁","cur":78565,"spent":74291,"out":2572,"unused":1701},{"g":"法務省","cur":70040,"spent":64749,"out":3953,"unused":1339},{"g":"環境省","cur":50430,"spent":37244,"out":11410,"unused":1776},{"g":"警察庁","cur":32116,"spent":27024,"out":3381,"unused":1711},{"g":"裁判所","cur":26840,"spent":25411,"out":784,"unused":645},{"g":"内閣","cur":13202,"spent":10918,"out":1806,"unused":479},{"g":"国会","cur":11311,"spent":10589,"out":372,"unused":349},{"g":"デジタル庁","cur":8963,"spent":5539,"out":3151,"unused":273},{"g":"金融庁","cur":2335,"spent":1999,"out":168,"unused":167},{"g":"会計検査院","cur":1385,"spent":1289,"out":23,"unused":72},{"g":"消費者庁","cur":1354,"spent":1104,"out":143,"unused":107}],"majors":[{"c":"95","n":"その他の事項経費","cur":1470004,"spent":1015500,"out":372998,"unused":81505},{"c":"94","n":"原油価格・物価高騰対策及び賃上げ促進環境整備対応予備費","cur":45477,"spent":0,"out":0,"unused":45477},{"c":"60","n":"中小企業対策費","cur":525495,"spent":324781,"out":158816,"unused":41898},{"c":"02","n":"年金給付費","cur":996926,"spent":957732,"out":0,"unused":39194},{"c":"04","n":"介護給付費","cur":275852,"spent":249504,"out":3369,"unused":22979},{"c":"20","n":"国債費","cur":1913396,"spent":1893102,"out":0,"unused":20294},{"c":"06","n":"生活扶助等社会福祉費","cur":468040,"spent":413063,"out":34928,"unused":20050},{"c":"98","n":"予備費","cur":16402,"spent":0,"out":0,"unused":16402},{"c":"07","n":"保健衛生対策費","cur":334587,"spent":240381,"out":78344,"unused":15861},{"c":"93","n":"ウクライナ情勢経済緊急対応予備費","cur":15000,"spent":0,"out":0,"unused":15000},{"c":"05","n":"少子化対策費","cur":222897,"spent":211538,"out":0,"unused":11359},{"c":"35","n":"防衛関係費","cur":582363,"spent":536109,"out":37533,"unused":8721},{"c":"65","n":"食料安定供給関係費","cur":152179,"spent":119938,"out":24585,"unused":7657},{"c":"03","n":"医療給付費","cur":959648,"spent":950879,"out":2381,"unused":6388},{"c":"49","n":"災害復旧等事業費","cur":82675,"spent":39316,"out":39535,"unused":3823},{"c":"15","n":"教育振興助成費","cur":211730,"spent":197584,"out":10796,"unused":3350},{"c":"08","n":"雇用労災対策費","cur":60928,"spent":53094,"out":5084,"unused":2750},{"c":"14","n":"文教施設費","cur":32379,"spent":15350,"out":14479,"unused":2550},{"c":"13","n":"科学技術振興費","cur":261766,"spent":234573,"out":25086,"unused":2107},{"c":"44","n":"住宅都市環境整備事業費","cur":88295,"spent":58775,"out":27596,"unused":1924},{"c":"45","n":"公園水道廃棄物処理等施設整備費","cur":27694,"spent":15879,"out":10782,"unused":1033},{"c":"47","n":"社会資本総合整備事業費","cur":245777,"spent":163775,"out":81036,"unused":966},{"c":"46","n":"農林水産基盤整備事業費","cur":99001,"spent":66382,"out":31758,"unused":860},{"c":"41","n":"治山治水対策事業費","cur":140959,"spent":97084,"out":43182,"unused":694},{"c":"43","n":"港湾空港鉄道等整備事業費","cur":54123,"spent":38641,"out":14978,"unused":504},{"c":"42","n":"道路整備事業費","cur":200973,"spent":146544,"out":54050,"unused":379},{"c":"63","n":"エネルギー対策費","cur":111267,"spent":108791,"out":2141,"unused":335},{"c":"50","n":"経済協力費","cur":65735,"spent":58117,"out":7357,"unused":261},{"c":"11","n":"義務教育費国庫負担金","cur":123474,"spent":123289,"out":0,"unused":185},{"c":"16","n":"育英事業費","cur":11704,"spent":11295,"out":349,"unused":60},{"c":"31","n":"地方交付税交付金","cur":1347450,"spent":1347450,"out":0,"unused":0},{"c":"32","n":"地方特例交付金","cur":30086,"spent":30086,"out":0,"unused":0}]};
+const NS = 'http://www.w3.org/2000/svg';
+const el = (tag, attrs = {}, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+const tri = v => v / 10000; // 億円 → 兆円
+const f = (v, d = 1) => tri(v).toFixed(d);
+const pct = (a, b) => (a / b * 100).toFixed(1) + '%';
+const tip = document.getElementById('tip');
+function hover(node, html) {
+  node.addEventListener('pointermove', e => { tip.innerHTML = html; tip.hidden = false; tip.style.left = Math.min(e.clientX + 12, innerWidth - 290) + 'px'; tip.style.top = (e.clientY + 12) + 'px'; });
+  node.addEventListener('pointerleave', () => { tip.hidden = true; });
+}
+const Ys = D.years;
+const sum = k => Ys.reduce((a, r) => a + r[k], 0);
+document.getElementById('eqBudget').textContent = f(sum('budget'));
+document.getElementById('eqSupp').textContent = '+' + f(sum('approp') - sum('budget'));
+document.getElementById('eqSpent').textContent = f(sum('spent'));
+
+// 入る側・出る側の積み上げ
+const IN = [['budget', '当初予算', 'var(--c-budget)'], ['supp', '補正による増減', 'var(--c-supp)'], ['carryIn', '前年度からの繰越', 'var(--c-in)']];
+const OUT = [['spent', '支出済', 'var(--c-spent)'], ['carryOut', '翌年度へ繰越', 'var(--c-out)'], ['unused', '不用', 'var(--c-unused)']];
+document.getElementById('legend').innerHTML = [...IN, ...OUT].map(([, n, c]) => `<span><i style="background:${c}"></i>${n}</span>`).join('');
+(() => {
+  const s = document.getElementById('flow'), W = 720, H = 330, L = 44, R = 10, T = 14, B = 30;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '600px';
+  const max = 200 * 10000, y = v => T + (H - T - B) * (1 - v / max), h = v => (H - T - B) * v / max;
+  const g = el('g', { class: 'grid' }, s);
+  for (const v of [0, 50, 100, 150, 200]) { el('line', { x1: L, x2: W - R, y1: y(v * 10000), y2: y(v * 10000) }, g); el('text', { x: L - 6, y: y(v * 10000) + 4, 'text-anchor': 'end' }, s).textContent = v; }
+  el('text', { x: L - 6, y: 9, 'text-anchor': 'end' }, s).textContent = '兆円';
+  const colW = (W - L - R) / Ys.length, bw = Math.min(30, colW * 0.34);
+  Ys.forEach((r, i) => {
+    const vals = { budget: r.budget, supp: r.approp - r.budget, carryIn: r.carryIn, spent: r.spent, carryOut: r.carryOut, unused: r.unused };
+    const cx = L + colW * (i + 0.5);
+    [[IN, cx - bw - 2], [OUT, cx + 2]].forEach(([parts, x]) => {
+      let acc = 0;
+      for (const [k, , c] of parts) { const v = vals[k]; if (v <= 0) continue; const top = y(acc + v); el('rect', { class: 'seg', x, y: top + 1, width: bw, height: Math.max(0, h(v) - 2), fill: c, rx: 2 }, s); acc += v; }
+    });
+    el('text', { x: cx, y: H - 10, 'text-anchor': 'middle', class: 'lbl' }, s).textContent = r.y;
+    el('text', { x: cx, y: y(r.current) - 6, 'text-anchor': 'middle', class: 'val' }, s).textContent = f(r.current);
+    const hit = el('rect', { x: cx - colW / 2, y: T, width: colW, height: H - T - B, fill: 'transparent' }, s);
+    hover(hit, `<b>FY${r.y}</b><br>当初予算 ${f(r.budget, 2)}兆円<br>補正による増減 ${f(r.approp - r.budget, 2)}兆円<br>前年度からの繰越 ${f(r.carryIn, 2)}兆円<br><b>使えるお金（歳出予算現額）${f(r.current, 2)}兆円</b><br>支出済 ${f(r.spent, 2)}兆円（${pct(r.spent, r.current)}）<br>翌年度へ繰越 ${f(r.carryOut, 2)}兆円（${pct(r.carryOut, r.current)}）<br>不用 ${f(r.unused, 2)}兆円（${pct(r.unused, r.current)}）`);
+  });
+})();
+
+// 支出済の割合
+(() => {
+  const s = document.getElementById('rate'), W = 640, H = 210, L = 44, R = 20, T = 20, B = 28, lo = 75, hi = 100;
+  const x = i => L + (W - L - R) * i / (Ys.length - 1), y = p => T + (H - T - B) * (1 - (p - lo) / (hi - lo));
+  const g = el('g', { class: 'grid' }, s);
+  for (const p of [75, 80, 85, 90, 95, 100]) { el('line', { x1: L, x2: W - R, y1: y(p), y2: y(p) }, g); el('text', { x: L - 6, y: y(p) + 4, 'text-anchor': 'end' }, s).textContent = p + '%'; }
+  const ps = Ys.map(r => r.spent / r.current * 100);
+  el('polyline', { points: ps.map((p, i) => `${x(i)},${y(p)}`).join(' '), fill: 'none', stroke: 'var(--c-spent)', 'stroke-width': 2 }, s);
+  ps.forEach((p, i) => {
+    el('circle', { cx: x(i), cy: y(p), r: 4, fill: 'var(--c-spent)', stroke: 'var(--surface)', 'stroke-width': 1.5 }, s);
+    el('text', { x: x(i), y: y(p) - 9, 'text-anchor': 'middle', class: 'lbl val' }, s).textContent = p.toFixed(1);
+    el('text', { x: x(i), y: H - 8, 'text-anchor': 'middle' }, s).textContent = Ys[i].y;
+  });
+})();
+
+// 予備費
+(() => {
+  const s = document.getElementById('reserve'), W = 640, H = 230, L = 44, R = 10, T = 20, B = 28;
+  const max = 10 * 10000, y = v => T + (H - T - B) * (1 - v / max);
+  const g = el('g', { class: 'grid' }, s);
+  for (const v of [0, 2, 4, 6, 8, 10]) { el('line', { x1: L, x2: W - R, y1: y(v * 10000), y2: y(v * 10000) }, g); el('text', { x: L - 6, y: y(v * 10000) + 4, 'text-anchor': 'end' }, s).textContent = v; }
+  el('text', { x: L - 6, y: 10, 'text-anchor': 'end' }, s).textContent = '兆円';
+  const colW = (W - L - R) / Ys.length, bw = Math.min(36, colW * 0.5);
+  D.reserve.forEach((r, i) => {
+    const v = Ys[i].reserve, cx = L + colW * (i + 0.5);
+    el('rect', { x: cx - bw / 2, y: y(v), width: bw, height: Math.max(1, y(0) - y(v)), rx: 3, fill: 'var(--c-supp)' }, s);
+    el('text', { x: cx, y: y(v) - 6, 'text-anchor': 'middle', class: 'lbl val' }, s).textContent = f(v, 2);
+    el('text', { x: cx, y: H - 8, 'text-anchor': 'middle' }, s).textContent = r.y;
+    const hit = el('rect', { x: cx - colW / 2, y: T, width: colW, height: H - T - B, fill: 'transparent' }, s);
+    hover(hit, `<b>FY${r.y} の予備費使用 ${f(v, 2)}兆円</b><br>使った府省（上位）<br>${r.to.map(([g2, x2]) => `${g2} ${f(x2, 2)}兆円`).join('<br>')}`);
+  });
+  const t = document.getElementById('reserveTbl');
+  t.innerHTML = '<thead><tr><th>年度</th><th>予備費の項</th><th>予備費の額</th><th>使った額</th><th>残った額（不用）</th><th>使った府省（上位 3）</th></tr></thead><tbody>' +
+    D.reserve.flatMap(r => r.kou.map((k, j) => `<tr><td>${j === 0 ? 'FY' + r.y : ''}</td><td style="text-align:left;white-space:normal">${k.n}</td><td>${f(k.ap, 2)}</td><td>${f(k.use, 2)}</td><td>${f(k.unused, 2)}</td><td style="text-align:left">${j === 0 ? r.to.slice(0, 3).map(([g2, x2]) => `${g2} ${f(x2, 2)}`).join('、') : ''}</td></tr>`)).join('') + '</tbody>';
+})();
+
+const meter = (spent, out, unused, cur) => `<div class="meter" title="支出済 ${pct(spent, cur)}・繰越 ${pct(out, cur)}・不用 ${pct(unused, cur)}"><b style="width:${spent / cur * 100}%;background:var(--c-spent)"></b><b style="width:${out / cur * 100}%;background:var(--c-out)"></b><b style="width:${unused / cur * 100}%;background:var(--c-unused)"></b></div>`;
+// 主要経費別（予備費の区分を除く。繰越 + 不用の割合の大きい順）
+(() => {
+  const rows = D.majors.filter(r => !['93', '94', '98'].includes(r.c)).sort((a, b) => (b.out + b.unused) / b.cur - (a.out + a.unused) / a.cur);
+  document.getElementById('majorTbl').innerHTML = '<thead><tr><th>主要経費別</th><th>使えるお金</th><th>翌年度へ繰越</th><th>不用</th><th>内訳</th></tr></thead><tbody>' +
+    rows.map(r => `<tr><td>${r.n}</td><td>${f(r.cur)}</td><td>${f(r.out)}（${pct(r.out, r.cur)}）</td><td>${f(r.unused)}（${pct(r.unused, r.cur)}）</td><td class="bar">${meter(r.spent, r.out, r.unused, r.cur)}</td></tr>`).join('') + '</tbody>';
+})();
+(() => {
+  const rows = D.mins.sort((a, b) => (b.out + b.unused) / b.cur - (a.out + a.unused) / a.cur);
+  document.getElementById('minTbl').innerHTML = '<thead><tr><th>府省</th><th>使えるお金</th><th>翌年度へ繰越</th><th>不用</th><th>内訳</th></tr></thead><tbody>' +
+    rows.map(r => `<tr><td>${r.g}</td><td>${f(r.cur)}</td><td>${f(r.out)}（${pct(r.out, r.cur)}）</td><td>${f(r.unused)}（${pct(r.unused, r.cur)}）</td><td class="bar">${meter(r.spent, r.out, r.unused, r.cur)}</td></tr>`).join('') + '</tbody>';
+})();
+</script>

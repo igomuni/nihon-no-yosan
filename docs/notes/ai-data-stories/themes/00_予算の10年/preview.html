@@ -1,0 +1,267 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><title>予算の10年</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Zen+Kaku+Gothic+New:wght@700;900&display=swap">
+<style>
+/* layout: 1 本の読み物の列（最大 760px）。数値は帳簿のように右そろえ、増 = 朱、減 = 藍 */
+:root {
+  --bg: #f6f7f9; --surface: #ffffff; --ink: #18202b; --muted: #5b6573; --line: #d9dee5;
+  --up: #d2542a; --down: #2a6fc9; --zero: #9aa3ae; --accent: #18202b; --tag: #eef1f5;
+  --display: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", sans-serif;
+  --body: "BIZ UDPGothic", "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #12161c; --surface: #1a2029; --ink: #e8ecf1; --muted: #9aa5b3; --line: #2c3440;
+  --up: #f07a50; --down: #5b9cf0; --zero: #6b7582; --accent: #e8ecf1; --tag: #232b36; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #12161c; --surface: #1a2029; --ink: #e8ecf1; --muted: #9aa5b3; --line: #2c3440;
+  --up: #f07a50; --down: #5b9cf0; --zero: #6b7582; --accent: #e8ecf1; --tag: #232b36; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.8;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 32px 64px; }
+main { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 56px; }
+h1, h2 { font-family: var(--display); text-wrap: balance; line-height: 1.35; margin: 0; }
+h1 { font-size: clamp(28px, 6vw, 42px); font-weight: 900; }
+h2 { font-size: 22px; font-weight: 700; }
+p { margin: 0; max-width: 65ch; }
+section { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; color: var(--muted); }
+.num { font-variant-numeric: tabular-nums; }
+.up { color: var(--up); } .down { color: var(--down); }
+.hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 24px; align-items: center; }
+@media (max-width: 640px) { .hero { grid-template-columns: 1fr; } }
+.big { font-family: var(--display); font-weight: 900; font-size: clamp(40px, 9vw, 64px); line-height: 1.1; }
+.from-to { font-size: 15px; color: var(--muted); }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; min-width: 0; }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { fill: var(--muted); font-family: var(--body); font-size: 11px; }
+.chart .lbl { fill: var(--ink); font-size: 12px; }
+.chart .val { font-variant-numeric: tabular-nums; }
+.grid line { stroke: var(--line); stroke-width: 1; }
+.tag { display: inline-block; font-size: 11px; padding: 0 8px; border-radius: 999px; background: var(--tag); color: var(--muted); margin-right: 6px; white-space: nowrap; }
+.tag.src::before { content: "原資料"; } .tag.proc::before { content: "加工"; } .tag.ai::before { content: "AIの計算・解釈"; }
+.claims { display: flex; flex-direction: column; gap: 12px; padding: 0; margin: 0; list-style: none; }
+.claims li { display: grid; gap: 4px; }
+.multiples { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; }
+.mini { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.mini .name { font-size: 13px; font-weight: 700; }
+.mini .delta { font-size: 13px; }
+.mini svg text { fill: var(--muted); font-size: 10px; }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; min-width: 720px; }
+th, td { padding: 4px 8px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; position: sticky; left: 0; background: var(--surface); }
+thead th { color: var(--muted); font-weight: 400; }
+details { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+summary { cursor: pointer; font-weight: 700; }
+summary:focus-visible, a:focus-visible { outline: 2px solid var(--down); outline-offset: 2px; }
+.notes { padding-left: 1.2em; margin: 0; display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--muted); }
+.questions { counter-reset: q; list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.questions li { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+footer { font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+#tip { position: fixed; pointer-events: none; background: var(--ink); color: var(--bg); font-size: 12px; padding: 6px 8px; border-radius: 6px; line-height: 1.5; max-width: 260px; z-index: 5; }
+</style>
+
+<main>
+  <header class="hero">
+    <div style="display:flex;flex-direction:column;gap:8px;min-width:0">
+      <span class="eyebrow">一般会計・当初予算（政府案）FY2017 → FY2026</span>
+      <h1>この10年で、何が増えて、何が減ったか</h1>
+      <div class="big num up" id="heroDelta"></div>
+      <div class="from-to num" id="heroFromTo"></div>
+    </div>
+    <div class="panel"><svg class="chart" id="totalChart" viewBox="0 0 420 220" role="img" aria-label="一般会計の当初予算の総額の推移"></svg></div>
+  </header>
+
+  <section>
+    <h2>増えた分の 8 割以上は、6 つの経費</h2>
+    <p id="topSix"></p>
+    <div class="panel scroll"><svg class="chart" id="divChart" role="img" aria-label="主要経費別の増減（FY2017 → FY2026）"></svg></div>
+    <p style="font-size:13px;color:var(--muted)">主要経費別の分類コードごとに、目の当初予算額を足した値。棒にカーソルを当てると年度ごとの値が出ます。増減が 0.1兆円未満の経費は省いています（全部は下の表）。</p>
+  </section>
+
+  <section>
+    <h2>大きく動いた経費の 10 年</h2>
+    <div class="multiples" id="multiples"></div>
+    <p style="font-size:13px;color:var(--muted)">目盛りはそれぞれ違います。点線は FY2017 の水準。</p>
+  </section>
+
+  <section>
+    <h2>見ておきたい 5 つの動き</h2>
+    <ul class="claims">
+      <li><strong>国債費 23.5兆円 → 31.3兆円（+7.8兆円）</strong><span>一番大きな増加です。FY2024 以降、毎年 1〜3兆円ずつ増えています。一般会計の国債費は、ほぼ全額が国債整理基金特別会計への繰入（目「普通国債等償還財源等国債整理基金特別会計へ繰入」23.0兆円 → 30.8兆円）なので、利払いと償還の内訳は、このデータの一般会計の側からは分けられません。</span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+      <li><strong>防衛関係費 5.1兆円 → 9.0兆円（+3.9兆円）</strong><span>FY2023 だけ 10.2兆円に跳ねています。この年は目「防衛力強化のための資金へ繰入」3.38兆円があり、翌年は 0 です。使途別の物件費も 3.0兆円 → 6.7兆円と倍以上になり、そのうち防衛関係費の物件費が 1.9兆円 → 5.0兆円でした。装備品の購入・修理（例: 航空機修理費 0.43兆円（FY2022）→ 1.01兆円（FY2024））がここに入ります。</span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+      <li><strong>少子化対策費 2.1兆円 → 3.5兆円（+1.4兆円）</strong><span>中身の器が大きく変わっています。FY2023 にこども家庭庁ができ、FY2025 から子ども・子育て支援特別会計への繰入（児童手当・教育保育給付など）に変わりました。名前の違う項が多いので、項を年度でたどるより、分類コードで見る方が全体をつかめます。</span><span><span class="tag src"></span><span class="tag ai"></span></span></li>
+      <li><strong>社会資本総合整備事業費 2.0兆円 → 1.3兆円（−0.7兆円）</strong><span>減った経費で一番大きいものです。FY2019 の 2.2兆円をピークに減り続けています。同じ公共事業でも、道路整備（1.3 → 1.7兆円）や治山治水（0.8 → 1.0兆円）は増えています。</span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+      <li><strong>予備費: コロナ期の「別枠」と、通常の予備費の倍増</strong><span>通常の予備費は 0.35兆円 → 1.0兆円。別に、FY2021〜FY2022 は新型コロナ等の予備費が各 5兆円、FY2023 は 4兆円とウクライナ情勢対応 1兆円、FY2024 は 1兆円がありました（FY2025 は 0、FY2026 は無し）。使途別の「その他」が FY2021〜FY2023 に 7兆円近くあるのは、このためです。</span><span><span class="tag src"></span><span class="tag ai"></span></span></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>所管（府省）で見ると</h2>
+    <p id="minLead"></p>
+    <div class="panel scroll"><svg class="chart" id="minChart" role="img" aria-label="府省別の増減（FY2017 → FY2026）"></svg></div>
+    <ul class="claims">
+      <li><strong>こども家庭庁ができて、内閣府が 2兆円減ったように見える</strong><span>FY2023 にこども家庭庁（4.0兆円）ができ、内閣府（外局を除く）は 3.6兆円 → 0.6兆円になりました。項の名前で見ると、こども家庭庁の最大の項「子ども・子育て支援年金特別会計へ繰入」2.5兆円は前年の内閣府に、母子家庭等対策費・保育対策費などは前年の厚生労働省にありました。残る約 1.2兆円（障害児支援等対策費・大学等修学支援費など）は、前年の同じ名前の項が無いか複数あり、どこから来たかをこのデータでは決められません。</span><span><span class="tag src"></span><span class="tag ai"></span></span></li>
+      <li><strong>組織の付け替えをならすと</strong><span>内閣府（外局を除く）・こども家庭庁・厚生労働省を合わせると、33.3兆円 → 40.0兆円（+6.6兆円）です。社会保障と子ども・子育ての増加は、ここに集まっています。</span><span><span class="tag ai"></span></span></li>
+      <li><strong>財務省 +7.9兆円の中身</strong><span>国債費（+7.8兆円）と予備費（+0.7兆円）です。FY2021〜FY2023 の山（30.5〜35.5兆円）は、新型コロナ等の予備費（各 4〜5兆円）と、FY2023 のウクライナ情勢対応の予備費です。FY2023 は、防衛関係費の「防衛力強化のための資金へ繰入」3.38兆円も、防衛省ではなく財務省の所管に入っています。</span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+      <li><strong>減った府省は小さい</strong><span>経済産業省（0.98 → 0.87兆円、−0.11兆円。エネルギー対策特別会計への繰入が減った）、警察庁（−0.03兆円）、農林水産省（−0.02兆円）、環境省（−0.01兆円）。一般会計の当初予算で、はっきり減った府省はありません。</span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+    </ul>
+    <p style="font-size:13px;color:var(--muted)">府省は、予算書の所管を分けたもの。内閣府の外局（こども家庭庁・デジタル庁・金融庁など）は、それぞれの府省として数えています（このサイトの画面と同じ数え方）。</p>
+  </section>
+
+  <section>
+    <h2>減ったもの</h2>
+    <p>一般会計全体が 25% 増える中で、主要経費別で 0.1兆円以上減ったのは 3 つだけでした。社会資本総合整備事業費（−0.69兆円）、恩給（0.29兆円 → 0.05兆円で −0.25兆円。分類コードが FY2022 に 4 つから 1 つにまとまったので、合算して比べました）、エネルギー対策費（−0.16兆円）です。項で見ると、東日本大震災の復興事業費の特別会計への繰入が 0.57兆円 → 0.07兆円に減っています。</p>
+    <p style="font-size:13px;color:var(--muted)">名目の金額です。物価の変化は調整していません。物価で割り戻すと、増減の見え方は変わります。</p>
+  </section>
+
+  <section>
+    <h2>全経費の表（兆円）</h2>
+    <details>
+      <summary>主要経費別 39 区分と、使途別 7 区分を開く</summary>
+      <div class="scroll" style="margin-top:12px"><table id="tbl"></table></div>
+    </details>
+  </section>
+
+  <section>
+    <h2>この数字の作り方と、確かめられないこと</h2>
+    <ul class="notes">
+      <li><span class="tag src"></span>財務省「予算書・決算書データベース」の予算書（目の表）。一般会計の当初予算。FY2025 は国会提出時の版。FY2017〜FY2021 は、提出時か成立後かを判定できていません。</li>
+      <li><span class="tag proc"></span>nihon-no-yosan が目の行を抽出・構造化し、分類コード（主要経費別・使途別）を付けたもの。目の合計は、各年度の項の合計と千円単位で一致することを確かめました。</li>
+      <li><span class="tag ai"></span>経費ごとの合計、増減、割合、「恩給」4 コードの合算、文章の解釈は、この探索で計算・判断したものです。政府の公式な集計（主要経費別の予算額の公表値）とは、作り方が違うので一致するとは限りません。照合していません。</li>
+      <li>分類コードの名前は年度で変わるものがあります（例: 94 は「新型コロナウイルス感染症対策予備費」など 3 つの名前を持つ）。表の名前は最新の年度のものです。</li>
+      <li>特別会計（社会保障・国債整理基金など、会計間の繰入で二重に数えるもの）は含めていません。補正予算・決算も含めていません。毎年の補正で、実際に使える額は当初より大きくなります。</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>次に、聞かせてください</h2>
+    <ol class="questions">
+      <li>一番意外だったのはどれですか。理由も聞かせてください。そこから掘り下げます。</li>
+      <li>国債費の増加は、金利の上昇によるものか、借金の残高によるものか。特別会計（国債整理基金）の側を調べると、利払いと償還を分けられるかもしれません。</li>
+      <li>防衛と子ども・子育ては、当初予算だけでなく、補正や決算（実際に使った額）まで追いますか。</li>
+      <li>こども家庭庁の約 1.2兆円の出どころは、事項・目の単位まで降りると、もう少し分けられるかもしれません。調べますか。</li>
+      <li>減った社会資本整備の行き先として、どの地域・事業が気になりますか。RS（行政事業レビュー）の事業とつなぐと、事業の単位まで降りられます。</li>
+    </ol>
+  </section>
+
+  <footer>
+    <span>出典：財務省「予算書・決算書データベース」を加工して作成。国や各府省が作成した加工していない情報ではありません。</span>
+    <span>nihon-no-yosan の AI Data Stories PoC（2026-11-03）。数値の単位は兆円（千円単位の値から計算し、表示で丸め）。</span>
+  </footer>
+</main>
+<div id="tip" hidden></div>
+
+<script>
+const D = {"Y":[2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],"total":[974547,977128,1014571,1026580,1066097,1075964,1143812,1125717,1155415,1223092],"major":[{"c":"20","n":"国債費","names":["国債費"],"v":[235285,233020,235082,233515,237588,243393,252503,270090,282179,312758]},{"c":"31","n":"地方交付税交付金","names":["地方交付税交付金"],"v":[154343,153606,155510,156085,155912,156558,161823,166543,188848,200622]},{"c":"35","n":"防衛関係費","names":["防衛関係費"],"v":[51251,51911,52574,53133,53235,53687,101686,79172,86691,89843]},{"c":"02","n":"年金給付費","names":["年金給付費"],"v":[114831,116853,120488,125232,127005,127641,130857,134020,136916,139012]},{"c":"05","n":"少子化対策費","names":["少子化対策費"],"v":[21149,21437,23440,30387,30458,31094,31412,33823,35213,35335]},{"c":"03","n":"医療給付費","names":["医療給付費"],"v":[115010,116079,118543,121546,119821,120925,121517,122366,123208,126895]},{"c":"04","n":"介護給付費","names":["介護給付費"],"v":[30130,30953,32101,33838,34662,35803,36809,37188,37274,37806]},{"c":"06","n":"生活扶助等社会福祉費","names":["生活扶助等社会福祉費"],"v":[40205,40524,41805,42027,40716,41759,43093,44912,45275,47277]},{"c":"32","n":"地方特例交付金","names":["地方特例交付金"],"v":[1328,1544,4340,2007,3577,2267,2169,11320,1936,8156]},{"c":"98","n":"予備費","names":["予備費"],"v":[3500,3500,5000,5000,5000,5000,5000,10000,10000,10000]},{"c":"15","n":"教育振興助成費","names":["教育振興助成費"],"v":[23315,23225,24158,23768,23124,23139,23054,23086,23173,26983]},{"c":"42","n":"道路整備事業費","names":["道路整備事業費"],"v":[13412,13472,15491,17819,16634,16660,16711,16715,16721,16783]},{"c":"65","n":"食料安定供給関係費","names":["食料安定供給関係費"],"v":[10174,9924,9823,9840,12773,12701,12654,12618,12609,12729]},{"c":"44","n":"住宅都市環境整備事業費","names":["住宅都市環境整備事業費"],"v":[5330,5278,5978,6947,6872,7299,7307,7303,7302,7321]},{"c":"11","n":"義務教育費国庫負担金","names":["義務教育費国庫負担金"],"v":[15248,15228,15200,15221,15164,15015,15216,15627,16210,17118]},{"c":"45","n":"公園水道廃棄物処理等施設整備費","names":["公園水道廃棄物処理等施設整備費"],"v":[1026,1016,1286,1372,1412,1619,1784,1968,2223,2444]},{"c":"13","n":"科学技術振興費","names":["科学技術振興費"],"v":[13045,13159,13597,13639,13673,13788,13942,14092,14221,14378]},{"c":"41","n":"治山治水対策事業費","names":["治山治水対策事業費"],"v":[8444,8449,11206,11375,9320,9507,9544,9548,9627,9679]},{"c":"07","n":"保健衛生対策費","names":["保健衛生対策費"],"v":[3042,3514,3827,5184,4768,4756,4754,4444,4434,3778]},{"c":"95","n":"その他の事項経費","names":["その他の事項経費"],"v":[61098,61904,67856,66645,57732,58350,58004,57402,58543,61640]},{"c":"25","n":"恩給関係費","names":["恩給関係費"],"v":[null,null,null,null,null,1221,970,771,623,493]},{"c":"48","n":"推進費等","names":["推進費等"],"v":[608,598,609,781,760,676,619,623,828,789]},{"c":"46","n":"農林水産基盤整備事業費","names":["農林水産基盤整備事業費"],"v":[6004,6030,7061,6926,6114,6081,6078,6080,6080,6137]},{"c":"08","n":"雇用労災対策費","names":["雇用労災対策費"],"v":[368,373,388,395,991,758,447,440,458,456]},{"c":"16","n":"育英事業費","names":["育英事業費"],"v":[1171,1269,1375,1176,1235,1217,1204,1178,1167,1215]},{"c":"96","n":"熊本地震復旧等予備費","names":["熊本地震復旧等予備費"],"v":[0,null,null,null,null,null,null,null,null,null]},{"c":"94","n":"原油価格・物価高騰対策及び賃上げ促進環境整備対応予備費","names":["新型コロナウイルス感染症対策予備費","新型コロナウイルス感染症及び原油価格・物価高騰対策予備費","原油価格・物価高騰対策及び賃上げ促進環境整備対応予備費"],"v":[null,null,null,null,50000,50000,40000,10000,0,null]},{"c":"93","n":"ウクライナ情勢経済緊急対応予備費","names":["ウクライナ情勢経済緊急対応予備費"],"v":[null,null,null,null,null,null,10000,0,null,null]},{"c":"50","n":"経済協力費","names":["経済協力費"],"v":[5110,5089,5021,5123,5108,5105,5114,5041,5050,5108]},{"c":"28","n":"恩給支給事務費","names":["恩給支給事務費"],"v":[11,11,11,9,9,null,null,null,null,null]},{"c":"43","n":"港湾空港鉄道等整備事業費","names":["港湾空港鉄道等整備事業費"],"v":[4211,4203,4831,4584,3969,3988,3976,4037,4136,4179]},{"c":"14","n":"文教施設費","names":["文教施設費"],"v":[788,766,1694,1250,773,743,743,732,726,712]},{"c":"26","n":"文官等恩給費","names":["文官等恩給費"],"v":[97,85,75,66,60,null,null,null,null,null]},{"c":"60","n":"中小企業対策費","names":["中小企業対策費"],"v":[1810,1771,1790,1753,1745,1713,1704,1693,1695,1700]},{"c":"49","n":"災害復旧等事業費","names":["災害復旧等事業費"],"v":[731,740,750,752,762,772,776,782,597,618]},{"c":"29","n":"遺族及び留守家族等援護費","names":["遺族及び留守家族等援護費"],"v":[134,113,97,91,82,null,null,null,null,null]},{"c":"63","n":"エネルギー対策費","names":["エネルギー対策費"],"v":[9635,9186,9760,9495,8891,8756,8540,8329,8111,8001]},{"c":"27","n":"旧軍人遺族等恩給費","names":["旧軍人遺族等恩給費"],"v":[2705,2294,1914,1583,1300,null,null,null,null,null]},{"c":"47","n":"社会資本総合整備事業費","names":["社会資本総合整備事業費"],"v":[19997,20003,21887,18015,14851,13973,13805,13771,13344,13126]}],"use":[{"c":"6","n":"他会計へ繰入","v":[538056,545400,552596,551103,557197,563745,614326,617798,645591,696568]},{"c":"3","n":"物件費","v":[29960,30253,34137,34555,33510,34752,45049,54621,60636,66596]},{"c":"5","n":"補助費・委託費","v":[311501,306293,325916,336151,322608,325567,327804,330817,336210,347139]},{"c":"9","n":"その他","v":[13774,13370,16294,18687,69452,68908,69336,32772,22045,22889]},{"c":"1","n":"人件費","v":[43899,44255,44553,44502,45020,45010,44747,45654,47162,48841]},{"c":"4","n":"施設費","v":[36357,36555,39976,40482,37227,36996,41500,43026,42738,40031]},{"c":"2","n":"旅費","v":[1000,1001,1099,1100,1085,987,1051,1029,1033,1027]}]};
+const Y = D.Y;
+const tri = v => v / 10000; // 億円 → 兆円
+const f = (v, d = 2) => v === null ? '—' : tri(v).toFixed(d);
+const sgn = v => (v > 0 ? '+' : v < 0 ? '−' : '±') + Math.abs(tri(v)).toFixed(2);
+const NS = 'http://www.w3.org/2000/svg';
+const el = (tag, attrs = {}, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+const tip = document.getElementById('tip');
+function hover(node, html) {
+  node.addEventListener('pointermove', e => { tip.innerHTML = html; tip.hidden = false; const x = Math.min(e.clientX + 12, innerWidth - 270); tip.style.left = x + 'px'; tip.style.top = (e.clientY + 12) + 'px'; });
+  node.addEventListener('pointerleave', () => { tip.hidden = true; });
+}
+const series = r => Y.map((y, i) => `FY${y}: ${f(r.v[i])}兆円`).join('<br>');
+
+// hero
+const t0 = D.total[0], t1 = D.total[D.total.length - 1];
+document.getElementById('heroDelta').textContent = `+${tri(t1 - t0).toFixed(1)}兆円`;
+document.getElementById('heroFromTo').textContent = `${f(t0)}兆円 → ${f(t1)}兆円（+${((t1 / t0 - 1) * 100).toFixed(1)}%）`;
+(() => {
+  const s = document.getElementById('totalChart'), W = 420, H = 220, L = 40, R = 16, T = 16, B = 26;
+  const lo = 90, hi = 125, x = i => L + (W - L - R) * i / (Y.length - 1), y = v => T + (H - T - B) * (1 - (tri(v) - lo) / (hi - lo));
+  const g = el('g', { class: 'grid' }, s);
+  for (const v of [90, 100, 110, 120]) { el('line', { x1: L, x2: W - R, y1: y(v * 10000), y2: y(v * 10000) }, g); el('text', { x: L - 6, y: y(v * 10000) + 4, 'text-anchor': 'end' }, s).textContent = v; }
+  [0, 3, 6, 9].forEach(i => { el('text', { x: x(i), y: H - 8, 'text-anchor': 'middle' }, s).textContent = Y[i]; });
+  el('polyline', { points: D.total.map((v, i) => `${x(i)},${y(v)}`).join(' '), fill: 'none', stroke: 'var(--ink)', 'stroke-width': 2 }, s);
+  D.total.forEach((v, i) => { const c = el('circle', { cx: x(i), cy: y(v), r: i === 9 || i === 0 ? 4.5 : 3, fill: i === 9 ? 'var(--up)' : 'var(--ink)', stroke: 'var(--surface)', 'stroke-width': 1.5 }, s); const hit = el('circle', { cx: x(i), cy: y(v), r: 12, fill: 'transparent' }, s); hover(hit, `FY${Y[i]}: ${f(v)}兆円`); });
+  el('text', { x: x(9) - 6, y: y(t1) - 10, 'text-anchor': 'end', class: 'lbl val' }, s).textContent = `${f(t1, 1)}兆円`;
+  el('text', { x: x(0) + 6, y: y(t0) + 18, class: 'lbl val' }, s).textContent = `${f(t0, 1)}兆円`;
+  el('text', { x: L, y: 10 }, s).textContent = '兆円';
+})();
+
+// 恩給（25〜29）を合算した行
+const PENSION = ['25', '26', '27', '28', '29'];
+const merged = D.major.filter(r => !PENSION.includes(r.c));
+merged.push({ c: '25-29', n: '恩給（4 コードを合算）', v: Y.map((_, i) => { const s = D.major.filter(r => PENSION.includes(r.c)).map(r => r.v[i]).filter(v => v !== null); return s.length ? s.reduce((a, b) => a + b, 0) : null; }) });
+const delta = r => (r.v[9] ?? 0) - (r.v[0] ?? 0);
+const sorted = [...merged].sort((a, b) => delta(b) - delta(a));
+const totalDelta = t1 - t0;
+const top6 = sorted.slice(0, 6), top6sum = top6.reduce((s, r) => s + delta(r), 0);
+document.getElementById('topSix').textContent = `一般会計の当初予算は ${tri(totalDelta).toFixed(1)}兆円増えました。そのうち ${tri(top6sum).toFixed(1)}兆円（${(top6sum / totalDelta * 100).toFixed(0)}%）が、${top6.map(r => r.n).join('・')}の 6 つです。社会保障の 4 つ（年金・医療・介護・少子化）を合わせると ${tri(['02', '03', '04', '05'].reduce((s, c) => s + delta(merged.find(r => r.c === c)), 0)).toFixed(1)}兆円です。`;
+
+// 増減の棒（|Δ| ≥ 0.1兆円）
+(() => {
+  const rows = sorted.filter(r => Math.abs(delta(r)) >= 1000);
+  const s = document.getElementById('divChart'), W = 680, rowH = 26, T = 8, L = 190, R = 70, H = T + rows.length * rowH + 24;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '560px';
+  const max = Math.max(...rows.map(r => Math.abs(delta(r)))), min = Math.min(0, ...rows.map(delta));
+  const span = max - min, x = v => L + (W - L - R) * (v - min) / span, x0 = x(0);
+  const g = el('g', { class: 'grid' }, s);
+  for (let v = 0; v <= tri(max); v += 2) { el('line', { x1: x(v * 10000), x2: x(v * 10000), y1: T, y2: H - 22 }, g); el('text', { x: x(v * 10000), y: H - 6, 'text-anchor': 'middle' }, s).textContent = v === 0 ? '0' : `+${v}兆`; }
+  rows.forEach((r, i) => {
+    const d = delta(r), y = T + i * rowH, up = d >= 0, bx = Math.min(x(d), x0), bw = Math.max(2, Math.abs(x(d) - x0));
+    el('text', { x: L - 8, y: y + 17, 'text-anchor': 'end', class: 'lbl' }, s).textContent = r.n.length > 14 ? r.n.slice(0, 14) + '…' : r.n;
+    el('rect', { x: bx, y: y + 6, width: bw, height: rowH - 10, rx: 3, fill: up ? 'var(--up)' : 'var(--down)' }, s);
+    el('text', { x: up ? x(d) + 6 : x0 + 6, y: y + 17, class: 'val' }, s).textContent = sgn(d);
+    const hit = el('rect', { x: 0, y, width: W, height: rowH, fill: 'transparent' }, s);
+    hover(hit, `<b>${r.n}</b>（コード ${r.c}）<br>${sgn(d)}兆円<br>${series(r)}`);
+  });
+  el('line', { x1: x0, x2: x0, y1: T, y2: H - 22, stroke: 'var(--zero)', 'stroke-width': 1 }, s);
+})();
+
+// 小さな折れ線
+(() => {
+  const pick = ['20', '31', '35', '02', '05', '03', '47', '63'];
+  const host = document.getElementById('multiples');
+  for (const c of pick) {
+    const r = merged.find(x => x.c === c); const d = delta(r);
+    const box = document.createElement('div'); box.className = 'mini';
+    box.innerHTML = `<span class="name">${r.n}</span><span class="delta num ${d >= 0 ? 'up' : 'down'}">${f(r.v[0])} → ${f(r.v[9])}兆円（${sgn(d)}）</span>`;
+    const W = 170, H = 64, P = 4, vals = r.v.map(v => v ?? 0), lo = Math.min(...vals), hi = Math.max(...vals);
+    const x = i => P + (W - 2 * P) * i / 9, y = v => P + (H - 2 * P) * (1 - (v - lo) / ((hi - lo) || 1));
+    const s = el('svg', { viewBox: `0 0 ${W} ${H}`, class: 'chart', role: 'img', 'aria-label': `${r.n}の推移` });
+    el('line', { x1: P, x2: W - P, y1: y(vals[0]), y2: y(vals[0]), stroke: 'var(--zero)', 'stroke-dasharray': '3 3', 'stroke-width': 1 }, s);
+    el('polyline', { points: vals.map((v, i) => `${x(i)},${y(v)}`).join(' '), fill: 'none', stroke: d >= 0 ? 'var(--up)' : 'var(--down)', 'stroke-width': 2 }, s);
+    el('circle', { cx: x(9), cy: y(vals[9]), r: 3.5, fill: d >= 0 ? 'var(--up)' : 'var(--down)' }, s);
+    box.appendChild(s); hover(box, `<b>${r.n}</b><br>${series(r)}`); host.appendChild(box);
+  }
+})();
+
+// 表
+(() => {
+  const t = document.getElementById('tbl');
+  const head = `<thead><tr><th>主要経費別</th>${Y.map(y => `<th>FY${y}</th>`).join('')}<th>増減</th></tr></thead>`;
+  const row = r => `<tr><td>${r.n}</td>${r.v.map(v => `<td>${f(v)}</td>`).join('')}<td class="${delta(r) >= 0 ? 'up' : 'down'}">${sgn(delta(r))}</td></tr>`;
+  const useHead = `<tr><th>使途別</th>${Y.map(() => '<th></th>').join('')}<th></th></tr>`;
+  t.innerHTML = head + '<tbody>' + sorted.map(row).join('') + useHead + [...D.use].sort((a, b) => delta(b) - delta(a)).map(row).join('') + `<tr><td><b>一般会計の合計</b></td>${D.total.map(v => `<td><b>${f(v)}</b></td>`).join('')}<td class="up"><b>${sgn(totalDelta)}</b></td></tr></tbody>`;
+})();
+
+// 府省の増減
+(() => {
+  const M = [{"n": "皇室費", "v": [62, 99, 117, 116, 124, 73, 67, 101, 114, 126]}, {"n": "国会", "v": [1405, 1426, 1500, 1285, 1312, 1283, 1282, 1300, 1315, 1365]}, {"n": "裁判所", "v": [3177, 3212, 3256, 3266, 3254, 3228, 3222, 3310, 3352, 3495]}, {"n": "会計検査院", "v": [173, 175, 177, 171, 168, 169, 158, 163, 163, 169]}, {"n": "内閣", "v": [1092, 1104, 1118, 1761, 3801, 1072, 1064, 1115, 1215, 1241]}, {"n": "内閣府", "v": [26455, 26904, 30730, 36310, 35745, 35933, 5722, 5726, 6796, 6478]}, {"n": "宮内庁", "v": [112, 115, 123, 122, 126, 121, 116, 120, 119, 130]}, {"n": "公正取引委員会", "v": [112, 110, 114, 116, 115, 105, 111, 118, 154, 128]}, {"n": "警察庁", "v": [3185, 3151, 3421, 3603, 3235, 2873, 2902, 2806, 2875, 2879]}, {"n": "個人情報保護委員会", "v": [32, 35, 35, 42, 40, 31, 34, 35, 42, 36]}, {"n": "金融庁", "v": [244, 247, 256, 257, 249, 226, 232, 234, 239, 246]}, {"n": "消費者庁", "v": [122, 119, 118, 120, 119, 108, 116, 138, 141, 144]}, {"n": "総務省", "v": [161772, 160969, 166295, 167692, 165952, 164624, 168625, 182107, 195917, 212701]}, {"n": "法務省", "v": [7504, 7638, 8129, 8206, 7431, 7438, 7250, 7405, 7436, 7881]}, {"n": "外務省", "v": [6926, 6967, 7306, 7120, 6959, 6904, 7434, 7257, 7448, 7763]}, {"n": "財務省", "v": [257304, 255257, 254744, 251579, 305248, 311688, 354763, 302777, 304031, 336116]}, {"n": "文部科学省", "v": [53097, 53093, 55287, 54152, 52980, 52818, 52941, 53384, 54029, 58809]}, {"n": "厚生労働省", "v": [306873, 311262, 320358, 330366, 331380, 335160, 331686, 338191, 342904, 350433]}, {"n": "農林水産省", "v": [21359, 21304, 22361, 22170, 21234, 21043, 20937, 20933, 20957, 21195]}, {"n": "経済産業省", "v": [9789, 9365, 12842, 12435, 9170, 9024, 8809, 8695, 8506, 8694]}, {"n": "国土交通省", "v": [59235, 59392, 70223, 68983, 60578, 60307, 60524, 60965, 60719, 61993]}, {"n": "環境省", "v": [3267, 3273, 3459, 3537, 3233, 3291, 3258, 3207, 3096, 3155]}, {"n": "防衛省", "v": [51251, 51911, 52574, 53133, 53235, 53687, 67880, 79172, 86691, 89843]}, {"n": "カジノ管理委員会", "v": [null, null, 26, 38, 42, 35, 36, 37, 37, 39]}, {"n": "デジタル庁", "v": [null, null, null, null, 368, 4720, 4951, 4964, 4752, 5198]}, {"n": "こども家庭庁", "v": [null, null, null, null, null, null, 39691, 41457, 42367, 42795]}, {"n": "サイバー通信情報監理委員会", "v": [null, null, null, null, null, null, null, null, null, 14]}, {"n": "防災庁", "v": [null, null, null, null, null, null, null, null, null, 24]}];
+  const dl = r => (r.v[9] ?? 0) - (r.v[0] ?? 0);
+  const rows = M.filter(r => Math.abs(dl(r)) >= 50).sort((a, b) => dl(b) - dl(a));
+  const up = rows.filter(r => dl(r) > 0);
+  document.getElementById('minLead').textContent = `一般会計の当初予算を府省ごとに足しました。増えたのは ${up.slice(0, 5).map(r => r.n).join('・')}など。減ったのは、経済産業省（−0.11兆円）など小さいものだけです。ただし、FY2023 にこども家庭庁ができたことで、内閣府は −2.0兆円に見えます。`;
+  const s = document.getElementById('minChart'), W = 680, rowH = 26, T = 8, L = 120, R = 70, H = T + rows.length * rowH + 24;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '520px';
+  const max = Math.max(...rows.map(dl)), min = Math.min(0, ...rows.map(dl)), x = v => L + (W - L - R) * (v - min) / (max - min), x0 = x(0);
+  const g = el('g', { class: 'grid' }, s);
+  for (let v = -2; v <= tri(max); v += 2) { el('line', { x1: x(v * 10000), x2: x(v * 10000), y1: T, y2: H - 22 }, g); el('text', { x: x(v * 10000), y: H - 6, 'text-anchor': 'middle' }, s).textContent = v === 0 ? '0' : `${v > 0 ? '+' : '−'}${Math.abs(v)}兆`; }
+  rows.forEach((r, i) => {
+    const d = dl(r), y = T + i * rowH, upd = d >= 0, bx = Math.min(x(d), x0), bw = Math.max(2, Math.abs(x(d) - x0));
+    el('text', { x: L - 8, y: y + 17, 'text-anchor': 'end', class: 'lbl' }, s).textContent = r.n;
+    el('rect', { x: bx, y: y + 6, width: bw, height: rowH - 10, rx: 3, fill: upd ? 'var(--up)' : 'var(--down)' }, s);
+    el('text', { x: upd ? x(d) + 6 : x0 + 6, y: y + 17, class: 'val' }, s).textContent = sgn(d) + (r.v[0] === null ? '（新設）' : '');
+    const hit = el('rect', { x: 0, y, width: W, height: rowH, fill: 'transparent' }, s);
+    hover(hit, `<b>${r.n}</b><br>${sgn(d)}兆円<br>${series(r)}`);
+  });
+  el('line', { x1: x0, x2: x0, y1: T, y2: H - 22, stroke: 'var(--zero)', 'stroke-width': 1 }, s);
+})();
+</script>
+</body></html>

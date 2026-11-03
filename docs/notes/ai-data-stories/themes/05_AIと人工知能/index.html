@@ -1,0 +1,222 @@
+<title>AI と人工知能</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Zen+Kaku+Gothic+New:wght@700;900&display=swap">
+<style>
+/* layout: 1 本の読み物の列（最大 760px）。2 つの「言葉」を 2 色で通す: 予算書 = 藍、RS = 朱 */
+:root {
+  --bg: #f6f7f9; --surface: #ffffff; --ink: #18202b; --muted: #5b6573; --line: #d9dee5;
+  --book: #2a6fc9; --rs: #d2542a; --soft: #c9d1db; --tag: #eef1f5;
+  --display: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", sans-serif;
+  --body: "BIZ UDPGothic", "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #12161c; --surface: #1a2029; --ink: #e8ecf1; --muted: #9aa5b3; --line: #2c3440;
+  --book: #5b9cf0; --rs: #f07a50; --soft: #3a4452; --tag: #232b36; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #12161c; --surface: #1a2029; --ink: #e8ecf1; --muted: #9aa5b3; --line: #2c3440;
+  --book: #5b9cf0; --rs: #f07a50; --soft: #3a4452; --tag: #232b36; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.8;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 32px 64px; }
+main { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 56px; }
+h1, h2 { font-family: var(--display); text-wrap: balance; line-height: 1.35; margin: 0; }
+h1 { font-size: clamp(28px, 6vw, 42px); font-weight: 900; }
+h2 { font-size: 22px; font-weight: 700; }
+p { margin: 0; max-width: 65ch; }
+section { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; color: var(--muted); }
+.num { font-variant-numeric: tabular-nums; }
+.book { color: var(--book); } .rs { color: var(--rs); }
+.pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+@media (max-width: 560px) { .pair { grid-template-columns: 1fr; } }
+.word { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.word .label { font-size: 12px; color: var(--muted); letter-spacing: .04em; }
+.word .big { font-family: var(--display); font-weight: 900; font-size: clamp(34px, 8vw, 52px); line-height: 1.1; }
+.word .sub { font-size: 13px; color: var(--muted); }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; min-width: 0; }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { fill: var(--muted); font-family: var(--body); font-size: 11px; }
+.chart .lbl { fill: var(--ink); font-size: 12px; }
+.chart .val { font-variant-numeric: tabular-nums; }
+.grid line { stroke: var(--line); stroke-width: 1; }
+.tag { display: inline-block; font-size: 11px; padding: 0 8px; border-radius: 999px; background: var(--tag); color: var(--muted); margin-right: 6px; white-space: nowrap; }
+.tag.src::before { content: "原資料"; } .tag.proc::before { content: "加工"; } .tag.ai::before { content: "AIの計算・解釈"; }
+.claims { display: flex; flex-direction: column; gap: 12px; padding: 0; margin: 0; list-style: none; }
+.claims li { display: grid; gap: 4px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12px; color: var(--muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
+th, td { padding: 4px 8px; border-bottom: 1px solid var(--line); text-align: right; vertical-align: top; }
+th.l, td.l { text-align: left; }
+thead th { color: var(--muted); font-weight: 400; white-space: nowrap; }
+td.name { min-width: 220px; max-width: 320px; text-align: left; }
+.mark { font-size: 11px; color: var(--book); white-space: nowrap; }
+details { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+summary { cursor: pointer; font-weight: 700; }
+summary:focus-visible { outline: 2px solid var(--book); outline-offset: 2px; }
+.notes { padding-left: 1.2em; margin: 0; display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--muted); }
+.questions { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.questions li { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+.small { font-size: 13px; color: var(--muted); }
+footer { font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+#tip { position: fixed; pointer-events: none; background: var(--ink); color: var(--bg); font-size: 12px; padding: 6px 8px; border-radius: 6px; line-height: 1.5; max-width: 280px; z-index: 5; }
+</style>
+
+<main>
+  <header style="display:flex;flex-direction:column;gap:16px">
+    <span class="eyebrow">予算書（FY2017〜FY2027）と行政事業レビュー（RS、2025 年度版）</span>
+    <h1>予算書は「人工知能」、RS は「AI」</h1>
+    <p>同じ分野の予算でも、書類によって言葉が違います。名前で探すと、片方では見つかりません。事業の単位で、どこまでつなげるかを調べました。</p>
+    <div class="pair">
+      <div class="word"><span class="label">予算書の項・事項・目の名前</span><span class="big num book">「AI」0 件</span><span class="sub num">「人工知能」は 項 20・事項 21・目 46（FY2017〜FY2027 の延べ）</span></div>
+      <div class="word"><span class="label">RS の事業名（5,794 事業）</span><span class="big num rs">「AI」36 件</span><span class="sub num">「人工知能」は 3 件。重なりは 0</span></div>
+    </div>
+  </header>
+
+  <section>
+    <h2>RS の「AI」事業は、年ごとに増えている</h2>
+    <p>事業名に「AI」または「人工知能」を含む事業の数と、当初予算の合計です。FY2025 は 39 事業、当初予算 1,982.6 億円でした。</p>
+    <div class="panel"><svg class="chart" id="yearChart" viewBox="0 0 640 240" role="img" aria-label="AI を名前に含む RS 事業の数と当初予算（2021〜2025）"></svg>
+      <div class="legend" style="margin-top:8px"><span><i style="background:var(--rs)"></i>当初予算（億円）</span><span><i style="background:var(--soft)"></i>歳出予算現額（補正・繰越を含む）</span></div></div>
+    <p class="small">RS の 2025 年度版は、2025 年度までに終わった事業を含みません。前の年度ほど、数が少なく出ます。2021〜2023 年度は移行データです。</p>
+  </section>
+
+  <section>
+    <h2>39 事業のうち、予算書の「人工知能」に届くのは 5 事業</h2>
+    <div class="panel"><svg class="chart" id="funnel" viewBox="0 0 640 200" role="img" aria-label="AI 事業から予算書の項・目へのつながり"></svg></div>
+    <ul class="claims">
+      <li><strong>27 事業は、予算書の項に結べた</strong><span>RS の「予算種別・歳出予算項目」（2-2）の項名で、同じ年度の予算書の項に結んだ数です。残る 12 事業は、2-2 の項が空欄などで結べませんでした。</span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+      <li><strong>結べた先は、ほとんどが「AI」と関係のない名前の項</strong><span>研究振興費（4 事業）、防衛力基盤強化推進費（4）、分野別外交費（3）、脱炭素成長型経済構造移行推進対策費（2）、デジタル社会形成推進費（2）など、21 種類の項です。「人工知能」を名前に持つ項に結べたのは 1 事業、「人工知能」を名前に持つ目に結べたのは 5 事業でした。</span><span><span class="tag proc"></span><span class="tag ai"></span></span></li>
+      <li><strong>当初予算が 0 の事業が 28</strong><span>そのうち 11 事業は、補正予算や前年度からの繰越しで、歳出予算現額があります。残り 17 事業は、現額も 0 です。デジタル庁の「（情報通信技術調達等適正・効率化推進費）」と付く事業のように、別の事業の中で予算を持つものと推測しますが、確かめていません。</span><span><span class="tag src"></span><span class="tag ai"></span></span></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>名前ではなく、明細の行でつながる</h2>
+    <p>RS の事業が結ばれている「人工知能」の目は、FY2024 に 2 つ、FY2025 に 3 つ。どの目も、RS の 2-2 の「当初予算」の行を足すと、予算書の政府案と 1 円まで一致しました。目の中身は、AI と名乗る事業だけではありません。</p>
+    <div class="panel scroll"><svg class="chart" id="matchChart" role="img" aria-label="人工知能の目と、そこに入る RS 事業"></svg>
+      <div class="legend" style="margin-top:8px"><span><i style="background:var(--rs)"></i>事業名に AI・人工知能を含む</span><span><i style="background:var(--soft)"></i>含まない</span><span><i style="background:transparent;border:1.5px dashed var(--muted)"></i>補正予算の行（政府案には入らない）</span></div></div>
+    <p class="small">例: 目「人工知能等社会実装研究拠点事業費補助金」（FY2025、19.41 億円）は、AI 等の活用を推進する研究データエコシステム構築事業 11.47 億円、Society5.0実現化研究拠点支援事業 5.61 億円、統計エキスパート人材育成プロジェクト 2.34 億円に分かれます。</p>
+  </section>
+
+  <section>
+    <h2>一番大きい AI 事業は、二つの項にまたがる</h2>
+    <ul class="claims">
+      <li><strong>ポスト5G 情報通信システム基盤強化研究開発事業（AI 基盤モデル及び先端半導体関連技術開発事業）</strong><span>FY2025 の当初予算 1,617 億円で、39 事業の当初予算の 81.6% を占めます。お金は、FY2025 にできたエネルギー対策特別会計の「先端半導体・人工知能関連技術勘定」から出ます。項は 2 つで、「先端半導体・人工知能関連技術対策費」が 115 億円、「脱炭素成長型経済構造移行推進対策費」が 1,502 億円です。名前に「人工知能」がある項だけを見ると、この事業の 7% しか見えません。</span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+      <li><strong>補正で倍になる</strong><span>FY2025 の第1次補正予算で、さらに 1,536.6 億円（人工知能の項 734.5 億円、脱炭素の項 802.0 億円）。歳出予算現額は 3,153.6 億円です。</span><span><span class="tag src"></span></span></li>
+      <li><strong>FY2026 の予算書では、同じ目が 6,738.2 億円</strong><span>目「先端半導体・人工知能関連技術対策費補助金」は、FY2025 の 115.0 億円から FY2026 の政府案 6,738.2 億円になりました。RS の 2025 年度版に FY2026 は無いので、どの事業の分かは未確認です。</span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>名前には無く、説明にだけ「AI」がある事業は 153</h2>
+    <p>事業の目的・現状と課題・事業の概要に「AI」「人工知能」が出てくる事業です。経済産業省 30、文部科学省 25、総務省 21、デジタル庁 13、厚生労働省 11 など。半導体の量産への出資（1,000 億円）や研究機関の運営費のように、AI はその一部にすぎない事業が多いので、額を「AI 予算」として足すことはしません。</p>
+    <div class="panel scroll"><table id="textTbl"></table></div>
+  </section>
+
+  <section>
+    <h2>39 事業の一覧（FY2025）</h2>
+    <details>
+      <summary>府省別の内訳と、事業ごとの結び先を開く</summary>
+      <div class="scroll" style="margin-top:12px"><table id="minTbl"></table></div>
+      <div class="scroll" style="margin-top:16px"><table id="listTbl"></table></div>
+    </details>
+  </section>
+
+  <section>
+    <h2>この数字の作り方と、確かめられないこと</h2>
+    <ul class="notes">
+      <li><span class="tag src"></span>RS: 行政事業レビュー見える化サイトの CSV（2025 年度版。1-2 事業概要等、2-1 予算・執行のサマリ、2-2 予算種別・歳出予算項目）。予算書: 財務省「予算書・決算書データベース」の項・事項・目。</li>
+      <li><span class="tag proc"></span>nihon-no-yosan が RS の 2-2 を、同じ年度の予算書の項に、項の名前で結んだ表を使いました（一般会計は所管・組織・項、特別会計は会計・項）。額は RS が円、予算書が千円です。</li>
+      <li><span class="tag ai"></span>「AI」は、前後が英字でない「AI」「ＡＩ」で探しました（MAIL などを除くため）。名前に「AI」を含む 36 事業は、2-1 の事業名で数え直しても同じ数でした。年度ごとの集計、割合、推測は、この探索で計算・判断したものです。</li>
+      <li>RS の額は事業ごとの集計で、予算書の項・目の額とは単位が違います。今回、予算書と比べて一致を確かめたのは、「人工知能」の目 5 つ（当初予算の行）だけです。ほかの項・目は照合していません。</li>
+      <li>RS の 2021〜2023 年度は移行データです。AI を名前に含む事業の 2-2 の行のうち、項が空欄の行は FY2021 で 15 行中 12、FY2023 で 55 行中 30 でした（FY2025 は 77 行中 16）。FY2025 の執行額は、全事業で 0 なので値なしです。</li>
+      <li>1 事業（生成AIの検証環境）は、FY2025 の合計の行が 2 行あります（片方は空欄）。数には 1 事業として入れています。</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>次に、聞かせてください</h2>
+    <ol class="questions">
+      <li>「AI 予算はいくらか」を知りたいとき、どこまでを AI 予算と呼びますか。名前に AI がある事業だけか、説明に出てくる事業までか、目の中で AI 以外と同じ補助金になっているものはどう扱うか。</li>
+      <li>FY2026 の 6,738 億円（先端半導体・人工知能関連技術対策費補助金）のうち、AI に向かう分と半導体に向かう分を、概算要求書の明細で分けてみますか。</li>
+      <li>RS の支出先（5-1）まで降りると、AI 事業のお金を受け取った法人が見えます。どの事業から見てみたいですか。</li>
+    </ol>
+  </section>
+
+  <footer>
+    <span>出典：行政事業レビュー見える化サイト（https://rssystem.go.jp）、財務省「予算書・決算書データベース」。nihon-no-yosan が編集・加工して作成。国や各府省が作成した加工していない情報ではありません。</span>
+    <span>AI Data Stories PoC テーマ 5（2026-11-03）。金額は億円（RS は円、予算書は千円の値から計算し、表示で丸め）。</span>
+  </footer>
+</main>
+<div id="tip" hidden></div>
+
+<script>
+const D = {"years":[{"y":2021,"n":7,"init":92.38,"cur":1206.89,"rows":15,"blank":12,"tn":65},{"y":2022,"n":10,"init":98.96,"cur":4974.94,"rows":20,"blank":14,"tn":73},{"y":2023,"n":17,"init":127.3,"cur":7674.74,"rows":55,"blank":30,"tn":98},{"y":2024,"n":24,"init":142.51,"cur":10699.72,"rows":68,"blank":23,"tn":120},{"y":2025,"n":39,"init":1982.56,"cur":4361.5,"rows":77,"blank":16,"tn":153}],"list":[{"min":"経済産業省","name":"ポスト5G情報通信システム基盤強化研究開発事業(AI基盤モデル及び先端半導体関連技術開発事業)","init":1617,"cur":3153.56,"kous":["脱炭素成長型経済構造移行推進対策費","先端半導体・人工知能関連技術対策費"],"jk":true,"jm":true},{"min":"総務省","name":"我が国における大規模言語モデル(LLM)の開発力強化に向けたデータの整備・拡充(2025年度補正では、信頼できるAIの開発・活用支援に資するデータ整備及び能動的評価基盤構築に関する研究開発)","init":0,"cur":383,"kous":["国立研究開発法人情報通信研究機構運営費","情報通信技術研究開発推進費"],"jk":false,"jm":false},{"min":"文部科学省","name":"AI for Scienceによる科学研究革新プログラム","init":0,"cur":370,"kous":["研究振興費","研究開発推進費"],"jk":false,"jm":true},{"min":"経済産業省","name":"次世代エッジAI半導体研究開発事業","init":295,"cur":295,"kous":["脱炭素成長型経済構造移行推進対策費"],"jk":false,"jm":false},{"min":"文部科学省","name":"生成AIモデルの透明性・信頼性の確保に向けた研究開発拠点形成","init":8.16,"cur":55.05,"kous":["研究振興費"],"jk":false,"jm":true},{"min":"経済産業省","name":"省エネ半導体関連開発事業(うち省エネAI半導体及びシステムに関する技術開発事業)","init":30,"cur":30,"kous":["エネルギー需給構造高度化対策国立研究開発法人新エネルギー・産業技術総合開発機構運営費"],"jk":false,"jm":false},{"min":"総務省","name":"生成AI等を活用したサイバーセキュリティ対策強化","init":0,"cur":21.46,"kous":[],"jk":false,"jm":false},{"min":"文部科学省","name":"AI等の活用を推進する研究データエコシステム構築事業","init":11.48,"cur":16.91,"kous":["研究振興費"],"jk":false,"jm":true},{"min":"防衛省","name":"AI適用システム維持管理のための環境構築の実証に関する経費","init":10.54,"cur":10.54,"kous":["防衛力基盤強化推進費"],"jk":false,"jm":false},{"min":"総務省","name":"安全なデータ連携による最適化AI技術の研究開発","init":0,"cur":9,"kous":[],"jk":false,"jm":false},{"min":"文部科学省","name":"AIP:人工知能/ビッグデータ/IoT/サイバーセキュリティ統合プロジェクト(次世代人工知能技術等研究開発拠点形成事業費補助金)","init":8.56,"cur":8.56,"kous":["研究振興費"],"jk":false,"jm":true},{"min":"水産庁","name":"まき網漁業の自動操業に向けたAI技術の開発","init":0,"cur":3.2,"kous":["水産資源管理対策費"],"jk":false,"jm":false},{"min":"防衛省","name":"AI導入推進に関する経費","init":1.18,"cur":1.18,"kous":["防衛力基盤強化推進費","防衛本省共通費"],"jk":false,"jm":false},{"min":"デジタル庁","name":"政府によるAI調達・利活用等調査事業","init":0,"cur":1.13,"kous":["デジタル社会形成推進費"],"jk":false,"jm":false},{"min":"警察庁","name":"人工知能等先端技術を用いた警察業務高度化・効率化に係る実証実験等","init":0.08,"cur":0.58,"kous":["警察情報通信基盤費"],"jk":false,"jm":false},{"min":"国土交通省","name":"フィジカルAIを活用したインフラ整備等に関する調査検討業務","init":0,"cur":0.55,"kous":["技術研究開発推進費"],"jk":false,"jm":false},{"min":"厚生労働省","name":"医療AI実用化基盤整備促進事業","init":0,"cur":0.47,"kous":["医療技術実用化等推進費"],"jk":false,"jm":false},{"min":"総務省","name":"AIの高度化に応じたガバナンスに関する調査研究","init":0.45,"cur":0.45,"kous":["情報通信技術高度利活用推進費","情報通信国際戦略推進費"],"jk":false,"jm":false},{"min":"外務省","name":"AIの国際ガバナンス推進のための支援","init":0,"cur":0.36,"kous":["分野別外交費"],"jk":false,"jm":false},{"min":"外務省","name":"AIを活用したグローバルサウス向け社会課題解決プラットフォーム事業","init":0,"cur":0.3,"kous":["分野別外交費"],"jk":false,"jm":false},{"min":"国土交通省","name":"交通AIの技術革新とガバナンス制度に関する調査研究","init":0.11,"cur":0.11,"kous":["社会資本整備・管理効率化推進費"],"jk":false,"jm":false},{"min":"外務省","name":"グローバル・サウス諸国におけるAIインテリジェンス関連事業","init":0,"cur":0.1,"kous":["分野別外交費"],"jk":false,"jm":false},{"min":"総務省","name":"AIネットワークにおけるデータ利活用の促進に関する調査研究(2021年度までは「AIネットワーク化の進展等に関する調査研究」として実施)","init":0,"cur":0,"kous":[],"jk":false,"jm":false},{"min":"経済産業省","name":"IoT社会実現に向けた次世代人工知能・センシング等中核技術開発","init":0,"cur":0,"kous":[],"jk":false,"jm":false},{"min":"文部科学省","name":"国家戦略分野の若手研究者及び博士後期課程学生の育成(次世代AI人材育成プログラム)","init":0,"cur":0,"kous":[],"jk":false,"jm":false},{"min":"経済産業省","name":"生成AIの基盤的な開発力強化に資する計算資源の整備(国立研究開発法人産業技術総合研究所施設整備費補助金)","init":0,"cur":0,"kous":[],"jk":false,"jm":false},{"min":"防衛省","name":"AIを活用した意思決定迅速化に関する研究","init":0,"cur":0,"kous":["防衛力基盤強化推進費"],"jk":false,"jm":false},{"min":"デジタル庁","name":"生成AIの検証環境(情報通信技術調達等適正・効率化推進費)","init":0,"cur":0,"kous":[],"jk":false,"jm":false},{"min":"デジタル庁","name":"総務省における生成AI利用環境(情報通信技術調達等適正・効率化推進費)","init":0,"cur":0,"kous":[],"jk":false,"jm":false},{"min":"デジタル庁","name":"生成AIを活用した開示請求等事務の効率化(情報通信技術調達等適正・効率化推進費)","init":0,"cur":0,"kous":[],"jk":false,"jm":false},{"min":"デジタル庁","name":"AIを活用した海賊版サイトの検知システム(情報通信技術調達等適正・効率化推進費)","init":0,"cur":0,"kous":[],"jk":false,"jm":false},{"min":"デジタル庁","name":"外務省業務合理化AI(情報通信技術調達等適正・効率化推進費)","init":0,"cur":0,"kous":[],"jk":false,"jm":false},{"min":"デジタル庁","name":"国際法関連業務合理化AI(情報通信技術調達等適正・効率化推進費)","init":0,"cur":0,"kous":[],"jk":false,"jm":false},{"min":"デジタル庁","name":"生成AI評価用データセットの作成及び公開","init":0,"cur":0,"kous":["デジタル社会形成推進費"],"jk":false,"jm":false},{"min":"防衛省","name":"UAV連携型AI駆動オフロードUGVの研究","init":0,"cur":0,"kous":["防衛力基盤強化推進費"],"jk":false,"jm":false},{"min":"文部科学省","name":"数理・データサイエンス・AIを活用した文理横断・融合教育強化事業","init":0,"cur":0,"kous":["高等教育振興費"],"jk":false,"jm":false},{"min":"内閣府","name":"AI有識者会議(仮称)会議運営及び調査研究事業","init":0,"cur":0,"kous":["科学技術イノベーション創造推進費"],"jk":false,"jm":false},{"min":"内閣府","name":"AI安全性に係る国際会合への参画、及び高性能なAIシステムの利用に係るガイド等の開発事業","init":0,"cur":0,"kous":["科学技術イノベーション創造推進費"],"jk":false,"jm":false},{"min":"原子力規制委員会","name":"AIを活用した審査業務の支援に係る調査・開発事業","init":0,"cur":0,"kous":["事務取扱費"],"jk":false,"jm":false}],"match":[{"year":2024,"kou":"研究振興費","moku":"次世代人工知能技術等研究開発拠点形成事業費補助金","book":37.67,"rows":[{"name":"AIP:人工知能/ビッグデータ/IoT/サイバーセキュリティ統合プロジェクト(次世代人工知能技術等研究開発拠点形成事業費補助金)","ai":true,"kind":"当初予算","oku":30.77},{"name":"生成AIモデルの透明性・信頼性の確保に向けた研究開発拠点形成","ai":true,"kind":"当初予算","oku":6.9},{"name":"生成AIモデルの透明性・信頼性の確保に向けた研究開発拠点形成","ai":true,"kind":"第1次補正予算","oku":41.61}]},{"year":2024,"kou":"研究振興費","moku":"人工知能等社会実装研究拠点事業費補助金","book":20.89,"rows":[{"name":"Society5.0実現化研究拠点支援事業","ai":false,"kind":"当初予算","oku":6.31},{"name":"統計エキスパート人材育成プロジェクト","ai":false,"kind":"当初予算","oku":3.12},{"name":"AI等の活用を推進する研究データエコシステム構築事業","ai":true,"kind":"当初予算","oku":11.47}]},{"year":2025,"kou":"研究振興費","moku":"次世代人工知能技術等研究開発拠点形成事業費補助金","book":16.71,"rows":[{"name":"AIP:人工知能/ビッグデータ/IoT/サイバーセキュリティ統合プロジェクト(次世代人工知能技術等研究開発拠点形成事業費補助金)","ai":true,"kind":"当初予算","oku":8.56},{"name":"生成AIモデルの透明性・信頼性の確保に向けた研究開発拠点形成","ai":true,"kind":"当初予算","oku":8.15},{"name":"生成AIモデルの透明性・信頼性の確保に向けた研究開発拠点形成","ai":true,"kind":"第1次補正予算","oku":46.88},{"name":"AI for Scienceによる科学研究革新プログラム","ai":true,"kind":"第1次補正予算","oku":45}]},{"year":2025,"kou":"研究振興費","moku":"人工知能等社会実装研究拠点事業費補助金","book":19.41,"rows":[{"name":"Society5.0実現化研究拠点支援事業","ai":false,"kind":"当初予算","oku":5.61},{"name":"統計エキスパート人材育成プロジェクト","ai":false,"kind":"当初予算","oku":2.34},{"name":"AI等の活用を推進する研究データエコシステム構築事業","ai":true,"kind":"当初予算","oku":11.47},{"name":"AI等の活用を推進する研究データエコシステム構築事業","ai":true,"kind":"第1次補正予算","oku":5.43}]},{"year":2025,"kou":"先端半導体・人工知能関連技術対策費","moku":"先端半導体・人工知能関連技術対策費補助金","book":115,"rows":[{"name":"ポスト5G情報通信システム基盤強化研究開発事業(AI基盤モデル及び先端半導体関連技術開発事業)","ai":true,"kind":"第1次補正予算","oku":734.53},{"name":"ポスト5G情報通信システム基盤強化研究開発事業(AI基盤モデル及び先端半導体関連技術開発事業)","ai":true,"kind":"当初予算","oku":115}]}],"kc":[["研究振興費",4],["防衛力基盤強化推進費",4],["分野別外交費",3],["脱炭素成長型経済構造移行推進対策費",2],["デジタル社会形成推進費",2],["科学技術イノベーション創造推進費",2],["警察情報通信基盤費",1],["先端半導体・人工知能関連技術対策費",1],["防衛本省共通費",1],["エネルギー需給構造高度化対策国立研究開発法人新エネルギー・産業技術総合開発機構運営費",1],["社会資本整備・管理効率化推進費",1],["国立研究開発法人情報通信研究機構運営費",1],["情報通信技術研究開発推進費",1],["情報通信技術高度利活用推進費",1],["情報通信国際戦略推進費",1],["水産資源管理対策費",1],["医療技術実用化等推進費",1],["高等教育振興費",1],["事務取扱費",1],["技術研究開発推進費",1],["研究開発推進費",1]],"byMin":[{"min":"デジタル庁","n":8,"init":0,"cur":1.13,"zero":8,"linked":2},{"min":"文部科学省","n":6,"init":28.2,"cur":450.51,"zero":3,"linked":5},{"min":"総務省","n":5,"init":0.45,"cur":413.9,"zero":4,"linked":2},{"min":"経済産業省","n":5,"init":1942,"cur":3478.56,"zero":2,"linked":3},{"min":"防衛省","n":4,"init":11.72,"cur":11.72,"zero":2,"linked":4},{"min":"外務省","n":3,"init":0,"cur":0.76,"zero":3,"linked":3},{"min":"国土交通省","n":2,"init":0.11,"cur":0.66,"zero":1,"linked":2},{"min":"内閣府","n":2,"init":0,"cur":0,"zero":2,"linked":2},{"min":"警察庁","n":1,"init":0.08,"cur":0.58,"zero":0,"linked":1},{"min":"水産庁","n":1,"init":0,"cur":3.2,"zero":1,"linked":1},{"min":"厚生労働省","n":1,"init":0,"cur":0.47,"zero":1,"linked":1},{"min":"原子力規制委員会","n":1,"init":0,"cur":0,"zero":1,"linked":1}],"t25":[{"min":"経済産業省","name":"次世代半導体の量産等に向けた出資事業","init":1000},{"min":"経済産業省","name":"国立研究開発法人等の施設・設備等の機能強化事業(うち国立研究開発法人産業技術総合研究所運営費交付金)","init":666.87},{"min":"農林水産省","name":"国立研究開発法人農業・食品産業技術総合研究機構に要する経費","init":487.42},{"min":"経済産業省","name":"半導体設計・製造基盤整備事業(国立研究開発法人産業技術総合研究所運営費交付金)","init":318},{"min":"文部科学省","name":"革新的ハイパフォーマンス・コンピューティング・インフラ(HPCI)の構築","init":181.18},{"min":"総務省","name":"革新的情報通信技術(Beyond 5G(6G))基金事業","init":150}]};
+const NS = 'http://www.w3.org/2000/svg';
+const el = (tag, attrs = {}, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+const tip = document.getElementById('tip');
+function hover(node, html) {
+  node.addEventListener('pointermove', e => { tip.innerHTML = html; tip.hidden = false; tip.style.left = Math.min(e.clientX + 12, innerWidth - 290) + 'px'; tip.style.top = (e.clientY + 12) + 'px'; });
+  node.addEventListener('pointerleave', () => { tip.hidden = true; });
+}
+const oku = v => v === null || v === undefined ? '—' : v.toLocaleString('ja-JP', { maximumFractionDigits: 2 }) + '億円';
+const esc = s => s.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+
+// 年度別: 事業数（棒の上の数）と当初・現額（棒）
+(() => {
+  const s = document.getElementById('yearChart'), W = 640, H = 240, L = 56, R = 16, T = 24, B = 28;
+  const max = 11000, ys = D.years, cw = (W - L - R) / ys.length, y = v => T + (H - T - B) * (1 - v / max);
+  const g = el('g', { class: 'grid' }, s);
+  for (const v of [0, 2500, 5000, 7500, 10000]) { el('line', { x1: L, x2: W - R, y1: y(v), y2: y(v) }, g); el('text', { x: L - 6, y: y(v) + 4, 'text-anchor': 'end' }, s).textContent = v.toLocaleString(); }
+  el('text', { x: L - 6, y: 12, 'text-anchor': 'end' }, s).textContent = '億円';
+  ys.forEach((r, i) => {
+    const cx = L + cw * (i + 0.5), bw = Math.min(26, cw * 0.28);
+    el('rect', { x: cx - bw - 2, y: y(r.cur), width: bw, height: y(0) - y(r.cur), rx: 3, fill: 'var(--soft)' }, s);
+    el('rect', { x: cx + 2, y: y(r.init), width: bw, height: Math.max(1.5, y(0) - y(r.init)), rx: 3, fill: 'var(--rs)' }, s);
+    el('text', { x: cx, y: H - 8, 'text-anchor': 'middle' }, s).textContent = r.y;
+    el('text', { x: cx, y: Math.min(y(r.cur), y(r.init)) - 8, 'text-anchor': 'middle', class: 'lbl val' }, s).textContent = `${r.n} 事業`;
+    const hit = el('rect', { x: cx - cw / 2, y: T, width: cw, height: H - T - B, fill: 'transparent' }, s);
+    hover(hit, `<b>FY${r.y}</b>（名前に AI・人工知能）<br>${r.n} 事業<br>当初予算 ${oku(r.init)}<br>歳出予算現額 ${oku(r.cur)}<br>2-2 の行 ${r.rows}（項が空欄 ${r.blank}）<br>説明にだけ AI: ${r.tn} 事業`);
+  });
+})();
+
+// つながり
+(() => {
+  const s = document.getElementById('funnel'), W = 640, L = 200, R = 60, bh = 22, rowsF = [
+    ['名前に AI・人工知能（FY2025）', 39, 'var(--rs)'], ['予算書の項に結べた', 27, 'var(--rs)'], ['結べなかった', 12, 'var(--soft)'], ['「人工知能」の目に結べた', 5, 'var(--book)'], ['「人工知能」の項に結べた', 1, 'var(--book)']];
+  rowsF.forEach(([lab, n, c], i) => {
+    const y = 12 + i * 36, w = (W - L - R) * n / 39;
+    el('text', { x: L - 8, y: y + 15, 'text-anchor': 'end', class: 'lbl' }, s).textContent = lab;
+    el('rect', { x: L, y, width: Math.max(2, w), height: bh, rx: 3, fill: c }, s);
+    el('text', { x: L + w + 6, y: y + 15, class: 'val lbl' }, s).textContent = n;
+  });
+})();
+
+// 人工知能の目と RS の行
+(() => {
+  const s = document.getElementById('matchChart'), W = 680, L = 230, R = 20, rowH = 64, T = 8;
+  const rows = D.match; const H = T + rows.length * rowH + 20;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '560px';
+  rows.forEach((m, i) => {
+    const sum = k => m.rows.filter(r => (r.kind === '当初予算') === k).reduce((a, r) => a + r.oku, 0);
+    const rowMax = Math.max(sum(true), sum(false)), scale = v => (W - L - R - 60) * v / rowMax;
+    const y = T + i * rowH;
+    el('text', { x: L - 8, y: y + 14, 'text-anchor': 'end', class: 'lbl' }, s).textContent = (m.moku.length > 16 ? m.moku.slice(0, 16) + '…' : m.moku);
+    el('text', { x: L - 8, y: y + 30, 'text-anchor': 'end' }, s).textContent = `FY${m.year} 政府案 ${m.book.toLocaleString()}億円`;
+    let x = L;
+    for (const r of m.rows.filter(r => r.kind === '当初予算')) { const w = Math.max(2, scale(r.oku)); const rect = el('rect', { x, y: y + 2, width: w - 1.5, height: 18, rx: 2, fill: r.ai ? 'var(--rs)' : 'var(--soft)' }, s); hover(rect, `<b>${esc(r.name)}</b><br>当初予算の行 ${oku(r.oku)}`); x += w; }
+    el('text', { x: x + 6, y: y + 15, class: 'val lbl' }, s).textContent = '= 一致';
+    x = L;
+    for (const r of m.rows.filter(r => r.kind !== '当初予算')) { const w = Math.max(2, scale(r.oku)); const rect = el('rect', { x, y: y + 28, width: w - 1.5, height: 14, rx: 2, fill: 'transparent', stroke: 'var(--muted)', 'stroke-dasharray': '3 2', 'stroke-width': 1.2 }, s); hover(rect, `<b>${esc(r.name)}</b><br>${r.kind} ${oku(r.oku)}`); x += w; }
+  });
+  el('text', { x: 8, y: H - 4 }, s).textContent = '棒の長さは行ごとの比率（目ごとに目盛りが違う）。実線 = 当初、破線 = 補正';
+})();
+
+// 説明にだけ AI がある事業（例）
+document.getElementById('textTbl').innerHTML = '<thead><tr><th class="l">府省</th><th class="l">事業名</th><th>当初予算（FY2025）</th></tr></thead><tbody>' + D.t25.map(r => `<tr><td class="l">${r.min}</td><td class="name">${esc(r.name)}</td><td>${oku(r.init)}</td></tr>`).join('') + '</tbody>';
+// 府省別・一覧
+document.getElementById('minTbl').innerHTML = '<thead><tr><th class="l">府省</th><th>事業</th><th>当初予算</th><th>歳出予算現額</th><th>当初 0</th><th>項に結べた</th></tr></thead><tbody>' + D.byMin.map(r => `<tr><td class="l">${r.min}</td><td>${r.n}</td><td>${oku(r.init)}</td><td>${oku(r.cur)}</td><td>${r.zero}</td><td>${r.linked}</td></tr>`).join('') + '</tbody>';
+document.getElementById('listTbl').innerHTML = '<thead><tr><th class="l">府省</th><th class="l">事業名</th><th>当初予算</th><th>現額</th><th class="l">結べた項</th></tr></thead><tbody>' + D.list.map(r => `<tr><td class="l">${r.min}</td><td class="name">${esc(r.name)}</td><td>${oku(r.init)}</td><td>${oku(r.cur)}</td><td class="l">${r.kous.length ? r.kous.map(esc).join('<br>') : '—'}${r.jk ? ' <span class="mark">人工知能の項</span>' : ''}${r.jm ? ' <span class="mark">人工知能の目</span>' : ''}</td></tr>`).join('') + '</tbody>';
+</script>

@@ -1,0 +1,283 @@
+<title>年金の見積もりと実績</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Zen+Kaku+Gothic+New:wght@700;900&display=swap">
+<style>
+/* layout: 1 本の読み物の列（最大 760px）。見積もり（当初）= 灰、実績（支出済）= 藍、差（不用）= 朱 */
+:root {
+  --bg: #f6f7f9; --surface: #ffffff; --ink: #18202b; --muted: #5b6573; --line: #d9dee5;
+  --plan: #9aa3ae; --real: #2a6fc9; --gap: #d2542a; --soft: #c9d6ea; --zero: #9aa3ae; --tag: #eef1f5;
+  --a1: #2a6fc9; --a2: #1baf7a; --a3: #eda100; --a4: #8f6fe0; --a5: #d2542a; --a6: #9aa3ae;
+  --display: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", sans-serif;
+  --body: "BIZ UDPGothic", "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #12161c; --surface: #1a2029; --ink: #e8ecf1; --muted: #9aa5b3; --line: #2c3440;
+  --plan: #6b7582; --real: #5b9cf0; --gap: #f07a50; --soft: #2c3b52; --zero: #6b7582; --tag: #232b36;
+  --a1: #5b9cf0; --a2: #199e70; --a3: #c98500; --a4: #7d5fd0; --a5: #f07a50; --a6: #6b7582; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #12161c; --surface: #1a2029; --ink: #e8ecf1; --muted: #9aa5b3; --line: #2c3440;
+  --plan: #6b7582; --real: #5b9cf0; --gap: #f07a50; --soft: #2c3b52; --zero: #6b7582; --tag: #232b36;
+  --a1: #5b9cf0; --a2: #199e70; --a3: #c98500; --a4: #7d5fd0; --a5: #f07a50; --a6: #6b7582; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.8;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 32px 64px; }
+main { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 56px; }
+h1, h2 { font-family: var(--display); text-wrap: balance; line-height: 1.35; margin: 0; }
+h1 { font-size: clamp(28px, 6vw, 40px); font-weight: 900; }
+h2 { font-size: 22px; font-weight: 700; }
+p { margin: 0; max-width: 65ch; }
+section, header { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; color: var(--muted); }
+.kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+@media (min-width: 680px) { .kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.kpi b { font-family: var(--display); font-size: 22px; font-variant-numeric: tabular-nums; }
+.kpi span { font-size: 12px; color: var(--muted); line-height: 1.5; }
+.gapc { color: var(--gap); }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; min-width: 0; }
+.scroll { overflow-x: auto; }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { fill: var(--muted); font-family: var(--body); font-size: 11px; }
+.chart .lbl { fill: var(--ink); font-size: 12px; }
+.chart .val { font-variant-numeric: tabular-nums; }
+.grid line { stroke: var(--line); stroke-width: 1; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--muted); margin: 0; padding: 0; list-style: none; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+.tag { display: inline-block; font-size: 11px; padding: 0 8px; border-radius: 999px; background: var(--tag); color: var(--muted); margin-right: 6px; white-space: nowrap; }
+.tag.src::before { content: "原資料"; } .tag.proc::before { content: "加工"; } .tag.ai::before { content: "AIの計算・解釈"; }
+.claims { display: flex; flex-direction: column; gap: 12px; padding: 0; margin: 0; list-style: none; }
+.claims li { display: grid; gap: 4px; }
+table { border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; min-width: 680px; }
+th, td { padding: 4px 8px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; position: sticky; left: 0; background: var(--surface); }
+thead th { color: var(--muted); font-weight: 400; }
+details { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+summary { cursor: pointer; font-weight: 700; }
+summary:focus-visible { outline: 2px solid var(--real); outline-offset: 2px; }
+.notes { padding-left: 1.2em; margin: 0; display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--muted); }
+.questions { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.questions li { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+.small { font-size: 13px; color: var(--muted); }
+footer { font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+#tip { position: fixed; pointer-events: none; background: var(--ink); color: var(--bg); font-size: 12px; padding: 6px 8px; border-radius: 6px; line-height: 1.5; max-width: 260px; z-index: 5; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<main>
+  <header>
+    <span class="eyebrow">年金特別会計・決算 FY2017〜FY2024（決算がある 8 年度）</span>
+    <h1>年金の予算は、見積もりと実績がどれだけ離れているか</h1>
+    <p id="lead"></p>
+    <div class="kpis">
+      <div class="kpi"><b class="gapc" id="k1"></b><span id="k1s"></span></div>
+      <div class="kpi"><b id="k2"></b><span id="k2s"></span></div>
+      <div class="kpi"><b id="k3"></b><span id="k3s"></span></div>
+      <div class="kpi"><b id="k4"></b><span id="k4s"></span></div>
+    </div>
+  </header>
+
+  <section>
+    <h2>基礎年金給付費: 見積もりは毎年増え、差も毎年広がった</h2>
+    <p id="baseText"></p>
+    <div class="panel scroll"><svg class="chart" id="baseChart" role="img" aria-label="基礎年金給付費の当初予算と支出済の推移"></svg></div>
+    <ul class="legend"><li><i style="background:var(--plan)"></i>当初予算（見積もり）</li><li><i style="background:var(--real)"></i>支出済（実績）</li><li><i style="background:var(--gap)"></i>差（不用）</li></ul>
+    <p class="small">基礎年金勘定の目「基礎年金給付費」。補正予算はなく、当初予算 = 補正後 = 歳出予算現額です（翌年度繰越も 0）。</p>
+  </section>
+
+  <section>
+    <h2>勘定ごとの不用</h2>
+    <p id="accText"></p>
+    <div class="panel scroll"><svg class="chart" id="accChart" role="img" aria-label="勘定ごとの不用額の積み上げ"></svg></div>
+    <ul class="legend" id="accLegend"></ul>
+  </section>
+
+  <section>
+    <h2>FY2023 から、基礎年金勘定に入れるお金も減らした</h2>
+    <p id="inText"></p>
+    <div class="panel scroll"><svg class="chart" id="inChart" role="img" aria-label="基礎年金勘定への繰入の不用と、基礎年金給付費の不用"></svg></div>
+    <ul class="legend"><li><i style="background:var(--a1)"></i>一般会計 → 年金特会（基礎年金）</li><li><i style="background:var(--a2)"></i>厚生年金勘定 → 基礎年金勘定</li><li><i style="background:var(--a3)"></i>国民年金勘定 → 基礎年金勘定</li><li><i style="background:var(--gap);border-radius:50%"></i>基礎年金給付費の不用（線）</li></ul>
+    <ul class="claims">
+      <li><strong>FY2022 までは、入れるお金は見積もりどおり</strong><span>3 つの繰入は、FY2017〜FY2022 は当初予算とほぼ同じ額が支出されました（不用は FY2021 の計 0.03兆円だけ）。基礎年金給付費の側だけに、不用が積み上がっていました。</span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+      <li><strong>FY2023・FY2024 は、入れる側にも不用</strong><span id="inClaim"></span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+      <li><strong>見積もりが大きい理由は、データに無い</strong><span>受給者の数や年金額の改定の見込みは、予算書・決算書の目の表には書かれていません。繰入の側を減らした手続きも、このデータからは分かりません。入れる側の不用（FY2024 は 5.52兆円）が、給付費の不用（4.56兆円）より大きい理由も未確認です。</span><span><span class="tag ai"></span></span></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>主な給付の、見積もりと実績</h2>
+    <p class="small">8 年の不用が大きい目。各年度は「当初予算 / 支出済」（兆円）。</p>
+    <div class="panel scroll"><table id="mokuTbl"></table></div>
+    <ul class="claims">
+      <li><strong>厚生年金の保険給付費は、毎年 0.6〜0.8兆円の差で安定</strong><span id="kouseiText"></span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+      <li><strong>国民年金給付費は、見積もりも実績も毎年減っている</strong><span id="kokuminText"></span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>全数値の表（兆円）</h2>
+    <details>
+      <summary>勘定ごとの当初・補正後・現額・支出済・繰越・不用を開く</summary>
+      <div class="scroll" style="margin-top:12px"><table id="accTbl"></table></div>
+    </details>
+  </section>
+
+  <section>
+    <h2>この数字の作り方と、確かめられないこと</h2>
+    <ul class="notes">
+      <li><span class="tag src"></span>財務省「予算書・決算書データベース」の予算書（目の表、当初予算）と決算書（目の表）。特別会計「年金」の 6 つの勘定。</li>
+      <li><span class="tag proc"></span>nihon-no-yosan が抽出・構造化した CSV（mof-archive の moku-special.csv・moku-special-kessan.csv、一般会計は moku-general*.csv）。当初予算と決算を、勘定・項名・目名で結びました。補正後は、決算書の「歳出予算額」です。</li>
+      <li><span class="tag ai"></span>差・割合・合計、「見積もり」「実績」という呼び方、文章の解釈は、この探索で計算・判断したものです。不用（使われずに残った額）の良し悪しは評価していません。</li>
+      <li>決算の 2 つの恒等式（現額 = 歳出予算額 + 前年度繰越 + 予備費使用 + 予算総則の増額 + 流用 + 移替、現額 = 支出済 + 翌年度繰越 + 不用）は、全部の目・年度で円まで成り立ちました。</li>
+      <li>勘定の間の繰入（厚生年金勘定・国民年金勘定 → 基礎年金勘定）は、出す側と受ける側の両方の勘定で数えています。勘定を足した合計は、二重に数えた額を含みます。</li>
+      <li>歳入（保険料・積立金からの受入・一般会計からの受入）はデータに無いので、使われなかったお金がどこに残ったかは分かりません。</li>
+      <li>予備費の目は、予算書と決算書で目名が違う年度があり（「(予備費)」と「目未定」）、目の単位では結べないものがあります。勘定の合計には影響しません。</li>
+      <li>名目の金額です。政府の公表値とは照合していません。FY2025 以降の決算はまだありません。</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>次に、聞かせてください</h2>
+    <ol class="questions">
+      <li>見積もりと実績の差は、どの年度から気になりますか。差が毎年広がる形と、FY2023 に繰入の側を減らし始めた形の、どちらを掘りますか。</li>
+      <li>概算要求（FY2023〜FY2027）の基礎年金給付費と、当初予算・実績を並べると、見積もりはどの段階で決まっているかが見えるかもしれません。</li>
+      <li>一般会計の「基礎年金年金特別会計へ繰入」の FY2023 以降の不用（1.45・1.84兆円）は、一般会計全体の不用のどれくらいを占めるか、調べますか。</li>
+    </ol>
+  </section>
+
+  <footer>
+    <span>出典：財務省「予算書・決算書データベース」を加工して作成。国や各府省が作成した加工していない情報ではありません。</span>
+    <span>nihon-no-yosan の AI Data Stories PoC（ループ 5 回目）。金額は兆円（円の値から計算し、表示で丸め）。</span>
+  </footer>
+</main>
+<div id="tip" hidden></div>
+
+<script>
+const D = {"Y": [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024], "acc": [{"n": "基礎年金勘定", "budget": [245645, 251868, 256955, 264565, 270874, 276681, 288550, 303450], "appr": [245645, 251868, 256955, 264565, 270874, 276681, 288550, 303450], "cur": [245645, 251868, 256955, 264565, 270874, 276681, 288550, 303450], "spent": [235998, 238644, 241847, 245106, 246363, 246474, 250633, 257264], "unused": [9647, 13223, 15107, 19459, 24512, 30207, 37916, 46185], "cout": [0, 0, 0, 0, 0, 0, 0, 0]}, {"n": "厚生年金勘定", "budget": [473617, 481196, 485142, 488899, 494976, 493381, 504087, 515772], "appr": [473617, 481196, 485142, 488899, 494976, 493381, 504087, 515772], "cur": [473617, 481196, 485142, 488899, 494976, 493381, 504087, 515772], "spent": [464234, 473864, 478619, 481367, 484537, 484629, 467084, 472802], "unused": [9383, 7332, 6523, 7532, 10440, 8752, 37003, 42970], "cout": [0, 0, 0, 0, 0, 0, 0, 0]}, {"n": "国民年金勘定", "budget": [42485, 39094, 36880, 37440, 38289, 38119, 39258, 42441], "appr": [42485, 39094, 36880, 37440, 38289, 38119, 39258, 42441], "cur": [42485, 39094, 36880, 37440, 38289, 38119, 39258, 42441], "spent": [41608, 38131, 35984, 36629, 37449, 37278, 35033, 37350], "unused": [877, 963, 895, 811, 840, 841, 4225, 5092], "cout": [0, 0, 0, 0, 0, 0, 0, 0]}, {"n": "健康勘定", "budget": [112723, 116027, 121119, 125166, 124213, 124004, 125149, 128009], "appr": [112723, 116027, 121119, 125166, 124213, 124004, 125149, 128044], "cur": [112723, 116027, 121119, 125166, 124213, 124004, 125149, 128044], "spent": [112566, 114922, 120141, 119368, 123606, 123882, 125095, 128019], "unused": [157, 1105, 977, 5797, 607, 122, 54, 25], "cout": [0, 0, 0, 0, 0, 0, 0, 0]}, {"n": "子ども・子育て支援勘定", "budget": [16611, 26144, 29099, 32394, 32450, 32738, 33447, 37572], "appr": [16611, 26543, 29266, 32636, 33425, 34074, 34359, 39493], "cur": [16624, 26548, 29780, 32675, 33497, 35187, 34476, 39910], "spent": [15980, 25332, 28674, 31494, 31123, 32970, 32009, 36624], "unused": [639, 702, 1068, 1108, 1261, 2100, 2051, 2409], "cout": [5, 514, 39, 72, 1113, 117, 417, 877]}, {"n": "業務勘定", "budget": [3804, 4032, 4114, 4224, 4320, 4192, 4567, 4939], "appr": [3801, 4028, 4111, 4220, 4320, 4192, 4568, 4944], "cur": [3801, 4028, 4111, 4220, 4320, 4192, 4568, 4944], "spent": [3744, 3751, 3923, 4079, 4170, 4055, 4168, 4558], "unused": [57, 277, 188, 142, 150, 136, 400, 386], "cout": [0, 0, 0, 0, 0, 1, 0, 0]}], "moku": [{"n": "基礎年金給付費", "acct": "基礎年金勘定", "kou": "基礎年金給付費", "budget": [232802, 241297, 247466, 256479, 264369, 271093, 283726, 300377], "appr": [232802, 241297, 247466, 256479, 264369, 271093, 283726, 300377], "spent": [224089, 229047, 233352, 238053, 240926, 241968, 246945, 254805], "unused": [8713, 12250, 14113, 18426, 23443, 29125, 36781, 45573]}, {"n": "保険給付費", "acct": "厚生年金勘定", "kou": "保険給付費", "budget": [241707, 242676, 241358, 241704, 240509, 240739, 245376, 249537], "appr": [241707, 242676, 241358, 241704, 240509, 240739, 245376, 249537], "spent": [235437, 236831, 235717, 234746, 234568, 234395, 236365, 242248], "unused": [6270, 5846, 5226, 6250, 5941, 6343, 9010, 7288]}, {"n": "基礎年金勘定へ繰入", "acct": "厚生年金勘定", "kou": "基礎年金給付費等基礎年金勘定へ繰入", "budget": [178570, 186968, 191929, 194257, 196696, 198035, 203252, 208569], "appr": [178570, 186968, 191929, 194257, 196696, 198035, 203252, 208569], "spent": [178570, 186968, 191929, 194257, 196518, 198035, 177525, 176207], "unused": [0, 0, 0, 0, 178, 0, 25727, 32362]}, {"n": "基礎年金勘定へ繰入", "acct": "国民年金勘定", "kou": "基礎年金給付費等基礎年金勘定へ繰入", "budget": [34571, 32103, 30769, 31928, 33318, 33605, 35077, 38808], "appr": [34571, 32103, 30769, 31928, 33318, 33605, 35077, 38808], "spent": [34571, 32103, 30769, 31928, 33291, 33605, 31769, 34376], "unused": [0, 0, 0, 0, 27, 0, 3308, 4432]}, {"n": "国民年金給付費", "acct": "国民年金勘定", "kou": "国民年金給付費", "budget": [6343, 5564, 4766, 4149, 3606, 3208, 2894, 2312], "appr": [6343, 5564, 4766, 4149, 3606, 3208, 2894, 2312], "spent": [5541, 4770, 4082, 3491, 2965, 2476, 2075, 1760], "unused": [802, 795, 684, 658, 642, 732, 819, 552]}, {"n": "保険料等交付金", "acct": "健康勘定", "kou": "保険料等交付金", "budget": [97614, 100957, 106098, 110154, 109262, 109103, 110234, 113064], "appr": [97614, 100957, 106098, 110154, 109262, 109103, 110234, 113064], "spent": [97611, 99969, 105237, 104478, 108789, 109103, 110234, 113064], "unused": [4, 987, 861, 5676, 473, 0, 0, 0]}, {"n": "児童手当交付金", "acct": "子ども・子育て支援勘定", "kou": "児童手当等交付金", "budget": [13517, 13275, 12935, 12656, 12332, 12183, 11850, 14952], "appr": [13517, 13275, 12935, 12656, 12332, 12183, 11850, 14952], "spent": [12974, 12747, 12452, 12171, 11881, 11573, 11156, 13799], "unused": [486, 481, 111, 483, 451, 591, 694, 1153]}, {"n": "存続厚生年金基金等給付費等負担金", "acct": "厚生年金勘定", "kou": "保険給付費", "budget": [3176, 1740, 2318, 3598, 5231, 3581, 4500, 3909], "appr": [3176, 1740, 2318, 3598, 5231, 3581, 4500, 3909], "spent": [1231, 1214, 2729, 4301, 2320, 2536, 3259, 1214], "unused": [1944, 515, 4, 4, 2911, 1045, 1241, 2695]}], "gen": {"n": "一般会計の「基礎年金年金特別会計へ繰入」", "budget": [108996, 112092, 114060, 115851, 117696, 118531, 121984, 126633], "appr": [108996, 112092, 114060, 115851, 117696, 118531, 121984, 126633], "spent": [108996, 112092, 114060, 115851, 117591, 118531, 107466, 108231], "unused": [0, 0, 0, 0, 105, 0, 14518, 18401]}, "kouGen": [114189, 116198, 117948, 119644, 120929, 121557, 124769, 129047], "tot": {"cur": 7668990, "unused": 362653, "spent": 7303180}};
+const Y = D.Y, N = Y.length;
+const tri = v => v / 10000; // 億円 → 兆円
+const f = (v, d = 2) => (v === null || v === undefined) ? '—' : tri(v).toFixed(d);
+const NS = 'http://www.w3.org/2000/svg';
+const el = (tag, attrs = {}, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+const tip = document.getElementById('tip');
+function hover(node, html) {
+  node.addEventListener('pointermove', e => { tip.innerHTML = html; tip.hidden = false; tip.style.left = Math.min(e.clientX + 12, innerWidth - 270) + 'px'; tip.style.top = (e.clientY + 12) + 'px'; });
+  node.addEventListener('pointerleave', () => { tip.hidden = true; });
+}
+const sum = a => a.reduce((s, v) => s + (v ?? 0), 0);
+const niceMax = v => { const p = Math.pow(10, Math.floor(Math.log10(v))); for (const m of [1, 2, 2.5, 5, 10]) if (m * p >= v) return m * p; return 10 * p; };
+
+const base = D.moku[0], gk = D.moku[2], kk = D.moku[3], gen = D.gen;
+const gap = i => base.budget[i] - base.spent[i];
+const T = D.tot;
+
+// 冒頭
+document.getElementById('lead').textContent = `年金特別会計は、FY2017〜FY2024 の 8 年で、使えるお金（歳出予算現額）${f(T.cur, 1)}兆円のうち ${f(T.spent, 1)}兆円を支出し、${f(T.unused, 1)}兆円（${(T.unused / T.cur * 100).toFixed(1)}%）が不用でした。差が一番大きいのは、基礎年金の給付です。`;
+document.getElementById('k1').textContent = `${f(base.unused[0])} → ${f(base.unused[N - 1])}兆円`;
+document.getElementById('k1s').textContent = `基礎年金給付費の不用（FY2017 → FY2024）。8 年間、毎年増加`;
+document.getElementById('k2').textContent = `${f(sum(base.unused), 1)}兆円`;
+document.getElementById('k2s').textContent = `基礎年金給付費の 8 年の不用。年金特会の不用の ${(sum(base.unused) / T.unused * 100).toFixed(0)}%`;
+document.getElementById('k3').textContent = `${(base.spent[N - 1] / base.budget[N - 1] * 100).toFixed(1)}%`;
+document.getElementById('k3s').textContent = `FY2024 の基礎年金給付費の、当初予算に対する支出（FY2017 は ${(base.spent[0] / base.budget[0] * 100).toFixed(1)}%）`;
+const in24 = gen.unused[N - 1] + gk.unused[N - 1] + kk.unused[N - 1];
+document.getElementById('k4').textContent = `${f(in24)}兆円`;
+document.getElementById('k4s').textContent = `FY2024 に、基礎年金勘定へ入れる 3 つの繰入で出た不用（FY2022 は 0）`;
+
+// 基礎年金給付費
+document.getElementById('baseText').textContent = `当初予算は ${f(base.budget[0])}兆円から ${f(base.budget[N - 1])}兆円に（+${f(base.budget[N - 1] - base.budget[0])}兆円）増えました。支出済は ${f(base.spent[0])}兆円から ${f(base.spent[N - 1])}兆円（+${f(base.spent[N - 1] - base.spent[0])}兆円）です。見積もりの伸びが実績の伸びの約 ${((base.budget[N - 1] - base.budget[0]) / (base.spent[N - 1] - base.spent[0])).toFixed(1)} 倍で、差（不用）は ${f(gap(0))}兆円から ${f(gap(N - 1))}兆円に広がりました。`;
+(() => {
+  const s = document.getElementById('baseChart'), W = 680, H = 280, L = 48, R = 70, Tp = 22, B = 28;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '520px';
+  const vals = [...base.budget, ...base.spent];
+  const lo = Math.floor(tri(Math.min(...vals)) / 2) * 2, hi = Math.ceil(tri(Math.max(...vals)) / 2) * 2 + 1;
+  const x = i => L + (W - L - R) * i / (N - 1), y = v => Tp + (H - Tp - B) * (1 - (tri(v) - lo) / (hi - lo));
+  const g = el('g', { class: 'grid' }, s);
+  for (let v = lo; v <= hi; v += 2) { el('line', { x1: L, x2: W - R, y1: y(v * 1e4), y2: y(v * 1e4) }, g); el('text', { x: L - 6, y: y(v * 1e4) + 4, 'text-anchor': 'end' }, s).textContent = v; }
+  el('text', { x: 4, y: 12 }, s).textContent = '兆円';
+  el('polygon', { points: [...base.budget.map((v, i) => `${x(i)},${y(v)}`), ...base.spent.map((v, i) => `${x(i)},${y(v)}`).reverse()].join(' '), fill: 'var(--gap)', opacity: 0.18 }, s);
+  for (const [k, c] of [['budget', 'var(--plan)'], ['spent', 'var(--real)']]) {
+    el('polyline', { points: base[k].map((v, i) => `${x(i)},${y(v)}`).join(' '), fill: 'none', stroke: c, 'stroke-width': 2 }, s);
+    base[k].forEach((v, i) => el('circle', { cx: x(i), cy: y(v), r: 3.5, fill: c, stroke: 'var(--surface)', 'stroke-width': 1.5 }, s));
+  }
+  el('text', { x: x(N - 1) + 8, y: y(base.budget[N - 1]) + 4, class: 'lbl val' }, s).textContent = f(base.budget[N - 1]);
+  el('text', { x: x(N - 1) + 8, y: y(base.spent[N - 1]) + 4, class: 'lbl val' }, s).textContent = f(base.spent[N - 1]);
+  Y.forEach((yy, i) => {
+    el('text', { x: x(i), y: H - 8, 'text-anchor': 'middle' }, s).textContent = yy;
+    const mid = (y(base.budget[i]) + y(base.spent[i])) / 2;
+    if (i % 2 === 1 || i === N - 1) el('text', { x: x(i), y: mid + 4, 'text-anchor': 'middle', class: 'val', style: 'fill:var(--gap);font-size:11px' }, s).textContent = f(gap(i));
+    const hit = el('rect', { x: x(i) - (W - L - R) / (N - 1) / 2, y: Tp, width: (W - L - R) / (N - 1), height: H - Tp - B, fill: 'transparent' }, s);
+    hover(hit, `<b>FY${yy} 基礎年金給付費</b><br>当初予算 ${f(base.budget[i])}兆円<br>支出済 ${f(base.spent[i])}兆円<br>不用 ${f(base.unused[i])}兆円（${(base.unused[i] / base.budget[i] * 100).toFixed(1)}%）`);
+  });
+})();
+
+// 勘定ごとの不用
+(() => {
+  const cols = ['var(--a1)', 'var(--a2)', 'var(--a3)', 'var(--a4)', 'var(--a5)', 'var(--a6)'];
+  const A = D.acc;
+  document.getElementById('accLegend').innerHTML = A.map((a, i) => `<li><i style="background:${cols[i]}"></i>${a.n}</li>`).join('');
+  const share = sum(A[0].unused) + sum(A[1].unused);
+  document.getElementById('accText').textContent = `8 年の不用 ${f(T.unused, 1)}兆円のうち、基礎年金勘定が ${f(sum(A[0].unused), 1)}兆円、厚生年金勘定が ${f(sum(A[1].unused), 1)}兆円で、2 つで ${(share / T.unused * 100).toFixed(0)}% です。年度ごとの不用は ${f(sum(A.map(a => a.unused[0])))}兆円（FY2017）から ${f(sum(A.map(a => a.unused[N - 1])))}兆円（FY2024）になりました。翌年度への繰越は、子ども・子育て支援勘定の年 0.1兆円以下だけです。`;
+  const s = document.getElementById('accChart'), W = 680, H = 260, L = 44, R = 12, Tp = 24, B = 26;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '520px';
+  const totals = Y.map((_, i) => sum(A.map(a => a.unused[i])));
+  const max = niceMax(tri(Math.max(...totals)) * 1.1) * 1e4;
+  const cw = (W - L - R) / N, bw = cw * 0.56, y = v => Tp + (H - Tp - B) * (1 - v / max);
+  const g = el('g', { class: 'grid' }, s);
+  const step = tri(max) / 5;
+  for (let k = 0; k <= 5; k++) { const v = step * k * 1e4; el('line', { x1: L, x2: W - R, y1: y(v), y2: y(v) }, g); el('text', { x: L - 6, y: y(v) + 4, 'text-anchor': 'end' }, s).textContent = (step * k).toFixed(step < 1 ? 1 : 0); }
+  el('text', { x: 4, y: 12 }, s).textContent = '兆円';
+  Y.forEach((yy, i) => {
+    const x0 = L + cw * i + (cw - bw) / 2; let b = 0;
+    A.forEach((a, j) => { const v = a.unused[i] ?? 0; if (v <= 0) return; el('rect', { x: x0, y: y(b + v), width: bw, height: Math.max(0, y(b) - y(b + v) - (b > 0 ? 1 : 0)), fill: cols[j] }, s); b += v; });
+    el('text', { x: x0 + bw / 2, y: y(b) - 6, 'text-anchor': 'middle', class: 'lbl val' }, s).textContent = f(b);
+    el('text', { x: x0 + bw / 2, y: H - 8, 'text-anchor': 'middle' }, s).textContent = yy;
+    hover(el('rect', { x: L + cw * i, y: Tp, width: cw, height: H - Tp - B, fill: 'transparent' }, s), `<b>FY${yy} の不用</b><br>` + A.map(a => `${a.n} ${f(a.unused[i])}兆円`).join('<br>'));
+  });
+})();
+
+// 繰入の側
+document.getElementById('inText').textContent = `基礎年金勘定は、給付のお金を、一般会計・厚生年金勘定・国民年金勘定から受け入れます（受け入れた額は歳入なのでデータに無く、出す側の支出で見ています）。`;
+document.getElementById('inClaim').textContent = `一般会計の繰入は FY2023 に ${f(gen.unused[6])}兆円、FY2024 に ${f(gen.unused[7])}兆円が不用になりました。厚生年金勘定からは ${f(gk.unused[6])}・${f(gk.unused[7])}兆円、国民年金勘定からは ${f(kk.unused[6])}・${f(kk.unused[7])}兆円です。3 つの計は ${f(gen.unused[6] + gk.unused[6] + kk.unused[6])}・${f(in24)}兆円です。`;
+(() => {
+  const s = document.getElementById('inChart'), W = 680, H = 260, L = 44, R = 12, Tp = 24, B = 26;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '520px';
+  const S = [gen, gk, kk], cols = ['var(--a1)', 'var(--a2)', 'var(--a3)'];
+  const totals = Y.map((_, i) => sum(S.map(z => z.unused[i])));
+  const max = niceMax(tri(Math.max(...totals, ...base.unused)) * 1.12) * 1e4;
+  const cw = (W - L - R) / N, bw = cw * 0.5, y = v => Tp + (H - Tp - B) * (1 - v / max), xc = i => L + cw * i + cw / 2;
+  const g = el('g', { class: 'grid' }, s);
+  const step = tri(max) / 4;
+  for (let k = 0; k <= 4; k++) { const v = step * k * 1e4; el('line', { x1: L, x2: W - R, y1: y(v), y2: y(v) }, g); el('text', { x: L - 6, y: y(v) + 4, 'text-anchor': 'end' }, s).textContent = (step * k).toFixed(step < 1 ? 1 : 0); }
+  el('text', { x: 4, y: 12 }, s).textContent = '兆円';
+  Y.forEach((yy, i) => {
+    let b = 0;
+    S.forEach((z, j) => { const v = z.unused[i] ?? 0; if (v <= 0) return; el('rect', { x: xc(i) - bw / 2, y: y(b + v), width: bw, height: Math.max(0, y(b) - y(b + v) - (b > 0 ? 1 : 0)), fill: cols[j] }, s); b += v; });
+    if (b >= 1000) el('text', { x: xc(i) - bw / 2 - 4, y: y(b) + 4, 'text-anchor': 'end', class: 'lbl val' }, s).textContent = f(b);
+    el('text', { x: xc(i), y: H - 8, 'text-anchor': 'middle' }, s).textContent = yy;
+    hover(el('rect', { x: L + cw * i, y: Tp, width: cw, height: H - Tp - B, fill: 'transparent' }, s), `<b>FY${yy} の不用</b><br>一般会計の繰入 ${f(gen.unused[i])}兆円<br>厚生年金勘定の繰入 ${f(gk.unused[i])}兆円<br>国民年金勘定の繰入 ${f(kk.unused[i])}兆円<br>基礎年金給付費 ${f(base.unused[i])}兆円`);
+  });
+  el('polyline', { points: base.unused.map((v, i) => `${xc(i)},${y(v)}`).join(' '), fill: 'none', stroke: 'var(--gap)', 'stroke-width': 2 }, s);
+  base.unused.forEach((v, i) => el('circle', { cx: xc(i), cy: y(v), r: 3.5, fill: 'var(--gap)', stroke: 'var(--surface)', 'stroke-width': 1.5 }, s));
+  el('text', { x: xc(N - 1) + 2, y: y(base.unused[N - 1]) - 8, 'text-anchor': 'end', class: 'val', style: 'fill:var(--gap)' }, s).textContent = f(base.unused[N - 1]);
+})();
+
+// 主な給付の表
+(() => {
+  const rows = D.moku;
+  const head = `<thead><tr><th>勘定・目</th>${Y.map(y => `<th>FY${y}</th>`).join('')}<th>8 年の不用</th></tr></thead>`;
+  const body = rows.map(r => `<tr><td>${r.acct}<br><b>${r.n}</b></td>${Y.map((_, i) => `<td>${f(r.budget[i])}<br><span style="color:var(--real)">${f(r.spent[i])}</span></td>`).join('')}<td class="gapc">${f(sum(r.unused))}</td></tr>`).join('');
+  const g = `<tr><td>一般会計<br><b>基礎年金年金特別会計へ繰入</b></td>${Y.map((_, i) => `<td>${f(gen.budget[i])}<br><span style="color:var(--real)">${f(gen.spent[i])}</span></td>`).join('')}<td class="gapc">${f(sum(gen.unused))}</td></tr>`;
+  document.getElementById('mokuTbl').innerHTML = head + '<tbody>' + body + g + '</tbody>';
+  const k = rows[1], km = rows[4];
+  const gs = Y.map((_, i) => k.budget[i] - k.spent[i]);
+  document.getElementById('kouseiText').textContent = `厚生年金勘定の目「保険給付費」は、当初予算 ${f(k.budget[0])}兆円 → ${f(k.budget[N - 1])}兆円、支出済 ${f(k.spent[0])}兆円 → ${f(k.spent[N - 1])}兆円です。差は年 ${f(Math.min(...gs))}〜${f(Math.max(...gs))}兆円で、広がっていません。`;
+  document.getElementById('kokuminText').textContent = `国民年金勘定の目「国民年金給付費」は、当初予算 ${f(km.budget[0])}兆円 → ${f(km.budget[N - 1])}兆円、支出済 ${f(km.spent[0])}兆円 → ${f(km.spent[N - 1])}兆円です。差は毎年 0.05〜0.08兆円です。`;
+})();
+
+// 勘定の表
+(() => {
+  const K = [['budget', '当初'], ['appr', '補正後'], ['cur', '現額'], ['spent', '支出済'], ['cout', '翌年度繰越'], ['unused', '不用']];
+  const head = `<thead><tr><th>勘定</th><th></th>${Y.map(y => `<th>FY${y}</th>`).join('')}</tr></thead>`;
+  const body = D.acc.map(a => K.map(([k, lab], j) => `<tr><td>${j === 0 ? `<b>${a.n}</b>` : ''}</td><td style="text-align:left">${lab}</td>${a[k].map(v => `<td>${f(v)}</td>`).join('')}</tr>`).join('')).join('');
+  document.getElementById('accTbl').innerHTML = head + '<tbody>' + body + '</tbody>';
+})();
+</script>

@@ -1,0 +1,273 @@
+<title>要求と政府案の差</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Zen+Kaku+Gothic+New:wght@700;900&display=swap">
+<style>
+/* layout: 1 本の読み物の列（最大 760px）。要求 = 灰の枠、政府案 = 墨。政府案が要求より多い = 朱、少ない = 藍 */
+:root {
+  --bg: #f6f7f9; --surface: #ffffff; --ink: #18202b; --muted: #5b6573; --line: #d9dee5;
+  --up: #d2542a; --down: #2a6fc9; --zero: #9aa3ae; --req: #c3cad3; --tag: #eef1f5;
+  --up-soft: #f6d9cd; --down-soft: #d3e2f6;
+  --display: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", sans-serif;
+  --body: "BIZ UDPGothic", "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #12161c; --surface: #1a2029; --ink: #e8ecf1; --muted: #9aa5b3; --line: #2c3440;
+  --up: #f07a50; --down: #5b9cf0; --zero: #6b7582; --req: #3a4452; --tag: #232b36;
+  --up-soft: #4a2a1f; --down-soft: #1f3150; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #12161c; --surface: #1a2029; --ink: #e8ecf1; --muted: #9aa5b3; --line: #2c3440;
+  --up: #f07a50; --down: #5b9cf0; --zero: #6b7582; --req: #3a4452; --tag: #232b36;
+  --up-soft: #4a2a1f; --down-soft: #1f3150; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.8;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 32px 64px; }
+main { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 56px; }
+h1, h2 { font-family: var(--display); text-wrap: balance; line-height: 1.35; margin: 0; }
+h1 { font-size: clamp(28px, 6vw, 40px); font-weight: 900; }
+h2 { font-size: 22px; font-weight: 700; }
+p { margin: 0; max-width: 65ch; }
+section { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; color: var(--muted); }
+.num { font-variant-numeric: tabular-nums; }
+.up { color: var(--up); } .down { color: var(--down); }
+.small { font-size: 13px; color: var(--muted); }
+.hero { display: flex; flex-direction: column; gap: 16px; }
+.big { font-family: var(--display); font-weight: 900; font-size: clamp(36px, 8vw, 56px); line-height: 1.1; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; min-width: 0; }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { fill: var(--muted); font-family: var(--body); font-size: 11px; }
+.chart .lbl { fill: var(--ink); font-size: 12px; }
+.chart .val { font-variant-numeric: tabular-nums; }
+.grid line { stroke: var(--line); stroke-width: 1; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12px; color: var(--muted); }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; margin-right: 6px; }
+.tag { display: inline-block; font-size: 11px; padding: 0 8px; border-radius: 999px; background: var(--tag); color: var(--muted); margin-right: 6px; white-space: nowrap; }
+.tag.src::before { content: "原資料"; } .tag.proc::before { content: "加工"; } .tag.ai::before { content: "AIの計算・解釈"; }
+.claims { display: flex; flex-direction: column; gap: 12px; padding: 0; margin: 0; list-style: none; }
+.claims li { display: grid; gap: 4px; }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
+th, td { padding: 4px 8px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; position: sticky; left: 0; background: var(--surface); }
+thead th { color: var(--muted); font-weight: 400; }
+td.heat { min-width: 64px; }
+details { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+summary { cursor: pointer; font-weight: 700; }
+summary:focus-visible { outline: 2px solid var(--down); outline-offset: 2px; }
+.notes { padding-left: 1.2em; margin: 0; display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--muted); }
+.questions { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.questions li { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+footer { font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+#tip { position: fixed; pointer-events: none; background: var(--ink); color: var(--bg); font-size: 12px; padding: 6px 8px; border-radius: 6px; line-height: 1.5; max-width: 280px; z-index: 5; }
+</style>
+
+<main>
+  <header class="hero">
+    <span class="eyebrow">一般会計・概算要求と政府案（当初予算）FY2023〜FY2026</span>
+    <h1>要求より、政府案の方が多かった</h1>
+    <p>各府省の概算要求と政府案（当初予算）を、同じ項どうしで比べました。4 年とも、政府案の合計は要求の合計を上回っています。削られる項は多いのに、合計では増えます。</p>
+    <div class="panel"><svg class="chart" id="heroChart" role="img" aria-label="年度ごとの要求額と政府案の合計"></svg>
+      <div class="legend" style="margin-top:8px"><span><i style="background:var(--req)"></i>概算要求</span><span><i style="background:var(--ink)"></i>政府案</span></div>
+    </div>
+    <p class="small">要求額と政府案が両方ある項だけの合計（FY2026 は 783 項）。要求書に無い予算・予算書に無い要求は、下で別に扱います。</p>
+  </header>
+
+  <section>
+    <h2>差を作っているのは、4 つ</h2>
+    <p id="gapLead"></p>
+    <div class="panel scroll"><svg class="chart" id="gapChart" role="img" aria-label="政府案と要求の差の内訳（年度別）"></svg>
+      <div class="legend" id="gapLegend" style="margin-top:8px"></div>
+    </div>
+    <ul class="claims">
+      <li><strong>国債費は、毎年けずられる</strong><span id="debtText"></span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+      <li><strong>地方交付税は、年によって逆向き</strong><span id="localText"></span><span><span class="tag src"></span><span class="tag ai"></span></span></li>
+      <li><strong>予備費は、要求の倍</strong><span>通常の予備費は、4 年とも 0.5兆円で要求され、FY2024 以降は政府案で 1.0兆円になりました。FY2023 は、要求額 0 の「新型コロナウイルス感染症及び原油価格・物価高騰対策予備費」に、政府案で 4.0兆円が付きました。</span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+      <li><strong>ふつうの項も、合計では増える</strong><span id="otherText"></span><span><span class="tag src"></span><span class="tag ai"></span></span></li>
+    </ul>
+    <p class="small">地方交付税・国債費・予備費の額が年末の予算編成で決まる仕組みは、このデータには書かれていません。上の「逆向き」「けずられる」は、データで見えた差だけを言っています。</p>
+  </section>
+
+  <section>
+    <h2>府省ごとの「通り方」</h2>
+    <p>要求に対する政府案の比率です。100% より上（朱）は要求より多く、下（藍）は要求より少なかったことを示します。環境省は毎年 85〜91% で、要求より少なくなっています。経済産業省も、FY2025 は 94%、FY2026 は 86% でした。文部科学省・国土交通省・外務省・内閣は、たいてい要求を上回っています。</p>
+    <div class="panel scroll"><table id="heat"></table></div>
+    <p class="small">一般会計、要求額と政府案が両方ある項の合計。「事項要求の注記」は、その府省の概算要求書のテキストで「（事項要求）」と書かれた行の数（FY2023〜FY2026 の合計）。予算の額が大きい順。</p>
+  </section>
+
+  <section>
+    <h2>金額を書かない要求（事項要求）</h2>
+    <p>概算要求書には、金額を書かずに「（事項要求）」とだけ注記された行があります。年末に額が決まるものです。このデータでは、注記のある行の数までは数えられますが、事項要求の件数や、そこに付いた金額は決められません。</p>
+    <div class="panel scroll"><table id="marks"></table></div>
+    <ul class="claims">
+      <li><strong>文部科学省と防衛省に多い</strong><span>注記のある行は、文部科学省が毎年 21〜26 行で最も多く、防衛省が 8〜14 行で続きます。防衛省は、注記の行のほぼすべて（55 行のうち 54 行）に金額も書かれています（「弾薬の確保に必要な経費」「装備品の可動確保・向上」など、金額の一部を事項要求にしているとみられます）。</span><span><span class="tag src"></span><span class="tag ai"></span></span></li>
+      <li><strong>要求を上回った府省と重なる</strong><span>政府案が要求を上回りやすい府省（文部科学省・国土交通省・外務省・防衛省・こども家庭庁）は、事項要求の注記がある府省とほぼ重なります。事項要求の分が政府案で金額になった、と考えると説明がつきますが、項ごとには確かめていません（推測）。</span><span><span class="tag ai"></span></span></li>
+      <li><strong>財務省の事項要求</strong><span>財務省の要求書には、物価高騰対策などの予備費（FY2023〜FY2025）や、「防衛力強化のための資金」への繰入（FY2024〜FY2027）が、事項要求として書かれています。FY2023 に要求額 0 で 4.0兆円が付いた予備費は、この形の要求です（推測。項の名前は注記の行で途中までしか読めない）。</span><span><span class="tag src"></span></span></li>
+    </ul>
+    <p class="small">数え方の限界: 1 つの事項要求が、組織計・項・事項の行に重ねて注記されることがあります。PDF から取り出したテキストなので、行の名前が途中で切れることもあります。FY2027 の厚生労働省の要求書は入っていません。</p>
+  </section>
+
+  <section>
+    <h2>要求書に無い予算</h2>
+    <p id="budOnlyLead"></p>
+    <div class="panel scroll"><table id="budOnly"></table></div>
+    <p class="small">逆に、予算書に無い要求（概算要求書にだけある項）は、毎年 33〜43 項・0.05〜0.11兆円と小さいものでした。</p>
+  </section>
+
+  <section>
+    <h2>FY2027 の要求（政府案はまだ無い）</h2>
+    <p id="y27Lead"></p>
+    <div class="panel scroll"><svg class="chart" id="y27Chart" role="img" aria-label="府省別の要求額 FY2026 と FY2027"></svg>
+      <div class="legend" style="margin-top:8px"><span><i style="background:var(--req)"></i>FY2026 の要求</span><span><i style="background:var(--ink)"></i>FY2027 の要求</span></div>
+    </div>
+    <p class="small">厚生労働省（FY2026 の要求 34.7兆円）は、FY2027 の要求書がまだ入っていないので除きました。厚生労働省は、2026 年 11 月中旬に出し直すと回答しています（プロジェクトの記録。公開資料では未確認）。</p>
+  </section>
+
+  <section>
+    <h2>この数字の作り方と、確かめられないこと</h2>
+    <ul class="notes">
+      <li><span class="tag src"></span>各府省の概算要求書（PDF）と、財務省「予算書・決算書データベース」の予算書（一般会計の項）。FY2025 の政府案は国会提出時の版（国会で修正される前）。</li>
+      <li><span class="tag proc"></span>nihon-no-yosan が要求書から総表・明細を取り出し、予算書の項に突き合わせたもの（要求額は、項ごとに要求書の値）。突き合わせられない項は「要求書だけの項」「予算書だけの項」として残し、0 にしていません。</li>
+      <li><span class="tag ai"></span>検算 1: 要求書の総表の「所管計」は、項の要求額の府省別の合計と千円単位で一致しました（FY2024・FY2025・FY2027 は全府省、FY2023 は 27 府省中 26、FY2026 は 26 府省中 25。合わない 2 件は、総表の側の行の重なりと、3億円の 1 桁の違いで、原因は未確認）。</li>
+      <li><span class="tag ai"></span>検算 2: 翌年度の要求書が載せる「前年度予算額」の合計は、前の年度の政府案の合計とほぼ一致します（FY2025 の要求書は FY2024 の政府案と 0.006兆円差、FY2027 の要求書は厚生労働省を除いた FY2026 の政府案と 0.03兆円差）。FY2026 の要求書は FY2025 の政府案より 0.35兆円少なく、FY2025 の予算が国会で修正されたことと合います。FY2024 の要求書は FY2023 の政府案より 0.75兆円少なく、理由は未確認です。</li>
+      <li>FY2023・FY2024 は、法務省の概算要求書がデータに無く、法務省の項は「要求書に無い予算」に入ります。</li>
+      <li>特別会計は扱っていません。比率・合計・内訳の分け方、事項要求と府省の重なりの解釈は、この探索で計算・判断したものです。</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>次に、聞かせてください</h2>
+    <ol class="questions">
+      <li>国債費は毎年、要求より 0.7〜1.7兆円少なく決まっています。FY2027 の要求（36.6兆円）も、同じように下がると思いますか。前提の金利の違いを、要求書の説明から探すこともできます。</li>
+      <li>環境省と経済産業省で要求より少なくなったのは、どの項でしょうか。項の単位で並べてみますか。</li>
+      <li>文部科学省の事項要求（毎年 20 行以上）が、政府案でいくらになったかを、事項の単位で追いますか。</li>
+    </ol>
+  </section>
+
+  <footer>
+    <span>出典：各府省・機関の歳出概算要求書、財務省「予算書・決算書データベース」を加工して作成。国や各府省が作成した加工していない情報ではありません。</span>
+    <span>nihon-no-yosan の AI Data Stories PoC（2026-11-03）。数値の単位は兆円（千円単位の値から計算し、表示で丸め）。</span>
+  </footer>
+</main>
+<div id="tip" hidden></div>
+
+<script>
+const D = {"years":[{"y":2023,"req":1048688,"bud":1089294,"n":732,"up":308,"down":313,"same":111,"gap":{"debt":-17383,"local":-6667,"reserve":40000,"other":24656},"reqOnlyN":43,"reqOnly":1117,"budOnlyN":68,"budOnly":54518,"reqAll":1049805,"budAll":1143812,"prevAll":1068526},{"y":2024,"req":1094304,"bud":1108014,"n":725,"up":295,"down":343,"same":87,"gap":{"debt":-11334,"local":3980,"reserve":5000,"other":16064},"reqOnlyN":36,"reqOnly":463,"budOnlyN":59,"budOnly":17703,"reqAll":1094767,"budAll":1125717,"prevAll":1136321},{"y":2025,"req":1133906,"bud":1154434,"n":772,"up":355,"down":325,"same":92,"gap":{"debt":-6937,"local":9620,"reserve":5000,"other":12845},"reqOnlyN":34,"reqOnly":487,"budOnlyN":34,"budOnly":981,"reqAll":1134394,"budAll":1155415,"prevAll":1125654},{"y":2026,"req":1196215,"bud":1222196,"n":783,"up":289,"down":411,"same":83,"gap":{"debt":-11107,"local":22682,"reserve":5000,"other":9406},"reqOnlyN":33,"reqOnly":724,"budOnlyN":41,"budOnly":896,"reqAll":1196939,"budAll":1223092,"prevAll":1151879}],"ministries":[{"n":"厚生労働省","y":{"2023":{"req":330950,"bud":331686},"2024":{"req":335757,"bud":338191},"2025":{"req":341255,"bud":342731},"2026":{"req":346941,"bud":350433}}},{"n":"財務省","y":{"2023":{"req":287716,"bud":310957},"2024":{"req":299179,"bud":292777},"2025":{"req":306784,"bud":304031},"2026":{"req":340672,"bud":336116}}},{"n":"総務省","y":{"2023":{"req":175221,"bud":168625},"2024":{"req":178168,"bud":182107},"2025":{"req":187856,"bud":195917},"2026":{"req":190565,"bud":212697}}},{"n":"防衛省","y":{"2023":{"req":53591,"bud":65292},"2024":{"req":77044,"bud":79166},"2025":{"req":85045,"bud":86691},"2026":{"req":87909,"bud":89843}}},{"n":"国土交通省","y":{"2023":{"req":54735,"bud":60524},"2024":{"req":55320,"bud":60936},"2025":{"req":55023,"bud":60718},"2026":{"req":60624,"bud":61967}}},{"n":"文部科学省","y":{"2023":{"req":49923,"bud":52941},"2024":{"req":50116,"bud":53384},"2025":{"req":50442,"bud":54027},"2026":{"req":54562,"bud":58809}}},{"n":"こども家庭庁","y":{"2023":{"req":39089,"bud":39691},"2024":{"req":39842,"bud":41457},"2025":{"req":41504,"bud":42367},"2026":{"req":42756,"bud":42795}}},{"n":"農林水産省","y":{"2023":{"req":20229,"bud":20936},"2024":{"req":20612,"bud":20933},"2025":{"req":19808,"bud":20957},"2026":{"req":21619,"bud":21194}}},{"n":"経済産業省","y":{"2023":{"req":8022,"bud":7958},"2024":{"req":8864,"bud":8695},"2025":{"req":9013,"bud":8455},"2026":{"req":9299,"bud":7979}}},{"n":"法務省","y":{"2025":{"req":7440,"bud":7436},"2026":{"req":7747,"bud":7881}}},{"n":"外務省","y":{"2023":{"req":6749,"bud":7434},"2024":{"req":6895,"bud":7257},"2025":{"req":6906,"bud":7448},"2026":{"req":7760,"bud":7763}}},{"n":"内閣府","y":{"2023":{"req":5235,"bud":5699},"2024":{"req":5306,"bud":5715},"2025":{"req":5277,"bud":6069},"2026":{"req":6786,"bud":6377}}},{"n":"デジタル庁","y":{"2023":{"req":4459,"bud":4951},"2024":{"req":4618,"bud":4964},"2025":{"req":4659,"bud":4752},"2026":{"req":5142,"bud":5198}}},{"n":"裁判所","y":{"2023":{"req":3211,"bud":3222},"2024":{"req":3324,"bud":3310},"2025":{"req":3391,"bud":3352},"2026":{"req":3592,"bud":3495}}},{"n":"環境省","y":{"2023":{"req":3619,"bud":3258},"2024":{"req":3581,"bud":3207},"2025":{"req":3404,"bud":3096},"2026":{"req":3711,"bud":3144}}},{"n":"警察庁","y":{"2023":{"req":2847,"bud":2902},"2024":{"req":2740,"bud":2806},"2025":{"req":2717,"bud":2851},"2026":{"req":3011,"bud":2879}}},{"n":"国会","y":{"2023":{"req":1287,"bud":1282},"2024":{"req":1309,"bud":1300},"2025":{"req":1343,"bud":1315},"2026":{"req":1375,"bud":1365}}},{"n":"内閣","y":{"2023":{"req":986,"bud":1064},"2024":{"req":991,"bud":1115},"2025":{"req":1118,"bud":1215},"2026":{"req":1205,"bud":1241}}},{"n":"金融庁","y":{"2023":{"req":227,"bud":232},"2025":{"req":225,"bud":239},"2026":{"req":242,"bud":246}}},{"n":"会計検査院","y":{"2023":{"req":156,"bud":158},"2024":{"req":161,"bud":163},"2025":{"req":159,"bud":163},"2026":{"req":168,"bud":169}}},{"n":"消費者庁","y":{"2023":{"req":92,"bud":116},"2024":{"req":119,"bud":120},"2025":{"req":119,"bud":141},"2026":{"req":143,"bud":144}}},{"n":"宮内庁","y":{"2023":{"req":116,"bud":116},"2024":{"req":118,"bud":120},"2025":{"req":119,"bud":119},"2026":{"req":122,"bud":130}}},{"n":"公正取引委員会","y":{"2023":{"req":104,"bud":111},"2024":{"req":113,"bud":118},"2025":{"req":164,"bud":154},"2026":{"req":128,"bud":128}}},{"n":"皇室費","y":{"2023":{"req":58,"bud":67},"2024":{"req":59,"bud":101},"2025":{"req":59,"bud":114},"2026":{"req":65,"bud":126}}},{"n":"カジノ管理委員会","y":{"2023":{"req":34,"bud":36},"2024":{"req":35,"bud":37},"2025":{"req":36,"bud":37},"2026":{"req":38,"bud":39}}},{"n":"個人情報保護委員会","y":{"2023":{"req":31,"bud":34},"2024":{"req":33,"bud":35},"2025":{"req":41,"bud":38},"2026":{"req":35,"bud":36}}}],"marks":{"文部科学省":{"2023":21,"2024":26,"2025":22,"2026":21},"国土交通省":{"2023":6,"2024":6,"2025":5,"2026":2,"2027":3},"内閣府":{"2023":13,"2024":5,"2025":6,"2026":8,"2027":14},"防衛省":{"2023":10,"2024":12,"2025":8,"2026":14,"2027":11},"こども家庭庁":{"2023":4,"2024":4,"2025":3,"2026":3,"2027":3},"デジタル庁":{"2023":1},"公正取引委員会":{"2023":3},"厚生労働省":{"2023":13,"2024":1,"2025":1,"2026":1},"財務省":{"2023":1,"2024":3,"2025":2,"2026":1,"2027":3},"外務省":{"2023":7,"2024":12,"2025":9,"2026":3,"2027":6},"警察庁":{"2023":1},"内閣官房":{"2023":1,"2024":3,"2025":2,"2026":4,"2027":2},"総務省":{"2024":1,"2025":1,"2026":1},"裁判所":{"2025":1}},"y27":[{"n":"財務省","r26":340672,"r27":384686},{"n":"総務省","r26":190569,"r27":213842},{"n":"防衛省","r26":87909,"r27":88432},{"n":"国土交通省","r26":61326,"r27":62686},{"n":"文部科学省","r26":54562,"r27":59479},{"n":"こども家庭庁","r26":42756,"r27":43313},{"n":"農林水産省","r26":21622,"r27":22042},{"n":"経済産業省","r26":9299,"r27":10237},{"n":"外務省","r26":7760,"r27":8078},{"n":"法務省","r26":7747,"r27":8017},{"n":"内閣府","r26":6786,"r27":6554},{"n":"デジタル庁","r26":5142,"r27":5226},{"n":"裁判所","r26":3592,"r27":3487},{"n":"環境省","r26":3726,"r27":3259},{"n":"警察庁","r26":3011,"r27":3052},{"n":"内閣官房","r26":1102,"r27":1155},{"n":"衆議院","r26":712,"r27":716},{"n":"参議院","r26":434,"r27":442},{"n":"金融庁","r26":242,"r27":245},{"n":"国立国会図書館","r26":227,"r27":212},{"n":"宮内庁","r26":187,"r27":197},{"n":"会計検査院","r26":168,"r27":168},{"n":"消費者庁","r26":143,"r27":149},{"n":"公正取引委員会","r26":128,"r27":134},{"n":"人事院","r26":92,"r27":95},{"n":"カジノ管理委員会","r26":38,"r27":39},{"n":"個人情報保護委員会","r26":35,"r27":37},{"n":"サイバー通信情報監理委員会","r26":0,"r27":14},{"n":"内閣法制局","r26":11,"r27":12},{"n":"裁判官訴追委員会","r26":1,"r27":1},{"n":"裁判官弾劾裁判所","r26":1,"r27":1},{"n":"厚生労働省","r26":346941,"r27":0}],"examples":{"debt":[{"y":2023,"name":"国債費","req":269886,"bud":252503},{"y":2024,"name":"国債費","req":281424,"bud":270090},{"y":2025,"name":"国債費","req":289116,"bud":282179},{"y":2026,"name":"国債費","req":323865,"bud":312758},{"y":2027,"name":"国債費","req":366386,"bud":null}],"local":[{"y":2023,"name":"地方交付税交付金","req":168522,"bud":161823},{"y":2024,"name":"地方交付税交付金","req":171812,"bud":166543},{"y":2025,"name":"地方交付税交付金","req":179244,"bud":188848},{"y":2026,"name":"地方交付税交付金","req":184604,"bud":200622},{"y":2027,"name":"地方交付税交付金","req":201321,"bud":null}],"reserve":[{"y":2023,"name":"予備費","req":5000,"bud":5000},{"y":2024,"name":"予備費","req":5000,"bud":10000},{"y":2025,"name":"予備費","req":5000,"bud":10000},{"y":2026,"name":"予備費","req":5000,"bud":10000}]},"budOnly":[{"y":2023,"items":[{"m":"財務省","n":"防衛力強化のための資金へ繰入","bud":33806},{"m":"財務省","n":"ウクライナ情勢経済緊急対応予備費","bud":10000},{"m":"防衛省","n":"防衛力基盤強化施設整備費","bud":2199},{"m":"法務省","n":"矯正官署共通費","bud":1702}]},{"y":2024,"items":[{"m":"財務省","n":"原油価格・物価高騰対策及び賃上げ促進環境整備対応予備費","bud":10000},{"m":"法務省","n":"矯正官署共通費","bud":1715},{"m":"法務省","n":"法務本省共通費","bud":1291},{"m":"法務省","n":"検察官署共通費","bud":1083}]},{"y":2025,"items":[{"m":"内閣府","n":"地方創生基盤整備事業推進費","bud":598},{"m":"厚生労働省","n":"国立健康危機管理研究機構運営費","bud":174},{"m":"内閣府","n":"内閣本府施設費","bud":100},{"m":"経済産業省","n":"電源利用対策費エネルギー対策特別会計へ繰入","bud":51}]},{"y":2026,"items":[{"m":"経済産業省","n":"原子力損害賠償支援対策費エネルギー対策特別会計へ繰入","bud":715},{"m":"内閣府","n":"内閣本府施設費","bud":100},{"m":"防災庁","n":"防災庁","bud":24},{"m":"サイバー通信情報監理委員会","n":"サイバー通信情報監理委員会","bud":14}]}]};
+const tri = v => v / 10000; // 億円 → 兆円
+const f = (v, d = 2) => v === null || v === undefined ? '—' : tri(v).toFixed(d);
+const sgn = (v, d = 2) => (v > 0 ? '+' : v < 0 ? '−' : '±') + Math.abs(tri(v)).toFixed(d);
+const NS = 'http://www.w3.org/2000/svg';
+const el = (tag, attrs = {}, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+const tip = document.getElementById('tip');
+function hover(node, html) {
+  node.addEventListener('pointermove', e => { tip.innerHTML = html; tip.hidden = false; tip.style.left = Math.min(e.clientX + 12, innerWidth - 290) + 'px'; tip.style.top = (e.clientY + 12) + 'px'; });
+  node.addEventListener('pointerleave', () => { tip.hidden = true; });
+}
+const Y = D.years;
+
+// 要求と政府案（年度ごとの 2 本の棒）
+(() => {
+  const s = document.getElementById('heroChart'), W = 680, H = 250, L = 44, R = 12, T = 28, B = 28;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  const lo = 100, hi = 125, y = v => T + (H - T - B) * (1 - (tri(v) - lo) / (hi - lo));
+  const g = el('g', { class: 'grid' }, s);
+  for (const v of [100, 105, 110, 115, 120, 125]) { el('line', { x1: L, x2: W - R, y1: y(v * 10000), y2: y(v * 10000) }, g); el('text', { x: L - 6, y: y(v * 10000) + 4, 'text-anchor': 'end' }, s).textContent = v; }
+  el('text', { x: L, y: 12 }, s).textContent = '兆円（目盛りは 100 から）';
+  const col = (W - L - R) / Y.length, bw = Math.min(40, col * 0.28);
+  Y.forEach((r, i) => {
+    const cx = L + col * (i + 0.5);
+    el('rect', { x: cx - bw - 2, y: y(r.req), width: bw, height: H - B - y(r.req), rx: 3, fill: 'var(--req)' }, s);
+    el('rect', { x: cx + 2, y: y(r.bud), width: bw, height: H - B - y(r.bud), rx: 3, fill: 'var(--ink)' }, s);
+    el('text', { x: cx, y: H - 8, 'text-anchor': 'middle' }, s).textContent = `FY${r.y}`;
+    el('text', { x: cx + 2 + bw / 2, y: y(r.bud) - 6, 'text-anchor': 'middle', class: 'lbl val' }, s).textContent = sgn(r.bud - r.req, 1);
+    const hit = el('rect', { x: cx - col / 2, y: T, width: col, height: H - T - B, fill: 'transparent' }, s);
+    hover(hit, `<b>FY${r.y}</b>（${r.n} 項）<br>要求 ${f(r.req)}兆円<br>政府案 ${f(r.bud)}兆円<br>差 ${sgn(r.bud - r.req)}兆円（${(r.bud / r.req * 100).toFixed(1)}%）<br>項: 増 ${r.up}・減 ${r.down}・同じ ${r.same}`);
+  });
+})();
+
+// 差の内訳
+const CATS = [['debt', '国債費', 'var(--down)'], ['local', '地方交付税・地方特例交付金', '#8a6fd1'], ['reserve', '予備費（予備費と名の付く項）', '#1baf7a'], ['other', 'その他の項', 'var(--up)']];
+(() => {
+  const s = document.getElementById('gapChart'), W = 680, rowH = 54, T = 10, L = 70, R = 70, H = T + Y.length * rowH + 26;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '540px';
+  const neg = Math.min(...Y.map(r => Object.values(r.gap).filter(v => v < 0).reduce((a, b) => a + b, 0)));
+  const pos = Math.max(...Y.map(r => Object.values(r.gap).filter(v => v > 0).reduce((a, b) => a + b, 0)));
+  const x = v => L + (W - L - R) * (v - neg) / (pos - neg), x0 = x(0);
+  const g = el('g', { class: 'grid' }, s);
+  for (let v = Math.ceil(tri(neg)); v <= tri(pos); v += 1) { el('line', { x1: x(v * 10000), x2: x(v * 10000), y1: T, y2: H - 22 }, g); if (v % 2 === 0) el('text', { x: x(v * 10000), y: H - 6, 'text-anchor': 'middle' }, s).textContent = v === 0 ? '0' : `${v > 0 ? '+' : '−'}${Math.abs(v)}兆`; }
+  Y.forEach((r, i) => {
+    const y0 = T + i * rowH;
+    el('text', { x: L - 10, y: y0 + 24, 'text-anchor': 'end', class: 'lbl' }, s).textContent = `FY${r.y}`;
+    let p = 0, n = 0;
+    for (const [k, label, color] of CATS) {
+      const v = r.gap[k]; if (!v) continue;
+      const a = v > 0 ? p : n + v, b = v > 0 ? p + v : n; if (v > 0) p += v; else n += v;
+      const rect = el('rect', { x: x(a) + 1, y: y0 + 8, width: Math.max(1, x(b) - x(a) - 2), height: 26, rx: 3, fill: color }, s);
+      hover(rect, `<b>FY${r.y} ${label}</b><br>政府案 − 要求 = ${sgn(v)}兆円`);
+    }
+    el('text', { x: x(p) + 6, y: y0 + 26, class: 'val' }, s).textContent = `計 ${sgn(r.bud - r.req)}`;
+  });
+  el('line', { x1: x0, x2: x0, y1: T, y2: H - 22, stroke: 'var(--zero)', 'stroke-width': 1.5 }, s);
+  document.getElementById('gapLegend').innerHTML = CATS.map(([, l, c]) => `<span><i style="background:${c}"></i>${l}</span>`).join('');
+  const d = D.examples.debt, lc = D.examples.local;
+  document.getElementById('gapLead').textContent = `政府案から要求を引いた差を、項の種類で分けました。左（−）は要求より少なく、右（+）は要求より多く決まった分です。`;
+  document.getElementById('debtText').textContent = `国債費は、4 年とも要求より少なく決まりました（${d.slice(0, 4).map(r => `FY${r.y} ${f(r.req, 1)} → ${f(r.bud, 1)}兆円`).join('、')}）。差は 0.7〜1.7兆円です。`;
+  document.getElementById('localText').textContent = `地方交付税交付金は、FY2023・FY2024 は要求より少なく（${lc.slice(0, 2).map(r => `${sgn(r.bud - r.req)}兆円`).join('、')}）、FY2025・FY2026 は要求より多く（${lc.slice(2, 4).map(r => `${sgn(r.bud - r.req)}兆円`).join('、')}）決まりました。FY2026 は、地方特例交付金（+0.67兆円）と合わせて +2.27兆円で、この年の差の最大の要因です。`;
+  const o = Y.map(r => sgn(r.gap.other, 1));
+  document.getElementById('otherText').textContent = `国債費・地方交付税・地方特例交付金・予備費を除いた残りの項（各年 720〜780 項）でも、政府案は要求を ${o.join('、')}兆円上回っています（FY2023→FY2026）。項の数では、要求より減った項（FY2026 で 411 項）の方が、増えた項（289 項）より多いのに、合計では増えています。少数の項が大きく増えるためです。`;
+})();
+
+// 府省の表（比率）
+(() => {
+  const t = document.getElementById('heat'), YS = [2023, 2024, 2025, 2026];
+  const rows = D.ministries.filter(m => (m.y[2026]?.bud ?? 0) >= 50);
+  const cell = c => {
+    if (!c) return '<td class="heat" title="要求書が無い、または突き合わせられる項が無い">—</td>';
+    const r = c.bud / c.req * 100, dd = Math.min(1, Math.abs(r - 100) / 15);
+    const bg = r >= 100 ? `color-mix(in srgb, var(--up-soft) ${Math.round(dd * 100)}%, transparent)` : `color-mix(in srgb, var(--down-soft) ${Math.round(dd * 100)}%, transparent)`;
+    return `<td class="heat" style="background:${bg}" title="要求 ${f(c.req)}兆円 → 政府案 ${f(c.bud)}兆円（${sgn(c.bud - c.req)}兆円）">${r.toFixed(1)}%</td>`;
+  };
+  const marks = n => YS.reduce((s, y) => s + (D.marks[n]?.[y] ?? 0), 0);
+  t.innerHTML = `<thead><tr><th>府省</th>${YS.map(y => `<th>FY${y}</th>`).join('')}<th>政府案 FY2026</th><th>事項要求の注記</th></tr></thead><tbody>` +
+    rows.map(m => `<tr><td>${m.n}</td>${YS.map(y => cell(m.y[y])).join('')}<td>${f(m.y[2026]?.bud)}兆円</td><td>${marks(m.n) || ''}</td></tr>`).join('') + '</tbody>';
+})();
+
+// 事項要求の注記（行の数）
+(() => {
+  const t = document.getElementById('marks'), YS = [2023, 2024, 2025, 2026, 2027];
+  const names = Object.keys(D.marks).sort((a, b) => YS.reduce((s, y) => s + (D.marks[b][y] ?? 0), 0) - YS.reduce((s, y) => s + (D.marks[a][y] ?? 0), 0));
+  t.innerHTML = `<thead><tr><th>要求書の府省</th>${YS.map(y => `<th>FY${y}</th>`).join('')}</tr></thead><tbody>` +
+    names.map(n => `<tr><td>${n}</td>${YS.map(y => `<td>${D.marks[n][y] ?? (y === 2027 && n === '厚生労働省' ? '未収録' : '')}</td>`).join('')}</tr>`).join('') +
+    `<tr><td><b>計</b></td>${YS.map(y => `<td><b>${names.reduce((s, n) => s + (D.marks[n][y] ?? 0), 0)}</b></td>`).join('')}</tr></tbody>`;
+})();
+
+// 要求書に無い予算
+(() => {
+  const L = D.years.map(r => `FY${r.y} ${r.budOnlyN} 項・${f(r.budOnly)}兆円`).join('、');
+  document.getElementById('budOnlyLead').textContent = `予算書にあって、要求書の項に突き合わせられない予算です（${L}）。FY2023 は、「防衛力強化のための資金へ繰入」3.38兆円と「ウクライナ情勢経済緊急対応予備費」1.0兆円が、要求書の項に無いまま政府案に入っています。`;
+  const t = document.getElementById('budOnly');
+  t.innerHTML = '<thead><tr><th>年度</th><th>府省</th><th>項</th><th>政府案</th></tr></thead><tbody>' +
+    D.budOnly.flatMap(b => b.items.map((x, i) => `<tr><td>${i === 0 ? 'FY' + b.y : ''}</td><td style="text-align:left">${x.m}</td><td style="text-align:left;white-space:normal;min-width:220px">${x.n}</td><td>${f(x.bud)}兆円</td></tr>`)).join('') + '</tbody>';
+})();
+
+// FY2027
+(() => {
+  const rows = D.y27.filter(r => r.n !== '厚生労働省' && Math.max(r.r26, r.r27) >= 2000);
+  const s26 = D.y27.filter(r => r.n !== '厚生労働省').reduce((a, r) => a + r.r26, 0), s27 = D.y27.filter(r => r.n !== '厚生労働省').reduce((a, r) => a + r.r27, 0);
+  const d = D.examples.debt[4], lc = D.examples.local[4];
+  document.getElementById('y27Lead').textContent = `FY2027 の一般会計の要求は ${f(s27, 1)}兆円です（厚生労働省を除く）。同じく厚生労働省を除いた FY2026 の要求 ${f(s26, 1)}兆円より ${sgn(s27 - s26, 1)}兆円多く、その大半は財務省（国債費の要求 ${f(d.req, 1)}兆円。FY2026 の要求より ${sgn(d.req - D.examples.debt[3].req, 1)}兆円）と総務省（地方交付税交付金の要求 ${f(lc.req, 1)}兆円）です。`;
+  const s = document.getElementById('y27Chart'), W = 680, rowH = 30, T = 6, L = 110, R = 70, H = T + rows.length * rowH + 24;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '520px';
+  const max = Math.max(...rows.map(r => Math.max(r.r26, r.r27))), x = v => L + (W - L - R) * v / max;
+  const g = el('g', { class: 'grid' }, s);
+  for (let v = 0; v <= tri(max); v += 10) { el('line', { x1: x(v * 10000), x2: x(v * 10000), y1: T, y2: H - 22 }, g); el('text', { x: x(v * 10000), y: H - 6, 'text-anchor': 'middle' }, s).textContent = `${v}兆`; }
+  rows.forEach((r, i) => {
+    const y0 = T + i * rowH;
+    el('text', { x: L - 8, y: y0 + 18, 'text-anchor': 'end', class: 'lbl' }, s).textContent = r.n;
+    el('rect', { x: L, y: y0 + 5, width: Math.max(1, x(r.r26) - L), height: 9, rx: 2, fill: 'var(--req)' }, s);
+    el('rect', { x: L, y: y0 + 15, width: Math.max(1, x(r.r27) - L), height: 9, rx: 2, fill: 'var(--ink)' }, s);
+    el('text', { x: x(Math.max(r.r26, r.r27)) + 6, y: y0 + 22, class: 'val' }, s).textContent = sgn(r.r27 - r.r26);
+    const hit = el('rect', { x: 0, y: y0, width: W, height: rowH, fill: 'transparent' }, s);
+    hover(hit, `<b>${r.n}</b><br>FY2026 の要求 ${f(r.r26)}兆円<br>FY2027 の要求 ${f(r.r27)}兆円`);
+  });
+})();
+</script>

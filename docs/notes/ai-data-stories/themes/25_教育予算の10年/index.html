@@ -1,0 +1,276 @@
+<title>教育予算の10年</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Zen+Kaku+Gothic+New:wght@700;900&display=swap">
+<style>
+/* layout: 1 本の読み物の列（最大 760px）。教育 4 区分は青系の濃淡、修学支援は斜線、増 = 朱 */
+:root {
+  --bg: #f6f7f9; --surface: #ffffff; --ink: #18202b; --muted: #5b6573; --line: #d9dee5;
+  --up: #d2542a; --down: #2a6fc9; --zero: #9aa3ae; --tag: #eef1f5;
+  --c1: #1f5fae; --c2: #4f8fd6; --c3: #8db8e8; --c4: #c5dbf3; --c5: #e0902a;
+  --display: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", sans-serif;
+  --body: "BIZ UDPGothic", "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #12161c; --surface: #1a2029; --ink: #e8ecf1; --muted: #9aa5b3; --line: #2c3440;
+  --up: #f07a50; --down: #5b9cf0; --zero: #6b7582; --tag: #232b36;
+  --c1: #5b9cf0; --c2: #3f78c4; --c3: #2c5a95; --c4: #203f66; --c5: #e8a14a; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #12161c; --surface: #1a2029; --ink: #e8ecf1; --muted: #9aa5b3; --line: #2c3440;
+  --up: #f07a50; --down: #5b9cf0; --zero: #6b7582; --tag: #232b36;
+  --c1: #5b9cf0; --c2: #3f78c4; --c3: #2c5a95; --c4: #203f66; --c5: #e8a14a; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.8;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 32px 64px; }
+main { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 52px; }
+h1, h2 { font-family: var(--display); text-wrap: balance; line-height: 1.35; margin: 0; }
+h1 { font-size: clamp(28px, 6vw, 40px); font-weight: 900; }
+h2 { font-size: 22px; font-weight: 700; }
+p { margin: 0; max-width: 65ch; }
+section { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; color: var(--muted); }
+.big { font-family: var(--display); font-weight: 900; font-size: clamp(40px, 9vw, 60px); line-height: 1.1; color: var(--up); }
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 640px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.kpi b { font-family: var(--display); font-size: 20px; font-variant-numeric: tabular-nums; }
+.kpi span { font-size: 12px; color: var(--muted); line-height: 1.5; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; min-width: 0; }
+.scroll { overflow-x: auto; }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { fill: var(--muted); font-family: var(--body); font-size: 11px; }
+.chart .lbl { fill: var(--ink); font-size: 12px; }
+.chart .val { font-variant-numeric: tabular-nums; }
+.grid line { stroke: var(--line); stroke-width: 1; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12px; color: var(--muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+.tag { display: inline-block; font-size: 11px; padding: 0 8px; border-radius: 999px; background: var(--tag); color: var(--muted); margin-right: 6px; white-space: nowrap; }
+.tag.src::before { content: "原資料"; } .tag.proc::before { content: "加工"; } .tag.ai::before { content: "AIの計算・解釈"; }
+.claims { display: flex; flex-direction: column; gap: 12px; padding: 0; margin: 0; list-style: none; }
+.claims li { display: grid; gap: 4px; }
+table { border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; width: 100%; }
+th, td { padding: 4px 8px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+th.l, td.l { text-align: left; white-space: normal; }
+thead th { color: var(--muted); font-weight: 400; }
+.wide { min-width: 640px; }
+td.up { color: var(--up); }
+details { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+summary { cursor: pointer; font-weight: 700; }
+summary:focus-visible { outline: 2px solid var(--down); outline-offset: 2px; }
+.notes { padding-left: 1.2em; margin: 0; display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--muted); }
+.questions { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.questions li { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+.small { font-size: 13px; color: var(--muted); }
+footer { font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+#tip { position: fixed; pointer-events: none; background: var(--ink); color: var(--bg); font-size: 12px; padding: 6px 8px; border-radius: 6px; line-height: 1.5; max-width: 260px; z-index: 5; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<main>
+  <header style="display:flex;flex-direction:column;gap:12px">
+    <span class="eyebrow">一般会計・当初予算 FY2017 → FY2026（補正・決算・概算要求も）</span>
+    <h1>教育の予算は、10 年でどう動いたか</h1>
+    <div class="big" id="hero"></div>
+    <p id="heroText"></p>
+    <div class="kpis" id="kpis"></div>
+  </header>
+
+  <section>
+    <h2>9 年ほぼ横ばい、FY2026 に 1 年で増える</h2>
+    <p id="stackText"></p>
+    <div class="panel scroll"><svg class="chart" id="stack" role="img" aria-label="教育の当初予算の年度別の積み上げ棒"></svg></div>
+    <div class="legend" id="stackLegend"></div>
+  </section>
+
+  <section>
+    <h2>FY2026 の伸びの中身</h2>
+    <p id="d26Text"></p>
+    <div class="panel scroll"><svg class="chart" id="d26" role="img" aria-label="FY2026 の目ごとの増減"></svg></div>
+    <ul class="claims">
+      <li><strong>高校の就学支援金が +0.18兆円、給食費の負担軽減が新しく 0.16兆円</strong><span>目「高等学校等就学支援金交付金」は 0.40兆円 → 0.58兆円。目「給食費負担軽減交付金」は FY2026 に初めて出てきます。どちらも名前から、高校の授業料と、学校給食の費用を家庭の代わりに負担するお金と読めます。制度がどう変わったかは、このデータには書かれていません（推測）。</span><span><span class="tag src"></span><span class="tag ai"></span></span></li>
+      <li><strong>義務教育費国庫負担金 +0.09兆円</strong><span>FY2017〜FY2023 は 1.50〜1.53兆円で動かず、FY2024 から 3 年続けて増えています（1.56 → 1.62 → 1.71兆円）。教職員の給与の国の負担分と読めますが、増えた理由は分かりません。</span><span><span class="tag src"></span><span class="tag ai"></span></span></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>増えた分は、概算要求の後に決まっている</h2>
+    <p>4 つの目の、要求額と政府案です。概算要求書の明細の要求額を、予算書の同じ名前の目に結んだ値です。</p>
+    <div class="panel scroll"><table class="wide" id="reqTbl"></table></div>
+    <ul class="claims">
+      <li><strong>FY2026 の高校就学支援金は、要求 0.40兆円に対して政府案 0.58兆円</strong><span>要求は前年度と同じ額で、政府案で +0.18兆円になりました。給食費負担軽減交付金は、要求書に目がありません（要求の段階では無かったか、別の名前だった。未確認）。FY2027 の要求には、どちらも FY2026 の政府案とほぼ同じ額が載っています。</span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+      <li><strong>FY2025 の大学の授業料等の減免も、同じ形</strong><span>こども家庭庁の目「授業料等減免費交付金」は、FY2025 の要求 0.25兆円に対して政府案 0.43兆円でした。</span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+      <li><strong>教育 4 区分の全体でも、政府案が要求を上回る</strong><span id="reqAll"></span><span><span class="tag proc"></span><span class="tag ai"></span></span></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>補正予算: 学校の施設と、年度ごとの山</h2>
+    <p id="suppText"></p>
+    <div class="panel scroll"><svg class="chart" id="supp" role="img" aria-label="教育の補正予算の年度別の棒"></svg></div>
+    <div class="legend"><span><i style="background:var(--c2)"></i>教育 4 区分の補正（改予算額 − 当初）</span><span><i style="background:var(--c5)"></i>学校の情報機器・ネットワーク（主要経費別は科学技術振興費）</span></div>
+    <ul class="claims">
+      <li><strong>毎年足されるのは、学校施設環境改善交付金</strong><span>FY2017〜FY2025 の 9 年すべてで、補正の上位に入っています（年 0.04〜0.26兆円）。</span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+      <li><strong>GIGA スクールの端末と校内ネットワークは、分類上は「科学技術振興費」</strong><span>目「公立学校情報機器整備費補助金」「公立学校情報通信ネットワーク環境施設整備費補助金」などは、主要経費別のコードが 13（科学技術振興費）で、教育 4 区分には入りません。補正で FY2019 0.23兆円、FY2020 0.26兆円、FY2023 0.27兆円が付いています。当初予算には、ほぼありません。</span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>決算: 使われた割合</h2>
+    <p id="settleText"></p>
+    <div class="panel scroll"><table class="wide" id="settleTbl"></table></div>
+  </section>
+
+  <section>
+    <h2>全部の数字（兆円）</h2>
+    <details>
+      <summary>年度ごとの当初予算・補正・情報機器の表を開く</summary>
+      <div class="scroll" style="margin-top:12px"><table class="wide" id="allTbl"></table></div>
+    </details>
+  </section>
+
+  <section>
+    <h2>この数字の作り方と、確かめられないこと</h2>
+    <ul class="notes">
+      <li><span class="tag src"></span>財務省「予算書・決算書データベース」の予算書・補正予算書・決算書（目の表）と、各府省の概算要求書の明細。一般会計。</li>
+      <li><span class="tag proc"></span>nihon-no-yosan が目の行を抽出・構造化し、分類コードを付けたもの。「教育」は、主要経費別の 11 義務教育費国庫負担金・14 文教施設費・15 教育振興助成費・16 育英事業費の 4 区分とし、こども家庭庁の項「大学等修学支援費」（主要経費別は 05 少子化対策費。FY2020〜。FY2022 までは内閣府の所管の項）を別に足しています。科学技術振興費（13）は入れていません。</li>
+      <li><span class="tag proc"></span>補正は、目の「改予算額 − 当初予算額」。補正の回が複数ある年度（FY2018・FY2020・FY2022）は、全部の回を足した額です。補正予算書の CSV の全部の回の差引額を足し直した値と、年度ごとに一致しました。「外N目」にまとめられた目の補正は、数えられていません。</li>
+      <li><span class="tag ai"></span>目の名前からの読み（高校の授業料、給食費、教職員の給与）と、増えた理由はこの探索の解釈です。データには、制度の変更は書かれていません。</li>
+      <li>概算要求との比較は、要求額と政府案の両方がある目だけです（FY2023〜FY2026）。FY2027 は要求だけです（厚生労働省の要求書は未収録ですが、教育 4 区分はほぼ文部科学省です）。</li>
+      <li>FY2025・FY2026 の決算は、まだありません。FY2017〜FY2021 の当初予算が、国会提出時か成立後かは、判定できていません。名目の金額で、物価や子どもの数の変化は調整していません。</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>次に、聞かせてください</h2>
+    <ol class="questions">
+      <li>FY2026 の高校の就学支援金と給食費の増額は、FY2027 以降も続く形に見えます。義務教育費国庫負担金の 3 年続けての増加と合わせて、どこを掘り下げますか。</li>
+      <li>GIGA スクールの端末のように、補正で付いて当初には無いお金が、決算でいつ使われたか（繰越）を追いますか。</li>
+      <li>国立大学の運営費交付金（1.08 → 1.10兆円）や、私立大学への補助のように、ほとんど動かない経費の 10 年も見ますか。</li>
+    </ol>
+  </section>
+
+  <footer>
+    <span>出典：財務省「予算書・決算書データベース」、各府省の概算要求書を加工して作成。国や各府省が作成した加工していない情報ではありません。</span>
+    <span>nihon-no-yosan の AI Data Stories PoC（ループ 5 回目）。金額は兆円（千円の値から計算し、表示で丸め）。</span>
+  </footer>
+</main>
+<div id="tip" hidden></div>
+
+<script>
+const D = {"Y": [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026], "codes": [{"c": "11", "n": "義務教育費国庫負担金", "v": [15248, 15228, 15200, 15221, 15164, 15015, 15216, 15627, 16210, 17118]}, {"c": "15", "n": "教育振興助成費", "v": [23315, 23225, 24158, 23768, 23124, 23139, 23054, 23086, 23173, 26983]}, {"c": "16", "n": "育英事業費", "v": [1171, 1269, 1375, 1176, 1235, 1217, 1204, 1178, 1167, 1215]}, {"c": "14", "n": "文教施設費", "v": [788, 766, 1694, 1250, 773, 743, 743, 732, 726, 712]}], "shu": [null, null, null, 4882, 4804, 5196, 5311, 5438, 6532, 6567], "supp": [1509, 2298, 1623, 5526, 3753, 6195, 3199, 4230, 8899, null], "suppTop": {"2017": [["学校施設環境改善交付金", 662], ["東京パラリンピック競技大会開催準備交付金", 300], ["認定こども園施設整備交付金", 165]], "2018": [["ブロック塀・冷房設備対応臨時特例交付金", 985], ["学校施設環境改善交付金", 372], ["国立大学法人施設整備費補助金", 215]], "2019": [["学校施設環境改善交付金", 626], ["国立大学法人施設整備費補助金", 179], ["独立行政法人国立高等専門学校機構施設整備費補助金", 170]], "2020": [["学校施設環境改善交付金", 1655], ["学校保健特別対策事業費補助金", 763], ["東京オリンピック・パラリンピック競技大会新型コロナウイルス感染症対策交付金", 560]], "2021": [["学校施設環境改善交付金", 1312], ["学生支援緊急給付金給付事業費補助金", 675], ["国立大学法人施設整備費補助金", 478]], "2022": [["大学等成長分野転換支援基金補助金", 3002], ["学校施設環境改善交付金", 1204], ["国立大学法人施設整備費補助金", 492]], "2023": [["学校施設環境改善交付金", 1558], ["国立大学法人施設整備費補助金", 499], ["義務教育費国庫負担金", 385]], "2024": [["学校施設環境改善交付金", 1297], ["空調設備整備臨時特例交付金", 779], ["義務教育費国庫負担金", 633]], "2025": [["高等学校等教育改革促進事業費補助金", 2950], ["学校施設環境改善交付金", 2562], ["国立大学法人施設整備費補助金", 734]]}, "giga": [null, null, 2305, 2577, 136, null, 2659, 232, 683, null], "settle": [{"y": 2017, "cur": 44480, "sp": 42452, "car": 1576, "un": 451}, {"y": 2018, "cur": 44362, "sp": 41689, "car": 2191, "un": 482}, {"y": 2019, "cur": 46424, "sp": 42702, "car": 3027, "un": 695}, {"y": 2020, "cur": 50509, "sp": 44992, "car": 4417, "un": 1101}, {"y": 2021, "cur": 48465, "sp": 43690, "car": 3626, "un": 1149}, {"y": 2022, "cur": 49945, "sp": 45639, "car": 3500, "un": 806}, {"y": 2023, "cur": 46916, "sp": 42779, "car": 3323, "un": 815}, {"y": 2024, "cur": 48185, "sp": 43576, "car": 3964, "un": 646}], "req": {"2023": {"req": 38434, "bud": 40215, "n": 108}, "2024": {"req": 38640, "bud": 40624, "n": 111}, "2025": {"req": 39059, "bud": 41275, "n": 114}, "2026": {"req": 41768, "bud": 44380, "n": 112}}, "req27": 46590, "d26": [{"c": "15", "kou": "初等中等教育振興費", "moku": "高等学校等就学支援金交付金", "a": 4048, "b": 5800, "d": 1752}, {"c": "15", "kou": "教育政策推進費", "moku": "給食費負担軽減交付金", "a": 0, "b": 1649, "d": 1649}, {"c": "11", "kou": "義務教育費国庫負担金", "moku": "義務教育費国庫負担金", "a": 16210, "b": 17118, "d": 909}, {"c": "15", "kou": "初等中等教育振興費", "moku": "高等学校等修学支援事業費補助金", "a": 156, "b": 351, "d": 194}, {"c": "15", "kou": "国立大学法人運営費", "moku": "国立大学法人運営費交付金", "a": 10784, "b": 10971, "d": 188}, {"c": "16", "kou": "育英事業費", "moku": "育英資金利子補給金", "a": 2, "b": 90, "d": 89}, {"c": "16", "kou": "育英事業費", "moku": "育英資金貸付金", "a": 962, "b": 919, "d": -43}, {"c": "14", "kou": "沖縄教育振興事業費", "moku": "学校施設環境改善交付金", "a": 28, "b": 2, "d": -26}, {"c": "15", "kou": "スポーツ振興費", "moku": "地方スポーツ振興費補助金", "a": 30, "b": 55, "d": 25}, {"c": "15", "kou": "私立学校振興費", "moku": "基礎年金等日本私立学校振興・共済事業団補助金", "a": 1558, "b": 1579, "d": 21}, {"c": "15", "kou": "スポーツ振興費", "moku": "スポーツ振興事業委託費", "a": 49, "b": 32, "d": -17}, {"c": "14", "kou": "沖縄教育振興事業費", "moku": "公立学校施設整備費負担金", "a": 12, "b": 29, "d": 17}]};
+const Y = D.Y;
+const tri = v => v / 10000;
+const f = (v, d = 2) => v === null || v === undefined ? '—' : tri(v).toFixed(d);
+const sgn = v => (v > 0 ? '+' : v < 0 ? '−' : '±') + Math.abs(tri(v)).toFixed(2);
+const NS = 'http://www.w3.org/2000/svg';
+const el = (tag, attrs = {}, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+const tip = document.getElementById('tip');
+function hover(node, html) {
+  node.addEventListener('pointermove', e => { tip.innerHTML = html; tip.hidden = false; tip.style.left = Math.min(e.clientX + 12, innerWidth - 270) + 'px'; tip.style.top = (e.clientY + 12) + 'px'; });
+  node.addEventListener('pointerleave', () => { tip.hidden = true; });
+}
+const edu = Y.map((_, i) => D.codes.reduce((s, c) => s + (c.v[i] ?? 0), 0));
+const wide = Y.map((_, i) => edu[i] + (D.shu[i] ?? 0));
+const i0 = 0, i9 = Y.length - 1;
+
+// ヒーロー
+document.getElementById('hero').textContent = `+${tri(edu[i9] - edu[i0]).toFixed(2)}兆円`;
+document.getElementById('heroText').textContent = `教育の 4 つの経費（義務教育費国庫負担金・教育振興助成費・育英事業費・文教施設費）の当初予算は、${f(edu[i0])}兆円（FY2017）から ${f(edu[i9])}兆円（FY2026）になりました。増えた分のうち ${f(edu[i9] - edu[i9 - 1])}兆円は、FY2026 の 1 年で増えています。`;
+const kp = [
+  [`+${((edu[i9] / edu[i0] - 1) * 100).toFixed(1)}%`, '教育 4 区分の 10 年の伸び（一般会計全体は +25.5%）'],
+  [`${sgn(edu[i9] - edu[i9 - 1])}兆円`, 'FY2026 の 1 年の増加'],
+  [`${f(wide[i9])}兆円`, '大学等の修学支援（こども家庭庁）を足した FY2026'],
+  [`${f(D.supp[8])}兆円`, 'FY2025 の補正（教育 4 区分、10 年で最大）'],
+];
+document.getElementById('kpis').innerHTML = kp.map(([b, s]) => `<div class="kpi"><b>${b}</b><span>${s}</span></div>`).join('');
+
+// 積み上げ棒
+(() => {
+  const series = [...D.codes.map((c, k) => ({ n: c.n, v: c.v, fill: `var(--c${k + 1})` })), { n: '大学等修学支援費（こども家庭庁など）', v: D.shu, fill: 'url(#hatch)' }];
+  const s = document.getElementById('stack'), W = 680, H = 300, L = 44, R = 12, T = 24, B = 26;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '520px';
+  const defs = el('defs', {}, s); const pat = el('pattern', { id: 'hatch', width: 6, height: 6, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }, defs);
+  el('rect', { width: 6, height: 6, fill: 'var(--surface)' }, pat); el('line', { x1: 0, y1: 0, x2: 0, y2: 6, stroke: 'var(--c5)', 'stroke-width': 3 }, pat);
+  const maxT = Math.ceil(Math.max(...wide) / 10000), max = maxT * 10000;
+  const cw = (W - L - R) / Y.length, bw = cw * 0.62, y = v => T + (H - T - B) * (1 - v / max);
+  const g = el('g', { class: 'grid' }, s);
+  for (let v = 0; v <= maxT; v++) { el('line', { x1: L, x2: W - R, y1: y(v * 10000), y2: y(v * 10000) }, g); el('text', { x: L - 6, y: y(v * 10000) + 4, 'text-anchor': 'end' }, s).textContent = v; }
+  el('text', { x: 4, y: 12 }, s).textContent = '兆円';
+  Y.forEach((yr, i) => {
+    const x = L + cw * i + (cw - bw) / 2; let base = 0;
+    for (const sr of series) { const v = sr.v[i] ?? 0; if (!v) continue; el('rect', { x, y: y(base + v), width: bw, height: Math.max(0, y(base) - y(base + v) - (base ? 1 : 0)), fill: sr.fill, stroke: sr.fill.startsWith('url') ? 'var(--c5)' : 'none', 'stroke-width': sr.fill.startsWith('url') ? 1 : 0 }, s); base += v; }
+    el('text', { x: x + bw / 2, y: H - 8, 'text-anchor': 'middle' }, s).textContent = String(yr).slice(2);
+    if (i === 0 || i === i9 - 1 || i === i9) el('text', { x: x + bw / 2, y: y(base) - 6, 'text-anchor': 'middle', class: 'lbl val' }, s).textContent = f(base);
+    hover(el('rect', { x: L + cw * i, y: T, width: cw, height: H - T - B, fill: 'transparent' }, s), `<b>FY${yr}</b><br>${series.map(sr => `${sr.n}: ${f(sr.v[i])}`).join('<br>')}<br>計 ${f(wide[i])}兆円`);
+  });
+  document.getElementById('stackLegend').innerHTML = series.map(sr => `<span><i style="background:${sr.fill.startsWith('url') ? 'repeating-linear-gradient(45deg,var(--c5) 0 2px,transparent 2px 5px)' : sr.fill}"></i>${sr.n}</span>`).join('');
+  document.getElementById('stackText').textContent = `教育 4 区分の当初予算は、FY2017〜FY2025 の 9 年間、${f(Math.min(...edu.slice(0, 9)))}〜${f(Math.max(...edu.slice(0, 9)))}兆円の幅に収まっていました（FY2019 だけ文教施設費が 0.17兆円に増えています）。FY2026 に ${f(edu[i9])}兆円になります。大学等の修学支援（FY2020 から。斜線）を足すと、${f(wide[3])}兆円（FY2020）から ${f(wide[i9])}兆円（FY2026）です。`;
+})();
+
+// FY2026 の目ごとの増減
+(() => {
+  const rows = D.d26.filter(r => Math.abs(r.d) >= 10).slice(0, 8);
+  const tot = edu[i9] - edu[i9 - 1];
+  document.getElementById('d26Text').textContent = `FY2025 → FY2026 の教育 4 区分の増加 ${sgn(tot)}兆円のうち、上位 3 つの目で ${sgn(rows.slice(0, 3).reduce((a, r) => a + r.d, 0))}兆円です。`;
+  const s = document.getElementById('d26'), W = 680, rowH = 30, T = 6, L = 250, R = 80, H = T + rows.length * rowH + 6;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '560px';
+  const max = Math.max(...rows.map(r => r.d)), min = Math.min(0, ...rows.map(r => r.d)), x = v => L + (W - L - R) * (v - min) / (max - min), x0 = x(0);
+  rows.forEach((r, i) => {
+    const y = T + i * rowH, up = r.d >= 0;
+    const nm = r.moku.length > 18 ? r.moku.slice(0, 18) + '…' : r.moku;
+    el('text', { x: L - 8, y: y + 19, 'text-anchor': 'end', class: 'lbl' }, s).textContent = nm;
+    el('rect', { x: Math.min(x(r.d), x0), y: y + 7, width: Math.max(2, Math.abs(x(r.d) - x0)), height: rowH - 12, rx: 3, fill: up ? 'var(--up)' : 'var(--down)' }, s);
+    el('text', { x: up ? x(r.d) + 6 : x0 + 6, y: y + 19, class: 'val' }, s).textContent = sgn(r.d);
+    hover(el('rect', { x: 0, y, width: W, height: rowH, fill: 'transparent' }, s), `<b>${r.moku}</b><br>項: ${r.kou}<br>FY2025 ${f(r.a, 3)} → FY2026 ${f(r.b, 3)}兆円`);
+  });
+  el('line', { x1: x0, x2: x0, y1: T, y2: H - 6, stroke: 'var(--zero)', 'stroke-width': 1 }, s);
+})();
+
+// 要求と政府案
+(() => {
+  const rows = [
+    { n: '高等学校等就学支援金交付金', r25: 4061, b25: 4048, r26: 4048, b26: 5800, r27: 5794 },
+    { n: '給食費負担軽減交付金', r25: null, b25: null, r26: null, b26: 1649, r27: 1655 },
+    { n: '義務教育費国庫負担金', r25: 15486, b25: 16210, r26: 16504, b26: 17118, r27: 17251 },
+    { n: '授業料等減免費交付金（こども家庭庁）', r25: 2521, b25: 4262, r26: 4262, b26: 4278, r27: 4278 },
+  ];
+  const c = (r, b) => (r === null || b === null ? '<td>—</td>' : `<td class="${b > r ? 'up' : ''}">${sgn(b - r)}</td>`);
+  document.getElementById('reqTbl').innerHTML = '<thead><tr><th class="l">目</th><th>FY2025 要求</th><th>政府案</th><th>差</th><th>FY2026 要求</th><th>政府案</th><th>差</th><th>FY2027 要求</th></tr></thead><tbody>' + rows.map(r => `<tr><td class="l">${r.n}</td><td>${f(r.r25)}</td><td>${f(r.b25)}</td>${c(r.r25, r.b25)}<td>${f(r.r26)}</td><td>${f(r.b26)}</td>${c(r.r26, r.b26)}<td>${f(r.r27)}</td></tr>`).join('') + '</tbody>';
+  const q = D.req;
+  document.getElementById('reqAll').textContent = `要求額と政府案の両方がある目の合計で、FY2023 ${sgn(q['2023'].bud - q['2023'].req)}・FY2024 ${sgn(q['2024'].bud - q['2024'].req)}・FY2025 ${sgn(q['2025'].bud - q['2025'].req)}・FY2026 ${sgn(q['2026'].bud - q['2026'].req)}兆円です。FY2027 の要求は、教育 4 区分の計で ${f(D.req27)}兆円です（FY2026 の政府案は ${f(edu[i9])}兆円）。`;
+})();
+
+// 補正
+(() => {
+  const s = document.getElementById('supp'), W = 680, H = 250, L = 44, R = 12, T = 24, B = 26;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '520px';
+  const vals = Y.flatMap((_, i) => [D.supp[i] ?? 0, D.giga[i] ?? 0]);
+  const step = 0.2, maxT = Math.ceil(Math.max(...vals) / 10000 / step) * step, max = maxT * 10000;
+  const cw = (W - L - R) / Y.length, bw = cw * 0.32, y = v => T + (H - T - B) * (1 - v / max);
+  const g = el('g', { class: 'grid' }, s);
+  for (let k = 0; k <= Math.round(maxT / step); k++) { const v = k * step * 10000; el('line', { x1: L, x2: W - R, y1: y(v), y2: y(v) }, g); el('text', { x: L - 6, y: y(v) + 4, 'text-anchor': 'end' }, s).textContent = (k * step).toFixed(1); }
+  el('text', { x: 4, y: 12 }, s).textContent = '兆円';
+  Y.forEach((yr, i) => {
+    const x = L + cw * i + cw * 0.16, a = D.supp[i], gi = D.giga[i];
+    if (a) el('rect', { x, y: y(a), width: bw, height: y(0) - y(a), rx: 2, fill: 'var(--c2)' }, s);
+    if (gi) el('rect', { x: x + bw + 2, y: y(gi), width: bw, height: y(0) - y(gi), rx: 2, fill: 'var(--c5)' }, s);
+    if (a) el('text', { x: x + bw / 2, y: y(a) - 5, 'text-anchor': 'middle', class: 'val' }, s).textContent = f(a);
+    el('text', { x: x + bw + 1, y: H - 8, 'text-anchor': 'middle' }, s).textContent = String(yr).slice(2);
+    const tops = (D.suppTop[yr] || []).map(([n, v]) => `${n} ${f(v, 3)}`).join('<br>');
+    hover(el('rect', { x: L + cw * i, y: T, width: cw, height: H - T - B, fill: 'transparent' }, s), `<b>FY${yr}</b><br>教育 4 区分の補正 ${f(a)}兆円<br>情報機器・ネットワーク ${f(gi)}兆円${tops ? '<br>上位:<br>' + tops : ''}`);
+  });
+  const sum = D.supp.reduce((x, v) => x + (v ?? 0), 0);
+  document.getElementById('suppText').textContent = `教育 4 区分への補正は、FY2017〜FY2025 の 9 年で計 ${f(sum)}兆円です。FY2025 の ${f(D.supp[8])}兆円が最大で、目「高等学校等教育改革促進事業費補助金」0.30兆円が入っています。FY2022 の 0.62兆円には「大学等成長分野転換支援基金補助金」0.30兆円が入っています。FY2026 の補正（第1号）には、教育 4 区分の目がありません。`;
+})();
+
+// 決算
+(() => {
+  const st = D.settle;
+  document.getElementById('settleText').textContent = `教育 4 区分の決算（FY2017〜FY2024）では、使えるお金（歳出予算現額）のうち支出したのは ${Math.min(...st.map(r => r.sp / r.cur * 100)).toFixed(1)}〜${Math.max(...st.map(r => r.sp / r.cur * 100)).toFixed(1)}% です。翌年度への繰越は FY2020 以降、年 0.3〜0.4兆円台です。`;
+  document.getElementById('settleTbl').innerHTML = '<thead><tr><th class="l">年度</th><th>現額</th><th>支出済</th><th>翌年度繰越</th><th>不用</th><th>支出の割合</th></tr></thead><tbody>' + st.map(r => `<tr><td class="l">FY${r.y}</td><td>${f(r.cur)}</td><td>${f(r.sp)}</td><td>${f(r.car)}</td><td>${f(r.un)}</td><td>${(r.sp / r.cur * 100).toFixed(1)}%</td></tr>`).join('') + '</tbody>';
+})();
+
+// 全部の表
+(() => {
+  const row = (n, v) => `<tr><td class="l">${n}</td>${v.map(x => `<td>${f(x)}</td>`).join('')}</tr>`;
+  document.getElementById('allTbl').innerHTML = `<thead><tr><th class="l">当初予算</th>${Y.map(y => `<th>FY${y}</th>`).join('')}</tr></thead><tbody>` + D.codes.map(c => row(c.n, c.v)).join('') + row('<b>教育 4 区分の計</b>', edu) + row('大学等修学支援費', D.shu) + row('<b>修学支援を足した計</b>', wide) + row('補正（教育 4 区分）', D.supp) + row('補正（情報機器・ネットワーク）', D.giga) + '</tbody>';
+})();
+</script>

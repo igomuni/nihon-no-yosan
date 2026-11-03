@@ -1,0 +1,297 @@
+<title>補正予算の10年</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Zen+Kaku+Gothic+New:wght@700;900&display=swap">
+<style>
+/* layout: 1 本の読み物の列（最大 760px）。年度の棒は、上に「足した額」、下に「減らした額」 */
+:root {
+  --bg: #f6f7f9; --surface: #ffffff; --ink: #18202b; --muted: #5b6573; --line: #d9dee5; --tag: #eef1f5;
+  --up: #d2542a; --down: #2a6fc9; --zero: #9aa3ae;
+  --c-public: #2a78d6; --c-defense: #1f8f6a; --c-local: #8f6fe0; --c-reserve: #eda100; --c-debt: #5b6573; --c-covid: #d6457a; --c-rest: #b8c0cc;
+  --display: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", sans-serif;
+  --body: "BIZ UDPGothic", "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #12161c; --surface: #1a2029; --ink: #e8ecf1; --muted: #9aa5b3; --line: #2c3440; --tag: #232b36;
+  --up: #f07a50; --down: #5b9cf0; --zero: #6b7582;
+  --c-public: #4a90e8; --c-defense: #36a882; --c-local: #a58bf0; --c-reserve: #e0a020; --c-debt: #8b95a3; --c-covid: #e06a95; --c-rest: #4a5462; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #12161c; --surface: #1a2029; --ink: #e8ecf1; --muted: #9aa5b3; --line: #2c3440; --tag: #232b36;
+  --up: #f07a50; --down: #5b9cf0; --zero: #6b7582;
+  --c-public: #4a90e8; --c-defense: #36a882; --c-local: #a58bf0; --c-reserve: #e0a020; --c-debt: #8b95a3; --c-covid: #e06a95; --c-rest: #4a5462; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.8;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 32px 64px; }
+main { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 56px; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; line-height: 1.35; margin: 0; }
+h1 { font-size: clamp(28px, 6vw, 40px); font-weight: 900; }
+h2 { font-size: 22px; font-weight: 700; }
+h3 { font-size: 16px; font-weight: 700; }
+p { margin: 0; max-width: 65ch; }
+section { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; color: var(--muted); }
+.num { font-variant-numeric: tabular-nums; }
+.up { color: var(--up); } .down { color: var(--down); }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.tile .v { font-family: var(--display); font-weight: 900; font-size: 26px; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.tile .k { font-size: 12px; color: var(--muted); line-height: 1.5; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; min-width: 0; }
+.scroll { overflow-x: auto; }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { fill: var(--muted); font-family: var(--body); font-size: 11px; }
+.chart .lbl { fill: var(--ink); font-size: 12px; }
+.chart .val { font-variant-numeric: tabular-nums; }
+.grid line { stroke: var(--line); stroke-width: 1; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--muted); margin-top: 8px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.note { font-size: 13px; color: var(--muted); }
+.tag { display: inline-block; font-size: 11px; padding: 0 8px; border-radius: 999px; background: var(--tag); color: var(--muted); margin-right: 6px; white-space: nowrap; }
+.tag.src::before { content: "原資料"; } .tag.proc::before { content: "加工"; } .tag.ai::before { content: "AIの計算・解釈"; }
+.claims { display: flex; flex-direction: column; gap: 12px; padding: 0; margin: 0; list-style: none; }
+.claims li { display: grid; gap: 4px; }
+table { border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
+th, td { padding: 4px 8px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+th.l, td.l { text-align: left; }
+td.name { text-align: left; white-space: normal; min-width: 12em; }
+thead th { color: var(--muted); font-weight: 400; }
+details { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+summary { cursor: pointer; font-weight: 700; }
+summary:focus-visible { outline: 2px solid var(--down); outline-offset: 2px; }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.col { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.col ol { margin: 0; padding-left: 1.2em; font-size: 13px; display: flex; flex-direction: column; gap: 4px; }
+.col li b { font-variant-numeric: tabular-nums; }
+.notes { padding-left: 1.2em; margin: 0; display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--muted); }
+.questions { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.questions li { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+footer { font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+#tip { position: fixed; pointer-events: none; background: var(--ink); color: var(--bg); font-size: 12px; padding: 6px 8px; border-radius: 6px; line-height: 1.5; max-width: 280px; z-index: 5; }
+</style>
+
+<main>
+  <header style="display:flex;flex-direction:column;gap:12px">
+    <span class="eyebrow">一般会計・補正予算 FY2017 → FY2026（FY2026 は第1号まで）</span>
+    <h1>補正予算は、毎年なにに足されてきたか</h1>
+    <p>当初予算のあとに国会で決める補正予算を、10 年分、事項と目の単位で足し上げました。上に足した額、下に減らした額を並べます。</p>
+    <div class="tiles" id="tiles"></div>
+  </header>
+
+  <section>
+    <h2>コロナで一桁変わり、そのあとも戻っていない</h2>
+    <p id="leadYears"></p>
+    <div class="panel scroll"><svg class="chart" id="allChart" role="img" aria-label="年度ごとの補正の追加と減少（全年度）"></svg><div class="legend" id="lg1"></div></div>
+    <p class="note">棒の上は補正で足した額（追加額）、0 より下は減らした額（修正減少額）、数字は差し引き。年度に補正が 2〜3 回ある年は、全部の回を足しています。棒にカーソルを当てると内訳が出ます。</p>
+  </section>
+
+  <section>
+    <h2>コロナ期を除いて、縮尺を変えて見る</h2>
+    <div class="panel scroll"><svg class="chart" id="calmChart" role="img" aria-label="FY2020〜FY2022 を除いた年度の補正の追加と減少"></svg><div class="legend" id="lg2"></div></div>
+    <ul class="claims">
+      <li><strong>公共事業は毎年 1.0〜2.5兆円</strong><span id="pubText"></span><span><span class="tag src"></span><span class="tag ai"></span></span></li>
+      <li><strong>防衛関係費も毎年足されている</strong><span id="defText"></span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+      <li><strong>コロナのあとも残った大きな補正</strong><span id="postText"></span><span><span class="tag src"></span><span class="tag ai"></span></span></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>減らされるのは、ほぼ毎年「国債の利払い」</h2>
+    <p id="debtLead"></p>
+    <div class="panel scroll"><svg class="chart" id="debtChart" role="img" aria-label="国債費の補正（利払いの減額と剰余金の繰入）"></svg>
+      <div class="legend"><span><i style="background:var(--down)"></i>利払いの財源（減額）</span><span><i style="background:var(--up)"></i>決算上の剰余金の繰入（追加）</span><span><i style="background:var(--zero)"></i>その他の償還財源など</span></div></div>
+    <ul class="claims">
+      <li><strong>ほかに減らされたもの</strong><span id="otherRed"></span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>コロナ期（FY2020〜FY2022）に足された事項</h2>
+    <p id="covidLead"></p>
+    <div class="cols" id="covidCols"></div>
+    <p class="note">事項は、予算書の補正の表の「事項」。複数の回に出る事項は、追加と減少を回ごとに足しています。</p>
+  </section>
+
+  <section>
+    <h2>毎年のように足される経費</h2>
+    <p>主要経費別の分類で、補正による差し引きの 10 年の動きです。「追加の年数」は、FY2017〜FY2025 の 9 年のうち追加額があった年数です。</p>
+    <div class="panel scroll"><table id="majorTbl"></table></div>
+    <details><summary>残りの経費</summary><div class="scroll" style="margin-top:12px"><table id="majorTbl2"></table></div></details>
+  </section>
+
+  <section>
+    <h2>補正の回と、FY2026</h2>
+    <div class="panel scroll"><table id="roundTbl"></table></div>
+    <ul class="claims">
+      <li><strong>FY2026 は、まだ第1号だけ</strong><span id="fy26"></span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>府省ごとに見ると</h2>
+    <details><summary>府省別の補正の差し引き（上位 16、兆円）</summary><div class="scroll" style="margin-top:12px"><table id="groupTbl"></table></div></details>
+  </section>
+
+  <section>
+    <h2>この数字の作り方と、確かめられないこと</h2>
+    <ul class="notes">
+      <li><span class="tag src"></span>財務省「予算書・決算書データベース」の一般会計の補正予算の表（項・事項・目）。各行の「補正要求追加額」「補正要求修正減少額」「補正要求差引額」を使いました。</li>
+      <li><span class="tag proc"></span>nihon-no-yosan が回ごとに抽出・構造化した CSV（第 2 回・第 3 回は別のファイル）。このサイトの画面は項ごとに最後の回の改予算額を使いますが、このページは追加・減少を回ごとに全部足しています。</li>
+      <li><span class="tag proc"></span>検算: 年度ごとの差引額の合計は、項・事項・目の 3 つの表で千円まで一致しました。回をまたぐ項は、次の回の成立額が前の回の改予算額と全部一致しました。FY2017〜FY2024 は「当初予算＋差引額の合計」が、決算書の歳出予算額と千円まで一致しました（8 年で 176.28兆円）。</li>
+      <li><span class="tag ai"></span>経費の色分け（公共事業 = 主要経費別 41〜47 と 49、地方交付税など = 31・32、予備費 = 93・94・96・98、中小企業・保健衛生 = 60・07）は、この探索で決めたまとめ方です。分類コードの名前は、その年度の補正のコード表（無い年度は決算・当初のコード表）から引きました。</li>
+      <li><span class="tag ai"></span>「コロナ」「感染症」を名前に含む事項の額は、名前だけで数えた下限です。名前に含まない対策（給付金・中小企業支援など）は入りません。</li>
+      <li>補正の理由・閣議決定の内容は、このデータにありません。科学技術振興費などの補正が基金への積み立てかどうかは確かめていません（推測しない）。FY2026 の第2号以降が今後あるかは未確認です。FY2017〜FY2021 の当初予算は、国会提出時か成立後かを判定できていません。特別会計の補正は含めていません。金額は名目です。</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>次に、聞かせてください</h2>
+    <ul class="questions">
+      <li>コロナ後も年 13〜18兆円の補正が続いています。この「新しい普通」の中身（物価高騰の臨時交付金、エネルギー価格対策、研究開発）を、事業の単位まで追いますか。</li>
+      <li>毎年の公共事業の補正（1.0〜2.5兆円）は、決算で翌年度に繰り越される割合が高い経費です。補正の分がいつ使われたかを、繰越と合わせて見ますか。</li>
+      <li>国債の利払いは、補正でほぼ毎年 1兆円前後減らされています。当初予算の見積もりの置き方と、実際の利払いを比べてみますか。</li>
+    </ul>
+  </section>
+
+  <footer>
+    <span>出典：財務省「予算書・決算書データベース」を加工して作成。国や各府省が作成した加工していない情報ではありません。</span>
+    <span>nihon-no-yosan の AI Data Stories PoC（ループ 3 回目、2026-11-03）。単位は兆円（千円単位の値を億円に丸めて計算し、表示で丸め）。</span>
+  </footer>
+</main>
+<div id="tip" hidden></div>
+
+<script>
+const D = {"Y": [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026], "cats": [["public", "公共事業"], ["defense", "防衛関係費"], ["local", "地方交付税など"], ["reserve", "予備費"], ["debt", "国債費"], ["covid", "中小企業・保健衛生"], ["rest", "その他"]], "years": [{"y": 2017, "add": 28964, "red": -12416, "net": 16548, "rounds": [16548], "catAdd": {"public": 10003, "defense": 2345, "local": 0, "reserve": 0, "debt": 1891, "covid": 2323, "rest": 12401}, "catRed": {"public": -45, "defense": -72, "local": 0, "reserve": -500, "debt": -10098, "covid": -15, "rest": -1686}, "covidNamed": [82, 0]}, {"y": 2018, "add": 49362, "red": -12909, "net": 36453, "rounds": [9356, 27097], "catAdd": {"public": 15719, "defense": 4545, "local": 5108, "reserve": 1000, "debt": 4547, "covid": 3824, "rest": 14620}, "catRed": {"public": -52, "defense": -63, "local": 0, "reserve": 0, "debt": -10154, "covid": -18, "rest": -2623}, "covidNamed": [63, 0]}, {"y": 2019, "add": 52203, "red": -20258, "net": 31946, "rounds": [31946], "catAdd": {"public": 15669, "defense": 4287, "local": 7824, "reserve": 0, "debt": 1, "covid": 4678, "rest": 19746}, "catRed": {"public": -46, "defense": -113, "local": -7349, "reserve": 0, "debt": -10020, "covid": -8, "rest": -2722}, "covidNamed": [245, 0]}, {"y": 2020, "add": 794400, "red": -64102, "net": 730298, "rounds": [256914, 319114, 154271], "catAdd": {"public": 24605, "defense": 4051, "local": 26588, "reserve": 115000, "debt": 6654, "covid": 326817, "rest": 290684}, "catRed": {"public": -489, "defense": -426, "local": -22118, "reserve": -18500, "debt": -9924, "covid": -8725, "rest": -3919}, "covidNamed": [215943, -18501]}, {"y": 2021, "add": 375560, "red": -15665, "net": 359895, "rounds": [359895], "catAdd": {"public": 20019, "defense": 7738, "local": 36087, "reserve": 0, "debt": 22682, "covid": 87597, "rest": 201437}, "catRed": {"public": -50, "defense": -83, "local": 0, "reserve": 0, "debt": -13218, "covid": -20, "rest": -2293}, "covidNamed": [115700, -20]}, {"y": 2022, "add": 327005, "red": -10774, "net": 316231, "rounds": [27009, 289222], "catAdd": {"public": 20011, "defense": 4464, "local": 16348, "reserve": 62600, "debt": 6986, "covid": 46242, "rest": 170354}, "catRed": {"public": -56, "defense": -46, "local": -40, "reserve": 0, "debt": -9662, "covid": -27, "rest": -942}, "covidNamed": [88886, -48]}, {"y": 2023, "add": 167090, "red": -35098, "net": 131992, "rounds": [131992], "catAdd": {"public": 21946, "defense": 18521, "local": 7820, "reserve": 0, "debt": 13147, "covid": 15625, "rest": 90031}, "catRed": {"public": -30, "defense": -12, "local": 0, "reserve": -25000, "debt": -8903, "covid": -10, "rest": -1144}, "covidNamed": [9153, -6]}, {"y": 2024, "add": 155736, "red": -16303, "net": 139433, "rounds": [139433], "catAdd": {"public": 23412, "defense": 9364, "local": 18337, "reserve": 0, "debt": 4259, "covid": 9031, "rest": 91333}, "catRed": {"public": -15, "defense": -35, "local": 0, "reserve": 0, "debt": -15268, "covid": -7, "rest": -977}, "covidNamed": [733, -4]}, {"y": 2025, "add": 194984, "red": -11950, "net": 183034, "rounds": [183034], "catAdd": {"public": 25297, "defense": 14759, "local": 13041, "reserve": 7098, "debt": 11323, "covid": 21751, "rest": 101714}, "catRed": {"public": -22, "defense": -27, "local": 0, "reserve": 0, "debt": -11604, "covid": -14, "rest": -283}, "covidNamed": [1426, 0]}, {"y": 2026, "add": 31135, "red": 0, "net": 31135, "rounds": [31135], "catAdd": {"public": 0, "defense": 0, "local": 0, "reserve": 30135, "debt": 0, "covid": 0, "rest": 1000}, "catRed": {"public": 0, "defense": 0, "local": 0, "reserve": 0, "debt": 0, "covid": 0, "rest": 0}, "covidNamed": [0, 0]}], "majors": [{"c": "95", "n": "その他の事項経費", "net": [4011, 3245, 5853, 210829, 98411, 100785, 45967, 48919, 56192, 1000], "add": 583656, "red": -8443, "yrs": 9, "cat": "rest", "normal": 167944}, {"c": "60", "n": "中小企業対策費", "net": [2039, 3341, 4415, 260015, 39724, 12473, 5650, 5898, 8842, null], "add": 351128, "red": -8731, "yrs": 9, "cat": "covid", "normal": 30200}, {"c": "07", "n": "保健衛生対策費", "net": [269, 465, 255, 58077, 47853, 33742, 9966, 3126, 12895, null], "add": 166764, "red": -114, "yrs": 9, "cat": "covid", "normal": 27035}, {"c": "94", "n": "原油価格・物価高騰対策及び賃上げ促進環境整備対応予備費", "net": [null, null, null, 96500, null, 48600, -20000, null, null, null], "add": 163600, "red": -38500, "yrs": 2, "cat": "reserve", "normal": 0}, {"c": "13", "n": "科学技術振興費", "net": [1508, 2341, 5531, 33189, 23421, 28031, 27708, 8224, 12774, null], "add": 142827, "red": -101, "yrs": 9, "cat": "rest", "normal": 58129}, {"c": "31", "n": "地方交付税交付金", "net": [null, 5108, 132, 4221, 35117, 16348, 7820, 18324, 13041, null], "add": 129578, "red": -29467, "yrs": 8, "cat": "local", "normal": 51774}, {"c": "06", "n": "生活扶助等社会福祉費", "net": [414, 783, 250, 13915, 35646, 3693, 2876, 5474, 13198, null], "add": 78364, "red": -2115, "yrs": 9, "cat": "rest", "normal": 24296}, {"c": "20", "n": "国債費", "net": [-8207, -5606, -10019, -3269, 9464, -2676, 4244, -11009, -281, null], "add": 71490, "red": -98851, "yrs": 9, "cat": "debt", "normal": 35168}, {"c": "35", "n": "防衛関係費", "net": [2273, 4482, 4174, 3625, 7655, 4418, 18509, 9328, 14732, null], "add": 70074, "red": -877, "yrs": 9, "cat": "defense", "normal": 53821}, {"c": "08", "n": "雇用労災対策費", "net": [null, null, null, 11153, 26222, 7789, 15, 356, 6, null], "add": 45545, "red": -5, "yrs": 6, "cat": "rest", "normal": 377}, {"c": "49", "n": "災害復旧等事業費", "net": [2907, 5676, 4859, 6057, 4005, 3818, 4026, 4437, 5858, null], "add": 41643, "red": 0, "yrs": 9, "cat": "public", "normal": 27763}, {"c": "63", "n": "エネルギー対策費", "net": [96, 538, 737, 741, 3773, 13212, 1741, 15725, 2798, null], "add": 39774, "red": -411, "yrs": 9, "cat": "rest", "normal": 22048}, {"c": "65", "n": "食料安定供給関係費", "net": [1964, 2051, 2195, 8590, 4977, 4912, 4359, 4641, 5102, null], "add": 39411, "red": -621, "yrs": 9, "cat": "rest", "normal": 20872}, {"c": "47", "n": "社会資本総合整備事業費", "net": [2407, 3249, 2925, 5403, 4280, 3144, 3495, 4118, 4360, null], "add": 33381, "red": 0, "yrs": 9, "cat": "public", "normal": 20554}, {"c": "41", "n": "治山治水対策事業費", "net": [825, 1920, 2640, 4474, 3122, 3321, 3569, 3695, 3995, null], "add": 27672, "red": -112, "yrs": 9, "cat": "public", "normal": 16707}, {"c": "42", "n": "道路整備事業費", "net": [1126, 1103, 1700, 3620, 3155, 3137, 3907, 3952, 4078, null], "add": 25890, "red": -111, "yrs": 9, "cat": "public", "normal": 15927}, {"c": "96", "n": "中東情勢等対応予備費", "net": [null, null, null, null, null, null, null, null, null, 25000], "add": 25000, "red": 0, "yrs": 0, "cat": "reserve", "normal": 0}, {"c": "46", "n": "農林水産基盤整備事業費", "net": [1608, 1875, 1940, 2624, 2552, 2376, 2550, 2863, 3030, null], "add": 21483, "red": -65, "yrs": 9, "cat": "public", "normal": 13903}, {"c": "15", "n": "教育振興助成費", "net": [684, 625, 698, 3670, 1605, 4650, 1196, 1275, 5418, null], "add": 19879, "red": -55, "yrs": 9, "cat": "rest", "normal": 9902}, {"c": "50", "n": "経済協力費", "net": [1269, 1282, 1281, 2777, 1579, 3364, 2820, 2372, 1777, null], "add": 18580, "red": -59, "yrs": 9, "cat": "rest", "normal": 10826}, {"c": "98", "n": "予備費", "net": [-500, 1000, null, null, null, 4000, null, null, 7098, 5135], "add": 17233, "red": -500, "yrs": 3, "cat": "reserve", "normal": 8098}, {"c": "14", "n": "文教施設費", "net": [721, 1597, 853, 1708, 1340, 1274, 1581, 2291, 2713, null], "add": 14078, "red": 0, "yrs": 9, "cat": "rest", "normal": 9756}, {"c": "44", "n": "住宅都市環境整備事業費", "net": [124, 556, 515, 424, 1259, 2475, 2450, 2304, 1871, null], "add": 12001, "red": -24, "yrs": 9, "cat": "public", "normal": 7832}, {"c": "93", "n": "ウクライナ情勢経済緊急対応予備費", "net": [null, null, null, null, null, 10000, -5000, null, null, null], "add": 10000, "red": -5000, "yrs": 1, "cat": "reserve", "normal": 0}, {"c": "43", "n": "港湾空港鉄道等整備事業費", "net": [380, 540, 353, 706, 904, 944, 1084, 1058, 957, null], "add": 7407, "red": -483, "yrs": 9, "cat": "public", "normal": 4402}, {"c": "45", "n": "公園水道廃棄物処理等施設整備費", "net": [582, 748, 692, 808, 691, 741, 835, 971, 1126, null], "add": 7205, "red": -10, "yrs": 9, "cat": "public", "normal": 4960}, {"c": "05", "n": "少子化対策費", "net": [78, -366, -273, 200, -285, 735, -599, 206, 178, null], "add": 3001, "red": -3126, "yrs": 9, "cat": "rest", "normal": 1634}, {"c": "03", "n": "医療給付費", "net": [-84, -86, -193, -33, 491, 715, 399, 151, 406, null], "add": 2915, "red": -1150, "yrs": 8, "cat": "rest", "normal": 1164}, {"c": "11", "n": "義務教育費国庫負担金", "net": [100, 76, 71, 40, 107, 142, 385, 633, 715, null], "add": 2269, "red": 0, "yrs": 9, "cat": "rest", "normal": 1980}, {"c": "32", "n": "地方特例交付金", "net": [null, null, 342, 249, 970, -40, null, 12, null, null], "add": 1573, "red": -40, "yrs": 4, "cat": "local", "normal": 354}, {"c": "04", "n": "介護給付費", "net": [-48, -164, -8, -126, 1151, -19, 340, -40, -16, null], "add": 1535, "red": -465, "yrs": 4, "cat": "rest", "normal": 384}, {"c": "16", "n": "育英事業費", "net": [4, null, 0, 108, 700, 129, 37, 30, 43, null], "add": 1063, "red": -12, "yrs": 8, "cat": "rest", "normal": 124}, {"c": "48", "n": "推進費等", "net": [null, 80, 30, 5, null, 2, 64, 93, 123, null], "add": 397, "red": 0, "yrs": 7, "cat": "rest", "normal": 390}, {"c": "25", "n": "恩給関係費", "net": [null, null, null, null, null, -4, -1, 4, 3, null], "add": 15, "red": -13, "yrs": 4, "cat": "rest", "normal": 15}, {"c": "29", "n": "遺族及び留守家族等援護費", "net": [-1, -3, -2, 0, 5, null, null, null, null, null], "add": 5, "red": -6, "yrs": 1, "cat": "rest", "normal": 0}, {"c": "28", "n": "恩給支給事務費", "net": [-1, -1, -1, -2, -1, null, null, null, null, null], "add": 0, "red": -6, "yrs": 0, "cat": "rest", "normal": 0}], "reserveNames": {"96": {"2026": "中東情勢等対応予備費"}, "98": {"2017": "予備費", "2018": "予備費", "2022": "予備費", "2025": "予備費", "2026": "予備費"}, "93": {"2022": "ウクライナ情勢経済緊急対応予備費", "2023": "ウクライナ情勢経済緊急対応予備費"}, "94": {"2020": "新型コロナウイルス感染症対策予備費", "2022": "新型コロナウイルス感染症及び原油価格・物価高騰対策予備費", "2023": "原油価格・物価高騰対策及び賃上げ促進環境整備対応予備費"}}, "top": {"2017": {"add": [{"g": "国土交通省", "kou": "社会資本総合整備事業費", "j": "社会資本総合整備事業に必要な経費", "a": 2275, "r": 0}, {"g": "国土交通省", "kou": "河川等災害復旧事業費", "j": "河川等災害復旧事業に必要な経費", "a": 2201, "r": 0}, {"g": "財務省", "kou": "国債費", "j": "決算上の剰余金の国債整理基金特別会計へ繰入れに必要な経費", "a": 1891, "r": 0}, {"g": "経済産業省", "kou": "経営革新・創業促進費", "j": "経営革新・創業促進に必要な経費", "a": 1719, "r": 0}, {"g": "農林水産省", "kou": "国産農産物生産・供給体制強化対策費", "j": "国産農産物生産・供給体制強化対策に必要な経費", "a": 1307, "r": 0}, {"g": "外務省", "kou": "国際分担金其他諸費", "j": "経済協力に係る国際機関等を通じた地球規模の諸問題に係る国際貢献に必要な経費", "a": 976, "r": 0}, {"g": "農林水産省", "kou": "農業生産基盤整備事業費", "j": "農業生産基盤整備事業に必要な経費", "a": 936, "r": 0}, {"g": "防衛省", "kou": "武器車両等整備費", "j": "武器車両等の購入に必要な経費", "a": 795, "r": 0}], "red": [{"g": "財務省", "kou": "国債費", "j": "公債利子等の支払財源の国債整理基金特別会計へ繰入れに必要な経費", "a": 0, "r": -10023}, {"g": "財務省", "kou": "予備費", "j": "予備費", "a": 0, "r": -500}, {"g": "内閣府", "kou": "子ども・子育て支援年金特別会計へ繰入", "j": "子ども・子育て支援の財源の年金特別会計子ども・子育て支援勘定へ繰入れに必要な経費", "a": 0, "r": -406}, {"g": "厚生労働省", "kou": "生活保護等対策費", "j": "生活扶助等に必要な経費", "a": 0, "r": -353}, {"g": "環境省", "kou": "石油石炭税財源エネルギー需給構造高度化対策費エネルギー対策特別会計へ繰入", "j": "石油石炭税財源のエネルギー需給構造高度化対策に係るエネルギー対策特別会計エネルギー需給勘定へ繰入れに必要な経費", "a": 0, "r": -300}]}, "2018": {"add": [{"g": "総務省", "kou": "地方交付税交付金", "j": "地方交付税交付金財源の交付税及び譲与税配付金特別会計へ繰入れに必要な経費", "a": 5108, "r": 0}, {"g": "財務省", "kou": "国債費", "j": "決算上の剰余金の国債整理基金特別会計へ繰入れに必要な経費", "a": 4547, "r": 0}, {"g": "国土交通省", "kou": "河川等災害復旧事業費", "j": "河川等災害復旧事業に必要な経費", "a": 3749, "r": 0}, {"g": "国土交通省", "kou": "社会資本総合整備事業費", "j": "社会資本総合整備事業に必要な経費", "a": 3090, "r": 0}, {"g": "防衛省", "kou": "航空機整備費", "j": "航空機の購入に必要な経費", "a": 1642, "r": 0}, {"g": "防衛省", "kou": "武器車両等整備費", "j": "武器車両等の購入に必要な経費", "a": 1601, "r": 0}, {"g": "文部科学省", "kou": "公立文教施設整備費", "j": "公立文教施設整備に必要な経費", "a": 1572, "r": 0}, {"g": "経済産業省", "kou": "経営革新・創業促進費", "j": "経営革新・創業促進に必要な経費", "a": 1315, "r": 0}], "red": [{"g": "財務省", "kou": "国債費", "j": "公債利子等の支払財源の国債整理基金特別会計へ繰入れに必要な経費", "a": 0, "r": -10029}, {"g": "財務省", "kou": "財務本省共通費", "j": "貨幣交換差減補填金に必要な経費", "a": 0, "r": -958}, {"g": "厚生労働省", "kou": "生活保護等対策費", "j": "生活扶助等に必要な経費", "a": 0, "r": -447}, {"g": "内閣府", "kou": "子ども・子育て支援年金特別会計へ繰入", "j": "子ども・子育て支援の財源の年金特別会計子ども・子育て支援勘定へ繰入れに必要な経費", "a": 72, "r": -438}, {"g": "農林水産省", "kou": "国産農産物生産・供給体制強化対策費", "j": "国産農産物生産・供給体制強化対策に必要な経費", "a": 1241, "r": -245}]}, "2019": {"add": [{"g": "総務省", "kou": "地方交付税交付金", "j": "地方交付税交付金財源の交付税及び譲与税配付金特別会計へ繰入れに必要な経費", "a": 7481, "r": -7349}, {"g": "経済産業省", "kou": "独立行政法人中小企業基盤整備機構運営費", "j": "独立行政法人中小企業基盤整備機構運営費交付金に必要な経費", "a": 3600, "r": 0}, {"g": "国土交通省", "kou": "河川等災害復旧事業費", "j": "河川等災害復旧事業に必要な経費", "a": 3274, "r": 0}, {"g": "国土交通省", "kou": "社会資本総合整備事業費", "j": "社会資本総合整備事業に必要な経費", "a": 2731, "r": 0}, {"g": "防衛省", "kou": "武器車両等整備費", "j": "武器車両等の購入に必要な経費", "a": 2076, "r": 0}, {"g": "国土交通省", "kou": "河川整備事業費", "j": "河川整備事業に必要な経費", "a": 1550, "r": 0}, {"g": "経済産業省", "kou": "消費者行政推進費", "j": "消費者行政の推進に必要な経費", "a": 1497, "r": 0}, {"g": "経済産業省", "kou": "技術革新促進・環境整備費", "j": "産業技術の研究開発の推進に必要な経費", "a": 1269, "r": 0}], "red": [{"g": "財務省", "kou": "国債費", "j": "公債利子等の支払財源の国債整理基金特別会計へ繰入れに必要な経費", "a": 0, "r": -9964}, {"g": "総務省", "kou": "地方交付税交付金", "j": "地方交付税交付金財源の交付税及び譲与税配付金特別会計へ繰入れに必要な経費", "a": 7481, "r": -7349}, {"g": "財務省", "kou": "財務本省共通費", "j": "貨幣交換差減補填金に必要な経費", "a": 0, "r": -922}, {"g": "内閣府", "kou": "子ども・子育て支援年金特別会計へ繰入", "j": "子ども・子育て支援の財源の年金特別会計子ども・子育て支援勘定へ繰入れに必要な経費", "a": 144, "r": -417}, {"g": "厚生労働省", "kou": "生活保護等対策費", "j": "生活扶助等に必要な経費", "a": 0, "r": -287}]}, "2020": {"add": [{"g": "総務省", "kou": "特別定額給付金給付事業助成費", "j": "特別定額給付金給付事業の助成に必要な経費", "a": 128803, "r": 0}, {"g": "財務省", "kou": "新型コロナウイルス感染症対策予備費", "j": "新型コロナウイルス感染症対策予備費", "a": 115000, "r": -18500}, {"g": "経済産業省", "kou": "中小企業事業環境整備費", "j": "中小企業事業環境の整備に必要な経費", "a": 89078, "r": -8708}, {"g": "財務省", "kou": "政策金融費", "j": "政府関係金融機関の運営に必要な経費", "a": 81628, "r": 0}, {"g": "経済産業省", "kou": "経営革新・創業促進費", "j": "経営革新・創業促進に必要な経費", "a": 74898, "r": 0}, {"g": "厚生労働省", "kou": "感染症対策費", "j": "感染症予防事業等に必要な経費", "a": 55573, "r": 0}, {"g": "内閣府", "kou": "新型コロナウイルス感染症対応地方創生推進費", "j": "新型コロナウイルス感染症対応地方創生臨時交付金に必要な経費", "a": 45000, "r": 0}, {"g": "総務省", "kou": "地方交付税交付金", "j": "地方交付税交付金財源の交付税及び譲与税配付金特別会計へ繰入れに必要な経費", "a": 26339, "r": -22118}], "red": [{"g": "総務省", "kou": "地方交付税交付金", "j": "地方交付税交付金財源の交付税及び譲与税配付金特別会計へ繰入れに必要な経費", "a": 26339, "r": -22118}, {"g": "財務省", "kou": "新型コロナウイルス感染症対策予備費", "j": "新型コロナウイルス感染症対策予備費", "a": 115000, "r": -18500}, {"g": "財務省", "kou": "国債費", "j": "公債利子等の支払財源の国債整理基金特別会計へ繰入れに必要な経費", "a": 2220, "r": -9909}, {"g": "経済産業省", "kou": "中小企業事業環境整備費", "j": "中小企業事業環境の整備に必要な経費", "a": 89078, "r": -8708}, {"g": "財務省", "kou": "財務本省共通費", "j": "貨幣交換差減補填金に必要な経費", "a": 0, "r": -932}]}, "2021": {"add": [{"g": "内閣府", "kou": "新型コロナウイルス感染症対応地方創生推進費", "j": "新型コロナウイルス感染症対応地方創生臨時交付金等に必要な経費", "a": 67969, "r": 0}, {"g": "厚生労働省", "kou": "感染症対策費", "j": "感染症予防事業等に必要な経費", "a": 46033, "r": 0}, {"g": "総務省", "kou": "地方交付税交付金", "j": "地方交付税交付金財源の交付税及び譲与税配付金特別会計へ繰入れに必要な経費", "a": 35117, "r": 0}, {"g": "経済産業省", "kou": "経営革新・創業促進費", "j": "経営革新・創業促進に必要な経費", "a": 34326, "r": 0}, {"g": "内閣府", "kou": "子育て世帯等臨時特別支援事業費", "j": "子育て世帯等臨時特別支援事業に必要な経費", "a": 26485, "r": 0}, {"g": "財務省", "kou": "国債費", "j": "決算上の剰余金の国債整理基金特別会計へ繰入れに必要な経費", "a": 22682, "r": 0}, {"g": "総務省", "kou": "電子政府・電子自治体推進費", "j": "電子政府・電子自治体の推進に必要な経費", "a": 18797, "r": 0}, {"g": "厚生労働省", "kou": "失業等給付費等労働保険特別会計へ繰入", "j": "失業等給付費等の財源の労働保険特別会計雇用勘定へ繰入れに必要な経費", "a": 17332, "r": 0}], "red": [{"g": "財務省", "kou": "国債費", "j": "公債利子等の支払財源の国債整理基金特別会計へ繰入れに必要な経費", "a": 0, "r": -11986}, {"g": "財務省", "kou": "国債費", "j": "その他公債等償還財源の国債整理基金特別会計へ繰入れに必要な経費", "a": 0, "r": -1207}, {"g": "財務省", "kou": "財務本省共通費", "j": "貨幣交換差減補填金に必要な経費", "a": 0, "r": -1068}, {"g": "内閣府", "kou": "子ども・子育て支援年金特別会計へ繰入", "j": "子ども・子育て支援の財源の年金特別会計子ども・子育て支援勘定へ繰入れに必要な経費", "a": 65, "r": -349}, {"g": "厚生労働省", "kou": "生活保護等対策費", "j": "生活扶助等に必要な経費", "a": 0, "r": -211}]}, "2022": {"add": [{"g": "経済産業省", "kou": "エネルギー需給構造高度化対策費", "j": "エネルギーの価格高騰対策に必要な経費", "a": 61345, "r": 0}, {"g": "財務省", "kou": "新型コロナウイルス感染症及び原油価格・物価高騰対策予備費", "j": "新型コロナウイルス感染症及び原油価格・物価高騰対策予備費", "a": 48600, "r": 0}, {"g": "厚生労働省", "kou": "感染症対策費", "j": "感染症予防事業等に必要な経費", "a": 31944, "r": 0}, {"g": "総務省", "kou": "地方交付税交付金", "j": "地方交付税交付金財源の交付税及び譲与税配付金特別会計へ繰入れに必要な経費", "a": 16348, "r": 0}, {"g": "経済産業省", "kou": "燃料安定供給対策費", "j": "燃料安定供給対策に必要な経費", "a": 11655, "r": 0}, {"g": "経済産業省", "kou": "技術革新促進・環境整備費", "j": "産業技術の研究開発の推進に必要な経費", "a": 11066, "r": 0}, {"g": "経済産業省", "kou": "脱炭素化産業成長促進対策費", "j": "脱炭素化産業成長の促進に必要な経費", "a": 10439, "r": 0}, {"g": "財務省", "kou": "ウクライナ情勢経済緊急対応予備費", "j": "ウクライナ情勢経済緊急対応予備費", "a": 10000, "r": 0}], "red": [{"g": "財務省", "kou": "国債費", "j": "公債利子等の支払財源の国債整理基金特別会計へ繰入れに必要な経費", "a": 70, "r": -9634}, {"g": "内閣府", "kou": "子ども・子育て支援年金特別会計へ繰入", "j": "子ども・子育て支援の財源の年金特別会計子ども・子育て支援勘定へ繰入れに必要な経費", "a": 1049, "r": -328}, {"g": "厚生労働省", "kou": "生活保護等対策費", "j": "医療扶助等に必要な経費", "a": 0, "r": -72}, {"g": "厚生労働省", "kou": "医療保険給付諸費", "j": "医療保険給付に必要な経費", "a": 0, "r": -42}, {"g": "総務省", "kou": "地方特例交付金", "j": "新型コロナウイルス感染症対策地方税減収補填特別交付金財源の交付税及び譲与税配付金特別会計へ繰入れに必要な経費", "a": 0, "r": -40}]}, "2023": {"add": [{"g": "内閣府", "kou": "物価高騰対応地方創生推進費", "j": "物価高騰対応重点支援地方創生臨時交付金に必要な経費", "a": 15592, "r": 0}, {"g": "経済産業省", "kou": "産業技術・環境・産業標準政策推進費", "j": "産業技術・環境・産業標準政策の研究開発等に必要な経費", "a": 13180, "r": -1}, {"g": "財務省", "kou": "国債費", "j": "決算上の剰余金の国債整理基金特別会計へ繰入れに必要な経費", "a": 13147, "r": 0}, {"g": "財務省", "kou": "防衛力強化のための資金へ繰入", "j": "防衛力強化のための資金へ繰入れに必要な経費", "a": 10390, "r": 0}, {"g": "厚生労働省", "kou": "感染症対策費", "j": "感染症予防事業等に必要な経費", "a": 8797, "r": 0}, {"g": "経済産業省", "kou": "エネルギー需給構造高度化対策費", "j": "エネルギーの価格高騰対策に必要な経費", "a": 7948, "r": 0}, {"g": "総務省", "kou": "地方交付税交付金", "j": "地方交付税交付金財源の交付税及び譲与税配付金特別会計へ繰入れに必要な経費", "a": 7820, "r": 0}, {"g": "総務省", "kou": "電子政府・電子自治体推進費", "j": "電子政府・電子自治体の推進に必要な経費", "a": 6129, "r": 0}], "red": [{"g": "財務省", "kou": "原油価格・物価高騰対策及び賃上げ促進環境整備対応予備費", "j": "原油価格・物価高騰対策及び賃上げ促進環境整備対応予備費", "a": 0, "r": -20000}, {"g": "財務省", "kou": "国債費", "j": "公債利子等の支払財源の国債整理基金特別会計へ繰入れに必要な経費", "a": 0, "r": -8812}, {"g": "財務省", "kou": "ウクライナ情勢経済緊急対応予備費", "j": "ウクライナ情勢経済緊急対応予備費", "a": 0, "r": -5000}, {"g": "こども家庭庁", "kou": "子ども・子育て支援年金特別会計へ繰入", "j": "子ども・子育て支援の財源の年金特別会計子ども・子育て支援勘定へ繰入れに必要な経費", "a": 8, "r": -646}, {"g": "財務省", "kou": "国債費", "j": "年金特例公債利子の支払財源の国債整理基金特別会計へ繰入れに必要な経費", "a": 0, "r": -91}]}, "2024": {"add": [{"g": "総務省", "kou": "地方交付税交付金", "j": "地方交付税交付金財源の交付税及び譲与税配付金特別会計へ繰入れに必要な経費", "a": 18324, "r": 0}, {"g": "内閣府", "kou": "物価高騰対応地方創生推進費", "j": "物価高騰対応重点支援地方創生臨時交付金に必要な経費", "a": 17351, "r": 0}, {"g": "経済産業省", "kou": "エネルギー需給構造高度化対策費", "j": "エネルギーの価格高騰対策に必要な経費", "a": 13518, "r": 0}, {"g": "経済産業省", "kou": "半導体・人工知能関連技術基盤強化対策費", "j": "半導体・人工知能関連技術の基盤強化に必要な経費", "a": 13054, "r": 0}, {"g": "財務省", "kou": "国債費", "j": "決算上の剰余金の国債整理基金特別会計へ繰入れに必要な経費", "a": 4259, "r": 0}, {"g": "国土交通省", "kou": "社会資本総合整備事業費", "j": "社会資本総合整備事業に必要な経費", "a": 3911, "r": 0}, {"g": "経済産業省", "kou": "独立行政法人中小企業基盤整備機構運営費", "j": "独立行政法人中小企業基盤整備機構運営費交付金に必要な経費", "a": 3400, "r": 0}, {"g": "防衛省", "kou": "在日米軍等駐留関連諸費", "j": "在日米軍の兵力構成見直し等に関する政府の取組の実施に必要な経費", "a": 3298, "r": 0}], "red": [{"g": "財務省", "kou": "国債費", "j": "公債利子等の支払財源の国債整理基金特別会計へ繰入れに必要な経費", "a": 0, "r": -15125}, {"g": "こども家庭庁", "kou": "子ども・子育て支援年金特別会計へ繰入", "j": "子ども・子育て支援の財源の年金特別会計子ども・子育て支援勘定へ繰入れに必要な経費", "a": 625, "r": -503}, {"g": "財務省", "kou": "国債費", "j": "年金特例公債利子の支払財源の国債整理基金特別会計へ繰入れに必要な経費", "a": 0, "r": -143}, {"g": "経済産業省", "kou": "電源開発促進税財源電源立地対策及電源利用対策費エネルギー対策特別会計へ繰入", "j": "電源開発促進税財源の電源立地対策及電源利用対策に係るエネルギー対策特別会計電源開発促進勘定へ繰入れに必要な経費", "a": 0, "r": -111}, {"g": "厚生労働省", "kou": "医療保険給付諸費", "j": "医療保険給付に必要な経費", "a": 188, "r": -54}]}, "2025": {"add": [{"g": "内閣府", "kou": "物価高騰対応地方創生推進費", "j": "物価高騰対応重点支援地方創生臨時交付金に必要な経費", "a": 20377, "r": 0}, {"g": "総務省", "kou": "地方交付税交付金", "j": "地方交付税交付金財源の交付税及び譲与税配付金特別会計へ繰入れに必要な経費", "a": 13041, "r": 0}, {"g": "財務省", "kou": "国債費", "j": "決算上の剰余金の国債整理基金特別会計へ繰入れに必要な経費", "a": 11323, "r": 0}, {"g": "財務省", "kou": "予備費", "j": "予備費", "a": 7098, "r": 0}, {"g": "財務省", "kou": "防衛力強化資金へ繰入", "j": "防衛力強化資金へ繰入れに必要な経費", "a": 6287, "r": 0}, {"g": "厚生労働省", "kou": "医療提供体制確保対策費", "j": "医療提供体制確保対策に必要な経費", "a": 5993, "r": 0}, {"g": "国土交通省", "kou": "自動車安全特別会計へ繰入", "j": "自動車安全特別会計自動車事故対策勘定へ繰入れに必要な経費", "a": 5741, "r": 0}, {"g": "経済産業省", "kou": "エネルギー需給構造高度化対策費", "j": "エネルギーの価格高騰対策に必要な経費", "a": 5296, "r": 0}], "red": [{"g": "財務省", "kou": "国債費", "j": "公債利子等の支払財源の国債整理基金特別会計へ繰入れに必要な経費", "a": 0, "r": -11520}, {"g": "財務省", "kou": "国債費", "j": "年金特例公債利子の支払財源の国債整理基金特別会計へ繰入れに必要な経費", "a": 0, "r": -84}, {"g": "厚生労働省", "kou": "生活保護等対策費", "j": "生活扶助等に必要な経費", "a": 1072, "r": -58}, {"g": "厚生労働省", "kou": "医療保険給付諸費", "j": "医療保険給付に必要な経費", "a": 426, "r": -24}, {"g": "農林水産省", "kou": "地方農政局", "j": "地方農政局一般行政に必要な経費", "a": 0, "r": -16}]}, "2026": {"add": [{"g": "財務省", "kou": "中東情勢等対応予備費", "j": "中東情勢等対応予備費", "a": 25000, "r": 0}, {"g": "財務省", "kou": "予備費", "j": "予備費", "a": 5135, "r": 0}, {"g": "内閣府", "kou": "物価高騰対応地方創生推進費", "j": "物価高騰対応重点支援地方創生臨時交付金に必要な経費", "a": 1000, "r": 0}], "red": []}}, "debt": [{"y": 2017, "interest": -10098, "surplus": 1891, "other": 0}, {"y": 2018, "interest": -10154, "surplus": 4547, "other": 0}, {"y": 2019, "interest": -10020, "surplus": 0, "other": 1}, {"y": 2020, "interest": -7704, "surplus": 0, "other": 4434}, {"y": 2021, "interest": -12011, "surplus": 22682, "other": -1207}, {"y": 2022, "interest": -9593, "surplus": 6906, "other": 10}, {"y": 2023, "interest": -8903, "surplus": 13147, "other": 0}, {"y": 2024, "interest": -15268, "surplus": 4259, "other": 0}, {"y": 2025, "interest": -11604, "surplus": 11323, "other": 1}, {"y": 2026, "interest": 0, "surplus": 0, "other": 0}], "groups": [{"g": "経済産業省", "net": [2580, 3350, 9120, 204774, 55569, 122091, 35456, 38669, 22063, null], "sum": 493672}, {"g": "総務省", "net": [260, 5247, 812, 137830, 56423, 17572, 15189, 21682, 18309, null], "sum": 273324}, {"g": "財務省", "net": [-8817, -4845, -10244, 184346, 8635, 64343, -8343, -7739, 17925, 30135], "sum": 265396}, {"g": "厚生労働省", "net": [782, 937, 666, 83065, 84277, 45899, 13997, 7967, 22778, null], "sum": 260368}, {"g": "内閣府", "net": [1920, 1543, 830, 49363, 98014, 12914, 17880, 19810, 23052, 1000], "sum": 226326}, {"g": "国土交通省", "net": [8738, 13034, 13210, 33805, 21319, 20951, 21276, 22632, 30593, null], "sum": 185558}, {"g": "文部科学省", "net": [2066, 3979, 5354, 16140, 15444, 14548, 13288, 8991, 16057, null], "sum": 95867}, {"g": "農林水産省", "net": [4029, 4978, 4824, 12687, 7956, 7421, 7390, 7812, 8714, null], "sum": 65811}, {"g": "防衛省", "net": [2273, 4482, 4174, 3625, 7655, 4418, 8119, 8232, 8445, null], "sum": 51423}, {"g": "外務省", "net": [1548, 1494, 1238, 2343, 1384, 2638, 2648, 2070, 1818, null], "sum": 17181}, {"g": "環境省", "net": [343, 1197, 1259, 1386, 1410, 1334, 1608, 2337, 2717, null], "sum": 13591}, {"g": "こども家庭庁", "net": [null, null, null, null, null, null, 591, 2789, 5501, null], "sum": 8881}, {"g": "デジタル庁", "net": [null, null, null, null, 974, 1209, 1722, 2094, 2689, null], "sum": 8688}, {"g": "内閣", "net": [172, 194, 276, 497, 273, 253, 439, 711, 835, null], "sum": 3650}, {"g": "警察庁", "net": [428, 598, 218, 124, 339, 279, 287, 354, 404, null], "sum": 3031}, {"g": "法務省", "net": [223, 255, 193, 227, 171, 247, 257, 672, 685, null], "sum": 2930}]};
+const Y = D.Y, YR = Object.fromEntries(D.years.map(r => [r.y, r]));
+const tri = v => v / 10000; // 億円 → 兆円
+const f = (v, d = 2) => v === null || v === undefined ? '—' : tri(v).toFixed(d);
+const sgn = (v, d = 2) => (v > 0 ? '+' : v < 0 ? '−' : '±') + Math.abs(tri(v)).toFixed(d);
+const NS = 'http://www.w3.org/2000/svg';
+const el = (tag, attrs = {}, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+const tip = document.getElementById('tip');
+function hover(node, html) {
+  node.addEventListener('pointermove', e => { tip.innerHTML = html; tip.hidden = false; tip.style.left = Math.min(e.clientX + 12, innerWidth - 290) + 'px'; tip.style.top = (e.clientY + 12) + 'px'; });
+  node.addEventListener('pointerleave', () => { tip.hidden = true; });
+}
+const CATS = D.cats, COLOR = k => `var(--c-${k})`;
+const sum = a => a.reduce((s, v) => s + v, 0);
+// 目盛り: データの範囲から、きりのよい間隔を選ぶ（兆円）
+function niceStep(range) { const raw = range / 5; const p = Math.pow(10, Math.floor(Math.log10(raw))); for (const m of [1, 2, 2.5, 5, 10]) if (raw <= m * p) return m * p; return 10 * p; }
+
+// タイル
+(() => {
+  const net = sum(D.years.map(r => r.net)), covid = sum([2020, 2021, 2022].map(y => YR[y].net));
+  const pre = [2017, 2018, 2019].map(y => YR[y].net), post = [2023, 2024, 2025].map(y => YR[y].net);
+  const tiles = [
+    [`${f(net, 1)}兆円`, '10 年の補正の差し引き（追加 ' + f(sum(D.years.map(r => r.add)), 1) + '兆円、減少 ' + f(-sum(D.years.map(r => r.red)), 1) + '兆円）'],
+    [`${f(covid, 1)}兆円`, `うち FY2020〜FY2022 の 3 年（${(covid / net * 100).toFixed(0)}%）`],
+    [`${f(Math.min(...pre), 1)}〜${f(Math.max(...pre), 1)}兆円`, 'コロナ前（FY2017〜FY2019）の年の補正'],
+    [`${f(Math.min(...post), 1)}〜${f(Math.max(...post), 1)}兆円`, 'コロナ後（FY2023〜FY2025）の年の補正'],
+  ];
+  document.getElementById('tiles').innerHTML = tiles.map(([v, k], i) => `<div class="tile"><span class="v${i === 1 ? ' up' : ''}">${v}</span><span class="k">${k}</span></div>`).join('');
+  document.getElementById('leadYears').textContent = `補正の差し引きは、FY2019 まで年 ${f(Math.min(...pre), 1)}〜${f(Math.max(...pre), 1)}兆円でした。FY2020 は 3 回の補正で ${f(YR[2020].net, 1)}兆円（当初予算 102.7兆円の 7 割）、FY2021 は ${f(YR[2021].net, 1)}兆円、FY2022 は ${f(YR[2022].net, 1)}兆円です。FY2023〜FY2025 も ${f(Math.min(...post), 1)}〜${f(Math.max(...post), 1)}兆円で、コロナ前の 4〜5 倍の規模が続いています。`;
+})();
+
+// 年度の積み上げ（上 = 追加、下 = 減少）
+function drawStack(id, lgId, years) {
+  const s = document.getElementById(id), W = 680, H = 300, L = 46, R = 12, T = 22, B = 26;
+  const ups = years.map(y => sum(CATS.map(([k]) => YR[y].catAdd[k]))), downs = years.map(y => sum(CATS.map(([k]) => YR[y].catRed[k])));
+  const step = niceStep(tri(Math.max(...ups) - Math.min(0, ...downs)));
+  const top = Math.ceil(tri(Math.max(...ups)) / step) * step, bot = Math.floor(tri(Math.min(0, ...downs)) / step) * step;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '520px';
+  const y = v => T + (H - T - B) * (top - v) / (top - bot), cw = (W - L - R) / years.length, bw = Math.min(42, cw * 0.6);
+  const g = el('g', { class: 'grid' }, s);
+  for (let v = bot; v <= top + 1e-9; v += step) { el('line', { x1: L, x2: W - R, y1: y(v), y2: y(v) }, g); el('text', { x: L - 6, y: y(v) + 4, 'text-anchor': 'end' }, s).textContent = +v.toFixed(2); }
+  el('text', { x: 4, y: 12 }, s).textContent = '兆円';
+  years.forEach((yy, i) => {
+    const r = YR[yy], x = L + cw * i + (cw - bw) / 2; let up = 0, dn = 0;
+    for (const [k] of CATS) {
+      const a = tri(r.catAdd[k]); if (a > 0) { el('rect', { x, y: y(up + a), width: bw, height: Math.max(0.5, y(up) - y(up + a) - (up > 0 ? 1 : 0)), fill: COLOR(k) }, s); up += a; }
+    }
+    for (const [k] of CATS) {
+      const a = tri(r.catRed[k]); if (a < 0) { el('rect', { x, y: y(dn) + (dn < 0 ? 1 : 0), width: bw, height: Math.max(0.5, y(dn + a) - y(dn) - (dn < 0 ? 1 : 0)), fill: COLOR(k), opacity: 0.75 }, s); dn += a; }
+    }
+    el('text', { x: x + bw / 2, y: Math.max(T - 6, y(up) - 6) + 0, 'text-anchor': 'middle', class: 'lbl val' }, s).textContent = sgn(r.net, 1).replace('+', '');
+    el('text', { x: x + bw / 2, y: H - 8, 'text-anchor': 'middle' }, s).textContent = String(yy).slice(2) + (yy === 2026 ? '*' : '');
+    const hit = el('rect', { x: L + cw * i, y: T, width: cw, height: H - T - B, fill: 'transparent' }, s);
+    hover(hit, `<b>FY${yy}</b>（補正 ${r.rounds.length} 回）<br>追加 ${f(r.add)} / 減少 ${f(r.red)} / 差引 ${sgn(r.net)}兆円<br>` + CATS.filter(([k]) => r.catAdd[k] || r.catRed[k]).map(([k, n]) => `${n}: +${f(r.catAdd[k])} / ${f(r.catRed[k])}`).join('<br>'));
+  });
+  el('line', { x1: L, x2: W - R, y1: y(0), y2: y(0), stroke: 'var(--zero)', 'stroke-width': 1 }, s);
+  document.getElementById(lgId).innerHTML = CATS.map(([k, n]) => `<span><i style="background:${COLOR(k)}"></i>${n}</span>`).join('') + '<span>* FY2026 は第1号だけ</span>';
+}
+drawStack('allChart', 'lg1', Y);
+drawStack('calmChart', 'lg2', Y.filter(y => y < 2020 || y > 2022));
+
+// 文
+(() => {
+  const pub = Y.slice(0, 9).map(y => YR[y].catAdd.public), def = Y.slice(0, 9).map(y => YR[y].catAdd.defense);
+  document.getElementById('pubText').textContent = `主要経費別の公共事業（道路・治山治水・社会資本総合整備・災害復旧など）への追加は、FY2017 の ${f(pub[0])}兆円から FY2025 の ${f(pub[8])}兆円まで、9 年とも毎年あります。減らされることはほぼありません（9 年の減少の計 ${f(sum(Y.map(y => YR[y].catRed.public)))}兆円）。`;
+  document.getElementById('defText').textContent = `防衛関係費への追加は、FY2017〜FY2022 は年 ${f(Math.min(...def.slice(0, 6)))}〜${f(Math.max(...def.slice(0, 6)))}兆円、FY2023 は ${f(def[6])}兆円（うち財務省の所管の「防衛力強化のための資金へ繰入」1.04兆円）、FY2025 は ${f(def[8])}兆円（同じく資金への繰入 0.63兆円を含む）でした。`;
+  const t = y => D.top[y].add.slice(0, 3).map(r => `${r.j.replace(/に必要な経費$/, '')}（${f(r.a)}兆円）`).join('、');
+  document.getElementById('postText').textContent = `FY2023〜FY2025 の追加の上位は、FY2023: ${t(2023)}。FY2024: ${t(2024)}。FY2025: ${t(2025)}。物価高騰対応の臨時交付金とエネルギー価格対策が、毎年続いています。`;
+})();
+
+// 国債費
+(() => {
+  const ys = D.debt.filter(r => r.y <= 2025);
+  const ints = ys.map(r => r.interest), surs = ys.map(r => r.surplus);
+  document.getElementById('debtLead').textContent = `一般会計の補正の減少額（10 年で ${f(-sum(D.years.map(r => r.red)), 1)}兆円）のうち、${f(-sum(D.years.map(r => r.catRed.debt)), 1)}兆円が国債費です。中身は、利払いの財源の減額で、FY2017〜FY2025 の 9 年とも ${f(-Math.max(...ints))}〜${f(-Math.min(...ints))}兆円減らしています。一方で、前の年度の決算で出た剰余金を国債の償還に回す繰入（FY2019・FY2020 は無し）が、最大 ${f(Math.max(...surs))}兆円（FY2021）足されています。`;
+  const s = document.getElementById('debtChart'), W = 680, H = 240, L = 46, R = 12, T = 20, B = 26;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '520px';
+  const hi = Math.max(...ys.map(r => tri(r.surplus + Math.max(0, r.other)))), lo = Math.min(...ys.map(r => tri(r.interest + Math.min(0, r.other))));
+  const step = niceStep(hi - lo), top = Math.ceil(hi / step) * step, bot = Math.floor(lo / step) * step;
+  const y = v => T + (H - T - B) * (top - v) / (top - bot), cw = (W - L - R) / ys.length, bw = Math.min(30, cw * 0.32);
+  const g = el('g', { class: 'grid' }, s);
+  for (let v = bot; v <= top + 1e-9; v += step) { el('line', { x1: L, x2: W - R, y1: y(v), y2: y(v) }, g); el('text', { x: L - 6, y: y(v) + 4, 'text-anchor': 'end' }, s).textContent = +v.toFixed(2); }
+  el('text', { x: 4, y: 12 }, s).textContent = '兆円';
+  ys.forEach((r, i) => {
+    const cx = L + cw * i + cw / 2;
+    const bar = (x, v, fill) => { const a = tri(v); if (!a) return; el('rect', { x, y: a > 0 ? y(a) : y(0), width: bw, height: Math.max(0.5, Math.abs(y(a) - y(0))), rx: 2, fill }, s); };
+    bar(cx - bw - 1, r.interest + Math.min(0, r.other), 'var(--down)');
+    bar(cx + 1, r.surplus, 'var(--up)');
+    if (r.other > 0) el('rect', { x: cx + 1, y: y(tri(r.surplus + r.other)), width: bw, height: Math.max(0.5, y(tri(r.surplus)) - y(tri(r.surplus + r.other))), fill: 'var(--zero)' }, s);
+    el('text', { x: cx - bw / 2 - 1, y: Math.min(H - B - 2, y(tri(r.interest + Math.min(0, r.other))) + 12), 'text-anchor': 'middle', class: 'val' }, s).textContent = f(r.interest + Math.min(0, r.other), 1);
+    if (r.surplus + Math.max(0, r.other) > 0) el('text', { x: cx + bw / 2 + 1, y: y(tri(r.surplus + Math.max(0, r.other))) - 4, 'text-anchor': 'middle', class: 'val' }, s).textContent = f(r.surplus + Math.max(0, r.other), 1);
+    el('text', { x: cx, y: H - 8, 'text-anchor': 'middle' }, s).textContent = String(r.y).slice(2);
+    hover(el('rect', { x: L + cw * i, y: T, width: cw, height: H - T - B, fill: 'transparent' }, s), `<b>FY${r.y} 国債費の補正</b><br>利払いの財源 ${sgn(r.interest)}兆円<br>剰余金の繰入 ${sgn(r.surplus)}兆円<br>その他 ${sgn(r.other)}兆円`);
+  });
+  el('line', { x1: L, x2: W - R, y1: y(0), y2: y(0), stroke: 'var(--zero)', 'stroke-width': 1 }, s);
+  // ほかの減少
+  document.getElementById('otherRed').textContent = `予備費: FY2020 の第3回でコロナ予備費を ${f(-YR[2020].catRed.reserve)}兆円、FY2023 にコロナ等の予備費（その年は「原油価格・物価高騰対策及び賃上げ促進環境整備対応予備費」）を 2.00兆円、ウクライナ情勢経済緊急対応予備費を 0.50兆円減らしました。地方交付税交付金: FY2019 に ${f(-YR[2019].catRed.local)}兆円、FY2020 に ${f(-YR[2020].catRed.local)}兆円の減額があります（同じ年に追加もある）。そのほかの経費の減少は、年 0.03〜0.39兆円の小さい額で、多くの事項に分かれています（減少のある事項は毎年 282〜363）。`;
+})();
+
+// コロナ期
+(() => {
+  const named = [2020, 2021, 2022].map(y => YR[y].covidNamed[0]);
+  document.getElementById('covidLead').textContent = `3 年の追加は計 ${f(sum([2020, 2021, 2022].map(y => YR[y].add)), 1)}兆円。名前に「コロナ」「感染症」を含む事項だけで ${f(sum(named), 1)}兆円です。名前に含まない給付金・中小企業支援・政策金融などが、それ以上にあります。`;
+  document.getElementById('covidCols').innerHTML = [2020, 2021, 2022].map(y => `<div class="col"><h3>FY${y}（補正 ${YR[y].rounds.length} 回、差引 ${f(YR[y].net, 1)}兆円）</h3><ol>${D.top[y].add.slice(0, 6).map(r => `<li>${r.j.replace(/に必要な経費$/, '')} <span class="note">${r.g}</span> <b>${f(r.a)}</b>${r.r ? ` <span class="note">（減 ${f(r.r)}）</span>` : ''}</li>`).join('')}</ol></div>`).join('');
+})();
+
+// 主要経費の表
+(() => {
+  const spark = r => {
+    const vals = r.net.map(v => v ?? 0), mx = Math.max(...vals.map(Math.abs)) || 1, W = 120, H = 28, bw = W / vals.length;
+    return `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="年度ごとの差し引き">` + vals.map((v, i) => { const h = Math.max(v ? 1 : 0, Math.abs(v) / mx * (H / 2 - 1)); return `<rect x="${(i * bw + 1).toFixed(1)}" y="${(v >= 0 ? H / 2 - h : H / 2).toFixed(1)}" width="${(bw - 2).toFixed(1)}" height="${h.toFixed(1)}" fill="${v >= 0 ? 'var(--up)' : 'var(--down)'}"><title>FY${Y[i]} ${sgn(v)}兆円</title></rect>`; }).join('') + `<line x1="0" x2="${W}" y1="${H / 2}" y2="${H / 2}" stroke="var(--line)"/></svg>`;
+  };
+  const nm = r => (r.c in D.reserveNames && ['93', '94', '96'].includes(r.c)) ? `${r.n}<span class="note">（${Object.entries(D.reserveNames[r.c]).map(([y, n]) => `FY${y}: ${n}`).join('、')}）</span>` : r.n;
+  const head = '<thead><tr><th class="l">主要経費別</th><th>追加の年数</th><th>10 年の追加</th><th>10 年の減少</th><th>うちコロナ期以外の追加</th><th class="l">FY2017〜FY2026 の差し引き</th></tr></thead>';
+  const row = r => `<tr><td class="name">${nm(r)}</td><td>${r.yrs} / 9</td><td>${f(r.add)}</td><td>${f(r.red)}</td><td>${f(r.normal)}</td><td class="l">${spark(r)}</td></tr>`;
+  const main = D.majors.filter(r => r.add >= 5000), rest = D.majors.filter(r => r.add < 5000);
+  document.getElementById('majorTbl').innerHTML = head + '<tbody>' + main.map(row).join('') + '</tbody>';
+  document.getElementById('majorTbl2').innerHTML = head + '<tbody>' + rest.map(row).join('') + '</tbody>';
+})();
+
+// 回の表と FY2026
+(() => {
+  const mx = Math.max(...D.years.map(r => r.rounds.length));
+  document.getElementById('roundTbl').innerHTML = `<thead><tr><th class="l">年度</th>${Array.from({ length: mx }, (_, i) => `<th>第${i + 1}回</th>`).join('')}<th>追加</th><th>減少</th><th>差引</th></tr></thead><tbody>` +
+    D.years.map(r => `<tr><td class="l">FY${r.y}</td>${Array.from({ length: mx }, (_, i) => `<td>${r.rounds[i] === undefined ? '' : sgn(r.rounds[i])}</td>`).join('')}<td>${f(r.add)}</td><td>${f(r.red)}</td><td>${sgn(r.net)}</td></tr>`).join('') + '</tbody>';
+  const t = D.top[2026].add.map(r => `${r.j.replace(/に必要な経費$/, '')}（${f(r.a)}兆円）`).join('、');
+  document.getElementById('fy26').textContent = `FY2026 の補正予算（第1号）は ${f(YR[2026].net)}兆円で、載っている項は 55 です。中身は ${t} だけでした。データを取り込んだ時点の資料で、第2号以降が出ていれば、取り込み直すと変わります。`;
+})();
+
+// 府省の表
+(() => {
+  document.getElementById('groupTbl').innerHTML = `<thead><tr><th class="l">府省</th>${Y.map(y => `<th>FY${y}</th>`).join('')}<th>計</th></tr></thead><tbody>` +
+    D.groups.map(r => `<tr><td class="l">${r.g}</td>${r.net.map(v => `<td>${v === null ? '' : f(v)}</td>`).join('')}<td><b>${f(r.sum)}</b></td></tr>`).join('') + '</tbody>';
+})();
+</script>

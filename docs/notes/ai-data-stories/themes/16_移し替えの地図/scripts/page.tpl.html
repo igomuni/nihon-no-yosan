@@ -1,0 +1,232 @@
+<title>移し替えの地図</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Zen+Kaku+Gothic+New:wght@700;900&display=swap">
+<style>
+/* layout: 1 本の読み物の列（最大 760px）。出し手 = 藍、受け手 = 朱。区分は 3 色 + 斜線（対応不明） */
+:root {
+  --bg: #f6f7f9; --surface: #ffffff; --ink: #18202b; --muted: #5b6573; --line: #d9dee5;
+  --up: #d2542a; --down: #2a6fc9; --zero: #9aa3ae; --tag: #eef1f5;
+  --c1: #d2542a; --c2: #7a5bd0; --c3: #1f9a6e; --unk: #9aa3ae;
+  --display: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", sans-serif;
+  --body: "BIZ UDPGothic", "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #12161c; --surface: #1a2029; --ink: #e8ecf1; --muted: #9aa5b3; --line: #2c3440;
+  --up: #f07a50; --down: #5b9cf0; --zero: #6b7582; --tag: #232b36;
+  --c1: #f07a50; --c2: #a58cf0; --c3: #3cc493; --unk: #6b7582; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #12161c; --surface: #1a2029; --ink: #e8ecf1; --muted: #9aa5b3; --line: #2c3440;
+  --up: #f07a50; --down: #5b9cf0; --zero: #6b7582; --tag: #232b36;
+  --c1: #f07a50; --c2: #a58cf0; --c3: #3cc493; --unk: #6b7582; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.8;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 32px 64px; }
+main { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 56px; }
+h1, h2 { font-family: var(--display); text-wrap: balance; line-height: 1.35; margin: 0; }
+h1 { font-size: clamp(28px, 6vw, 40px); font-weight: 900; }
+h2 { font-size: 22px; font-weight: 700; }
+p { margin: 0; max-width: 65ch; }
+section { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; color: var(--muted); }
+.note { font-size: 13px; color: var(--muted); }
+.num { font-variant-numeric: tabular-nums; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.kpi b { font-family: var(--display); font-size: 24px; font-variant-numeric: tabular-nums; }
+.kpi span { font-size: 12px; color: var(--muted); line-height: 1.5; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; min-width: 0; }
+.scroll { overflow-x: auto; }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { fill: var(--muted); font-family: var(--body); font-size: 11px; }
+.chart .lbl { fill: var(--ink); font-size: 12px; }
+.chart .val { font-variant-numeric: tabular-nums; fill: var(--ink); }
+.grid line { stroke: var(--line); stroke-width: 1; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
+.tag { display: inline-block; font-size: 11px; padding: 0 8px; border-radius: 999px; background: var(--tag); color: var(--muted); margin-right: 6px; white-space: nowrap; }
+.tag.src::before { content: "原資料"; } .tag.proc::before { content: "加工"; } .tag.ai::before { content: "AIの計算・解釈"; }
+.claims { display: flex; flex-direction: column; gap: 12px; padding: 0; margin: 0; list-style: none; }
+.claims li { display: grid; gap: 4px; }
+table { border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
+th, td { padding: 4px 8px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+th.l, td.l { text-align: left; }
+td.wrap { white-space: normal; min-width: 12em; text-align: left; }
+thead th { color: var(--muted); font-weight: 400; }
+.cat { display: inline-block; font-size: 11px; padding: 0 6px; border-radius: 4px; color: var(--surface); }
+td.heat { min-width: 3.6em; }
+details { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+summary { cursor: pointer; font-weight: 700; }
+summary:focus-visible { outline: 2px solid var(--down); outline-offset: 2px; }
+.notes { padding-left: 1.2em; margin: 0; display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--muted); }
+.questions { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.questions li { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+footer { font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+#tip { position: fixed; pointer-events: none; background: var(--ink); color: var(--bg); font-size: 12px; padding: 6px 8px; border-radius: 6px; line-height: 1.5; max-width: 280px; z-index: 5; }
+</style>
+
+<main>
+  <header style="display:flex;flex-direction:column;gap:12px">
+    <span class="eyebrow">一般会計・決算 FY2017 → FY2024 · 予算決定後移替増△減額</span>
+    <h1>予算を持つ府省と、お金を払う府省</h1>
+    <p>決算書には、予算が決まったあとで別の府省へ移した額（予算決定後の移し替え）が、目ごとに書かれています。8 年分の 208 の目を、出し手と受け手の組に分けました。</p>
+    <div class="kpis">
+      <div class="kpi"><b class="num" id="kTotal"></b><span>8 年の移し替えの計（受け手の側の合計）</span></div>
+      <div class="kpi"><b class="num" id="kShare"></b><span>うち、コロナ・物価高騰の地方創生臨時交付金（内閣府 → 総務省）</span></div>
+      <div class="kpi"><b class="num" id="kOrg"></b><span>組織の新設・移管にともなう分（デジタル庁・こども家庭庁・水道）</span></div>
+      <div class="kpi"><b class="num">2.35兆円</b><span>協力要請推進交付金のうち、内閣府の項に残ったまま不用になった額（FY2022）</span></div>
+    </div>
+  </header>
+
+  <section>
+    <h2>移し替えは、ほぼ 1 種類の交付金</h2>
+    <p id="leadYear"></p>
+    <div class="panel scroll"><svg class="chart" id="yearChart" role="img" aria-label="年度ごとの移し替えの額（区分別）"></svg></div>
+    <div class="legend" id="legend"></div>
+    <p class="note">臨時交付金を除いた残りは、右の目盛り（億円）で別に描いています。</p>
+    <div class="panel scroll"><svg class="chart" id="restChart" role="img" aria-label="臨時交付金を除いた移し替え（億円）"></svg></div>
+  </section>
+
+  <section>
+    <h2>出し手と受け手の組</h2>
+    <p>同じ目名（無ければ同じ項名）で、出し手の減額と受け手の増額が円まで一致する組を、対応とみなしました。一致しない分は「対応不明」です。</p>
+    <div class="panel scroll"><table id="pairTbl"></table></div>
+    <ul class="claims">
+      <li><strong>内閣府 → 総務省 10.85兆円（FY2020〜FY2024 の 5 年続く）</strong><span>新型コロナ対応・物価高騰対応の地方創生臨時交付金です。予算書（当初・補正）では内閣府の項に計上され、支出は総務省の同じ名前の項から出ています（3 回目の「交付金の行方」と同じ流れ）。</span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+      <li><strong>組織ができた年・移った年だけの組</strong><span>FY2021 のデジタル庁（内閣官房・内閣府・総務省・経済産業省から、情報システムの経費 0.01兆円）、FY2023 のこども家庭庁（厚生労働省・文部科学省・内閣官房から 0.35兆円）、FY2024 の厚生労働省 → 国土交通省（水道施設の整備・耐震化・災害復旧 0.06兆円）。どれも 1 年だけです。目名からは、組織の新設・所管の移動にともなうものと読めます。</span><span><span class="tag src"></span><span class="tag ai"></span></span></li>
+      <li><strong>毎年続く小さな配分</strong><span>内閣府の科学技術・イノベーション推進事務局の「科学技術イノベーション創造推進費」は、FY2018 と FY2021〜FY2024 に、経済産業省・国土交通省・厚生労働省・農林水産省などへ移されています（FY2021 の 9億円から FY2024 の 50億円）。沖縄教育振興事業費（内閣府 → 文部科学省、FY2022〜FY2024）、地方創生整備推進交付金（内閣府 → 国土交通省・農林水産省・環境省、FY2023〜FY2024）も続いています。</span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>どの項で、どの年に</h2>
+    <p>受け手の側の項名ごとの、年度別の額（億円）です。色の濃さは額の大きさ（行ごとではなく全体で共通）。</p>
+    <div class="panel scroll"><table id="kouTbl"></table></div>
+    <p class="note">FY2019 は、移し替えが 1 件もありません。デジタル庁の情報システムや公共事業のように、予算の段階でまとめて計上して各府省で使う形は、決算の移し替えにはほとんど出ていません（デジタル庁は発足した FY2021 だけ）。予算の段階で各府省へ計上されているためと推測しますが、確かめていません。</p>
+  </section>
+
+  <section>
+    <h2>協力要請推進交付金 2.91兆円の経過</h2>
+    <p>FY2021 の補正予算で内閣府に 1.50兆円が付き、同じ項の臨時交付金の目から 1.41兆円が流用されて、現額は 2.91兆円になりました。FY2021 は支出 0 円で全額を繰り越し、FY2022 に 0.56兆円だけ総務省へ移し替えて支出しました。残りの 2.35兆円は、内閣府の項に残ったまま、支出されずに不用になっています。</p>
+    <div class="panel scroll"><svg class="chart" id="traceChart" role="img" aria-label="協力要請推進交付金の経過"></svg></div>
+    <div class="panel scroll"><table id="traceTbl"></table></div>
+    <p class="note">不用になった理由は、決算書のデータにはありません。</p>
+  </section>
+
+  <section>
+    <h2>府省別の集計に、どう効くか</h2>
+    <p>予算書（当初・補正）の所管で数えると、この交付金は内閣府のお金です。決算で実際に払ったのは総務省です。府省別に「いくら使ったか」を数えるとき、予算書の所管で数えるか、決算の支出の所管で数えるかで、内閣府と総務省の額が年 1〜3兆円ずつ動きます。</p>
+    <div class="panel scroll"><table id="effTbl"></table></div>
+    <p class="note">移替前 = 歳出予算額 + 前年度繰越 + 予備費使用 + 流用等。現額 = 移替前 + 移替。兆円。府省は予算書の所管（内閣府の外局の庁・委員会は、それぞれの府省として数える）。</p>
+  </section>
+
+  <section>
+    <h2>この数字の作り方と、確かめられないこと</h2>
+    <ul class="notes">
+      <li><span class="tag src"></span>財務省「予算書・決算書データベース」の決算書（一般会計、目の表と項の表）。列「予算決定後移替増△減額」。FY2017〜FY2024。</li>
+      <li><span class="tag proc"></span>nihon-no-yosan が抽出・構造化した CSV（<code>moku-general-kessan.csv</code>・<code>kou-general-kessan.csv</code>）。</li>
+      <li><span class="tag ai"></span>出し手と受け手の対応づけは、同じ年度の同じ目名（無ければ同じ項名）で、減額と増額の合計が 0 円になり、出し手か受け手の一方が 1 つに決まるものだけです。決まらなかったのは FY2021 の「情報処理業務庁費」61.8億円（出し手 4・受け手 2）で、「対応不明」としました。</li>
+      <li><span class="tag ai"></span>区分（臨時交付金・組織の新設・移管・配分）は、項名と年度・府省の組からの判断です。決算書に区分は書かれていません。</li>
+      <li>検算: 移し替えの合計は、どの年度も 0 円でした。目の合計は項の表と、項ごとに円まで一致しました。対応づけと対応不明を府省ごとに足した純額は、項の表の府省別の純額と一致しました。移し替えのある 208 の目すべてで、決算の 2 つの恒等式が成り立ちました。</li>
+      <li>確かめられないこと: 移し替えの手続きと理由、予算の段階での一括計上と配分（予算書の各府省への計上の内訳）、移し替えた額がどの財源（当初・補正・繰越）の分か、特別会計の移し替え、FY2025 以降。</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>次に、聞かせてください</h2>
+    <ol class="questions">
+      <li>府省別に「いくら使ったか」を見るとき、予算書の所管と決算の支出の所管の、どちらで数えたいですか。</li>
+      <li>協力要請推進交付金のように、予算が付いたまま使われずに残った大きな目を、ほかにも探しますか（現額に対する不用の割合が高い目）。</li>
+      <li>科学技術イノベーション創造推進費（毎年の配分）は、受け手の府省でどんな研究に使われたか、行政事業レビューの事業で追いますか。</li>
+    </ol>
+  </section>
+
+  <footer>
+    <span>出典：財務省「予算書・決算書データベース」を加工して作成。国や各府省が作成した加工していない情報ではありません。</span>
+    <span>nihon-no-yosan の AI Data Stories PoC（ループ 4 回目）。金額は円の値から計算し、表示で丸めています。</span>
+  </footer>
+</main>
+<div id="tip" hidden></div>
+
+<script>
+const D = __DATA__;
+const Y = D.Y;
+const NS = 'http://www.w3.org/2000/svg';
+const el = (tag, attrs = {}, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+const tip = document.getElementById('tip');
+function hover(node, html) {
+  node.addEventListener('pointermove', e => { tip.innerHTML = html; tip.hidden = false; tip.style.left = Math.min(e.clientX + 12, innerWidth - 290) + 'px'; tip.style.top = (e.clientY + 12) + 'px'; });
+  node.addEventListener('pointerleave', () => { tip.hidden = true; });
+}
+const cho = v => (v / 10000).toFixed(2); // 億円 → 兆円
+const okuf = v => v.toLocaleString('ja-JP', { maximumFractionDigits: 1 });
+const COL = { '臨時交付金': 'var(--c1)', '組織の新設・移管': 'var(--c2)', '配分（研究開発・地域振興など）': 'var(--c3)', '対応不明': 'var(--unk)', '府省内': 'var(--zero)' };
+const sum = a => a.reduce((s, v) => s + v, 0);
+const tot = sum(D.total), kofu = sum(D.bycat['臨時交付金']), org = sum(D.bycat['組織の新設・移管']);
+document.getElementById('kTotal').textContent = `${cho(tot)}兆円`;
+document.getElementById('kShare').textContent = `${(kofu / tot * 100).toFixed(1)}%`;
+document.getElementById('kOrg').textContent = `${cho(org)}兆円`;
+document.getElementById('leadYear').textContent = `8 年の移し替え ${cho(tot)}兆円のうち ${(kofu / tot * 100).toFixed(1)}%（${cho(kofu)}兆円）が、FY2020〜FY2024 の地方創生臨時交付金です。FY2017〜FY2019 は、年 0〜140億円でした。`;
+document.getElementById('legend').innerHTML = [...D.cats, '対応不明'].map(c => `<span><i style="background:${COL[c]}"></i>${c}</span>`).join('');
+
+function stacked(id, keys, unit, conv) {
+  const s = document.getElementById(id), W = 680, H = 240, L = 50, R = 12, T = 22, B = 26;
+  const vals = Y.map((_, i) => keys.map(k => (k === '対応不明' ? D.unk[i] : k === '府省内' ? D.same[i] : D.bycat[k][i])));
+  const max = Math.max(...vals.map(sum)) * 1.12 || 1;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '520px';
+  const step = niceStep(max / 4), y = v => T + (H - T - B) * (1 - v / max), cw = (W - L - R) / Y.length, bw = cw * 0.56;
+  const g = el('g', { class: 'grid' }, s);
+  for (let v = 0; v <= max; v += step) { el('line', { x1: L, x2: W - R, y1: y(v), y2: y(v) }, g); el('text', { x: L - 6, y: y(v) + 4, 'text-anchor': 'end' }, s).textContent = conv(v); }
+  el('text', { x: 4, y: 12 }, s).textContent = unit;
+  Y.forEach((yr, i) => {
+    const x = L + cw * i + (cw - bw) / 2; let base = 0;
+    keys.forEach((k, j) => { const v = vals[i][j]; if (v <= 0) return; el('rect', { x, y: y(base + v), width: bw, height: Math.max(1, y(base) - y(base + v)), fill: COL[k] }, s); base += v; });
+    if (base > 0) el('text', { x: x + bw / 2, y: y(base) - 5, 'text-anchor': 'middle', class: 'val' }, s).textContent = conv(base);
+    el('text', { x: x + bw / 2, y: H - 8, 'text-anchor': 'middle' }, s).textContent = yr;
+    hover(el('rect', { x: L + cw * i, y: T, width: cw, height: H - T - B, fill: 'transparent' }, s), `<b>FY${yr}</b><br>` + keys.map((k, j) => `${k}: ${okuf(vals[i][j])}億円`).join('<br>'));
+  });
+}
+function niceStep(x) { const p = Math.pow(10, Math.floor(Math.log10(x))); const m = x / p; return (m < 1.5 ? 1 : m < 3.5 ? 2 : m < 7.5 ? 5 : 10) * p; }
+stacked('yearChart', [...D.cats, '対応不明'], '兆円', v => cho(v).replace(/\.00$/, ''));
+stacked('restChart', ['組織の新設・移管', '配分（研究開発・地域振興など）', '対応不明'], '億円', v => okuf(Math.round(v)));
+
+// 組の表
+document.getElementById('pairTbl').innerHTML = '<thead><tr><th class="l">出し手</th><th class="l">受け手</th><th>8 年の計（億円）</th><th class="l">年度</th><th class="l">区分</th></tr></thead><tbody>' +
+  D.pairs.map(p => `<tr><td class="l">${p.g}</td><td class="l">${p.r}</td><td>${okuf(p.v)}</td><td class="l">${p.ys.join('・')}</td><td class="l">${p.cats.map(c => `<span class="cat" style="background:${COL[c]}">${c.replace('（研究開発・地域振興など）', '')}</span>`).join(' ')}</td></tr>`).join('') +
+  `<tr><td class="l">内閣・内閣府・総務省</td><td class="l">デジタル庁・経済産業省</td><td>${okuf(D.unknown.filter(u => u.v > 0).reduce((s, u) => s + u.v, 0))}</td><td class="l">2021</td><td class="l"><span class="cat" style="background:var(--unk)">対応不明</span></td></tr></tbody>`;
+
+// 項 × 年度
+(() => {
+  const max = Math.max(...D.kous.flatMap(k => Object.values(k.ys)));
+  const cell = v => { if (v === undefined) return '<td class="heat"></td>'; const a = Math.max(0.12, Math.sqrt(v / max)); return `<td class="heat" style="background:color-mix(in srgb, var(--c1) ${Math.round(a * 85)}%, transparent);color:${a > 0.55 ? 'var(--surface)' : 'var(--ink)'}">${okuf(v)}</td>`; };
+  const rows = D.kous.map(k => `<tr><td class="wrap">${k.k}</td>${Y.map(y => cell(k.ys[y])).join('')}</tr>`);
+  document.getElementById('kouTbl').innerHTML = `<thead><tr><th class="l">項名（受け手の側）</th>${Y.map(y => `<th>${String(y).slice(2)}</th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody>`;
+})();
+
+// 協力要請推進交付金
+(() => {
+  const s = document.getElementById('traceChart'), W = 680, H = 170, L = 150, R = 80, rowH = 44, T = 10;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '520px';
+  const t = D.trace, a = t[0], b = t[1], c = t[2];
+  const max = a.cur, x = v => L + (W - L - R) * v / max;
+  const rows = [
+    ['FY2021 内閣府', [['補正予算', a.base, 'var(--c1)'], ['流用（臨時交付金の目から）', a.flow, 'var(--c2)']], `現額 ${cho(a.cur)} → 全額繰越`],
+    ['FY2022 内閣府', [['総務省へ移し替え', -b.tr, 'var(--c3)'], ['不用', b.unused, 'var(--unk)']], `支出 0`],
+    ['FY2022 総務省', [['支出', c.spent, 'var(--c3)'], ['不用', c.unused, 'var(--unk)']], `支出 ${cho(c.spent)}`],
+  ];
+  rows.forEach(([lab, segs, note], i) => {
+    const y0 = T + i * rowH; let base = 0;
+    el('text', { x: L - 8, y: y0 + 22, 'text-anchor': 'end', class: 'lbl' }, s).textContent = lab;
+    for (const [n, v, col] of segs) { const r = el('rect', { x: x(base) + (base ? 1 : 0), y: y0 + 8, width: Math.max(1, x(base + v) - x(base) - (base ? 1 : 0)), height: 22, rx: 3, fill: col }, s); hover(r, `<b>${lab}</b><br>${n}: ${cho(v)}兆円`); base += v; }
+    el('text', { x: x(base) + 6, y: y0 + 23, class: 'val' }, s).textContent = cho(base);
+    el('text', { x: L, y: y0 + 42 }, s).textContent = segs.map(([n, v]) => `${n} ${cho(v)}`).join(' / ');
+  });
+  el('text', { x: 4, y: H - 4 }, s).textContent = '兆円';
+  document.getElementById('traceTbl').innerHTML = '<thead><tr><th class="l">年度・府省</th><th>歳出予算額</th><th>前年度繰越</th><th>流用等</th><th>移替</th><th>現額</th><th>支出済</th><th>翌年度繰越</th><th>不用</th></tr></thead><tbody>' +
+    t.map(r => `<tr><td class="l">FY${r.y} ${r.min}</td>${['base', 'carry', 'flow', 'tr', 'cur', 'spent', 'out', 'unused'].map(k => `<td>${okuf(r[k])}</td>`).join('')}</tr>`).join('') + '</tbody>';
+  document.getElementById('traceTbl').insertAdjacentHTML('afterend', '');
+})();
+
+// 府省別への効き
+document.getElementById('effTbl').innerHTML = '<thead><tr><th class="l">年度</th><th class="l">府省</th><th>移替前</th><th>移替</th><th>現額</th><th>支出済</th></tr></thead><tbody>' +
+  D.eff.filter(e => e.y >= 2020).map(e => `<tr><td class="l">FY${e.y}</td><td class="l">${e.u}</td><td>${e.pre.toFixed(2)}</td><td style="color:${e.tr > 0 ? 'var(--up)' : 'var(--down)'}">${e.tr > 0 ? '+' : '−'}${Math.abs(e.tr).toFixed(2)}</td><td>${e.cur.toFixed(2)}</td><td>${e.spent.toFixed(2)}</td></tr>`).join('') + '</tbody>';
+</script>
