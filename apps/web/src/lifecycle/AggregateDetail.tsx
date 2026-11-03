@@ -15,7 +15,7 @@ export interface AggregateColumns {
 const yen = (v: number | undefined): string => (v === undefined ? '—' : v === 0 ? '0円' : formatSen(v / 1000));
 
 /**
- * 一覧全体の詳細（右ペイン。中ペインの集計行を選んだとき）。一覧の各行を年度をまたいでたどり、年度ごとに足した額を、グラフと、年度を縦に並べた表で見る。
+ * 一覧全体の詳細（右ペイン。中ペインの集計行を選んだとき）。今の絞り込みを年度ごとにそのまま掛け、その年度の集計行と同じ足し方で出した額を、グラフと、年度を縦に並べた表で見る。
  * 値の無い所は「—」（0 とは別）。年度を押す・J / K で、中ペインの年度が移る。
  */
 export function AggregateDetail({ title, facts, unit, rows, year, spec, onYear }: {
@@ -53,7 +53,7 @@ export function AggregateDetail({ title, facts, unit, rows, year, spec, onYear }
             <thead>
               <tr className="text-left">
                 <th className={th}>年度</th>
-                <th className={`${th} whitespace-nowrap text-right`} title={`その年度に、一覧の行から流れが見つかった${unit}の数`}>{unit}数</th>
+                <th className={`${th} whitespace-nowrap text-right`} title={`その年度の、今の絞り込みに合う${unit}の数（中ペインの集計行と同じ）`}>{unit}数</th>
                 {spec.columns.map(c => <th key={c.key} className={`${th} whitespace-nowrap text-right`} title={c.title}>{c.label}</th>)}
               </tr>
             </thead>

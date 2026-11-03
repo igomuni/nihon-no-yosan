@@ -13,11 +13,10 @@ import {
   lifecyclePatternCounts,
   lifecycleRowAmounts,
   lifecycleSourcePresence,
-  aggregateJikou,
+  aggregateYears,
+  rsAmountShown,
   lifecycleListCounts,
-  aggregateKous,
-  aggregateMoku,
-  aggregateRs,
+  mokuValue,
   filterJikouRows,
   filterMokuRows,
   kouIdsWithMoku,
@@ -118,6 +117,11 @@ function Splitter({ label, width, limits, dir, onChange }: { label: string; widt
 }
 
 const NO_KOUS: readonly LifecycleKou[] = [];
+/** RS の事業の、その予算年度の繰越額（円）。行が無ければ null */
+const rsCarry = (rs: RsIndex, idx: number, year: number, key: 'carryIn' | 'carryOut'): number | null => {
+  const row = rs.amountsOf.get(idx)?.find(x => x[1] === year);
+  return row ? rsAmountShown(rs, row, key) : null;
+};
 
 export function LifecyclePage() {
   usePaneKeys();
@@ -324,13 +328,36 @@ export function LifecyclePage() {
   // 何も選んでいないときは、集計行を選んだ状態にする（右ペインに一覧全体の年度推移）
   const nothingSelected = view === 'rs' ? selectedRs === null : view === 'moku' ? selectedMokuNode === null : view === 'jikou' ? selectedJikouNode === null : !(selectedId !== null && data?.kous.some(k => k.id === selectedId && k.year === activeYear));
   const agg = aggView === view || nothingSelected;
+  // 集計行を選んだときの右ペイン: 今の絞り込みを、年度ごとにそのまま掛けて、その年度の一覧の集計行と同じ足し方で並べる
   const aggRows = useMemo(() => {
-    if (!agg || !data) return [];
-    if (view === 'list') return aggregateKous(list.map(x => x.chain.members), data.kous, valuesOf);
-    if (view === 'jikou') return jikou ? aggregateJikou(jikou, jikouList.map(r => r.node)) : [];
-    if (view === 'moku') return moku ? aggregateMoku(moku, mokuList.map(r => r.node), chainIdsOf) : [];
-    return rs ? aggregateRs(rs, rsList.map(r => r.idx)) : [];
-  }, [agg, data, view, list, valuesOf, jikou, jikouList, moku, mokuList, chainIdsOf, rs, rsList]);
+    if (!agg || !data || jikouFilterNotice !== null) return [];
+    const yen = (v: number | null): number | null => (v === null ? null : v * 1000);
+    if (view === 'list') {
+      const all = data.kous.map((k, i) => ({ k, i }));
+      return aggregateYears(years, y => {
+        const jset = jikou ? kouIdsWithJikou(jikou, y, filters.jikouName, filters.jikouNameRegex) : null;
+        const mset = moku ? kouIdsWithMoku(moku, y, filters.mokuName, filters.mokuNameRegex, filters) : null;
+        return filterLifecycleKous(all, filters, y).filter(({ k, i }) => (jset === null || jset.has(k.id)) && (mset === null || mset.has(k.id)) && matchesLifecyclePattern(k, filters) && matchesLifecycleLinks(lifecycleLinkState(linksByKou.get(i)), filters));
+      }, ({ i }) => {
+        const v = valuesOf.get(i);
+        const a = lifecycleRowAmounts(v ?? {});
+        return { request: a.request, budget: a.budget, revised: a.revised, spent: a.spent, carriedIn: v?.carryover_in, carried: v?.carryover_out };
+      });
+    }
+    if (view === 'jikou') {
+      if (!jikou) return [];
+      return aggregateYears(jikou.data.years, y => filterJikouRows(jikouListRows(jikou, kouById, y), filters, y, filters.uses.length === 0 ? null : moku ? kouIdsWithMoku(moku, y, '', false, { majors: [], uses: filters.uses }) : new Set<string>()), r => ({ request: yen(r.request), budget: yen(r.budget), revised: yen(r.revised) }));
+    }
+    if (view === 'moku') {
+      if (!moku) return [];
+      return aggregateYears(moku.data.years, y => filterMokuRows(mokuListRows(moku, kouById, y, id => [id]), filters, y), r => {
+        const n = moku.data.nodes[r.node]!;
+        return { request: yen(mokuValue(n, 'request')), budget: yen(mokuValue(n, 'budget')), revised: yen(mokuValue(n, 'revised')), carriedIn: yen(mokuValue(n, 'carriedIn')), spent: yen(mokuValue(n, 'spent')), carried: yen(mokuValue(n, 'carried')) };
+      });
+    }
+    if (!rs) return [];
+    return aggregateYears(rs.data.years, y => filterRsRows(rsListRows(rs, y), rsFilters, NONE_SELECTED), (r, y) => ({ budget: r.initial, revised: r.current, spent: r.spent, carriedIn: rsCarry(rs, r.idx, y, 'carryIn'), carried: rsCarry(rs, r.idx, y, 'carryOut') }));
+  }, [agg, data, view, years, filters, rsFilters, jikouFilterNotice, valuesOf, linksByKou, jikou, moku, rs, kouById]);
   // 右ペインの見出し（集計行を選んだとき）: 一覧の行の数と、内訳
   const aggHead = useMemo(() => {
     const n = (v: number): string => v.toLocaleString();
