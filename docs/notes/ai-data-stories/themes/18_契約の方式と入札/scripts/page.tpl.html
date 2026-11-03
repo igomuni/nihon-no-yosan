@@ -1,0 +1,309 @@
+<title>契約の方式と入札</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Zen+Kaku+Gothic+New:wght@700;900&display=swap">
+<style>
+/* layout: 1 本の読み物の列（最大 760px）。段の深さは青の濃淡、入札者数は青の濃淡（1 者が最も濃い）、未記入は灰 */
+:root {
+  --bg: #f6f7f9; --surface: #ffffff; --ink: #18202b; --muted: #5b6573; --line: #d9dee5;
+  --b1: #1f5fb4; --b2: #4d86d1; --b3: #86ade3; --b4: #b7cdee; --b5: #dbe6f6; --gray: #c3c9d1;
+  --accent: #d2542a; --zero: #9aa3ae; --tag: #eef1f5;
+  --display: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", sans-serif;
+  --body: "BIZ UDPGothic", "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #12161c; --surface: #1a2029; --ink: #e8ecf1; --muted: #9aa5b3; --line: #2c3440;
+  --b1: #7fb0f5; --b2: #5b8fd6; --b3: #3f6aa6; --b4: #2d4c78; --b5: #223754; --gray: #48515e;
+  --accent: #f07a50; --zero: #6b7582; --tag: #232b36; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #12161c; --surface: #1a2029; --ink: #e8ecf1; --muted: #9aa5b3; --line: #2c3440;
+  --b1: #7fb0f5; --b2: #5b8fd6; --b3: #3f6aa6; --b4: #2d4c78; --b5: #223754; --gray: #48515e;
+  --accent: #f07a50; --zero: #6b7582; --tag: #232b36; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.8;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 32px 64px; }
+main { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 56px; }
+h1, h2 { font-family: var(--display); text-wrap: balance; line-height: 1.35; margin: 0; }
+h1 { font-size: clamp(28px, 6vw, 42px); font-weight: 900; }
+h2 { font-size: 22px; font-weight: 700; }
+p { margin: 0; max-width: 65ch; }
+section, header { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; color: var(--muted); }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.tile b { font-family: var(--display); font-size: 24px; font-weight: 900; font-variant-numeric: tabular-nums; }
+.tile b.hl { color: var(--accent); }
+.tile span { font-size: 12px; color: var(--muted); line-height: 1.5; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; min-width: 0; }
+.scroll { overflow-x: auto; }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { fill: var(--muted); font-family: var(--body); font-size: 11px; }
+.chart .lbl { fill: var(--ink); font-size: 12px; }
+.chart .val { font-variant-numeric: tabular-nums; fill: var(--ink); }
+.grid line { stroke: var(--line); stroke-width: 1; }
+.note { font-size: 13px; color: var(--muted); }
+.tag { display: inline-block; font-size: 11px; padding: 0 8px; border-radius: 999px; background: var(--tag); color: var(--muted); margin-right: 6px; white-space: nowrap; }
+.tag.src::before { content: "原資料"; } .tag.proc::before { content: "加工"; } .tag.ai::before { content: "AIの計算・解釈"; }
+.claims { display: flex; flex-direction: column; gap: 12px; padding: 0; margin: 0; list-style: none; }
+.claims li { display: grid; gap: 4px; }
+table { border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; width: 100%; }
+th, td { padding: 5px 8px; border-bottom: 1px solid var(--line); text-align: right; vertical-align: top; }
+th.l, td.l { text-align: left; }
+thead th { color: var(--muted); font-weight: 400; white-space: nowrap; }
+td.name { min-width: 12em; }
+.minibar { display: inline-block; height: 8px; border-radius: 2px; background: var(--b2); vertical-align: 0; margin-right: 6px; }
+details { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+summary { cursor: pointer; font-weight: 700; }
+summary:focus-visible { outline: 2px solid var(--b1); outline-offset: 2px; }
+.notes { padding-left: 1.2em; margin: 0; display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--muted); }
+.questions { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.questions li { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12px; color: var(--muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+footer { font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+#tip { position: fixed; pointer-events: none; background: var(--ink); color: var(--bg); font-size: 12px; padding: 6px 8px; border-radius: 6px; line-height: 1.5; max-width: 280px; z-index: 5; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<main>
+  <header>
+    <span class="eyebrow">行政事業レビュー（2025 年度版）の支出先 · FY2024 の執行</span>
+    <h1>国の事業のお金は、どんな契約で払われたか</h1>
+    <p id="lead"></p>
+    <div class="tiles" id="tiles"></div>
+  </header>
+
+  <section>
+    <h2>支払いのほとんどは、契約ではなく交付</h2>
+    <p id="allText"></p>
+    <div class="panel scroll"><svg class="chart" id="groupChart" role="img" aria-label="支払いの方式の 4 区分"></svg></div>
+    <p class="note">「契約方式等」の値で分けた、支出先の契約の行の合計。全部の段（国から直接、その先の委託先など）を含む。</p>
+  </section>
+
+  <section>
+    <h2>調達の 9 つの方式</h2>
+    <p id="procText"></p>
+    <div class="legend"><span><i style="background:var(--b1)"></i>国から直接（1 段目）</span><span><i style="background:var(--b3)"></i>2 段目以降</span><span><i style="background:var(--gray)"></i>段をたどれない</span></div>
+    <div class="panel scroll"><svg class="chart" id="procChart" role="img" aria-label="調達の方式ごとの額"></svg></div>
+    <ul class="claims">
+      <li><strong>随意契約（その他）は、1 段目で 1 兆円</strong><span id="ncText"></span><span><span class="tag src"></span><span class="tag ai"></span></span></li>
+      <li><strong>会社への直接の支払いでは、調達は 4 割</strong><span id="compText"></span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+    </ul>
+    <div class="panel scroll"><svg class="chart" id="compChart" role="img" aria-label="会社への直接の支払いの方式"></svg></div>
+  </section>
+
+  <section>
+    <h2>一般競争の約半分は、入札者が 1 者</h2>
+    <p id="bidText"></p>
+    <div class="legend" id="bidLegend"></div>
+    <div class="panel scroll"><svg class="chart" id="bidChart" role="img" aria-label="方式ごとの入札者数の割合（件数）"></svg></div>
+    <p class="note">件数の割合。棒にカーソルを当てると、件数と額が出ます。入札者数が空欄・0 の行は「未記入・0」にまとめた。随意契約の「入札者数」が何を数えているか（応募者数か）は、データでは確かめられない。</p>
+  </section>
+
+  <section>
+    <h2>落札率は、95% 以上に集まる</h2>
+    <p id="rateText"></p>
+    <div class="legend"><span><i style="background:var(--b1)"></i>一般競争（最低価格）</span><span><i style="background:var(--b3)"></i>一般競争（総合評価）</span></div>
+    <div class="panel scroll"><svg class="chart" id="rateChart" role="img" aria-label="一般競争の落札率の分布（件数）"></svg></div>
+    <p class="note" id="rateNote"></p>
+  </section>
+
+  <section>
+    <h2>府省ごとの調達（国から直接）</h2>
+    <p id="minText"></p>
+    <div class="panel scroll"><table id="minTbl"></table></div>
+    <p class="note">1 段目（国が直接払った支出先）の調達だけ。調達額 10 億円以上の府省庁。随意契約（その他）の割合は額、一者の割合は一般競争・指名競争の件数と額。</p>
+  </section>
+
+  <section>
+    <h2>大きい契約</h2>
+    <p id="bigText"></p>
+    <div class="panel scroll"><table id="bigTbl"></table></div>
+    <details><summary>随意契約（その他）の大きい契約（1 段目、上位 10）</summary><div class="scroll" style="margin-top:12px"><table id="ncTbl"></table></div></details>
+    <details><summary>一般競争で入札者が 1 者の大きい契約（1 段目、上位 8）</summary><div class="scroll" style="margin-top:12px"><table id="oneTbl"></table></div></details>
+    <p class="note">名前は、法人番号のある法人と公的機関だけ。法人番号の無い支出先と、まとめた支出先は名前を出していない。</p>
+  </section>
+
+  <section>
+    <h2>この数字の作り方と、確かめられないこと</h2>
+    <ul class="notes">
+      <li><span class="tag src"></span>行政事業レビュー見える化サイトの CSV（2025 年度版）の「5-1 支出先_支出情報」。事業年度は 2025 だが、額は FY2024 の執行（3 回目の「お金の行き先」で、2-1 の FY2024 の執行額と照合した）。</li>
+      <li><span class="tag proc"></span>5-1 には、支出先の合計の行と、その内訳の契約の行がある。契約の行の「金額」を足すと、支出先の合計と一致した（<span id="chk"></span>）。この LP の額は、すべて契約の行の合計。</li>
+      <li><span class="tag proc"></span>段（国から直接・2 段目以降）は、「5-2 支出ブロックのつながり」でたどった。2 段目以降の契約は、委託先などが結んだもので、国が結んだ契約ではない。府省ごとの表と大きい契約は 1 段目だけ。</li>
+      <li><span class="tag ai"></span>調達 = 「契約方式等」が一般競争・指名競争・随意契約の 9 つ。補助金等交付・交付・国庫債務負担行為等・その他・空欄は調達に入れない。この分け方は AI の判断。</li>
+      <li><span class="tag ai"></span>「随意契約（その他）」が、いわゆる競争性のない随意契約にあたるかは推測。データの列名に「一者応札・一者応募又は競争性のない随意契約となった理由（支出額 10 億円以上）」があるので、そう読める。</li>
+      <li>未確認: 「入札者数」「落札率」の定義（随意契約の入札者数・落札率が何を指すか、落札率 0 や 100 超の意味）。0 と空欄は未記入として扱った。落札率が 100 の行は、予定価格と同じ額で契約したのか、記入の慣習なのかは分からない。</li>
+      <li>未確認: 「その他の契約」が TRUE の行（<span id="othChk"></span>）は、支出先ごとに個別の契約をまとめた行とみられる（推測）。方式はその行の値をそのまま使った。</li>
+      <li>未確認: 会社の判定は、法人種別 301〜305 と、法人種別が空で名前に「株式会社」などがあるもの（3 回目と同じ）。コードの意味は AI の知識で、名前と照らして確かめた。</li>
+      <li>良し悪しの評価はしていない。一者応札や随意契約には、理由が書かれていることがある（10 億円以上は理由の欄がある）。</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>次に、聞かせてください</h2>
+    <ol class="questions">
+      <li>防衛省の随意契約（その他）と一者応札は、装備品のどの種類（航空機・艦船・誘導弾・システム）に多いか、契約概要の語で分けてみますか。</li>
+      <li>10 億円以上の一者応札・随意契約の理由の欄に、どんな理由が多いか（「特許・技術」「既存システムの改修」など）を数えてみますか。</li>
+      <li>同じ会社が、府省・事業をまたいでどれだけ契約を受けているか（法人番号で束ねる）を見ますか。</li>
+    </ol>
+  </section>
+
+  <footer>
+    <span>出典：行政事業レビュー見える化サイト（https://rssystem.go.jp）を加工して作成。国や各府省が作成した加工していない情報ではありません。法人番号は国税庁の、根拠法令名は e-Gov の利用条件に従います。</span>
+    <span>nihon-no-yosan の AI Data Stories PoC（ループ 4 回目）。金額は円の値から計算し、表示で丸めています。</span>
+  </footer>
+</main>
+<div id="tip" hidden></div>
+
+<script>
+const D = __DATA__;
+const NS = 'http://www.w3.org/2000/svg';
+const el = (tag, attrs = {}, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+const tip = document.getElementById('tip');
+function hover(node, html) {
+  node.addEventListener('pointermove', e => { tip.innerHTML = html; tip.hidden = false; tip.style.left = Math.min(e.clientX + 12, innerWidth - 290) + 'px'; tip.style.top = (e.clientY + 12) + 'px'; });
+  node.addEventListener('pointerleave', () => { tip.hidden = true; });
+}
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const n0 = v => v.toLocaleString('ja-JP');
+// 金額（億円）の表示: 1 兆以上は兆円
+const yen = v => (Math.abs(v) >= 10000 ? (v / 10000).toFixed(2) + '兆円' : (Math.abs(v) >= 100 ? Math.round(v).toLocaleString('ja-JP') : v.toFixed(1)) + '億円');
+const pct = (a, b) => (b ? (a / b * 100).toFixed(1) : '—') + '%';
+const short = m => m.replace('一般競争契約', '一般競争').replace('指名競争契約', '指名競争').replace('(', '（').replace(')', '）');
+const M = Object.fromEntries(D.methods.map(x => [x.m, x]));
+const mt = x => x.s1 + x.s2 + x.su;
+
+// 冒頭
+const minDef = D.mins.find(x => x.min === '防衛省');
+document.getElementById('lead').textContent = `行政事業レビューの支出先には、支出先ごとに契約の行があり、契約方式・入札者数・落札率が書かれています。98,537 行の契約の行を、方式ごとに足しました。`;
+const tiles = [
+  [yen(D.proc_all), `競争・随意契約（調達）の合計。支払い全体 ${yen(D.grand)} の ${pct(D.proc_all, D.grand)}`],
+  [pct(D.comp1_proc, D.comp1_total), `会社への直接の支払い ${yen(D.comp1_total)} のうち、調達の割合`, true],
+  [pct(D.one.n, D.one.N), `一般競争 ${n0(D.one.N)} 件のうち、入札者が 1 者の件数（${n0(D.one.n)} 件）`, true],
+  [pct(minDef.proc, D.proc_s1), `国から直接の調達 ${yen(D.proc_s1)} のうち、防衛省の割合`],
+];
+document.getElementById('tiles').innerHTML = tiles.map(([b, s, hl]) => `<div class="tile"><b class="${hl ? 'hl' : ''}">${b}</b><span>${s}</span></div>`).join('');
+
+// 4 区分
+(() => {
+  const proc = D.methods.filter(x => x.proc).reduce((a, x) => a + mt(x), 0);
+  const G = [['補助金等交付', [M['補助金等交付']]], ['その他（「契約方式等」が「その他」）', [M['その他']]], ['交付・国庫債務負担行為等・空欄', [M['交付'], M['国庫債務負担行為等'], M['（空欄）']]], ['調達（競争・随意契約）', D.methods.filter(x => x.proc)]];
+  const rows = G.map(([n, xs]) => ({ n, v: xs.reduce((a, x) => a + mt(x), 0), c: xs.reduce((a, x) => a + x.n, 0) }));
+  document.getElementById('allText').textContent = `契約の行の合計は ${yen(D.grand)} です。「その他」${yen(rows[1].v)}（うち国から直接の ${yen(D.other_matome)} は、年金の受給者など、まとめて書かれた支出先）と「補助金等交付」${yen(rows[0].v)} で 9 割を超え、一般競争・指名競争・随意契約による調達は ${yen(proc)}（${pct(proc, D.grand)}）です。`;
+  const s = document.getElementById('groupChart'), W = 680, rowH = 30, T = 6, L = 230, R = 110, H = T + rows.length * rowH + 6;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '520px';
+  const max = Math.max(...rows.map(r => r.v)), x = v => (W - L - R) * v / max;
+  rows.forEach((r, i) => {
+    const y = T + i * rowH;
+    el('text', { x: L - 8, y: y + 19, 'text-anchor': 'end', class: 'lbl' }, s).textContent = r.n;
+    const b = el('rect', { x: L, y: y + 7, width: Math.max(2, x(r.v)), height: rowH - 12, rx: 3, fill: i === 3 ? 'var(--accent)' : 'var(--b3)' }, s);
+    el('text', { x: L + Math.max(2, x(r.v)) + 6, y: y + 19, class: 'val' }, s).textContent = yen(r.v);
+    hover(b, `<b>${esc(r.n)}</b><br>${yen(r.v)}（${pct(r.v, D.grand)}）<br>${n0(r.c)} 行`);
+  });
+})();
+
+// 調達の方式（段の積み上げ）
+(() => {
+  const rows = D.methods.filter(x => x.proc).sort((a, b) => mt(b) - mt(a));
+  document.getElementById('procText').textContent = `調達 ${yen(D.proc_all)} のうち、国が直接結んだ契約（1 段目）は ${yen(D.proc_s1)} です。額が一番大きいのは随意契約（その他）、件数が一番多いのは少額の随意契約（${n0(M['随意契約(少額)'].n)} 件、計 ${yen(mt(M['随意契約(少額)']))}）です。`;
+  const s = document.getElementById('procChart'), W = 680, rowH = 28, T = 6, L = 170, R = 140, H = T + rows.length * rowH + 6;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '520px';
+  const max = Math.max(...rows.map(mt)), x = v => (W - L - R) * v / max;
+  rows.forEach((r, i) => {
+    const y = T + i * rowH; let cx = L;
+    el('text', { x: L - 8, y: y + 18, 'text-anchor': 'end', class: 'lbl' }, s).textContent = short(r.m);
+    for (const [v, c] of [[r.s1, 'var(--b1)'], [r.s2, 'var(--b3)'], [r.su, 'var(--gray)']]) { if (v <= 0) continue; const w = x(v); el('rect', { x: cx, y: y + 7, width: Math.max(1, w - 1), height: rowH - 12, fill: c }, s); cx += w; }
+    el('text', { x: cx + 6, y: y + 18, class: 'val' }, s).textContent = `${yen(mt(r))} · ${n0(r.n)}件`;
+    hover(el('rect', { x: 0, y, width: W, height: rowH, fill: 'transparent' }, s), `<b>${esc(short(r.m))}</b><br>計 ${yen(mt(r))}（${n0(r.n)} 件）<br>1 段目 ${yen(r.s1)}（${n0(r.n1)} 件）<br>2 段目以降 ${yen(r.s2)}<br>たどれない ${yen(r.su)}`);
+  });
+  const nc = M['随意契約(その他)'];
+  document.getElementById('ncText').textContent = `随意契約（その他）は、1 段目で ${yen(nc.s1)}（国から直接の調達の ${pct(nc.s1, D.proc_s1)}）です。一般競争（2 つの合計）の 1 段目は ${yen(M['一般競争契約(最低価格)'].s1 + M['一般競争契約(総合評価)'].s1)}、公募による随意契約は ${yen(M['随意契約(公募)'].s1)} でした。`;
+  document.getElementById('compText').textContent = `会社への直接の支払い ${yen(D.comp1_total)}（3 回目の「お金の行き先」の値）のうち、調達は ${yen(D.comp1_proc)}（${pct(D.comp1_proc, D.comp1_total)}）です。残りは、国庫債務負担行為等（複数年度にまたがる契約とみられる。推測）・補助金等交付・その他でした。`;
+})();
+
+// 会社への直接の支払い
+(() => {
+  const rows = [...D.company].filter(r => r.v >= 1).sort((a, b) => b.v - a.v);
+  const s = document.getElementById('compChart'), W = 680, rowH = 24, T = 6, L = 170, R = 90, H = T + rows.length * rowH + 6;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '520px';
+  const max = Math.max(...rows.map(r => r.v)), x = v => (W - L - R) * v / max;
+  rows.forEach((r, i) => {
+    const y = T + i * rowH;
+    el('text', { x: L - 8, y: y + 16, 'text-anchor': 'end', class: 'lbl' }, s).textContent = short(r.m);
+    const b = el('rect', { x: L, y: y + 5, width: Math.max(2, x(r.v)), height: rowH - 10, rx: 2, fill: r.proc ? 'var(--b1)' : 'var(--b4)' }, s);
+    el('text', { x: L + Math.max(2, x(r.v)) + 6, y: y + 16, class: 'val' }, s).textContent = yen(r.v);
+    hover(b, `<b>会社・${esc(short(r.m))}</b><br>${yen(r.v)}（${n0(r.n)} 行）${r.proc ? '' : '<br>調達ではない方式'}`);
+  });
+})();
+
+// 入札者数
+(() => {
+  const colors = ['var(--b1)', 'var(--b2)', 'var(--b3)', 'var(--b4)', 'var(--b5)', 'var(--b5)', 'var(--b5)', 'var(--gray)'];
+  const labels = ['1 者', '2', '3', '4', '5', '6〜10', '11 以上', '未記入・0'];
+  document.getElementById('bidLegend').innerHTML = labels.map((l, i) => `<span><i style="background:${colors[i]}${i === 5 ? ';opacity:.75' : i === 6 ? ';opacity:.5' : ''}"></i>${l}</span>`).join('');
+  const g1 = D.bids.find(b => b.m === '一般競争契約(最低価格)'), g2 = D.bids.find(b => b.m === '一般競争契約(総合評価)');
+  document.getElementById('bidText').textContent = `一般競争 ${n0(D.one.N)} 件のうち、入札者が 1 者だったのは ${n0(D.one.n)} 件（${pct(D.one.n, D.one.N)}）、額では ${yen(D.one.a)}（${pct(D.one.a, D.one.A)}）です。最低価格方式は ${pct(g1.n[0], g1.n.reduce((a, b) => a + b, 0))}、総合評価方式は ${pct(g2.n[0], g2.n.reduce((a, b) => a + b, 0))} でした。全部の段の契約です。`;
+  const s = document.getElementById('bidChart'), W = 680, rowH = 28, T = 6, L = 170, R = 16, H = T + D.bids.length * rowH + 6;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '520px';
+  D.bids.forEach((r, i) => {
+    const y = T + i * rowH, tot = r.n.reduce((a, b) => a + b, 0); let cx = L;
+    el('text', { x: L - 8, y: y + 18, 'text-anchor': 'end', class: 'lbl' }, s).textContent = short(r.m);
+    r.n.forEach((v, j) => {
+      if (!v) return; const w = (W - L - R) * v / tot;
+      const b = el('rect', { x: cx, y: y + 6, width: Math.max(0.5, w - 0.6), height: rowH - 10, fill: colors[j] }, s); if (j === 5) b.setAttribute('opacity', '.75'); if (j === 6) b.setAttribute('opacity', '.5');
+      if (j === 0 && w > 44) el('text', { x: cx + 6, y: y + 18, class: 'val', style: 'fill:var(--surface)' }, s).textContent = pct(v, tot);
+      hover(b, `<b>${esc(short(r.m))}・${labels[j]}</b><br>${n0(v)} 件（${pct(v, tot)}）<br>${yen(r.a[j])}`);
+      cx += w;
+    });
+  });
+})();
+
+// 落札率
+(() => {
+  const R1 = D.rates.find(r => r.m === '一般競争契約(最低価格)'), R2 = D.rates.find(r => r.m === '一般競争契約(総合評価)');
+  const hi = (r) => r.n.slice(6, 9).reduce((a, b) => a + b, 0), rec = r => r.n.reduce((a, b) => a + b, 0);
+  document.getElementById('rateText').textContent = `落札率が書かれた一般競争の契約のうち、95% 以上 100% 以下は、最低価格方式で ${pct(hi(R1), rec(R1))}、総合評価方式で ${pct(hi(R2), rec(R2))} です。ちょうど 100% の契約も、それぞれ ${n0(R1.n[8])} 件・${n0(R2.n[8])} 件あります。`;
+  const nc = D.rates.find(r => r.m === '随意契約(その他)');
+  document.getElementById('rateNote').textContent = `落札率が空欄・0 の行は除いた（最低価格方式 ${n0(R1.blank)} 件、総合評価方式 ${n0(R2.blank)} 件）。随意契約（その他）では、落札率が書かれた行の ${pct(nc.n[8], rec(nc))} が 100% だった（グラフには入れていない）。100 超（最低価格 ${R1.n[9]} 件・総合評価 ${R2.n[9]} 件）は、記入の誤りか定義の違いか未確認。`;
+  const labels = ['〜50', '50〜', '60〜', '70〜', '80〜', '90〜', '95〜', '99〜', '100', '100超'];
+  const s = document.getElementById('rateChart'), W = 680, H = 230, L = 44, Rr = 10, T = 22, B = 30;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '520px';
+  const max = Math.max(...R1.n, ...R2.n), step = Math.pow(10, Math.floor(Math.log10(max))) / (max / Math.pow(10, Math.floor(Math.log10(max))) > 5 ? 1 : 2);
+  const top = Math.ceil(max / step) * step, y = v => T + (H - T - B) * (1 - v / top), cw = (W - L - Rr) / labels.length, bw = cw * 0.36;
+  const g = el('g', { class: 'grid' }, s);
+  for (let v = 0; v <= top; v += step) { el('line', { x1: L, x2: W - Rr, y1: y(v), y2: y(v) }, g); el('text', { x: L - 6, y: y(v) + 4, 'text-anchor': 'end' }, s).textContent = n0(v); }
+  el('text', { x: 4, y: 12 }, s).textContent = '件';
+  labels.forEach((lab, i) => {
+    const x0 = L + cw * i + cw / 2;
+    [[R1, 'var(--b1)', -1], [R2, 'var(--b3)', 0]].forEach(([r, c, off]) => {
+      const v = r.n[i]; const bx = x0 + off * bw; const b = el('rect', { x: bx + 1, y: y(v), width: bw - 2, height: Math.max(0, y(0) - y(v)), rx: 2, fill: c }, s);
+      hover(b, `<b>${esc(short(r.m))}</b><br>落札率 ${lab}%: ${n0(v)} 件`);
+    });
+    el('text', { x: x0, y: H - 10, 'text-anchor': 'middle' }, s).textContent = lab;
+  });
+})();
+
+// 府省
+(() => {
+  const rows = D.mins;
+  document.getElementById('minText').textContent = `国から直接の調達 ${yen(D.proc_s1)} のうち、防衛省が ${yen(minDef.proc)}（${pct(minDef.proc, D.proc_s1)}）です。随意契約（その他）の割合（額）が高いのは、${[...rows].sort((a, b) => b.ncs - a.ncs).slice(0, 4).map(r => r.min).join('・')}です。一般競争・指名競争で入札者が 1 者の割合（件数）は、府省庁によって ${Math.min(...rows.filter(r => r.ons !== null && r.cn >= 20).map(r => r.ons)).toFixed(0)}%〜${Math.max(...rows.filter(r => r.ons !== null && r.cn >= 20).map(r => r.ons)).toFixed(0)}% の幅があります（競争の件数 20 件以上の府省庁）。`;
+  const mx = Math.max(...rows.map(r => r.proc));
+  const bar = (p, c) => p === null ? '—' : `<span class="minibar" style="width:${Math.max(1, p * 0.6)}px;${c ? 'background:' + c : ''}"></span>${p.toFixed(1)}%`;
+  document.getElementById('minTbl').innerHTML = '<thead><tr><th class="l">府省庁</th><th>調達額</th><th>件数</th><th class="l">随意契約（その他）の割合（額）</th><th>競争の件数</th><th class="l">入札者 1 者の割合（件数）</th><th>同（額）</th></tr></thead><tbody>' +
+    rows.map(r => `<tr><td class="l">${esc(r.min)}</td><td>${yen(r.proc)}</td><td>${n0(r.pn)}</td><td class="l">${bar(r.ncs)}</td><td>${n0(r.cn)}</td><td class="l">${bar(r.ons, 'var(--b1)')}</td><td>${r.oas === null ? '—' : r.oas.toFixed(1) + '%'}</td></tr>`).join('') + '</tbody>';
+})();
+
+// 大きい契約
+(() => {
+  const b = D.big; const nc = b.find(x => x.m === '随意契約(その他)');
+  document.getElementById('bigText').textContent = `1 件 10 億円以上の調達の契約（全部の段）のうち、随意契約（その他）は ${n0(nc.n)} 件・${yen(nc.a)} です。入札者が 1 者か随意契約（その他）の 10 億円以上の契約には、理由の欄があります。記入があったのは、随意契約（その他）で ${n0(nc.tr)} 件（${pct(nc.tr, nc.t)}）でした。`;
+  document.getElementById('bigTbl').innerHTML = '<thead><tr><th class="l">方式</th><th>10 億円以上の件数</th><th>額</th><th>うち入札者 1 者・随意契約（その他）</th><th>理由の欄に記入</th></tr></thead><tbody>' +
+    b.map(r => `<tr><td class="l">${esc(short(r.m))}</td><td>${n0(r.n)}</td><td>${yen(r.a)}</td><td>${n0(r.t)}</td><td>${r.t ? n0(r.tr) + '（' + pct(r.tr, r.t) + '）' : '—'}</td></tr>`).join('') + '</tbody>';
+  const tbl = (xs, withRate) => '<thead><tr><th class="l">府省庁</th><th class="l">支出先</th><th class="l">契約の概要（先頭）</th><th>金額</th><th>入札者数</th>' + (withRate ? '<th>落札率</th>' : '') + '</tr></thead><tbody>' +
+    xs.map(r => `<tr><td class="l">${esc(r.min)}</td><td class="l">${esc(r.name)}</td><td class="l name">${esc(r.gaiyo)}</td><td>${yen(r.a)}</td><td>${r.bid || '—'}</td>${withRate ? `<td>${r.rate || '—'}</td>` : ''}</tr>`).join('') + '</tbody>';
+  document.getElementById('ncTbl').innerHTML = tbl(D.top_nc, false);
+  document.getElementById('oneTbl').innerHTML = tbl(D.top_one, true);
+})();
+
+document.getElementById('chk').textContent = `契約の行のある支出先 ${n0(D.check.sup)} のうち ${n0(D.check.exact)} が円まで一致。合わない 2 つの差は ${D.check.mismatch.map(m => n0(m.diff) + '円').join('・')}`;
+document.getElementById('othChk').textContent = `${n0(D.other_contract.n)} 行・${yen(D.other_contract.a)}。うち調達は ${n0(D.other_contract.pn)} 行・${yen(D.other_contract.pa)}`;
+</script>

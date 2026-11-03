@@ -1,0 +1,188 @@
+<title>防衛の契約</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Zen+Kaku+Gothic+New:wght@700;900&display=swap">
+<style>
+/* layout: 1 本の読み物の列（最大 760px）。装備の種類ごとに、契約の方式を積み上げた帯で読む */
+:root {
+  --bg: #f5f7f6; --surface: #ffffff; --ink: #17211d; --muted: #5a6661; --line: #d8dfdb; --tag: #ecf0ee;
+  --g1: #2a6fc9; --g2: #7fa8de; --g3: #1baf7a; --g4: #d2542a; --g5: #eda100; --g6: #8f6fe0; --g7: #a3aaa7; --accent: #d2542a;
+  --display: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", sans-serif;
+  --body: "BIZ UDPGothic", "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #111614; --surface: #19201d; --ink: #e6ece9; --muted: #9aa8a2; --line: #2b3531; --tag: #222b27;
+  --g1: #5b9cf0; --g2: #3d6aa6; --g3: #199e70; --g4: #f07a50; --g5: #c98500; --g6: #7d5fd0; --g7: #6b7582; --accent: #f07a50; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #111614; --surface: #19201d; --ink: #e6ece9; --muted: #9aa8a2; --line: #2b3531; --tag: #222b27;
+  --g1: #5b9cf0; --g2: #3d6aa6; --g3: #199e70; --g4: #f07a50; --g5: #c98500; --g6: #7d5fd0; --g7: #6b7582; --accent: #f07a50; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.8;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 32px 64px; }
+main { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 52px; }
+h1, h2 { font-family: var(--display); text-wrap: balance; line-height: 1.35; margin: 0; }
+h1 { font-size: clamp(28px, 6vw, 40px); font-weight: 900; }
+h2 { font-size: 21px; font-weight: 700; }
+p { margin: 0; max-width: 65ch; }
+section { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; color: var(--muted); }
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 640px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.kpi b { font-family: var(--display); font-size: 24px; font-variant-numeric: tabular-nums; }
+.kpi span { font-size: 12px; color: var(--muted); line-height: 1.5; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px; min-width: 0; }
+.scroll { overflow-x: auto; }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { fill: var(--muted); font-family: var(--body); font-size: 11px; }
+.chart .lbl { fill: var(--ink); font-size: 12px; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+.tag { display: inline-block; font-size: 11px; padding: 0 8px; border-radius: 999px; background: var(--tag); color: var(--muted); margin-right: 6px; white-space: nowrap; }
+.tag.src::before { content: "原資料"; } .tag.proc::before { content: "加工"; } .tag.ai::before { content: "AIの計算・解釈"; }
+.claims { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; }
+.claims li { display: grid; gap: 4px; }
+table { border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; min-width: 640px; width: 100%; }
+th, td { padding: 5px 8px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+th.l, td.l { text-align: left; white-space: normal; }
+thead th { color: var(--muted); font-weight: 400; }
+details { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+summary { cursor: pointer; font-weight: 700; }
+summary:focus-visible { outline: 2px solid var(--g1); outline-offset: 2px; }
+.notes { padding-left: 1.2em; margin: 0; display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--muted); }
+.questions { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.questions li { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+.small { font-size: 13px; color: var(--muted); }
+footer { font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+#tip { position: fixed; pointer-events: none; background: var(--ink); color: var(--bg); font-size: 12px; padding: 6px 8px; border-radius: 6px; line-height: 1.5; max-width: 280px; z-index: 5; }
+</style>
+
+<main>
+  <header style="display:flex;flex-direction:column;gap:12px">
+    <span class="eyebrow">行政事業レビュー（2025 年度版）· 防衛省の事業 · FY2024 の執行 · 国が直接払った契約</span>
+    <h1>防衛省の契約は、何を、どんな方式で買っているか</h1>
+    <p id="lead"></p>
+    <div class="kpis" id="kpis"></div>
+  </header>
+
+  <section>
+    <h2>種類ごとの、契約の方式</h2>
+    <p id="mixLead"></p>
+    <div class="legend" id="legend"></div>
+    <div class="panel scroll"><svg class="chart" id="mix" role="img" aria-label="装備・役務の種類ごとの、契約方式の内訳"></svg></div>
+    <p class="small">国が直接払った支出先（1 段目）の契約の行。種類は、契約概要の語で判定（当たらなければ事業名）。棒にカーソルを当てると内訳が出ます。</p>
+  </section>
+
+  <section>
+    <h2>入札者数と落札率</h2>
+    <ul class="claims" id="claims"></ul>
+    <div class="panel scroll"><table id="tbl"></table></div>
+  </section>
+
+  <section>
+    <h2>大きい契約（種類ごとの上位）</h2>
+    <details><summary>種類ごとの上位 3 件を開く（法人の名前のみ）</summary><div class="scroll" style="margin-top:12px"><table id="topTbl"></table></div></details>
+  </section>
+
+  <section>
+    <h2>予算書の目と、RS の事業はつながるか</h2>
+    <p id="mapLead"></p>
+    <div class="panel scroll"><table id="mapTbl"></table></div>
+    <p class="small">RS の 2-2（予算種別・歳出予算項目）の FY2024 の当初予算の行を、項・目の名前で足したもの。予算書は、FY2024 の防衛省所管の目の当初予算。</p>
+  </section>
+
+  <section>
+    <h2>この数字の作り方と、確かめられないこと</h2>
+    <ul class="notes">
+      <li><span class="tag src"></span>行政事業レビュー見える化サイトの CSV（2025 年度版）の 5-1 支出先・支出情報と 5-2 支出ブロックのつながり、2-2 予算種別・歳出予算項目。5-1 の中身は FY2024 の執行（3 回目「お金の行き先」で、2-1 の執行額と照合）。予算書は、財務省「予算書・決算書データベース」の FY2024 の目。</li>
+      <li><span class="tag proc"></span>府省庁が防衛省の事業の、国が直接払った支出先（1 段目）の契約の行（支出先名があり、契約概要・金額・契約方式等のどれかがある行）。1 段目の判定は 5-2 のつながりから。調達 = 一般競争・指名競争・随意契約の 9 方式。</li>
+      <li><span class="tag ai"></span>種類は、この探索で作った語の規則で判定しました（下の一覧。全角・半角はそろえてから当てる）。上から順に当て、最初に当たった種類にします。契約概要に当たらない <span id="fbN"></span> 件（<span id="fbA"></span>）は、事業名で判定しました。1 つの契約が複数の種類にまたがっても、1 つにしか入れていません。「修理・整備」は、契約概要に修理・整備・保守・点検などの語がある調達です。</li>
+      <li><span class="tag ai"></span>入札者数・落札率の空欄と 0 は、未記入として扱いました（4 回目と同じ）。防衛省の契約は、落札率の記入が少ないので、落札率の割合は記入のある行だけで出しています。随意契約で入札者数が 2 以上の行もあり、随意契約での入札者数の意味は未確認です。</li>
+      <li>「随意契約（その他）」が競争性のない随意契約にあたるか、「国庫債務負担行為等」が複数年度にわたる契約か、は列の名前からの推測です。RS の額は事業単位の集計で、予算書・決算書の数値と必ずしも一致しません。一者応札や随意契約について、良し悪しの評価はしていません。</li>
+      <li>語の規則: <span id="rules"></span></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>次に、聞かせてください</h2>
+    <ol class="questions">
+      <li>航空機の随意契約（公募）で入札者 1 者の大きな契約は、修理・整備でしょうか、購入でしょうか。契約概要の文を読み分けると、もう一段細かく分けられます。</li>
+      <li>国庫債務負担行為等（複数年度の契約と推測）は、FY2024 に払った分だけが載っています。何年度に契約したものかを、事業の単位で追いますか。</li>
+      <li>同じ会社が、装備の種類をまたいで、どれだけの契約を受けているかを、法人番号で束ねて見ますか。</li>
+    </ol>
+  </section>
+
+  <footer>
+    <span>出典：行政事業レビュー見える化サイト（https://rssystem.go.jp）、財務省「予算書・決算書データベース」を加工して作成。国や各府省が作成した加工していない情報ではありません。</span>
+    <span>nihon-no-yosan の AI Data Stories PoC（ループ 5 回目）。金額は円の値から計算し、表示で丸めています。</span>
+  </footer>
+</main>
+<div id="tip" hidden></div>
+
+<script>
+const D = __DATA__;
+const NS = 'http://www.w3.org/2000/svg';
+const el = (t, a = {}, p) => { const e = document.createElementNS(NS, t); for (const k in a) e.setAttribute(k, a[k]); if (p) p.appendChild(e); return e; };
+const tip = document.getElementById('tip');
+const hover = (n, h) => { n.addEventListener('pointermove', e => { tip.innerHTML = h; tip.hidden = false; tip.style.left = Math.min(e.clientX + 12, innerWidth - 290) + 'px'; tip.style.top = (e.clientY + 12) + 'px'; }); n.addEventListener('pointerleave', () => { tip.hidden = true; }); };
+const cho = v => (v / 10000).toFixed(2) + '兆円';
+const okuS = v => v >= 10000 ? cho(v) : v.toLocaleString('ja-JP') + '億円';
+const pct = (a, b) => b ? (a / b * 100).toFixed(1) + '%' : '—';
+const COLORS = ['var(--g1)', 'var(--g2)', 'var(--g3)', 'var(--g4)', 'var(--g5)', 'var(--g6)', 'var(--g7)'];
+const R = D.rows, sum = f => R.reduce((s, r) => s + f(r), 0);
+const all = sum(r => r.g.reduce((a, b) => a + b, 0)), kok = sum(r => r.g[5]), nc = sum(r => r.nc), compN = sum(r => r.compN), oneN = sum(r => r.oneN);
+
+document.getElementById('lead').textContent = `防衛省の事業で、国が直接払った契約は ${cho(all)}。そのうち一般競争・指名競争・随意契約による調達が ${cho(D.tot.proc)}（${D.tot.procN.toLocaleString()} 件）、国庫債務負担行為等が ${cho(kok)} です。装備・役務の種類ごとに、方式と入札の様子を分けました。`;
+document.getElementById('kpis').innerHTML = [
+  [cho(D.tot.proc), '調達（1 段目、9 方式）'], [cho(kok), '国庫債務負担行為等（1 段目）'],
+  [pct(nc, D.tot.proc), '調達のうち随意契約（その他）（額）'], [pct(oneN, compN), '一般・指名競争で入札者 1 者（件数）']].map(([b, s]) => `<div class="kpi"><b>${b}</b><span>${s}</span></div>`).join('');
+
+// 種類ごとの積み上げ
+(() => {
+  document.getElementById('legend').innerHTML = D.groups.map((g, i) => `<span><i style="background:${COLORS[i]}"></i>${g}</span>`).join('');
+  const rows = [...R].sort((a, b) => b.g.reduce((x, y) => x + y, 0) - a.g.reduce((x, y) => x + y, 0));
+  const top = rows.find(r => r.k !== 'その他'), tt = r => r.g.reduce((x, y) => x + y, 0), share = (k, j) => { const r = R.find(x => x.k === k); return pct(r.g[j], tt(r)); };
+  document.getElementById('mixLead').textContent = `種類が決まったもので一番大きいのは${top.k}で ${okuS(tt(top))}。航空機・艦船・誘導弾は、国庫債務負担行為等（航空機 ${share('航空機', 5)}、誘導弾 ${share('誘導弾・弾薬', 5)}）と随意契約が中心です。一般競争が多いのは燃料（${share('燃料', 0)}）と役務（${share('役務（輸送・警備・清掃など）', 0)}）でした。語で種類が決まらない「その他」は ${okuS(tt(R.find(r => r.k === 'その他')))} で、その 8 割近くは方式が「その他」の支払いです。`;
+  const s = document.getElementById('mix'), W = 680, rowH = 28, T = 6, L = 170, Rr = 70, H = T + rows.length * rowH + 22;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '560px';
+  const max = Math.max(...rows.map(r => r.g.reduce((a, b) => a + b, 0))), x = v => L + (W - L - Rr) * v / max;
+  const step = max > 8000 ? 2000 : max > 4000 ? 1000 : 500;
+  const g = el('g', {}, s);
+  for (let v = 0; v <= max; v += step) { el('line', { x1: x(v), x2: x(v), y1: T, y2: H - 20, stroke: 'var(--line)' }, g); el('text', { x: x(v), y: H - 6, 'text-anchor': 'middle' }, s).textContent = v === 0 ? '0' : (v / 10000).toFixed(1) + '兆'; }
+  rows.forEach((r, i) => {
+    const y = T + i * rowH; let acc = 0; const t = r.g.reduce((a, b) => a + b, 0);
+    el('text', { x: L - 8, y: y + 18, 'text-anchor': 'end', class: 'lbl' }, s).textContent = r.k.length > 12 ? r.k.slice(0, 12) + '…' : r.k;
+    r.g.forEach((v, j) => { if (v <= 0) return; el('rect', { x: x(acc) + (acc ? 1 : 0), y: y + 6, width: Math.max(1, x(acc + v) - x(acc) - (acc ? 1 : 0)), height: rowH - 10, fill: COLORS[j], rx: 2 }, s); acc += v; });
+    el('text', { x: x(t) + 6, y: y + 18 }, s).textContent = okuS(t);
+    const hit = el('rect', { x: 0, y, width: W, height: rowH, fill: 'transparent' }, s);
+    hover(hit, `<b>${r.k}</b><br>` + D.groups.map((g2, j) => `${g2}: ${okuS(r.g[j])}`).join('<br>'));
+  });
+})();
+
+// 入札者数と落札率
+(() => {
+  const big = ['航空機', '艦船', '誘導弾・弾薬', '通信・電子・システム'].map(k => R.find(r => r.k === k));
+  const fuel = R.find(r => r.k === '燃料');
+  const ncTop = big.map(r => `${r.k} ${pct(r.nc, r.proc)}`).join('、');
+  document.getElementById('claims').innerHTML = [
+    [`調達に占める随意契約（その他）の割合は、種類で大きく違う`, `${ncTop}。燃料は ${pct(fuel.nc, fuel.proc)} です。航空機は、調達 ${okuS(big[0].proc)} の半分以上が随意契約（その他）でした。`, 'src proc'],
+    [`一般・指名競争で入札者が 1 者だった契約は ${pct(oneN, compN)}（件数）`, `4 回目「契約の方式と入札」の防衛省の値（55.8%）と同じ数え方です。種類別は下の表。競争の件数が少ない種類（航空機 ${big[0].compN} 件など）は、割合が大きく振れます。`, 'src proc'],
+    [`落札率は、記入のある契約が少ない`, `一般・指名競争の契約のうち、落札率が記入されているのは ${pct(sum(r => r.rateFilled), compN)} です。記入のある契約で 95% 以上の割合は、種類別に表に載せました。`, 'src proc'],
+  ].map(([h, b, t]) => `<li><strong>${h}</strong><span>${b}</span><span>${t.split(' ').map(c => `<span class="tag ${c}"></span>`).join('')}</span></li>`).join('');
+  document.getElementById('tbl').innerHTML = '<thead><tr><th class="l">種類</th><th>調達</th><th>うち修理・整備</th><th>随意契約（その他）</th><th>競争の件数</th><th>入札者 1 者</th><th>落札率の記入</th><th>記入のうち 95% 以上</th></tr></thead><tbody>' +
+    R.map(r => `<tr><td class="l">${r.k}</td><td>${okuS(r.proc)}</td><td>${pct(r.svc, r.proc)}</td><td>${pct(r.nc, r.proc)}</td><td>${r.compN.toLocaleString()}</td><td>${pct(r.oneN, r.compN)}</td><td>${pct(r.rateFilled, r.compN)}</td><td>${pct(r.rateHi, r.rateFilled)}</td></tr>`).join('') +
+    `<tr><td class="l"><b>計</b></td><td><b>${okuS(D.tot.proc)}</b></td><td>${pct(sum(r => r.svc), D.tot.proc)}</td><td>${pct(nc, D.tot.proc)}</td><td>${compN.toLocaleString()}</td><td>${pct(oneN, compN)}</td><td>${pct(sum(r => r.rateFilled), compN)}</td><td>${pct(sum(r => r.rateHi), sum(r => r.rateFilled))}</td></tr></tbody>`;
+})();
+
+// 大きい契約
+document.getElementById('topTbl').innerHTML = '<thead><tr><th class="l">種類</th><th class="l">支出先</th><th class="l">契約概要</th><th>金額</th><th class="l">方式</th><th>入札者数</th></tr></thead><tbody>' +
+  R.flatMap(r => r.top.map((t, i) => `<tr><td class="l">${i === 0 ? r.k : ''}</td><td class="l">${t.name}</td><td class="l">${t.gaiyo}</td><td>${okuS(t.amt)}</td><td class="l">${t.m}</td><td>${t.bid}</td></tr>`)).join('') + '</tbody>';
+
+// 予算書の目と RS
+(() => {
+  document.getElementById('mapLead').textContent = `RS の防衛省の事業に書かれた FY2024 の当初予算は計 ${cho(D.rs22.amt)} で、予算書の防衛省所管の当初予算 ${cho(D.book)} の ${pct(D.rs22.amt, D.book)} です。目ごとに見ると、大きい目の多くは、RS の行を足した額が予算書の目の額とほぼ一致します（1 回目「防衛費の中身」の航空機修理費など）。`;
+  document.getElementById('mapTbl').innerHTML = '<thead><tr><th class="l">項</th><th class="l">目</th><th>RS の当初予算の行の計</th><th>予算書の目</th><th>RS ÷ 予算書</th></tr></thead><tbody>' +
+    D.pairs.map(p => `<tr><td class="l">${p.kou}</td><td class="l">${p.moku}</td><td>${okuS(p.rs)}</td><td>${p.book === null ? '—' : okuS(p.book)}</td><td>${p.book ? pct(p.rs, p.book) : '—'}</td></tr>`).join('') + '</tbody>';
+})();
+document.getElementById('fbN').textContent = D.fallback.n.toLocaleString();
+document.getElementById('fbA').textContent = okuS(D.fallback.amt);
+document.getElementById('rules').textContent = D.rules.map(([l, p]) => `${l}: ${p.split('|').slice(0, 8).join('・')}${p.split('|').length > 8 ? ' ほか' : ''}`).join(' / ') + ` / 修理・整備: ${D.service.split('|').join('・')}。どれにも当たらないものは「その他」。`;
+</script>

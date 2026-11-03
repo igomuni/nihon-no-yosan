@@ -1,0 +1,254 @@
+<title>特別会計の使い残し</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Zen+Kaku+Gothic+New:wght@700;900&display=swap">
+<style>
+/* layout: 1 本の読み物の列（最大 760px）。決算の 3 つの行き先: 支出 = 墨、繰越 = 藍、不用 = 朱 */
+:root {
+  --bg: #f6f7f9; --surface: #ffffff; --ink: #18202b; --muted: #5b6573; --line: #d9dee5;
+  --spent: #3b4656; --carry: #2a6fc9; --unused: #d2542a; --soft: #c9d0d9; --tag: #eef1f5;
+  --display: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", sans-serif;
+  --body: "BIZ UDPGothic", "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #12161c; --surface: #1a2029; --ink: #e8ecf1; --muted: #9aa5b3; --line: #2c3440;
+  --spent: #8e9bb0; --carry: #5b9cf0; --unused: #f07a50; --soft: #3a4452; --tag: #232b36; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #12161c; --surface: #1a2029; --ink: #e8ecf1; --muted: #9aa5b3; --line: #2c3440;
+  --spent: #8e9bb0; --carry: #5b9cf0; --unused: #f07a50; --soft: #3a4452; --tag: #232b36; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.8;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 32px 64px; }
+main { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 56px; }
+h1, h2 { font-family: var(--display); text-wrap: balance; line-height: 1.35; margin: 0; }
+h1 { font-size: clamp(28px, 6vw, 40px); font-weight: 900; }
+h2 { font-size: 22px; font-weight: 700; }
+p { margin: 0; max-width: 65ch; }
+section { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; color: var(--muted); }
+.num { font-variant-numeric: tabular-nums; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.kpi b { font-family: var(--display); font-size: 26px; font-variant-numeric: tabular-nums; }
+.kpi span { font-size: 12px; color: var(--muted); }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; min-width: 0; }
+.scroll { overflow-x: auto; }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { fill: var(--muted); font-family: var(--body); font-size: 11px; }
+.chart .lbl { fill: var(--ink); font-size: 12px; }
+.chart .val { font-variant-numeric: tabular-nums; }
+.grid line { stroke: var(--line); stroke-width: 1; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12px; color: var(--muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+.tag { display: inline-block; font-size: 11px; padding: 0 8px; border-radius: 999px; background: var(--tag); color: var(--muted); margin-right: 6px; white-space: nowrap; }
+.tag.src::before { content: "原資料"; } .tag.proc::before { content: "加工"; } .tag.ai::before { content: "AIの計算・解釈"; }
+.claims { display: flex; flex-direction: column; gap: 12px; padding: 0; margin: 0; list-style: none; }
+.claims li { display: grid; gap: 4px; }
+.multiples { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; }
+@media (max-width: 420px) { .multiples { grid-template-columns: 1fr; } }
+.mini { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.mini .name { font-size: 13px; font-weight: 700; }
+.mini .note { font-size: 12px; color: var(--muted); }
+table { border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
+th, td { padding: 4px 8px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+th.l, td.l { text-align: left; white-space: normal; min-width: 9em; }
+thead th { color: var(--muted); font-weight: 400; }
+td.u { color: var(--unused); } td.c { color: var(--carry); }
+details { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+summary { cursor: pointer; font-weight: 700; }
+summary:focus-visible { outline: 2px solid var(--carry); outline-offset: 2px; }
+.notes { padding-left: 1.2em; margin: 0; display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--muted); }
+.questions { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.questions li { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+footer { font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+#tip { position: fixed; pointer-events: none; background: var(--ink); color: var(--bg); font-size: 12px; padding: 6px 8px; border-radius: 6px; line-height: 1.5; max-width: 280px; z-index: 5; }
+</style>
+
+<main>
+  <header style="display:flex;flex-direction:column;gap:12px">
+    <span class="eyebrow">特別会計・決算 FY2017〜FY2024（8 年度）</span>
+    <h1>特別会計は、使えるお金のどれだけを使い残したか</h1>
+    <p>決算では、その年度に使えるお金（歳出予算現額）が、支出・翌年度への繰越・不用の 3 つに分かれます。特別会計 13 会計の 8 年分を、一般会計と並べました。</p>
+    <div class="kpis" id="kpis"></div>
+  </header>
+
+  <section>
+    <h2>不用は一般会計の 4 倍、繰越は 3 分の 1</h2>
+    <p id="leadCompare"></p>
+    <div class="panel scroll"><svg class="chart" id="shareChart" role="img" aria-label="会計ごとの、使えるお金の行き先の割合（8 年計）"></svg></div>
+    <div class="legend"><span><i style="background:var(--spent)"></i>支出</span><span><i style="background:var(--carry)"></i>翌年度へ繰越</span><span><i style="background:var(--unused)"></i>不用</span></div>
+    <p style="font-size:13px;color:var(--muted)">棒は 8 年の合計の割合。右の数字は、不用額（兆円）と、当初予算に対する支出の割合。不用率の高い順。</p>
+  </section>
+
+  <section>
+    <h2>不用の 9 割は、5 つの会計</h2>
+    <p id="leadUnused"></p>
+    <div class="panel scroll"><svg class="chart" id="unChart" role="img" aria-label="会計ごとの不用額（8 年計）"></svg></div>
+    <ul class="claims">
+      <li><strong>繰り越さずに、不用にする</strong><span>年金・財政投融資・外国為替資金・地震再保険は、8 年の翌年度繰越がほぼ 0 です（年金は 0.32兆円、うち子ども・子育て支援勘定 0.32兆円）。使わなかった分は、翌年度に回さず不用になっています。3 回目の「財政投融資の山」と同じ形です。</span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+      <li><strong>繰り越して使う会計もある</strong><span>東日本大震災復興は繰越率 19.0%、自動車安全は 14.8% です。どちらも公共事業（復旧・空港整備）の項が繰越の中心で、一般会計の公共事業と同じ形です。</span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>大きな不用の 4 つの目</h2>
+    <p>どの会計も、特定の目に不用が集まっています。線は使えるお金（歳出予算現額）、棒は支出。棒と線の間が、繰越と不用です。</p>
+    <div class="multiples" id="multiples"></div>
+    <ul class="claims">
+      <li><strong>原子力損害賠償支援勘定の「国債整理基金特別会計へ繰入」</strong><span>8 年で使えるお金 94.9兆円のうち、支出 65.1兆円、不用 29.9兆円（31.5%）。使えるお金は 12.6兆円（FY2017）から 10.9兆円（FY2023）に毎年減り、支出は 7.2兆円から 8.6兆円に毎年増えています。この繰入の中身（何の国債の償還か）は、目の名前からは分かりません。</span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+      <li><strong>基礎年金給付費の不用が、毎年増えている</strong><span>不用は 0.87兆円（FY2017）から 4.56兆円（FY2024）に増え、FY2024 は使えるお金 30.0兆円の 15.2% です。使えるお金は 23.3兆円 → 30.0兆円、支出は 22.4兆円 → 25.5兆円です。見積もりと実績の差が広がっている理由は、このデータにありません。</span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+      <li><strong>国債の償還は、毎年 3.07兆円ずつ繰り越す</strong><span>国債整理基金の債務償還費の翌年度繰越は、8 年とも 3.05〜3.09兆円です（2 回目の「国債費の中身」と同じ値）。不用は年 3.7〜6.8兆円で、使えるお金の 1.6〜3.7% です。</span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+      <li><strong>地震再保険と外国為替資金は、使わないことが多い</strong><span>地震再保険の再保険金は、8 年で使えるお金 1.20兆円のうち支出 0.25兆円です。FY2021（0.13兆円）と FY2022（0.07兆円）以外は、年 0.01兆円以下でした。外国為替資金は、国債整理基金への繰入（毎年 0.43〜0.51兆円）の支出が FY2023 まで 0 円、予備費（毎年 0.30兆円）は全額が不用です。支払いが起きたときに備えて置いておく予算だと推測しますが、データでは確かめられません。</span><span><span class="tag src"></span><span class="tag ai"></span></span></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>不用・繰越が大きい項</h2>
+    <details open>
+      <summary>不用額の上位 15 項（8 年計、兆円）</summary>
+      <div class="scroll" style="margin-top:12px"><table id="unTbl"></table></div>
+    </details>
+    <details>
+      <summary>翌年度繰越の上位 10 項（年度ごと、兆円）</summary>
+      <div class="scroll" style="margin-top:12px"><table id="caTbl"></table></div>
+    </details>
+  </section>
+
+  <section>
+    <h2>会計ごとの全数値（兆円）</h2>
+    <details>
+      <summary>13 会計と一般会計の 8 年計、年度ごとの不用</summary>
+      <div class="scroll" style="margin-top:12px"><table id="accTbl"></table></div>
+    </details>
+  </section>
+
+  <section>
+    <h2>この数字の作り方と、確かめられないこと</h2>
+    <ul class="notes">
+      <li><span class="tag src"></span>財務省「予算書・決算書データベース」の決算書（特別会計の項・目の表、FY2017〜FY2024）と、予算書（当初予算・補正予算）。</li>
+      <li><span class="tag proc"></span>nihon-no-yosan が表を抽出・構造化したもの（data/dataset の kou-special-kessan.csv・moku-special-kessan.csv など）。決算の共管別の行は、同じ項に足しました。</li>
+      <li><span class="tag ai"></span>会計・勘定・項ごとの合計、割合、上位の並べ替え、文章の解釈は、この探索で計算したものです。政府の公表値とは照合していません。</li>
+      <li>検算: 全 2,249 項・年度で、決算の 2 つの恒等式（現額 = 歳出予算額 + 前年度繰越 + 予備費 + 予算総則の増額 + 流用 + 移替、現額 = 支出 + 翌年度繰越 + 不用）が円まで成り立ちました。会計ごとの補正後（予算書）と決算の歳出予算額は、8 年・全会計で一致しました（FY2022 の機構名の変更は、同じ項コードで合わせました）。翌年度繰越と次の年度の前年度繰越は、91 組すべて一致しました。年度ごとの合計は、画面用の目のデータから足した値とも一致しました。</li>
+      <li>特別会計の間・一般会計との繰入（二重に数えるお金）を含んだままの合計です。割合（不用率・繰越率）は会計ごとに見てください。会計を足した額は、国の支出の規模ではありません。</li>
+      <li>不用や繰越の理由、不用になったお金の行き先（積立金・剰余金など）は、このデータにありません。良し悪しの評価はしていません。</li>
+      <li>FY2025 以降の決算と、FY2025 にできた子ども・子育て支援特別会計は、まだ決算がありません。</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>次に、聞かせてください</h2>
+    <ol class="questions">
+      <li>基礎年金給付費の不用（FY2024 は 4.56兆円）は、予算の見積もりの何が実績とずれているのか。当初予算と補正、受給者に払う目の内訳まで降りますか。</li>
+      <li>原子力損害賠償支援勘定の繰入（毎年 7〜9兆円の支出）は、一般会計・国債整理基金の側でどう見えるか、追いますか。</li>
+      <li>不用になったお金は、翌年度の特別会計の歳入（剰余金）に戻るはずですが、歳入のデータはまだありません。どのデータがあれば確かめられると思いますか。</li>
+    </ol>
+  </section>
+
+  <footer>
+    <span>出典：財務省「予算書・決算書データベース」を加工して作成。国や各府省が作成した加工していない情報ではありません。</span>
+    <span>nihon-no-yosan の AI Data Stories PoC（ループ 4 回目）。金額の単位は兆円（円の値から計算し、表示で丸め）。</span>
+  </footer>
+</main>
+<div id="tip" hidden></div>
+
+<script>
+const D = {"Y": [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024], "acc": [{"n": "国債整理基金", "init": 17287952, "rev": 17031680, "cur": 17276883, "sp": 16553159, "ca": 245350, "un": 478374, "y": {"2017": [1966416, 1991560, 1881339, 30705, 79516], "2018": [1912207, 1931053, 1830816, 30658, 69578], "2019": [1907154, 1923014, 1838779, 30666, 53569], "2020": [1930242, 1949261, 1859213, 30520, 59529], "2021": [2467893, 2452636, 2366232, 30707, 55697], "2022": [2457915, 2402447, 2325560, 30579, 46308], "2023": [2394737, 2390630, 2314131, 30656, 45842], "2024": [2251390, 2236283, 2137088, 30858, 68336]}}, {"n": "年金", "init": 7660721, "rev": 7666698, "cur": 7668987, "sp": 7303179, "ca": 3155, "un": 362654, "y": {"2017": [894885, 894894, 874129, 5, 20760], "2018": [918360, 918759, 894643, 514, 23602], "2019": [933308, 933985, 909189, 39, 24758], "2020": [952688, 952966, 918044, 72, 34850], "2021": [965123, 966170, 927247, 1113, 37809], "2022": [969115, 971564, 929288, 117, 42159], "2023": [995058, 996089, 914022, 417, 81650], "2024": [1032184, 1034560, 936617, 877, 97067]}}, {"n": "交付税及び譲与税配付金", "init": 4096913, "rev": 4195510, "cur": 4242429, "sp": 4159870, "ca": 48837, "un": 33722, "y": {"2017": [520817, 524247, 517801, 2511, 3934], "2018": [517114, 525780, 515962, 5682, 4135], "2019": [511404, 518883, 514883, 588, 3412], "2020": [515872, 513839, 508293, 4, 5542], "2021": [518047, 557288, 536320, 12928, 8041], "2022": [499551, 533322, 517783, 14736, 803], "2023": [495436, 522506, 516618, 5274, 615], "2024": [518671, 546564, 532210, 7114, 7240]}}, {"n": "財政投融資", "init": 2802283, "rev": 2531232, "cur": 2534154, "sp": 2386047, "ca": 1096, "un": 147011, "y": {"2017": [278248, 280477, 274093, 42, 6342], "2018": [269388, 269430, 251755, 132, 17543], "2019": [275855, 280563, 278728, 105, 1730], "2020": [250823, 538245, 519671, 42, 18532], "2021": [726240, 405495, 353459, 19, 52017], "2022": [485941, 360293, 333783, 223, 26287], "2023": [249374, 162939, 140234, 129, 22576], "2024": [266414, 236711, 234324, 403, 1984]}}, {"n": "エネルギー対策", "init": 1170043, "rev": 1203017, "cur": 1222965, "sp": 873721, "ca": 27224, "un": 322020, "y": {"2017": [153253, 154395, 97420, 851, 56125], "2018": [148713, 150176, 101576, 1063, 47537], "2019": [145841, 147605, 103766, 1161, 42678], "2020": [143382, 145438, 106180, 1614, 37644], "2021": [140541, 145924, 109143, 2929, 33852], "2022": [137760, 143464, 110212, 3458, 29795], "2023": [140594, 157425, 122227, 8097, 27100], "2024": [159959, 178537, 123198, 8051, 47288]}}, {"n": "労働保険", "init": 581790, "rev": 633279, "cur": 647240, "sp": 589413, "ca": 12984, "un": 44843, "y": {"2017": [60951, 60990, 56556, 31, 4403], "2018": [61377, 61409, 57354, 21, 4033], "2019": [64186, 64209, 59276, 28, 4905], "2020": [67611, 105611, 95191, 6845, 3574], "2021": [76094, 95452, 86103, 5079, 4269], "2022": [78583, 85421, 75355, 881, 9185], "2023": [86565, 87451, 77270, 36, 10145], "2024": [86423, 86698, 82306, 63, 4328]}}, {"n": "東日本大震災復興", "init": 123939, "rev": 114289, "cur": 154479, "sp": 108631, "ca": 29390, "un": 16458, "y": {"2017": [26896, 33083, 21875, 7342, 3866], "2018": [23593, 27556, 18680, 6139, 2737], "2019": [21348, 27715, 16771, 8127, 2818], "2020": [20739, 25001, 18544, 4318, 2140], "2021": [9318, 14261, 11124, 1647, 1490], "2022": [8413, 10869, 8945, 632, 1292], "2023": [7301, 8617, 7042, 560, 1015], "2024": [6331, 7377, 5650, 626, 1101]}}, {"n": "食料安定供給", "init": 106911, "rev": 105447, "cur": 106371, "sp": 74851, "ca": 891, "un": 30629, "y": {"2017": [12551, 12715, 8419, 108, 4188], "2018": [12737, 12844, 8138, 51, 4655], "2019": [12938, 12987, 8507, 173, 4307], "2020": [12676, 12847, 8210, 64, 4573], "2021": [12164, 12227, 9135, 84, 3008], "2022": [13406, 13226, 11505, 121, 1599], "2023": [15280, 15281, 10927, 159, 4196], "2024": [15158, 14245, 10011, 132, 4102]}}, {"n": "外国為替資金", "init": 98801, "rev": 98777, "cur": 98777, "sp": 25538, "ca": 0, "un": 73239, "y": {"2017": [9145, 9145, 704, 0, 8441], "2018": [9710, 9710, 852, 0, 8858], "2019": [10468, 10468, 1596, 0, 8872], "2020": [9845, 9821, 2339, 0, 7482], "2021": [10793, 10793, 1771, 0, 9022], "2022": [11475, 11475, 1138, 0, 10337], "2023": [24193, 24193, 13613, 0, 10581], "2024": [13172, 13172, 3526, 0, 9647]}}, {"n": "自動車安全", "init": 39451, "rev": 37707, "cur": 43870, "sp": 34859, "ca": 6498, "un": 2513, "y": {"2017": [4424, 5209, 4307, 702, 200], "2018": [4837, 5646, 4510, 930, 206], "2019": [4837, 5785, 4996, 593, 197], "2020": [7179, 5735, 4338, 803, 593], "2021": [4528, 5339, 3949, 837, 553], "2022": [4478, 5328, 4264, 780, 284], "2023": [4564, 5370, 4354, 771, 245], "2024": [4604, 5458, 4141, 1081, 235]}}, {"n": "国有林野事業債務管理", "init": 28165, "rev": 28076, "cur": 28076, "sp": 28072, "ca": 0, "un": 4, "y": {"2017": [3438, 3424, 3423, 0, 1], "2018": [3502, 3489, 3489, 0, 0], "2019": [3576, 3565, 3564, 0, 1], "2020": [3646, 3634, 3634, 0, 0], "2021": [3616, 3604, 3603, 0, 1], "2022": [3546, 3535, 3534, 0, 1], "2023": [3440, 3430, 3430, 0, 1], "2024": [3401, 3395, 3395, 0, 0]}}, {"n": "特許", "init": 12393, "rev": 12393, "cur": 12558, "sp": 11582, "ca": 158, "un": 818, "y": {"2017": [1472, 1482, 1375, 24, 83], "2018": [1552, 1576, 1454, 24, 98], "2019": [1641, 1666, 1569, 0, 97], "2020": [1649, 1650, 1493, 20, 137], "2021": [1562, 1582, 1438, 27, 117], "2022": [1541, 1568, 1426, 41, 101], "2023": [1454, 1495, 1385, 19, 91], "2024": [1521, 1540, 1442, 3, 95]}}, {"n": "地震再保険", "init": 11313, "rev": 11313, "cur": 12005, "sp": 2475, "ca": 0, "un": 9530, "y": {"2017": [1795, 1795, 59, 0, 1736], "2018": [1869, 1869, 131, 0, 1738], "2019": [2012, 2012, 72, 0, 1939], "2020": [1239, 1239, 40, 0, 1199], "2021": [1074, 1767, 1290, 0, 476], "2022": [1100, 1100, 746, 0, 355], "2023": [1090, 1090, 93, 0, 997], "2024": [1133, 1133, 44, 0, 1090]}}], "gen": {"cur": 11196357, "sp": 9736920, "ca": 1084188, "un": 375248}, "topUn": [{"a": "国債整理基金", "s": "", "n": "国債整理支出", "cur": 16969926, "un": 475301, "yrs": 8}, {"a": "エネルギー対策", "s": "原子力損害賠償支援勘定", "n": "国債整理基金特別会計へ繰入", "cur": 949389, "un": 298814, "yrs": 8}, {"a": "年金", "s": "基礎年金勘定", "n": "基礎年金給付費", "cur": 2097609, "un": 188423, "yrs": 8}, {"a": "財政投融資", "s": "財政融資資金勘定", "n": "財政融資資金へ繰入", "cur": 1232500, "un": 122307, "yrs": 8}, {"a": "年金", "s": "厚生年金勘定", "n": "保険給付費", "cur": 1971647, "un": 62534, "yrs": 8}, {"a": "年金", "s": "厚生年金勘定", "n": "基礎年金給付費等基礎年金勘定へ繰入", "cur": 1558276, "un": 58268, "yrs": 8}, {"a": "外国為替資金", "s": "", "n": "国債整理基金特別会計へ繰入", "cur": 38913, "un": 37747, "yrs": 8}, {"a": "交付税及び譲与税配付金", "s": "", "n": "国債整理基金特別会計へ繰入", "cur": 2504309, "un": 29469, "yrs": 8}, {"a": "外国為替資金", "s": "", "n": "予備費", "cur": 24000, "un": 24000, "yrs": 8}, {"a": "食料安定供給", "s": "食糧管理勘定", "n": "食糧買入費", "cur": 42979, "un": 13815, "yrs": 8}, {"a": "労働保険", "s": "雇用勘定", "n": "地域雇用機会創出等対策費", "cur": 93446, "un": 13434, "yrs": 8}, {"a": "財政投融資", "s": "投資勘定", "n": "産業投資支出", "cur": 37898, "un": 12093, "yrs": 8}, {"a": "外国為替資金", "s": "", "n": "諸支出金", "cur": 23628, "un": 11450, "yrs": 8}, {"a": "労働保険", "s": "雇用勘定", "n": "失業等給付費", "cur": 120571, "un": 10662, "yrs": 8}, {"a": "地震再保険", "s": "", "n": "再保険費", "cur": 11998, "un": 9529, "yrs": 8}], "topCa": [{"a": "国債整理基金", "s": "", "n": "国債整理支出", "cur": 16969926, "ca": 245350, "by": [30705, 30658, 30666, 30520, 30707, 30579, 30656, 30858]}, {"a": "交付税及び譲与税配付金", "s": "", "n": "地方交付税交付金", "cur": 1490055, "ca": 48837, "by": [2511, 5682, 588, 4, 12928, 14736, 5274, 7114]}, {"a": "エネルギー対策", "s": "エネルギー需給勘定", "n": "エネルギー需給構造高度化対策費", "cur": 47417, "ca": 13390, "by": [503, 705, 665, 1190, 2284, 2724, 2821, 2498]}, {"a": "労働保険", "s": "雇用勘定", "n": "地域雇用機会創出等対策費", "cur": 93446, "ca": 12307, "by": [0, 0, 0, 6688, 4960, 659, 0, 0]}, {"a": "東日本大震災復興", "s": "", "n": "東日本大震災復興事業費", "cur": 32026, "ca": 10186, "by": [103, 47, 16, 33, 10, 0, 18, 14]}, {"a": "エネルギー対策", "s": "エネルギー需給勘定", "n": "脱炭素成長型経済構造移行推進対策費", "cur": 31568, "ca": 9408, "by": [null, null, null, null, null, null, 4666, 4742]}, {"a": "東日本大震災復興", "s": "", "n": "東日本大震災災害復旧等事業費", "cur": 19216, "ca": 7214, "by": [1487, 991, 922, 637, 204, 19, 5, 6]}, {"a": "自動車安全", "s": "空港整備勘定", "n": "空港整備事業費", "cur": 14782, "ca": 4656, "by": [490, 637, 399, 563, 595, 562, 560, 850]}, {"a": "東日本大震災復興", "s": "", "n": "環境保全復興政策費", "cur": 23728, "ca": 4013, "by": [355, 0, 0, 0, 0, 0, 0, 0]}, {"a": "東日本大震災復興", "s": "", "n": "環境保全復興事業費", "cur": 20270, "ca": 3576, "by": [25, 0, 0, 0, 0, 0, 0, 0]}], "series": [{"n": "債務償還費（国債整理基金）", "cur": [1847183, 1803087, 1797327, 1829754, 2323080, 2274102, 2252521, 2093169], "sp": [1748309, 1714288, 1722809, 1750075, 2245355, 2206142, 2184403, 2004165], "ca": [30688, 30641, 30649, 30503, 30690, 30562, 30639, 30841], "un": [68186, 58158, 43869, 49176, 47036, 37398, 37480, 58163]}, {"n": "国債整理基金への繰入（エネルギー対策・原子力損害賠償支援勘定）", "cur": [126019, 122968, 120197, 117620, 115047, 112168, 109378, 125991], "sp": [72229, 77025, 79082, 81987, 83282, 85044, 85793, 86132], "ca": [0, 0, 0, 0, 0, 0, 0, 0], "un": [53790, 45944, 41115, 35633, 31765, 27124, 23585, 39859]}, {"n": "基礎年金給付費（年金・基礎年金勘定）", "cur": [232802, 241297, 247466, 256479, 264369, 271093, 283726, 300377], "sp": [224089, 229047, 233352, 238053, 240926, 241968, 246945, 254805], "ca": [0, 0, 0, 0, 0, 0, 0, 0], "un": [8713, 12250, 14113, 18426, 23443, 29125, 36781, 45573]}, {"n": "再保険金（地震再保険）", "cur": [1795, 1868, 2011, 1238, 1766, 1099, 1089, 1132], "sp": [59, 130, 72, 39, 1289, 745, 92, 43], "ca": [0, 0, 0, 0, 0, 0, 0, 0], "un": [1736, 1738, 1939, 1199, 476, 354, 997, 1089]}]};
+const Y = D.Y;
+const tri = v => v / 10000; // 億円 → 兆円
+const f = (v, d = 2) => (v === null || v === undefined) ? '—' : tri(v).toFixed(d);
+const pct = (a, b) => b ? (a / b * 100).toFixed(1) + '%' : '—';
+const NS = 'http://www.w3.org/2000/svg';
+const el = (tag, attrs = {}, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+const tip = document.getElementById('tip');
+function hover(node, html) {
+  node.addEventListener('pointermove', e => { tip.innerHTML = html; tip.hidden = false; tip.style.left = Math.min(e.clientX + 12, innerWidth - 290) + 'px'; tip.style.top = (e.clientY + 12) + 'px'; });
+  node.addEventListener('pointerleave', () => { tip.hidden = true; });
+}
+const sum = (k) => D.acc.reduce((s, a) => s + (a[k] ?? 0), 0);
+const S = { cur: sum('cur'), sp: sum('sp'), ca: sum('ca'), un: sum('un'), init: sum('init') };
+const G = D.gen;
+
+// KPI
+document.getElementById('kpis').innerHTML = [
+  [f(S.cur, 1) + '兆円', '特別会計の使えるお金（8 年計）'],
+  [f(S.un, 1) + '兆円', `不用（${pct(S.un, S.cur)}）。一般会計は ${f(G.un, 1)}兆円（${pct(G.un, G.cur)}）`],
+  [f(S.ca, 1) + '兆円', `翌年度繰越（${pct(S.ca, S.cur)}）。一般会計は ${f(G.ca, 1)}兆円（${pct(G.ca, G.cur)}）`],
+].map(([b, s]) => `<div class="kpi"><b>${b}</b><span>${s}</span></div>`).join('');
+document.getElementById('leadCompare').textContent = `8 年で、特別会計の不用は ${f(S.un, 1)}兆円で、一般会計（${f(G.un, 1)}兆円）の ${(S.un / G.un).toFixed(1)} 倍です。翌年度繰越は ${f(S.ca, 1)}兆円で、一般会計（${f(G.ca, 1)}兆円）の ${(S.ca / G.ca * 100).toFixed(0)}% です。不用の割合は会計で大きく違い、地震再保険・外国為替資金では使えるお金の 7〜8 割が不用でした。`;
+
+// 割合の帯（不用率の高い順）+ 一般会計
+(() => {
+  const rows = [...D.acc].sort((a, b) => b.un / b.cur - a.un / a.cur);
+  rows.push({ n: '（参考）一般会計', cur: G.cur, sp: G.sp, ca: G.ca, un: G.un, init: null, gen: true });
+  const s = document.getElementById('shareChart'), W = 680, rowH = 26, T = 22, L = 160, R = 150, H = T + rows.length * rowH + 6;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '560px';
+  const bw = W - L - R, x = p => L + bw * p;
+  el('text', { x: W - R + 10, y: 14 }, s).textContent = '不用額';
+  el('text', { x: W - 8, y: 14, 'text-anchor': 'end' }, s).textContent = '支出/当初';
+  rows.forEach((r, i) => {
+    const y = T + i * rowH; let p = 0;
+    el('text', { x: L - 8, y: y + 17, 'text-anchor': 'end', class: 'lbl' }, s).textContent = r.n.length > 11 ? r.n.slice(0, 11) + '…' : r.n;
+    for (const [k, c] of [['sp', 'var(--spent)'], ['ca', 'var(--carry)'], ['un', 'var(--unused)']]) {
+      const w = r[k] / r.cur; if (w <= 0) continue;
+      el('rect', { x: x(p) + (p ? 1 : 0), y: y + 6, width: Math.max(0.5, bw * w - (p ? 1 : 0)), height: rowH - 10, fill: c, rx: 2 }, s); p += w;
+    }
+    const ur = r.un / r.cur;
+    el('text', { x: W - R + 10, y: y + 17, class: 'val lbl' }, s).textContent = `${f(r.un)}（${(ur * 100).toFixed(1)}%）`;
+    el('text', { x: W - 8, y: y + 17, 'text-anchor': 'end', class: 'val' }, s).textContent = r.init ? pct(r.sp, r.init) : '—';
+    const hit = el('rect', { x: 0, y, width: W, height: rowH, fill: 'transparent' }, s);
+    hover(hit, `<b>${r.n}</b>（8 年計）<br>使えるお金 ${f(r.cur)}兆円${r.init ? `<br>当初 ${f(r.init)}兆円` : ''}<br>支出 ${f(r.sp)}兆円（${pct(r.sp, r.cur)}）<br>翌年度繰越 ${f(r.ca)}兆円（${pct(r.ca, r.cur)}）<br>不用 ${f(r.un)}兆円（${pct(r.un, r.cur)}）`);
+  });
+})();
+
+// 不用額の棒
+(() => {
+  const rows = [...D.acc].sort((a, b) => b.un - a.un).filter(r => r.un >= 500);
+  const top5 = rows.slice(0, 5).reduce((s, r) => s + r.un, 0);
+  document.getElementById('leadUnused').textContent = `不用 ${f(S.un, 1)}兆円のうち ${f(top5, 1)}兆円（${pct(top5, S.un)}）が、${rows.slice(0, 5).map(r => r.n).join('・')}の 5 会計です。規模の大きい国債整理基金・年金は、不用の割合は小さくても額が大きくなります。`;
+  const s = document.getElementById('unChart'), W = 680, rowH = 26, T = 6, L = 160, R = 110, H = T + rows.length * rowH + 22;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '520px';
+  const max = Math.max(...rows.map(r => r.un)), x = v => L + (W - L - R) * v / max;
+  const g = el('g', { class: 'grid' }, s), step = max > 300000 ? 100000 : 50000;
+  for (let v = 0; v <= max; v += step) { el('line', { x1: x(v), x2: x(v), y1: T, y2: H - 18 }, g); el('text', { x: x(v), y: H - 4, 'text-anchor': 'middle' }, s).textContent = `${tri(v)}兆`; }
+  rows.forEach((r, i) => {
+    const y = T + i * rowH;
+    el('text', { x: L - 8, y: y + 17, 'text-anchor': 'end', class: 'lbl' }, s).textContent = r.n.length > 11 ? r.n.slice(0, 11) + '…' : r.n;
+    el('rect', { x: L, y: y + 6, width: Math.max(2, x(r.un) - L), height: rowH - 10, rx: 3, fill: 'var(--unused)' }, s);
+    el('text', { x: x(r.un) + 6, y: y + 17, class: 'val' }, s).textContent = `${f(r.un)}兆円`;
+    hover(el('rect', { x: 0, y, width: W, height: rowH, fill: 'transparent' }, s), `<b>${r.n}</b><br>` + Y.map(yy => `FY${yy}: 不用 ${f(r.y[yy][4])}兆円`).join('<br>'));
+  });
+})();
+
+// 4 つの目の小さなグラフ（現額 = 線、支出 = 棒）
+(() => {
+  const host = document.getElementById('multiples');
+  for (const r of D.series) {
+    const box = document.createElement('div'); box.className = 'mini';
+    const tu = r.un.reduce((a, b) => a + b, 0), tc = r.cur.reduce((a, b) => a + b, 0);
+    box.innerHTML = `<span class="name">${r.n}</span><span class="note num">8 年: 使えるお金 ${f(tc)}兆円、不用 ${f(tu)}兆円（${pct(tu, tc)}）</span>`;
+    const W = 320, H = 140, L = 34, R = 8, T = 16, B = 18;
+    const max = Math.max(...r.cur, ...r.sp) * 1.05, x = i => L + (W - L - R) * (i + 0.5) / Y.length, y = v => T + (H - T - B) * (1 - v / max), bw = (W - L - R) / Y.length * 0.55;
+    const s = el('svg', { viewBox: `0 0 ${W} ${H}`, class: 'chart', role: 'img', 'aria-label': r.n });
+    const g = el('g', { class: 'grid' }, s);
+    const nice = [0.5, 1, 2, 5, 10, 20, 50, 100].map(v => v * 10000).find(v => max / v <= 4) || 1e6;
+    for (let v = 0; v <= max; v += nice) { el('line', { x1: L, x2: W - R, y1: y(v), y2: y(v) }, g); el('text', { x: L - 4, y: y(v) + 3, 'text-anchor': 'end' }, s).textContent = tri(v); }
+    r.sp.forEach((v, i) => el('rect', { x: x(i) - bw / 2, y: y(v), width: bw, height: Math.max(0, y(0) - y(v)), fill: 'var(--spent)', rx: 2 }, s));
+    el('polyline', { points: r.cur.map((v, i) => `${x(i)},${y(v)}`).join(' '), fill: 'none', stroke: 'var(--unused)', 'stroke-width': 2 }, s);
+    r.cur.forEach((v, i) => el('circle', { cx: x(i), cy: y(v), r: 3, fill: 'var(--unused)' }, s));
+    [0, 7].forEach(i => el('text', { x: x(i), y: H - 4, 'text-anchor': 'middle' }, s).textContent = Y[i]);
+    el('text', { x: L, y: 10 }, s).textContent = '兆円';
+    box.appendChild(s);
+    hover(box, `<b>${r.n}</b><br>` + Y.map((yy, i) => `FY${yy}: 現額 ${f(r.cur[i])} / 支出 ${f(r.sp[i])} / 繰越 ${f(r.ca[i])} / 不用 ${f(r.un[i])}`).join('<br>'));
+    host.appendChild(box);
+  }
+})();
+
+// 表
+document.getElementById('unTbl').innerHTML = '<thead><tr><th class="l">会計・勘定</th><th class="l">項</th><th>使えるお金</th><th>不用</th><th>不用率</th></tr></thead><tbody>' +
+  D.topUn.map(r => `<tr><td class="l">${r.a}${r.s ? '・' + r.s : ''}</td><td class="l">${r.n}</td><td>${f(r.cur)}</td><td class="u">${f(r.un)}</td><td>${pct(r.un, r.cur)}</td></tr>`).join('') + '</tbody>';
+document.getElementById('caTbl').innerHTML = '<thead><tr><th class="l">会計・勘定</th><th class="l">項</th>' + Y.map(y => `<th>FY${y}</th>`).join('') + '<th>8 年計</th></tr></thead><tbody>' +
+  D.topCa.map(r => `<tr><td class="l">${r.a}${r.s ? '・' + r.s : ''}</td><td class="l">${r.n}</td>${r.by.map(v => `<td>${f(v)}</td>`).join('')}<td class="c">${f(r.ca)}</td></tr>`).join('') + '</tbody>';
+document.getElementById('accTbl').innerHTML = '<thead><tr><th class="l">会計</th><th>当初</th><th>使えるお金</th><th>支出</th><th>繰越</th><th>不用</th>' + Y.map(y => `<th>不用 FY${y}</th>`).join('') + '</tr></thead><tbody>' +
+  [...D.acc].sort((a, b) => b.cur - a.cur).map(r => `<tr><td class="l">${r.n}</td><td>${f(r.init)}</td><td>${f(r.cur)}</td><td>${f(r.sp)}</td><td class="c">${f(r.ca)}</td><td class="u">${f(r.un)}</td>${Y.map(y => `<td>${f(r.y[y][4])}</td>`).join('')}</tr>`).join('') +
+  `<tr><td class="l"><b>特別会計の計</b></td><td>${f(S.init)}</td><td>${f(S.cur)}</td><td>${f(S.sp)}</td><td class="c">${f(S.ca)}</td><td class="u">${f(S.un)}</td>${Y.map(() => '<td></td>').join('')}</tr>` +
+  `<tr><td class="l">（参考）一般会計</td><td>—</td><td>${f(G.cur)}</td><td>${f(G.sp)}</td><td class="c">${f(G.ca)}</td><td class="u">${f(G.un)}</td>${Y.map(() => '<td></td>').join('')}</tr></tbody>`;
+</script>

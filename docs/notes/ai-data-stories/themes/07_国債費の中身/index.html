@@ -1,0 +1,299 @@
+<title>国債費の中身</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Zen+Kaku+Gothic+New:wght@700;900&display=swap">
+<style>
+/* layout: 1 本の読み物の列（最大 760px）。償還 = 青、利払い = 橙、補正の減額 = 藍、データに無い財源 = 斜線 */
+:root {
+  --bg: #f6f7f9; --surface: #ffffff; --ink: #18202b; --muted: #5b6573; --line: #d9dee5; --tag: #eef1f5;
+  --redeem: #2a78d6; --redeem2: #1baf7a; --interest: #eb6834; --spent: #c98500; --cut: #2a6fc9; --add: #d2542a; --other: #9aa3ae; --gap: #c9cfd8;
+  --display: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", sans-serif;
+  --body: "BIZ UDPGothic", "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #12161c; --surface: #1a2029; --ink: #e8ecf1; --muted: #9aa5b3; --line: #2c3440; --tag: #232b36;
+  --redeem: #3987e5; --redeem2: #199e70; --interest: #d95926; --spent: #e0a020; --cut: #5b9cf0; --add: #f07a50; --other: #6b7582; --gap: #3a4350; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #12161c; --surface: #1a2029; --ink: #e8ecf1; --muted: #9aa5b3; --line: #2c3440; --tag: #232b36;
+  --redeem: #3987e5; --redeem2: #199e70; --interest: #d95926; --spent: #e0a020; --cut: #5b9cf0; --add: #f07a50; --other: #6b7582; --gap: #3a4350; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.8;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 32px 64px; }
+main { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 56px; }
+h1, h2 { font-family: var(--display); text-wrap: balance; line-height: 1.35; margin: 0; }
+h1 { font-size: clamp(28px, 6vw, 42px); font-weight: 900; }
+h2 { font-size: 22px; font-weight: 700; }
+p { margin: 0; max-width: 65ch; }
+section { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; color: var(--muted); }
+.num { font-variant-numeric: tabular-nums; }
+.small { font-size: 13px; color: var(--muted); }
+.hero { display: flex; flex-direction: column; gap: 12px; }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.fact { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.fact b { font-family: var(--display); font-weight: 900; font-size: 26px; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.fact span { font-size: 12px; color: var(--muted); }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; min-width: 0; }
+.scroll { overflow-x: auto; }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { fill: var(--muted); font-family: var(--body); font-size: 11px; }
+.chart .lbl { fill: var(--ink); font-size: 12px; }
+.chart .val { font-variant-numeric: tabular-nums; }
+.grid line { stroke: var(--line); stroke-width: 1; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12px; color: var(--muted); margin-top: 8px; }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; margin-right: 6px; }
+.tag { display: inline-block; font-size: 11px; padding: 0 8px; border-radius: 999px; background: var(--tag); color: var(--muted); margin-right: 6px; white-space: nowrap; }
+.tag.src::before { content: "原資料"; } .tag.proc::before { content: "加工"; } .tag.ai::before { content: "AIの計算・解釈"; }
+.claims { display: flex; flex-direction: column; gap: 12px; padding: 0; margin: 0; list-style: none; }
+.claims li { display: grid; gap: 4px; }
+table { border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; min-width: 720px; }
+th, td { padding: 4px 8px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; position: sticky; left: 0; background: var(--surface); }
+thead th { color: var(--muted); font-weight: 400; }
+details { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+summary { cursor: pointer; font-weight: 700; }
+summary:focus-visible { outline: 2px solid var(--cut); outline-offset: 2px; }
+.notes { padding-left: 1.2em; margin: 0; display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--muted); }
+.questions { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.questions li { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+footer { font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+#tip { position: fixed; pointer-events: none; background: var(--ink); color: var(--bg); font-size: 12px; padding: 6px 8px; border-radius: 6px; line-height: 1.5; max-width: 280px; z-index: 5; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<main>
+  <header class="hero">
+    <span class="eyebrow">一般会計の国債費と、国債整理基金特別会計 · FY2017 → FY2026</span>
+    <h1>国債費の 7.8兆円増、その半分は利払いの見込み</h1>
+    <p>一般会計の国債費は、当初予算で 23.5兆円から 31.3兆円になりました。予算書の事項の名前で分けると、増えた 7.8兆円のうち 3.9兆円が利払い、4.3兆円が定率による償還です。利払いの予算は、FY2024 から急に増えています。一方、実際に払った利子（FY2024 までの決算）は、ほぼ横ばいです。</p>
+    <div class="facts">
+      <div class="fact"><span>国債費の増加（当初）</span><b id="fDelta"></b><span id="fDeltaSub"></span></div>
+      <div class="fact"><span>うち利払い</span><b id="fInt"></b><span id="fIntSub"></span></div>
+      <div class="fact"><span>うち定率による償還</span><b id="fTei"></b><span id="fTeiSub"></span></div>
+      <div class="fact"><span>実際に払った利子（特会、決算）</span><b id="fPaid"></b><span id="fPaidSub"></span></div>
+    </div>
+  </header>
+
+  <section>
+    <h2>国債費を、事項の名前で 4 つに分ける</h2>
+    <div class="panel scroll"><svg class="chart" id="genChart" role="img" aria-label="一般会計の国債費の内訳（当初予算）"></svg>
+      <div class="legend"><span><i style="background:var(--redeem)"></i>償還（定率繰入）</span><span><i style="background:var(--redeem2)"></i>償還（その他）</span><span><i style="background:var(--interest)"></i>利払い</span><span><i style="background:var(--other)"></i>諸費・事務・その他</span></div></div>
+    <ul class="claims">
+      <li><strong>定率による償還: 12.9兆円 → 17.2兆円（+4.3兆円）</strong><span>事項「定率による公債等償還財源の国債整理基金特別会計へ繰入れに必要な経費」。毎年、着実に増えています。</span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+      <li><strong>利払い: 9.1兆円 → 13.0兆円（+3.9兆円）</strong><span>事項名に「利子」を含む 3 つ（公債利子等・年金特例公債利子・旧道路公団の借入金利子）の合計。FY2022 の 8.2兆円まで減り、FY2024 から 9.7 → 10.5 → 13.0兆円と増えました。</span><span><span class="tag src"></span><span class="tag ai"></span></span></li>
+      <li><strong>その他の償還: 1.5兆円 → 0.9兆円（−0.6兆円）</strong><span>年金特例公債・減税特例公債・旧道路公団の借入金などの償還財源。減税特例公債の償還（FY2017・FY2018 に各 0.26兆円）は、FY2019 以降の予算書にありません。</span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+    </ul>
+    <p class="small">分け方: 事項名に「利子」→ 利払い、「定率による」→ 償還（定率繰入）、「償還財源」「整理収入」→ 償還（その他）、「諸費」「事務取扱い」→ 諸費・事務。FY2026 の「割引国債の発行価格差減額」0.13兆円は、その他に入れています。各年度の合計は、項の国債費と千円単位で一致します。</p>
+  </section>
+
+  <section>
+    <h2>利払いの予算と、実際に払った利子</h2>
+    <p>国債整理基金特別会計の目「利子及割引料」（国債整理支出）を、当初・補正後・決算で並べました。この特会は、一般会計の分だけでなく、財政投融資特会などが負担する国債の利子もまとめて払います。</p>
+    <div class="panel scroll"><svg class="chart" id="intChart" role="img" aria-label="利子及割引料の当初・補正後・支出済"></svg>
+      <div class="legend"><span><i style="background:var(--interest)"></i>当初予算</span><span><i style="background:var(--redeem2)"></i>補正後</span><span><i style="background:var(--spent)"></i>決算（支出済）</span></div></div>
+    <ul class="claims">
+      <li><strong>当初予算より、毎年 1.9〜2.6兆円少なく払っている</strong><span>FY2017〜FY2024 の当初予算は 9.8〜11.5兆円、実際に払ったのは 7.9〜8.9兆円でした。毎年、補正で 0.9〜1.7兆円減らし、それでも 0.76〜0.98兆円が不用になっています。</span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+      <li><strong>FY2026 の当初予算は 16.5兆円</strong><span>FY2024 の 11.5兆円から 2 年で 5兆円増えました。実際に払った額は FY2024 の 8.9兆円までしか分からず、FY2025・FY2026 の決算はまだありません。予算の増加が、どこまで実際の利払いの増加になるかは、このデータでは確かめられません。</span><span><span class="tag src"></span><span class="tag ai"></span></span></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>補正予算で、毎年同じことが起きている</h2>
+    <p>一般会計の国債費の補正を、事項ごとに見ました。ほぼ毎年、利払いを 1兆円前後減らし、前の年度の決算の剰余金を国債整理基金に入れています。</p>
+    <div class="panel scroll"><svg class="chart" id="suppChart" role="img" aria-label="国債費の補正の内訳"></svg>
+      <div class="legend"><span><i style="background:var(--cut)"></i>利払いの減額</span><span><i style="background:var(--add)"></i>決算上の剰余金の繰入</span><span><i style="background:var(--redeem2)"></i>その他の償還</span></div></div>
+    <p class="small">FY2026 は第1号の補正だけで、国債費の事項の補正はありません。FY2019・FY2020 は剰余金の繰入がありません。</p>
+  </section>
+
+  <section>
+    <h2>国債整理基金のお金は、どこから来ているか</h2>
+    <p>国債整理基金特別会計の歳出（当初）は 196.6兆円（FY2017）、224.8兆円（FY2026）です。ほかの会計からの繰入は、両年とも 88兆円ほどで、残りの 109兆円（FY2017）と 137兆円（FY2026）は、繰入以外の財源です。</p>
+    <div class="panel scroll"><svg class="chart" id="flowChart" role="img" aria-label="国債整理基金の歳出と、ほかの会計からの繰入"></svg>
+      <div class="legend" id="flowLegend"></div></div>
+    <ul class="claims">
+      <li><strong>歳出の 9 割は債務償還費</strong><span>目「債務償還費」は 180.9兆円（FY2017）、232.1兆円（FY2021）、204.4兆円（FY2026）。FY2021・FY2022 に大きく膨らんでいます。</span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+      <li><strong>繰入では足りない分は、このデータに無い</strong><span>このデータは歳出だけで、特会の歳入（借換債の発行による収入など）を含みません。繰入で足りない 109〜137兆円は、借換債で賄っていると考えられます（推測）。ここでは確かめられません。</span><span><span class="tag ai"></span></span></li>
+      <li><strong>交付税特会からの繰入は減っている</strong><span>交付税及び譲与税配付金特別会計からの繰入は 32.7兆円 → 26.8兆円。一般会計からの繰入（国債費）は 23.5兆円 → 31.3兆円で、FY2026 に初めて交付税特会を上回りました。</span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+    </ul>
+    <p class="small">一般会計の国債費と、特会の歳出は、同じお金を二度数えています。足し合わせないでください。</p>
+  </section>
+
+  <section>
+    <h2>全数値の表（兆円）</h2>
+    <details>
+      <summary>一般会計の国債費・国債整理基金の数値を開く</summary>
+      <div class="scroll" style="margin-top:12px"><table id="tbl"></table></div>
+    </details>
+  </section>
+
+  <section>
+    <h2>この数字の作り方と、確かめられないこと</h2>
+    <ul class="notes">
+      <li><span class="tag src"></span>財務省「予算書・決算書データベース」の予算書（一般会計の事項の表、特別会計の目の表）、補正予算書（事項の表）、決算書（項・目の表）。当初予算は、FY2025 が国会提出時の版。FY2017〜FY2021 は、提出時か成立後かを判定できていません。</li>
+      <li><span class="tag proc"></span>nihon-no-yosan が抽出・構造化したもの。一般会計の国債費の事項の合計は、各年度の項の額と千円単位で一致。特会の目の値は、元の CSV（FY2017・FY2020・FY2024 の決算、FY2017・FY2024・FY2026 の当初）を直接足した値と一致しました。</li>
+      <li><span class="tag ai"></span>「償還」「利払い」の区分は、事項名の語（「利子」「定率による」「償還財源」など）でこのページが決めたものです。財務省の公表する債務償還費・利払費の内訳とは照合していません。</li>
+      <li>特会の「利子及割引料」は、一般会計の分以外（財政投融資特会などが負担する分）も含みます。一般会計の利払いの予算と、同じ範囲ではありません。</li>
+      <li>特会の歳入（借換債・公債金収入）はデータにありません。借換の規模は確かめられません。</li>
+      <li>名目の金額です。金利・国債残高は、このデータにありません。利払いの予算が増えた理由（金利の見込みか、残高か）は、ここでは分けられません。</li>
+      <li>債務償還費の翌年度繰越が毎年 3.07兆円前後で一定な理由と、FY2021・FY2022 の債務償還費の膨らみの理由は、未確認です。</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>次に、聞かせてください</h2>
+    <ol class="questions">
+      <li>利払いの予算と、実際に払った額の差（毎年 1.9〜2.6兆円）は、予算の見込みが慎重すぎるのか、それとも余裕として必要なのか。どちらだと思いますか。</li>
+      <li>FY2025・FY2026 の決算が出たら、利払いが実際にどこまで増えたかを確かめますか。</li>
+      <li>交付税特会の借入金の返済（繰入の減少）は、地方交付税の増加とつながっています。地方の財源の流れも追いますか。</li>
+    </ol>
+  </section>
+
+  <footer>
+    <span>出典：財務省「予算書・決算書データベース」を加工して作成。国や各府省が作成した加工していない情報ではありません。</span>
+    <span>nihon-no-yosan の AI Data Stories PoC（2026-11-03）。数値は兆円（千円・円の値から計算し、表示で丸め）。</span>
+  </footer>
+</main>
+<div id="tip" hidden></div>
+
+<script>
+const D = {"Y": [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026], "gen": {"償還（定率繰入）": [129124, 132976, 136734, 140029, 141911, 151319, 158629, 164071, 168081, 171992], "償還（その他）": [14556, 9769, 9846, 9287, 10419, 9414, 8931, 8886, 8573, 8838], "利払い": [91328, 89978, 88153, 83904, 85036, 82472, 84723, 96910, 105230, 130371], "諸費・事務": [276, 296, 349, 296, 222, 187, 220, 224, 256, 300], "その他": [0, null, null, null, null, null, null, null, 39, 1256]}, "genTotal": [235285, 233020, 235082, 233515, 237588, 243393, 252503, 270090, 282179, 312758], "supp": {"剰余金の繰入": [1891, 4547, null, null, 22682, 6906, 13147, 4259, 11323, null], "償還（その他）": [0, 0, 1, 4432, -1207, 0, 0, 0, 1, null], "利払い": [-10098, -10154, -10020, -7704, -12011, -9593, -8903, -15268, -11604, null]}, "genKou": {"budget": [235285, 233020, 235082, 233515, 237588, 243393, 252503, 270090, 282179, 312758], "revised": [227078, 227413, 225062, 230246, 247051, 240717, 256748, 259081, 281898, 312758], "spent": [225208, 225286, 222857, 223256, 245893, 238697, 255011, 256894, null, null], "unused": [1870, 2127, 2205, 6990, 1158, 2019, 1737, 2187, null, null]}, "interest": {"budget": [109126, 107557, 104897, 100010, 101763, 97884, 100228, 115050, 127950, 164598], "revised": [98391, 96866, 93152, 90576, 87371, 87374, 89656, 97775, 115123, null], "spent": [88883, 87105, 84619, 81891, 79755, 78910, 81722, 89017, null, null], "unused": [9508, 9760, 8532, 8686, 7617, 8465, 7934, 8759, null, null]}, "redeem": {"budget": [1809244, 1768269, 1767269, 1796455, 2321377, 2318973, 2247456, 2092340, 2051425, 2043632], "revised": [1816490, 1772399, 1766685, 1799105, 2292577, 2243412, 2221959, 2062530, 2050359, null], "spent": [1748309, 1714288, 1722809, 1750075, 2245355, 2206142, 2184403, 2004165, null, null], "unused": [68186, 58158, 43869, 49176, 47036, 37398, 37480, 58163, null, null], "carried": [30688, 30641, 30649, 30503, 30690, 30562, 30639, 30841, null, null]}, "fundTot": {"budget": [1966416, 1912207, 1907154, 1930242, 2467893, 2457915, 2394737, 2251390, 2221185, 2248286], "spent": [1881339, 1830816, 1838779, 1859213, 2366232, 2325560, 2314131, 2137088, null, null]}, "fundBreak": {"債務償還費": [1855169, 1802673, 1800344, 1828405, 2364826, 2359281, 2293773, 2134189, 2090091, 2079537], "利子及割引料": [109386, 107903, 105214, 100324, 102036, 98087, 100389, 115926, 128783, 165877], "その他": [1861, 1631, 1596, 1513, 1031, 547, 575, 1275, 2311, 2872]}, "inflow": {"一般会計（国債費）": [235275, 233010, 235072, 233504, 237577, 243385, 252494, 270083, 282171, 312750], "交付税及び譲与税配付金特会": [326709, 325839, 318496, 317897, 319739, 301832, 296695, 297102, 291653, 267789], "財政投融資特会": [146121, 137682, 142914, 120573, 266167, 225917, 114398, 154540, 111890, 130760], "エネルギー対策特会": [141336, 137833, 134686, 132093, 129416, 126716, 123995, 141497, 137130, 134838], "そのほかの特会": [25817, 25986, 25268, 27388, 25134, 25684, 25822, 26192, 28165, 33731]}};
+const Y = D.Y, NS = 'http://www.w3.org/2000/svg';
+const tri = v => v / 10000; // 億円 → 兆円
+const f = (v, d = 2) => v === null || v === undefined ? '—' : tri(v).toFixed(d);
+const sg = v => (v > 0 ? '+' : v < 0 ? '−' : '±') + Math.abs(tri(v)).toFixed(2);
+const el = (tag, a = {}, p) => { const e = document.createElementNS(NS, tag); for (const k in a) e.setAttribute(k, a[k]); if (p) p.appendChild(e); return e; };
+const tip = document.getElementById('tip');
+function hover(node, html) {
+  node.addEventListener('pointermove', e => { tip.innerHTML = html; tip.hidden = false; tip.style.left = Math.min(e.clientX + 12, innerWidth - 290) + 'px'; tip.style.top = (e.clientY + 12) + 'px'; });
+  node.addEventListener('pointerleave', () => { tip.hidden = true; });
+}
+const last = Y.length - 1;
+const at = (arr, i) => arr[i] ?? 0;
+
+// 見出しの数字
+const gTot = D.genTotal, gi = D.gen['利払い'], gt = D.gen['償還（定率繰入）'];
+document.getElementById('fDelta').textContent = sg(gTot[last] - gTot[0]) + '兆円';
+document.getElementById('fDeltaSub').textContent = `${f(gTot[0], 1)} → ${f(gTot[last], 1)}兆円`;
+document.getElementById('fInt').textContent = sg(gi[last] - gi[0]) + '兆円';
+document.getElementById('fIntSub').textContent = `${f(gi[0], 1)} → ${f(gi[last], 1)}兆円`;
+document.getElementById('fTei').textContent = sg(gt[last] - gt[0]) + '兆円';
+document.getElementById('fTeiSub').textContent = `${f(gt[0], 1)} → ${f(gt[last], 1)}兆円`;
+const ps = D.interest.spent;
+document.getElementById('fPaid').textContent = `${f(ps[0], 1)} → ${f(ps[7], 1)}`;
+document.getElementById('fPaidSub').textContent = '兆円（FY2017 → FY2024）';
+
+function axisY(s, L, R, W, T, H, y, ticks, unit = '') {
+  const g = el('g', { class: 'grid' }, s);
+  for (const v of ticks) { el('line', { x1: L, x2: W - R, y1: y(v), y2: y(v) }, g); el('text', { x: L - 6, y: y(v) + 4, 'text-anchor': 'end' }, s).textContent = v + unit; }
+}
+
+// 1. 国債費の内訳（積み上げ棒）
+(() => {
+  const s = document.getElementById('genChart'), W = 640, H = 300, L = 40, R = 52, T = 14, B = 26;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '520px';
+  const parts = [['償還（定率繰入）', 'var(--redeem)'], ['償還（その他）', 'var(--redeem2)'], ['利払い', 'var(--interest)'], ['諸費・事務', 'var(--other)'], ['その他', 'var(--other)']];
+  const max = 35, y = v => T + (H - T - B) * (1 - v / max), cw = (W - L - R) / Y.length, bw = cw * 0.62;
+  axisY(s, L, R, W, T, H, y, [0, 10, 20, 30]);
+  el('text', { x: L, y: 10 }, s).textContent = '兆円';
+  Y.forEach((yr, i) => {
+    let acc = 0; const x = L + cw * i + (cw - bw) / 2;
+    for (const [k, c] of parts) { const v = tri(at(D.gen[k], i)); if (v <= 0) continue; const y0 = y(acc), y1 = y(acc + v); el('rect', { x, y: y1, width: bw, height: Math.max(0.5, y0 - y1 - (v > 0.3 ? 1.5 : 0)), fill: c }, s); acc += v; }
+    el('text', { x: x + bw / 2, y: y(acc) - 5, 'text-anchor': 'middle', class: 'val' }, s).textContent = acc.toFixed(1);
+    el('text', { x: x + bw / 2, y: H - 8, 'text-anchor': 'middle' }, s).textContent = i % 3 === 0 || i === last ? yr : String(yr).slice(2);
+    const hit = el('rect', { x: L + cw * i, y: T, width: cw, height: H - T - B, fill: 'transparent' }, s);
+    hover(hit, `<b>FY${yr} 国債費 ${f(gTot[i])}兆円</b><br>` + parts.filter(([k]) => D.gen[k][i]).map(([k]) => `${k}: ${f(D.gen[k][i])}`).join('<br>'));
+  });
+})();
+
+// 2. 利子及割引料: 当初・補正後・支出済
+(() => {
+  const s = document.getElementById('intChart'), W = 640, H = 270, L = 40, R = 76, T = 16, B = 26;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '520px';
+  const lo = 6, hi = 18, x = i => L + (W - L - R) * i / last, y = v => T + (H - T - B) * (1 - (v - lo) / (hi - lo));
+  axisY(s, L, R, W, T, H, y, [6, 9, 12, 15, 18]);
+  el('text', { x: L, y: 10 }, s).textContent = '兆円';
+  Y.forEach((yr, i) => { el('text', { x: x(i), y: H - 8, 'text-anchor': 'middle' }, s).textContent = i % 3 === 0 || i === last ? yr : String(yr).slice(2); });
+  const series = [['budget', 'var(--interest)', '当初'], ['revised', 'var(--redeem2)', '補正後'], ['spent', 'var(--spent)', '支出済']];
+  for (const [k, c, lab] of series) {
+    const pts = D.interest[k].map((v, i) => v === null ? null : [x(i), y(tri(v))]);
+    let seg = []; const segs = [];
+    pts.forEach(p => { if (p) seg.push(p); else if (seg.length) { segs.push(seg); seg = []; } }); if (seg.length) segs.push(seg);
+    for (const sgm of segs) el('polyline', { points: sgm.map(p => p.join(',')).join(' '), fill: 'none', stroke: c, 'stroke-width': 2 }, s);
+    pts.forEach((p, i) => { if (p) el('circle', { cx: p[0], cy: p[1], r: 3.5, fill: c, stroke: 'var(--surface)', 'stroke-width': 1.5 }, s); });
+    const li = D.interest[k].map((v, i) => v === null ? -1 : i).filter(i => i >= 0).pop();
+    const lbl = el('text', { x: x(li) + 8, y: y(tri(D.interest[k][li])) + 4, class: 'lbl val' }, s); lbl.textContent = `${lab} ${f(D.interest[k][li], 1)}`;
+  }
+  Y.forEach((yr, i) => {
+    const hit = el('rect', { x: x(i) - (W - L - R) / last / 2, y: T, width: (W - L - R) / last, height: H - T - B, fill: 'transparent' }, s);
+    hover(hit, `<b>FY${yr} 利子及割引料</b><br>当初 ${f(D.interest.budget[i])}<br>補正後 ${f(D.interest.revised[i])}<br>支出済 ${f(D.interest.spent[i])}<br>不用 ${f(D.interest.unused[i])}（兆円）`);
+  });
+})();
+
+// 3. 補正の内訳（上下の棒）
+(() => {
+  const s = document.getElementById('suppChart'), W = 640, H = 240, L = 40, R = 14, T = 16, B = 26;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '520px';
+  const lo = -2, hi = 2.5, y = v => T + (H - T - B) * (1 - (v - lo) / (hi - lo)), cw = (W - L - R) / Y.length, bw = cw * 0.55;
+  axisY(s, L, R, W, T, H, y, [-2, -1, 0, 1, 2]);
+  el('line', { x1: L, x2: W - R, y1: y(0), y2: y(0), stroke: 'var(--other)', 'stroke-width': 1 }, s);
+  el('text', { x: L, y: 10 }, s).textContent = '兆円';
+  const keys = [['剰余金の繰入', 'var(--add)'], ['償還（その他）', 'var(--redeem2)'], ['利払い', 'var(--cut)']];
+  Y.forEach((yr, i) => {
+    const x = L + cw * i + (cw - bw) / 2; let up = 0, dn = 0;
+    for (const [k, c] of keys) {
+      const v = tri(at(D.supp[k], i)); if (Math.abs(v) < 0.005) continue;
+      if (v > 0) { el('rect', { x, y: y(up + v), width: bw, height: y(up) - y(up + v), fill: c }, s); up += v; }
+      else { el('rect', { x, y: y(dn), width: bw, height: y(dn + v) - y(dn), fill: c }, s); dn += v; }
+    }
+    el('text', { x: x + bw / 2, y: H - 8, 'text-anchor': 'middle' }, s).textContent = i % 3 === 0 || i === last ? yr : String(yr).slice(2);
+    const net = keys.reduce((a, [k]) => a + at(D.supp[k], i), 0);
+    const hit = el('rect', { x: L + cw * i, y: T, width: cw, height: H - T - B, fill: 'transparent' }, s);
+    hover(hit, `<b>FY${yr} 国債費の補正</b><br>` + (Y[i] === 2026 ? '国債費の事項の補正なし' : keys.map(([k]) => `${k === '利払い' ? '利払い' : k}: ${D.supp[k][i] === null ? '—' : sg(D.supp[k][i])}`).join('<br>') + `<br>差引 ${sg(net)}（兆円）`));
+  });
+})();
+
+// 4. 国債整理基金: 歳出と繰入（2017・2026 の 2 年の横棒）
+(() => {
+  const s = document.getElementById('flowChart'), W = 640, rowH = 34, L = 120, R = 70, T = 8;
+  const rows = [];
+  for (const i of [0, last]) {
+    rows.push({ lab: `FY${Y[i]} 歳出`, parts: [['債務償還費', D.fundBreak['債務償還費'][i], 'var(--redeem)'], ['利子及割引料', D.fundBreak['利子及割引料'][i], 'var(--interest)'], ['その他', D.fundBreak['その他'][i], 'var(--other)']] });
+    const inParts = Object.entries(D.inflow).map(([k, v], j) => [k, v[i], ['var(--redeem)', 'var(--redeem2)', 'var(--spent)', 'var(--interest)', 'var(--other)'][j]]);
+    const inTot = inParts.reduce((a, p) => a + p[1], 0);
+    inParts.push(['繰入以外（データに無い財源）', D.fundTot.budget[i] - inTot, 'gap']);
+    rows.push({ lab: `FY${Y[i]} 財源`, parts: inParts });
+  }
+  const H = T + rows.length * rowH + 30; s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '560px';
+  const defs = el('defs', {}, s); const pat = el('pattern', { id: 'hatch', width: 6, height: 6, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }, defs);
+  el('rect', { width: 6, height: 6, fill: 'var(--surface)' }, pat); el('line', { x1: 0, y1: 0, x2: 0, y2: 6, stroke: 'var(--gap)', 'stroke-width': 3 }, pat);
+  const max = 250, x = v => L + (W - L - R) * v / max;
+  const g = el('g', { class: 'grid' }, s);
+  for (const v of [0, 50, 100, 150, 200, 250]) { el('line', { x1: x(v), x2: x(v), y1: T, y2: H - 24 }, g); el('text', { x: x(v), y: H - 8, 'text-anchor': 'middle' }, s).textContent = v; }
+  rows.forEach((r, n) => {
+    const y = T + n * rowH + (n % 2 === 1 ? -2 : 0); let acc = 0;
+    el('text', { x: L - 8, y: y + 19, 'text-anchor': 'end', class: 'lbl' }, s).textContent = r.lab;
+    for (const [k, v, c] of r.parts) {
+      const t = tri(v); if (t <= 0) continue;
+      const rect = el('rect', { x: x(acc), y: y + 6, width: Math.max(0.5, x(acc + t) - x(acc) - 1), height: rowH - 12, fill: c === 'gap' ? 'url(#hatch)' : c, stroke: c === 'gap' ? 'var(--gap)' : 'none' }, s);
+      hover(rect, `<b>${r.lab}</b><br>${k}: ${t.toFixed(2)}兆円`); acc += t;
+    }
+    el('text', { x: x(acc) + 6, y: y + 19, class: 'val' }, s).textContent = acc.toFixed(1);
+  });
+  el('text', { x: W - R + 6, y: H - 8 }, s).textContent = '兆円';
+  const lg = document.getElementById('flowLegend');
+  lg.innerHTML = '<span>歳出: <i style="background:var(--redeem)"></i>債務償還費 <i style="background:var(--interest)"></i>利子及割引料 <i style="background:var(--other)"></i>その他</span><span>財源: <i style="background:var(--redeem)"></i>一般会計 <i style="background:var(--redeem2)"></i>交付税特会 <i style="background:var(--spent)"></i>財投特会 <i style="background:var(--interest)"></i>エネ特会 <i style="background:var(--other)"></i>そのほかの特会 <i style="background:var(--gap)"></i>繰入以外（データに無い）</span>';
+})();
+
+// 5. 表
+(() => {
+  const rows = [
+    ['一般会計 国債費（当初）', D.genTotal],
+    ['　償還（定率繰入）', D.gen['償還（定率繰入）']], ['　償還（その他）', D.gen['償還（その他）']], ['　利払い', D.gen['利払い']], ['　諸費・事務', D.gen['諸費・事務']],
+    ['一般会計 国債費（補正後）', D.genKou.revised], ['一般会計 国債費（支出済）', D.genKou.spent],
+    ['補正: 利払い', D.supp['利払い']], ['補正: 剰余金の繰入', D.supp['剰余金の繰入']],
+    ['特会 歳出（当初）', D.fundTot.budget], ['特会 歳出（支出済）', D.fundTot.spent],
+    ['特会 債務償還費（当初）', D.redeem.budget], ['特会 債務償還費（支出済）', D.redeem.spent],
+    ['特会 利子及割引料（当初）', D.interest.budget], ['特会 利子及割引料（補正後）', D.interest.revised], ['特会 利子及割引料（支出済）', D.interest.spent], ['特会 利子及割引料（不用）', D.interest.unused],
+    ...Object.entries(D.inflow).map(([k, v]) => ['繰入: ' + k, v]),
+  ];
+  document.getElementById('tbl').innerHTML = `<thead><tr><th></th>${Y.map(y => `<th>FY${y}</th>`).join('')}</tr></thead><tbody>` + rows.map(([n, v]) => `<tr><td>${n}</td>${v.map(x => `<td>${f(x)}</td>`).join('')}</tr>`).join('') + '</tbody>';
+})();
+</script>

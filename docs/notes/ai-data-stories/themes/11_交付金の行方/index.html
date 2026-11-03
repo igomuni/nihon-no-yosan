@@ -1,0 +1,225 @@
+<title>交付金の行方</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Zen+Kaku+Gothic+New:wght@700;900&display=swap">
+<style>
+/* layout: 1 本の読み物の列（最大 760px）。お金は年度を左から右へ流れる。系列の色は段階ごとに固定し、文字は本文の色 */
+:root {
+  --bg: #f6f7f9; --surface: #ffffff; --ink: #18202b; --muted: #5b6573; --line: #d9dee5; --tag: #eef1f5;
+  --cin: #9aa3b2; --supp: #2a78d6; --res: #eb6834; --spent: #1baf7a; --cout: #8f6fe0; --unused: #eda100; --band: rgba(143,111,224,.18);
+  --display: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", sans-serif;
+  --body: "BIZ UDPGothic", "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #12161c; --surface: #1a2029; --ink: #e8ecf1; --muted: #9aa5b3; --line: #2c3440; --tag: #232b36;
+  --cin: #6b7385; --supp: #3987e5; --res: #d95926; --spent: #199e70; --cout: #7d5fd0; --unused: #c98500; --band: rgba(125,95,208,.28); color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #12161c; --surface: #1a2029; --ink: #e8ecf1; --muted: #9aa5b3; --line: #2c3440; --tag: #232b36;
+  --cin: #6b7385; --supp: #3987e5; --res: #d95926; --spent: #199e70; --cout: #7d5fd0; --unused: #c98500; --band: rgba(125,95,208,.28); color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.8;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 32px 64px; }
+main { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 56px; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; line-height: 1.35; margin: 0; }
+h1 { font-size: clamp(28px, 6vw, 40px); font-weight: 900; }
+h2 { font-size: 22px; font-weight: 700; }
+h3 { font-size: 16px; font-weight: 700; }
+p { margin: 0; max-width: 65ch; }
+section { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; color: var(--muted); }
+.note { font-size: 13px; color: var(--muted); }
+.num { font-variant-numeric: tabular-nums; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.kpi b { font-family: var(--display); font-size: 26px; font-weight: 900; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.kpi span { font-size: 12px; color: var(--muted); }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.scroll { overflow-x: auto; }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { fill: var(--muted); font-family: var(--body); font-size: 11px; }
+.chart .lbl { fill: var(--ink); font-size: 12px; }
+.chart .val { font-variant-numeric: tabular-nums; }
+.grid line { stroke: var(--line); stroke-width: 1; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--muted); padding: 0; margin: 0; list-style: none; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+.tag { display: inline-block; font-size: 11px; padding: 0 8px; border-radius: 999px; background: var(--tag); color: var(--muted); margin-right: 6px; white-space: nowrap; }
+.tag.src::before { content: "原資料"; } .tag.proc::before { content: "加工"; } .tag.ai::before { content: "AIの計算・解釈"; }
+.claims { display: flex; flex-direction: column; gap: 12px; padding: 0; margin: 0; list-style: none; }
+.claims li { display: grid; gap: 4px; }
+table { border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
+th, td { padding: 4px 8px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+th.l, td.l { text-align: left; }
+thead th { color: var(--muted); font-weight: 400; }
+details { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+summary { cursor: pointer; font-weight: 700; }
+summary:focus-visible { outline: 2px solid var(--supp); outline-offset: 2px; }
+.notes { padding-left: 1.2em; margin: 0; display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--muted); }
+.questions { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.questions li { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+footer { font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+#tip { position: fixed; pointer-events: none; background: var(--ink); color: var(--bg); font-size: 12px; padding: 6px 8px; border-radius: 6px; line-height: 1.5; max-width: 280px; z-index: 5; }
+</style>
+
+<main>
+  <header style="display:flex;flex-direction:column;gap:12px">
+    <span class="eyebrow">一般会計・決算 FY2020 → FY2024 · 内閣府と総務省の「地方創生推進費」</span>
+    <h1>地方創生臨時交付金は、どこを通って、どこで使われたか</h1>
+    <p>新型コロナ対応と物価高騰対応の臨時交付金を、予算から決算まで追いました。お金は毎年、内閣府に入り、総務省へ移され、総務省から支出されています。内閣府の項からの支出は、5 年間で 0 円です。</p>
+    <div class="kpis">
+      <div class="kpi"><b>22.75兆円</b><span>入ったお金（補正予算＋予備費）</span></div>
+      <div class="kpi"><b>18.22兆円</b><span>支出された額</span></div>
+      <div class="kpi"><b>3.30兆円</b><span>使われずに残った額（不用）</span></div>
+      <div class="kpi"><b>1.23兆円</b><span>FY2025 へ繰り越した額（物価高騰対応）</span></div>
+    </div>
+    <p class="note">2 系統の合計。コロナ対応は FY2020〜FY2024（入り 18.33・支出 15.06・不用 3.27兆円、残り 0 円）、物価高騰対応は FY2023〜FY2024（入り 4.43・支出 3.16・不用 0.03兆円）。</p>
+  </header>
+
+  <section>
+    <h2>年度から年度へ、繰越で流れる</h2>
+    <p>各年度の左の棒が「使えるお金」（前年度からの繰越・補正予算・予備費）、右の棒が「その行き先」（支出・不用・翌年度への繰越）。紫の帯が、翌年度へ持ち越した額です。2 つの項（内閣府・総務省）を合わせると、内閣府から総務省への移し替えは相殺され、入りと出は毎年円まで一致します。</p>
+    <ul class="legend"><li><i style="background:var(--cin)"></i>前年度からの繰越</li><li><i style="background:var(--supp)"></i>補正予算</li><li><i style="background:var(--res)"></i>予備費</li><li><i style="background:var(--spent)"></i>支出</li><li><i style="background:var(--unused)"></i>不用</li><li><i style="background:var(--cout)"></i>翌年度への繰越</li></ul>
+    <div class="panel"><h3>新型コロナ対応（FY2020〜FY2024）</h3><div class="scroll"><svg class="chart" id="flowCovid" role="img" aria-label="新型コロナ対応の地方創生臨時交付金の年度ごとの入りと出"></svg></div></div>
+    <div class="panel"><h3>物価高騰対応（FY2023〜FY2024）</h3><div class="scroll"><svg class="chart" id="flowPrice" role="img" aria-label="物価高騰対応の地方創生臨時交付金の年度ごとの入りと出"></svg></div></div>
+    <p class="note">棒にカーソルを当てると、内訳が出ます。どちらの系統も、当初予算は 0 円（コロナは FY2020、物価高騰は FY2023 に項が無い）で、入りはすべて補正予算と予備費です。</p>
+  </section>
+
+  <section>
+    <h2>持つのは内閣府、払うのは総務省</h2>
+    <ul class="claims">
+      <li><strong>予算書では内閣府、決算書では 2 つの府省に分かれる</strong><span>予算書（補正予算）では、補正の額の全部が内閣府の項に載っています。決算書では、同じ額が内閣府と総務省の「歳出予算額」に分かれていて、2 つの和は予算書の補正後の額と、6 つの年度・項すべてで円まで一致しました（例: FY2020 は 4.5兆円 = 内閣府 1.12兆円 + 総務省 3.38兆円）。分かれ方の手続きは、このデータには書かれていません。</span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+      <li><strong>予備費は、毎回内閣府へ</strong><span>予備費の使用（コロナ 6.28兆円、物価高騰 1.13兆円）は、すべて内閣府の項に入っています。その年度のうちに一部が総務省へ移され（予算決定後の移替）、残りは翌年度へ繰り越され、翌年度にまた総務省へ移されます。</span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+      <li><strong>内閣府の項に残ったまま使われなかった額</strong><span>内閣府の項の不用は、FY2022 の 2.58兆円と FY2023 の 0.44兆円です。FY2022 の不用のうち 2.35兆円は「協力要請推進交付金」で、前年度から繰り越した 2.91兆円のうち 0.56兆円だけが総務省へ移されました。</span><span><span class="tag src"></span><span class="tag ai"></span></span></li>
+    </ul>
+    <div class="panel scroll"><table id="holdTbl"></table></div>
+  </section>
+
+  <section>
+    <h2>交付金の種類ごとの締め</h2>
+    <p>目（交付金の種類）で分けると、使われ方がはっきり違います。協力要請推進交付金は、入りの 8 割が使われずに残りました。</p>
+    <div class="panel"><div class="scroll"><svg class="chart" id="mokuChart" role="img" aria-label="交付金の種類ごとの支出・不用・残り"></svg></div>
+    <ul class="legend"><li><i style="background:var(--spent)"></i>支出</li><li><i style="background:var(--unused)"></i>不用</li><li><i style="background:var(--cout)"></i>FY2025 へ繰越</li></ul></div>
+    <p class="note">入り = 補正予算 + 予備費 + 流用。FY2021 に、地方創生臨時交付金の目から協力要請推進交付金の目へ 1.41兆円の流用があります。</p>
+  </section>
+
+  <section>
+    <h2>行政事業レビューの事業とつなぐ</h2>
+    <p>行政事業レビュー（RS、2025 年度版）には、2 つの交付金が 1 つずつの事業として載っています。RS の「補正予算・前年度からの繰越し・予備費等・執行額・翌年度への繰越し」は、決算の 2 つの項の和と、どの年度も 30 万円未満の差で一致しました（RS の 2021〜2022 年度は移行データで、百万円単位の丸めがある）。</p>
+    <div class="panel scroll"><table id="rsTbl"></table></div>
+    <ul class="claims">
+      <li><strong>RS だけに見える FY2025</strong><span>物価高騰対応の事業は、FY2025 に第 1 次補正予算 2.04兆円と前年度からの繰越 1.23兆円などで、歳出予算現額が 3.37兆円です。FY2025 の決算は、まだこのデータにありません。予算書でも、FY2025 の補正後 2.04兆円、FY2026 の補正後 0.10兆円が同じ項に載っています。</span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+      <li><strong>予算書の項へのつなぎ</strong><span>RS の 2-2（予算種別・歳出予算項目）の行を直接見ると、項と目が書かれているのは、物価高騰対応の FY2024・FY2025 の第 1 次補正予算の行だけで、どちらも内閣府の「物価高騰対応地方創生推進費」です。繰越・予備費の行と、コロナ対応の全部の行は、項が空欄です。総務省の項は、どの行にも出てきません。コロナ対応の事業は、名前と額の一致でしか照らせません。</span><span><span class="tag src"></span><span class="tag ai"></span></span></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>この数字の作り方と、確かめられないこと</h2>
+    <ul class="notes">
+      <li><span class="tag src"></span>財務省「予算書・決算書データベース」の決算書（一般会計の項・目、FY2020〜FY2024）と予算書（補正後）。行政事業レビュー見える化サイト（2025 年度版）の 2-1 サマリ・2-2 予算種別・歳出予算項目。</li>
+      <li><span class="tag proc"></span>nihon-no-yosan が抽出・構造化した CSV と画面用データ。決算の値は円単位、予算書の値は千円単位を円にしたもの。</li>
+      <li><span class="tag ai"></span>2 系統・2 府省の合算、入りと出の締め、交付金の種類ごとの合計、府省の役割の読み取りは、この探索で計算・判断したものです。</li>
+      <li>確かめたこと: 決算の 2 つの恒等式（現額 = 歳出予算額 + 前年度繰越 + 予備費 + 流用 + 移替、現額 = 支出 + 翌年度繰越 + 不用）が全 35 行で成り立つ。目の合計 = 項の値。年度間の繰越の受け渡しが円まで一致。移替は 2 府省で相殺して 0。予算書の補正後 = 決算の歳出予算額（2 府省の和）。RS の額と決算の額の一致（差は 30 万円未満）。前の回（予備費の行方・使い切れない予算）のコロナ対応の締め（入り 18.33・支出 15.06・不用 3.27兆円）と一致。</li>
+      <li>未確認: 予算書で内閣府にある額が、決算書で総務省の歳出予算額になる手続き。支出した額が、どの年度の予算（補正・予備費）から出たか（決算書は財源ごとに分けていない）。交付先の自治体ごとの額と、自治体での使い道（このデータに無い）。FY2025 以降の決算。</li>
+      <li>名目の金額です。良し悪しの評価はしていません。</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>次に、聞かせてください</h2>
+    <ul class="questions">
+      <li>協力要請推進交付金（名前からは、自治体の協力要請に応じた事業者への支援の財源と推測）の 2.37兆円の不用は、どの年度に、どういう経過で生まれたか。目の決算の流れをもう一段細かく見ますか。</li>
+      <li>総務省から支出された 18.2兆円の交付先は、このデータにありません（目の名前から、自治体への交付金と推測）。自治体の側（地方財政）のデータを足せるなら、その先まで追いますか。</li>
+      <li>物価高騰対応の FY2025（現額 3.37兆円）の決算が公表されたら、続きを追いますか。</li>
+    </ul>
+  </section>
+
+  <footer>
+    <span>出典：財務省「予算書・決算書データベース」、行政事業レビュー見える化サイト（https://rssystem.go.jp）を加工して作成。国や各府省が作成した加工していない情報ではありません。</span>
+    <span>nihon-no-yosan の AI Data Stories PoC（ループ 3 回目）。金額の単位は兆円（円・千円の値から計算し、表示で丸め）。</span>
+  </footer>
+</main>
+<div id="tip" hidden></div>
+
+<script>
+const D = {"years": {"covid": [{"y": 2020, "supp": 4500000000000, "res": 3379107299000, "cin": 0, "spent": 2614470802301, "unused": 711589002, "cout": 5263924907697, "cao": {"approp": 1117830891000, "cin": 0, "res": 3379107299000, "flow": 0, "mov": -1628854246000, "cur": 2868083944000, "spent": 0, "cout": 2868083944000, "unused": 0}, "soumu": {"approp": 3382169109000, "cin": 0, "res": 0, "flow": 0, "mov": 1628854246000, "cur": 5011023355000, "spent": 2614470802301, "cout": 2395840963697, "unused": 711589002}}, {"y": 2021, "supp": 6796886899000, "res": 500000000000, "cin": 5263924907697, "spent": 6822963042301, "unused": 35733482708, "cout": 5702115281688, "cao": {"approp": 4445461738000, "cin": 2868083944000, "res": 500000000000, "flow": 0, "mov": -3368083944000, "cur": 4445461738000, "spent": 0, "cout": 4445461738000, "unused": 0}, "soumu": {"approp": 2351425161000, "cin": 2395840963697, "res": 0, "flow": 0, "mov": 3368083944000, "cur": 8115350068697, "spent": 6822963042301, "cout": 1256653543688, "unused": 35733482708}}, {"y": 2022, "supp": 750000000000, "res": 2400000000000, "cin": 5702115281688, "spent": 3798189783038, "unused": 2659296544385, "cout": 2394628954265, "cao": {"approp": 639319581000, "cin": 4445461738000, "res": 2400000000000, "flow": 0, "mov": -3009442886000, "cur": 4475338433000, "spent": 0, "cout": 1893171932000, "unused": 2582166501000}, "soumu": {"approp": 110680419000, "cin": 1256653543688, "res": 0, "flow": 0, "mov": 3009442886000, "cur": 4376776848688, "spent": 3798189783038, "cout": 501457022265, "unused": 77130043385}}, {"y": 2023, "supp": 0, "res": 0, "cin": 2394628954265, "spent": 1822367180746, "unused": 570793548753, "cout": 1468224766, "cao": {"approp": 0, "cin": 1893171932000, "res": 0, "flow": 0, "mov": -1448480140000, "cur": 444691792000, "spent": 0, "cout": 0, "unused": 444691792000}, "soumu": {"approp": 0, "cin": 501457022265, "res": 0, "flow": 0, "mov": 1448480140000, "cur": 1949937162265, "spent": 1822367180746, "cout": 1468224766, "unused": 126101756753}}, {"y": 2024, "supp": 0, "res": 0, "cin": 1468224766, "spent": 1429306221, "unused": 38918545, "cout": 0, "cao": {"approp": 0, "cin": 0, "res": 0, "flow": 0, "mov": 0, "cur": 0, "spent": 0, "cout": 0, "unused": 0}, "soumu": {"approp": 0, "cin": 1468224766, "res": 0, "flow": 0, "mov": 0, "cur": 1468224766, "spent": 1429306221, "cout": 0, "unused": 38918545}}], "price": [{"y": 2023, "supp": 1559225000000, "res": 1131060000000, "cin": 0, "spent": 1012106760563, "unused": 1354558444, "cout": 1676823680993, "cao": {"approp": 267639783000, "cin": 0, "res": 1131060000000, "flow": 0, "mov": -403685004000, "cur": 995014779000, "spent": 0, "cout": 995014779000, "unused": 0}, "soumu": {"approp": 1291585217000, "cin": 0, "res": 0, "flow": 0, "mov": 403685004000, "cur": 1695270221000, "spent": 1012106760563, "cout": 681808901993, "unused": 1354558444}}, {"y": 2024, "supp": 1735142370000, "res": 0, "cin": 1676823680993, "spent": 2151949970033, "unused": 29391580580, "cout": 1230624500380, "cao": {"approp": 622661990000, "cin": 995014779000, "res": 0, "flow": 0, "mov": -995003347000, "cur": 622673422000, "spent": 0, "cout": 622661990000, "unused": 11432000}, "soumu": {"approp": 1112480380000, "cin": 681808901993, "res": 0, "flow": 0, "mov": 995003347000, "cur": 2789292628993, "spent": 2151949970033, "cout": 607962510380, "unused": 29380148580}}]}, "moku": {"新型コロナウイルス感染症対応地方創生臨時交付金": {"stream": "covid", "approp": 9926886899000, "res": 6279107299000, "flow": -1406571535000, "spent": 14297785940821, "unused": 501636722179, "cout_last": 0, "years": [2020, 2021, 2022, 2023, 2024]}, "新型コロナウイルス感染症対応協力要請推進交付金": {"stream": "covid", "approp": 1500000000000, "res": 0, "flow": 1406571535000, "spent": 536543830626, "unused": 2370027704374, "cout_last": 0, "years": [2021, 2022]}, "新型コロナウイルス感染症対応検査促進交付金": {"stream": "covid", "approp": 620000000000, "res": 0, "flow": 0, "spent": 225090343160, "unused": 394909656840, "cout_last": 0, "years": [2021, 2022, 2023]}, "物価高騰対応重点支援地方創生臨時交付金": {"stream": "price", "approp": 3294367370000, "res": 1131060000000, "flow": 0, "spent": 3164056730596, "unused": 30746139024, "cout_last": 1230624500380, "years": [2023, 2024]}}, "rs": {"covid": {"id": "122", "name": "新型コロナウイルス感染症対応地方創生臨時交付金", "amounts": [[53, 2021, 0, 6796887000000, 5263925000000, 500000000000, 12560812000000, 6822963000000, 5702115000000, 0], [53, 2022, 0, 750000000000, 5702115000000, 2400000000000, 8852115000000, 3798190000000, 2394628954265, 0], [53, 2023, 0, 0, 2394628954265, 0, 2394628954265, 1822367181000, 1468224766, 0], [53, 2024, 0, 0, 1468224766, 0, 1468224766, 1429306000, 0, 0], [53, 2025, 0, 0, 0, 0, 0, 0, 0, 0]], "links": []}, "price": {"id": "7629", "name": "物価高騰対応重点支援地方創生臨時交付金", "amounts": [[4453, 2023, 0, 1559225000000, 0, 1131060000000, 2690285000000, 1012106761000, 1676823680993, 0], [4453, 2024, 0, 1735142370000, 1676823680993, 0, 3411966050993, 2151949970000, 1230624500380, 0], [4453, 2025, 0, 2037657327000, 1230624500380, 100000000000, 3368281827380, 0, 0, 0]], "links": [[2025, "2025:general:内閣府|内閣本府|287|物価高騰対応地方創生推進費", "物価高騰対応重点支援地方創生臨時交付金", "第1次補正予算", 2037657327000], [2024, "2024:general:内閣府|内閣本府|287|物価高騰対応地方創生推進費", "物価高騰対応重点支援地方創生臨時交付金", "第1次補正予算", 1735142370000]]}}, "fy25": [{"y": 2025, "min": "内閣府", "name": "物価高騰対応地方創生推進費", "request": null, "budget": 0, "revised": 2037657327000, "seen": ["budget", "supp"]}, {"y": 2026, "min": "内閣府", "name": "物価高騰対応地方創生推進費", "request": null, "budget": 0, "revised": 100000000000, "seen": ["budget", "supp"]}], "files": {"kou2020": "mof-history-v0/mof-archive/2020/kou-general-kessan.csv", "moku2020": "mof-history-v0/mof-archive/2020/moku-general-kessan.csv", "kou2021": "mof-history-v0/mof-archive/2021/kou-general-kessan.csv", "moku2021": "mof-history-v0/mof-archive/2021/moku-general-kessan.csv", "kou2022": "mof-history-v0/mof-archive/2022/kou-general-kessan.csv", "moku2022": "mof-history-v0/mof-archive/2022/moku-general-kessan.csv", "kou2023": "reference-v0/mof-archive/2023/kou-general-kessan.csv", "moku2023": "reference-v0/mof-archive/2023/moku-general-kessan.csv", "kou2024": "reference-v0/mof-archive/2024/kou-general-kessan.csv", "moku2024": "reference-v0/mof-archive/2024/moku-general-kessan.csv"}};
+const T = 1e12;
+const f = (v, d = 2) => (v / T).toFixed(d);
+const NS = 'http://www.w3.org/2000/svg';
+const el = (tag, attrs = {}, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+const tip = document.getElementById('tip');
+function hover(node, html) {
+  node.addEventListener('pointermove', e => { tip.innerHTML = html; tip.hidden = false; tip.style.left = Math.min(e.clientX + 12, innerWidth - 290) + 'px'; tip.style.top = (e.clientY + 12) + 'px'; });
+  node.addEventListener('pointerleave', () => { tip.hidden = true; });
+}
+const niceStep = max => { const raw = max / 4, p = Math.pow(10, Math.floor(Math.log10(raw))), m = raw / p; return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10) * p; };
+
+// 年度の流れ（左 = 入り、右 = 出。紫の帯 = 翌年度への繰越）
+function flow(id, ys) {
+  const s = document.getElementById(id), colW = 128, L = 46, R = 18, T0 = 24, B = 26, H = 280, bw = 36, gap = 12;
+  const W = L + ys.length * colW + R; s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.maxWidth = W + 'px';
+  if (W > 400) s.style.minWidth = Math.min(W, 560) + 'px';
+  const top = Math.max(...ys.map(y => y.cin + y.supp + y.res)), step = niceStep(top), yMax = Math.ceil(top / step) * step;
+  const y = v => T0 + (H - T0 - B) * (1 - v / yMax);
+  const g = el('g', { class: 'grid' }, s);
+  for (let v = 0; v <= yMax + 1; v += step) { el('line', { x1: L, x2: W - R, y1: y(v), y2: y(v) }, g); el('text', { x: L - 6, y: y(v) + 4, 'text-anchor': 'end' }, s).textContent = (v / T).toFixed(step < T ? 1 : 0); }
+  el('text', { x: 4, y: 12 }, s).textContent = '兆円';
+  const xs = ys.map((_, i) => L + i * colW + (colW - 2 * bw - gap) / 2);
+  // 帯（先に描いて、棒の後ろに）
+  ys.forEach((r, i) => { if (i === ys.length - 1 || r.cout <= 0) return; const x1 = xs[i] + 2 * bw + gap, x2 = xs[i + 1];
+    el('polygon', { points: `${x1},${y(r.cout)} ${x2},${y(r.cout)} ${x2},${y(0)} ${x1},${y(0)}`, fill: 'var(--band)' }, s); });
+  ys.forEach((r, i) => {
+    const xi = xs[i], xo = xi + bw + gap; let b = 0;
+    for (const [k, c] of [['cin', 'var(--cin)'], ['supp', 'var(--supp)'], ['res', 'var(--res)']]) { const v = r[k]; if (v > 0) el('rect', { x: xi, y: y(b + v), width: bw, height: Math.max(1, y(b) - y(b + v)), fill: c }, s); b += v; }
+    const inTot = b; b = 0;
+    for (const [k, c] of [['cout', 'var(--cout)'], ['unused', 'var(--unused)'], ['spent', 'var(--spent)']]) { const v = r[k]; if (v > 0) el('rect', { x: xo, y: y(b + v), width: bw, height: Math.max(1, y(b) - y(b + v)), fill: c }, s); b += v; }
+    el('text', { x: xi + bw + gap / 2, y: y(inTot) - 6, 'text-anchor': 'middle', class: 'lbl val' }, s).textContent = f(inTot, 1);
+    el('text', { x: xi + bw + gap / 2, y: H - 8, 'text-anchor': 'middle' }, s).textContent = `FY${r.y}`;
+    const hit = el('rect', { x: L + i * colW, y: T0, width: colW, height: H - T0 - B, fill: 'transparent' }, s);
+    hover(hit, `<b>FY${r.y}</b>（内閣府＋総務省）<br>使えるお金 ${f(inTot)}兆円<br>　前年度からの繰越 ${f(r.cin)}<br>　補正予算 ${f(r.supp)}<br>　予備費 ${f(r.res)}<br>行き先<br>　支出 ${f(r.spent)}<br>　不用 ${f(r.unused)}<br>　翌年度へ繰越 ${f(r.cout)}`);
+  });
+}
+flow('flowCovid', D.years.covid);
+flow('flowPrice', D.years.price);
+
+// 持つ府省・払う府省の表
+(() => {
+  const rows = [];
+  for (const [st, label] of [['covid', 'コロナ'], ['price', '物価高騰']]) for (const r of D.years[st]) rows.push({ label, ...r });
+  const c = v => v === 0 ? '0' : f(v);
+  document.getElementById('holdTbl').innerHTML = '<thead><tr><th class="l">年度</th><th class="l">系統</th><th>内閣府: 補正の取り分</th><th>予備費</th><th>前年度繰越</th><th>総務省へ移替</th><th>支出</th><th>翌年度繰越</th><th>不用</th><th>総務省: 補正の取り分</th><th>移替で受けた額</th><th>前年度繰越</th><th>支出</th><th>翌年度繰越</th><th>不用</th></tr></thead><tbody>' +
+    rows.map(r => `<tr><td class="l">FY${r.y}</td><td class="l">${r.label}</td><td>${c(r.cao.approp)}</td><td>${c(r.cao.res)}</td><td>${c(r.cao.cin)}</td><td>${c(-r.cao.mov)}</td><td>${c(r.cao.spent)}</td><td>${c(r.cao.cout)}</td><td>${c(r.cao.unused)}</td><td>${c(r.soumu.approp)}</td><td>${c(r.soumu.mov)}</td><td>${c(r.soumu.cin)}</td><td>${c(r.soumu.spent)}</td><td>${c(r.soumu.cout)}</td><td>${c(r.soumu.unused)}</td></tr>`).join('') + '</tbody>';
+})();
+
+// 交付金の種類ごとの締め（横の積み上げ）
+(() => {
+  const order = ['新型コロナウイルス感染症対応地方創生臨時交付金', '新型コロナウイルス感染症対応協力要請推進交付金', '新型コロナウイルス感染症対応検査促進交付金', '物価高騰対応重点支援地方創生臨時交付金'];
+  const short = { '新型コロナウイルス感染症対応地方創生臨時交付金': 'コロナ・地方創生臨時交付金', '新型コロナウイルス感染症対応協力要請推進交付金': 'コロナ・協力要請推進交付金', '新型コロナウイルス感染症対応検査促進交付金': 'コロナ・検査促進交付金', '物価高騰対応重点支援地方創生臨時交付金': '物価高騰・重点支援臨時交付金' };
+  const rows = order.map(n => ({ n, ...D.moku[n] })).map(r => ({ ...r, inn: r.approp + r.res + r.flow }));
+  const s = document.getElementById('mokuChart'), W = 680, rowH = 40, T0 = 6, L = 190, R = 72, H = T0 + rows.length * rowH + 4;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '540px';
+  const max = Math.max(...rows.map(r => r.inn)), x = v => L + (W - L - R) * v / max;
+  rows.forEach((r, i) => {
+    const y0 = T0 + i * rowH;
+    el('text', { x: L - 8, y: y0 + 22, 'text-anchor': 'end', class: 'lbl' }, s).textContent = short[r.n];
+    let a = 0;
+    for (const [k, c] of [['spent', 'var(--spent)'], ['unused', 'var(--unused)'], ['cout_last', 'var(--cout)']]) { const v = r[k]; if (v > 0) el('rect', { x: x(a), y: y0 + 8, width: Math.max(1, x(a + v) - x(a)), height: 22, fill: c }, s); a += v; }
+    el('text', { x: x(a) + 6, y: y0 + 23, class: 'val' }, s).textContent = `${f(r.inn)}兆円`;
+    const hit = el('rect', { x: 0, y: y0, width: W, height: rowH, fill: 'transparent' }, s);
+    hover(hit, `<b>${r.n}</b><br>入り ${f(r.inn)}兆円（補正 ${f(r.approp)}・予備費 ${f(r.res)}・流用 ${f(r.flow)}）<br>支出 ${f(r.spent)}（${(r.spent / r.inn * 100).toFixed(0)}%）<br>不用 ${f(r.unused)}（${(r.unused / r.inn * 100).toFixed(0)}%）<br>FY2025 へ繰越 ${f(r.cout_last)}`);
+  });
+})();
+
+// RS と決算
+(() => {
+  const rows = [];
+  for (const [st, label] of [['covid', 'コロナ'], ['price', '物価高騰']]) {
+    const rs = D.rs[st];
+    for (const a of rs.amounts) {
+      const k = D.years[st].find(r => r.y === a[1]);
+      const unfilled = a[1] === 2025; // RS の 2025 年度の執行額は、全事業で 0（未記入）
+      const any = a.slice(2, 9).some(v => v);
+      if (!any && !k) continue;
+      rows.push(`<tr><td class="l">${label}</td><td class="l">FY${a[1]}</td><td>${f(a[3] ?? 0)}</td><td>${k ? f(k.supp) : '—'}</td><td>${f(a[5] ?? 0)}</td><td>${k ? f(k.res) : '—'}</td><td>${unfilled ? '—' : f(a[7] ?? 0)}</td><td>${k ? f(k.spent) : '—'}</td><td>${unfilled ? '—' : f(a[8] ?? 0)}</td><td>${k ? f(k.cout) : '—'}</td></tr>`);
+    }
+  }
+  document.getElementById('rsTbl').innerHTML = '<thead><tr><th class="l">系統</th><th class="l">年度</th><th>補正（RS）</th><th>補正（決算）</th><th>予備費（RS）</th><th>予備費（決算）</th><th>執行（RS）</th><th>支出（決算）</th><th>繰越（RS）</th><th>繰越（決算）</th></tr></thead><tbody>' + rows.join('') + '</tbody>';
+})();
+</script>

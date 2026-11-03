@@ -1,0 +1,166 @@
+<title>予算の読み物</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Zen+Kaku+Gothic+New:wght@700;900&display=swap">
+<style>
+/* layout: 1 列の目次。各回は「問い」と「主な数字」を 1 行ずつ */
+:root {
+  --bg: #f6f7f9; --surface: #ffffff; --ink: #18202b; --muted: #5b6573; --line: #d9dee5; --up: #d2542a; --link: #2a6fc9;
+  --display: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", sans-serif;
+  --body: "BIZ UDPGothic", "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #12161c; --surface: #1a2029; --ink: #e8ecf1; --muted: #9aa5b3; --line: #2c3440; --up: #f07a50; --link: #5b9cf0; color-scheme: dark } }
+:root[data-theme="dark"] { --bg: #12161c; --surface: #1a2029; --ink: #e8ecf1; --muted: #9aa5b3; --line: #2c3440; --up: #f07a50; --link: #5b9cf0; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.75;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 32px 64px; }
+main { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 32px; }
+h1 { font-family: var(--display); font-weight: 900; font-size: clamp(28px, 6vw, 40px); line-height: 1.3; margin: 0; text-wrap: balance; }
+.lead { margin: 0; max-width: 65ch; color: var(--muted); }
+.eyebrow { font-size: 12px; letter-spacing: .08em; color: var(--muted); }
+ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+a.card { display: grid; grid-template-columns: 3.2em minmax(0, 1fr); gap: 4px 12px; text-decoration: none; color: inherit; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; }
+a.card:hover { border-color: var(--link); }
+a.card:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
+.no { grid-row: span 3; font-family: var(--display); font-weight: 900; font-size: 22px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.t { font-family: var(--display); font-weight: 700; font-size: 18px; color: var(--link); }
+.q { font-size: 14px; }
+.n { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.n b { color: var(--up); font-weight: 700; }
+footer { font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+</style>
+
+<main>
+  <header style="display:flex;flex-direction:column;gap:8px">
+    <span class="eyebrow">AI Data Stories · nihon-no-yosan · 2026-11-03</span>
+    <h1>国の予算を、問いで読む</h1>
+    <p class="lead">財務省の予算書・決算書、各府省の概算要求書、行政事業レビューのデータを、このプロジェクトで構造化したものだけを根拠にしています。各回の数字には、原資料・加工・AI の計算のどれに当たるかを付けています。</p>
+  </header>
+
+  <ol>
+    <li><a class="card" href="https://claude.ai/artifact/7BfbmonZM19iR4yd46M81F" target="_blank" rel="noopener">
+      <span class="no">0</span><span class="t">予算の10年</span>
+      <span class="q">この10年で、何が増えて、何が減ったか（一般会計の当初予算、FY2017→FY2026）</span>
+      <span class="n">97.5兆円 → 122.3兆円（<b>+24.9兆円</b>）。増加の 86% は国債費・地方交付税・防衛など 6 つの経費</span></a></li>
+    <li><a class="card" href="https://claude.ai/artifact/A8gJ9QccdLHMGq7UzDUKLL" target="_blank" rel="noopener">
+      <span class="no">1</span><span class="t">予算の一生</span>
+      <span class="q">当初予算は、補正・予備費・繰越を経て、いくら使われ、いくら残ったか（FY2017〜FY2024）</span>
+      <span class="n">FY2020 は当初 102.7兆円が補正で現額 <b>182.3兆円</b>に。支出 147.6兆円、繰越 30.8兆円、不用 3.9兆円</span></a></li>
+    <li><a class="card" href="https://claude.ai/artifact/6ZVHRFp3BrCd2J6WUS4X26" target="_blank" rel="noopener">
+      <span class="no">2</span><span class="t">要求と政府案の差</span>
+      <span class="q">各府省の概算要求は、政府案でどれだけ削られ、どれだけ増えたか（FY2023〜FY2027）</span>
+      <span class="n">4 年とも政府案が要求を上回る（FY2023 <b>+4.06兆円</b>、FY2026 +2.60兆円）。国債費は毎年、要求より少ない</span></a></li>
+    <li><a class="card" href="https://claude.ai/artifact/Tv3kctCRneNQe125dKvsvk" target="_blank" rel="noopener">
+      <span class="no">3</span><span class="t">子育て予算の引っ越し</span>
+      <span class="q">こども家庭庁と子ども・子育て支援特別会計の新設で、お金の流れはどう組み替わったか</span>
+      <span class="n">FY2023 のこども家庭庁 3.97兆円のうち <b>98%</b> を、前年の内閣府・厚生労働省などの目に照らせた（候補）</span></a></li>
+    <li><a class="card" href="https://claude.ai/artifact/UnvjCV8PtoRd2ocr7Sqhus" target="_blank" rel="noopener">
+      <span class="no">4</span><span class="t">防衛費の中身</span>
+      <span class="q">防衛関係費の増加は、装備品・施設・人件費の何に向かったか</span>
+      <span class="n">5.1兆円 → 9.0兆円。増加の <b>82%</b> は物件費（航空機修理費は 0.34 → 1.02兆円）</span></a></li>
+    <li><a class="card" href="https://claude.ai/artifact/BmAZRz7CpRS3RcJpXcJg7F" target="_blank" rel="noopener">
+      <span class="no">5</span><span class="t">AI と人工知能</span>
+      <span class="q">予算書の「人工知能」と、行政事業レビューの「AI」は、事業の単位でどこまでつながるか</span>
+      <span class="n">予算書の名前に「AI」は 0 件、RS の事業名は 36 件。FY2025 の 39 事業のうち <b>27</b> が予算書の項に結べた</span></a></li>
+  </ol>
+
+  <h2 style="font-family:var(--display);font-size:20px;margin:0">2 回目: 深掘りと新しい問い</h2>
+  <ol>
+    <li><a class="card" href="https://claude.ai/artifact/XivFBDHhoAGqBSzo5sKxBy" target="_blank" rel="noopener">
+      <span class="no">6</span><span class="t">予備費の行方</span>
+      <span class="q">コロナ等の予備費は、決算でどこに、いくら使われたか（FY2017〜FY2024）</span>
+      <span class="n">8 年で計上 33.7兆円、使用 <b>26.0兆円</b>。85% が FY2020〜FY2022。ウクライナ予備費は 2 年とも使用 0 円</span></a></li>
+    <li><a class="card" href="https://claude.ai/artifact/NfM4FgobQK2BwX7tSQJLsW" target="_blank" rel="noopener">
+      <span class="no">7</span><span class="t">国債費の中身</span>
+      <span class="q">国債費の増加は、償還か利払いか。国債整理基金特別会計の側で何が起きているか</span>
+      <span class="n">+7.75兆円のうち利払いの見込みが <b>+3.90兆円</b>。実際に払った利子は 8.9兆円前後で横ばい（FY2024 まで）</span></a></li>
+    <li><a class="card" href="https://claude.ai/artifact/F7dLgzW8eShaAbyLpcQhTU" target="_blank" rel="noopener">
+      <span class="no">8</span><span class="t">使い切れない予算</span>
+      <span class="q">翌年度繰越と不用は、どの項で生まれ、繰越はどこへ行ったか</span>
+      <span class="n">FY2020 の繰越は <b>30.8兆円</b>（現額の 16.9%）。内閣府の繰越の 82.5% は地方創生臨時交付金の 2 項</span></a></li>
+    <li><a class="card" href="https://claude.ai/artifact/LddXyzr5gM9m84psNTJsV8" target="_blank" rel="noopener">
+      <span class="no">9</span><span class="t">人件費の10年</span>
+      <span class="q">国の人件費は、どの府省・どの費目で増えたか</span>
+      <span class="n">4.39兆円 → 4.88兆円（+11.3%）。一般会計に占める割合は 4.50% → 3.99%。増加の <b>51%</b> は防衛省</span></a></li>
+    <li><a class="card" href="https://claude.ai/artifact/88dpgt5noCKvq4zawHnwwP" target="_blank" rel="noopener">
+      <span class="no">10</span><span class="t">特別会計の地図</span>
+      <span class="q">特別会計の規模と、会計間の繰入を除いた純計はどれくらいか</span>
+      <span class="n">一般会計と足した 564.0兆円のうち <b>158.6兆円</b>（28%）は会計間の繰入。試算純計は 405.4兆円</span></a></li>
+  </ol>
+
+  <h2 style="font-family:var(--display);font-size:20px;margin:0">3 回目: お金の通り道を追う</h2>
+  <ol>
+    <li><a class="card" href="https://claude.ai/artifact/TFitXaNT4SbesZTbuEXjFD" target="_blank" rel="noopener">
+      <span class="no">11</span><span class="t">交付金の行方</span>
+      <span class="q">地方創生臨時交付金は、補正・予備費・移し替え・繰越を経て、どこでいくら支出されたか</span>
+      <span class="n">入り 22.75兆円、支出 18.22兆円、不用 3.30兆円。内閣府の項からの支出は <b>5 年間 0 円</b>で、払うのは総務省</span></a></li>
+    <li><a class="card" href="https://claude.ai/artifact/Ji12b5vqQ4q9snEhjgUTXq" target="_blank" rel="noopener">
+      <span class="no">12</span><span class="t">補正予算の10年</span>
+      <span class="q">補正予算は、毎年なにに足され、なにから減らされてきたか</span>
+      <span class="n">10 年で差し引き 197.7兆円。コロナ後も年 13〜18兆円で、コロナ前の <b>4〜5 倍</b>が続く</span></a></li>
+    <li><a class="card" href="https://claude.ai/artifact/FbUX85vaYUbCwtRA8iZHqL" target="_blank" rel="noopener">
+      <span class="no">13</span><span class="t">地方へ渡るお金</span>
+      <span class="q">国の予算のうち、地方に渡るお金はどれくらいで、どう変わったか</span>
+      <span class="n">33.9兆円 → 41.8兆円（<b>+7.9兆円</b>）。増加の 45% は地方交付税。補助負担金はほぼ横ばいで中身が入れ替わる</span></a></li>
+    <li><a class="card" href="https://claude.ai/artifact/VAZTinifEsdimNKNKnyqwY" target="_blank" rel="noopener">
+      <span class="no">14</span><span class="t">財政投融資の山</span>
+      <span class="q">FY2021 に膨らんだ財政投融資特別会計は、どこまで使われたか</span>
+      <span class="n">当初 72.6兆円 → 補正後 40.5兆円 → 支出 <b>35.3兆円</b>（当初の 49%）。使わなかった分は繰り越さず不用</span></a></li>
+    <li><a class="card" href="https://claude.ai/artifact/BmXqzQERj284Ep3sgRL2jg" target="_blank" rel="noopener">
+      <span class="no">15</span><span class="t">お金の行き先</span>
+      <span class="q">国の事業のお金は、どの種類の相手に、何段で流れたか（行政事業レビュー、FY2024 の執行）</span>
+      <span class="n">直接払った 126.9兆円の <b>39.6%</b> は年金などの受給者。2 段目以降の支出先がある事業は 39.2%</span></a></li>
+  </ol>
+
+  <h2 style="font-family:var(--display);font-size:20px;margin:0">4 回目: 仕組みの形を見る</h2>
+  <ol>
+    <li><a class="card" href="https://claude.ai/artifact/MhXnEXBhANr8Dc73kMFS4S" target="_blank" rel="noopener">
+      <span class="no">16</span><span class="t">移し替えの地図</span>
+      <span class="q">予算を持つ府省と、実際に払う府省は、どれだけ違うか（予算決定後の移し替え）</span>
+      <span class="n">8 年で 11.32兆円。その <b>95.9%</b> は地方創生臨時交付金の内閣府 → 総務省。一括計上は決算の移し替えにほぼ出ない</span></a></li>
+    <li><a class="card" href="https://claude.ai/artifact/JmMEHiukLaRBMNjR3GoJe1" target="_blank" rel="noopener">
+      <span class="no">17</span><span class="t">基金へのお金</span>
+      <span class="q">基金・出資金・資金へのお金は、当初と補正のどちらから、どの府省から出ているか</span>
+      <span class="n">10 年で 29.26兆円、その <b>80%</b> は補正予算から。当初で毎年積む基金は科研費が中心</span></a></li>
+    <li><a class="card" href="https://claude.ai/artifact/Ehng6jRANwiLXrSkfdF7iV" target="_blank" rel="noopener">
+      <span class="no">18</span><span class="t">契約の方式と入札</span>
+      <span class="q">国の事業のお金は、どの契約方式で払われたか（行政事業レビュー、FY2024 の執行）</span>
+      <span class="n">支払いの 3.8% が調達。一般競争の契約の <b>48.5%</b> は入札者が 1 者（件数）</span></a></li>
+    <li><a class="card" href="https://claude.ai/artifact/BgafCgQJwN4ZzqVwq3UGP7" target="_blank" rel="noopener">
+      <span class="no">19</span><span class="t">障害福祉の10年</span>
+      <span class="q">障害福祉の予算は、10 年でどれだけ、どの給付で伸びたか</span>
+      <span class="n">1.73兆円 → 2.93兆円（<b>+68.8%</b>）。一般会計の伸びの約 2.7 倍で、10 年間毎年増加</span></a></li>
+    <li><a class="card" href="https://claude.ai/artifact/XzK7sqVtAmMTNeFZAzUgzV" target="_blank" rel="noopener">
+      <span class="no">20</span><span class="t">特別会計の使い残し</span>
+      <span class="q">特別会計は、使えるお金のうちどれだけを使い残したか</span>
+      <span class="n">8 年の不用は <b>152.2兆円</b>（4.5%）で一般会計の約 4 倍。繰越は約 3 分の 1</span></a></li>
+  </ol>
+
+  <h2 style="font-family:var(--display);font-size:20px;margin:0">5 回目: 見積もりと実際</h2>
+  <ol>
+    <li><a class="card" href="https://claude.ai/artifact/PDmFbBW1F1DMdSke9X63RM" target="_blank" rel="noopener">
+      <span class="no">21</span><span class="t">年金の見積もりと実績</span>
+      <span class="q">年金特別会計の給付は、見積もり（当初予算）と実績がどれだけ離れているか</span>
+      <span class="n">基礎年金給付費の不用は 0.87兆円 → <b>4.56兆円</b>（FY2024）。当初に対する支出は 96.3% → 84.8%</span></a></li>
+    <li><a class="card" href="https://claude.ai/artifact/DmAiPUbfpoaX7x84geTxJC" target="_blank" rel="noopener">
+      <span class="no">22</span><span class="t">防衛の契約</span>
+      <span class="q">防衛省は、何を、どんな契約方式で買っているか（行政事業レビュー、FY2024 の執行）</span>
+      <span class="n">最大は航空機の 1.49兆円。航空機の調達の <b>59%</b> は随意契約（その他）</span></a></li>
+    <li><a class="card" href="https://claude.ai/artifact/FrBuqy8AYTEj6jYpJnjTDg" target="_blank" rel="noopener">
+      <span class="no">23</span><span class="t">コロナ期の資金繰り</span>
+      <span class="q">コロナ期の企業の資金繰り支援（出資・保証・給付金）は、どこまで使われたか</span>
+      <span class="n">入り 25.94兆円、支出 23.17兆円（89%）。公庫への出資の支出は <b>1 年遅れて</b> FY2021 に山</span></a></li>
+    <li><a class="card" href="https://claude.ai/artifact/2RGFbtGzJtjmhQMtSRP15Q" target="_blank" rel="noopener">
+      <span class="no">24</span><span class="t">研究開発の基金</span>
+      <span class="q">研究開発の基金は、積んだ後どう見えるか（予算書・決算・行政事業レビュー）</span>
+      <span class="n">10 年で 3.82兆円、<b>68%</b> が補正。決算では積んだ年に全額支出済で、その先は見えない</span></a></li>
+    <li><a class="card" href="https://claude.ai/artifact/YKQdyB6hW8uzojxnW2BwKY" target="_blank" rel="noopener">
+      <span class="no">25</span><span class="t">教育予算の10年</span>
+      <span class="q">教育の予算は、10 年でどう動いたか。FY2026 の伸びの中身は何か</span>
+      <span class="n">4.05兆円 → 4.60兆円（+13.6%）。増加の大半の <b>+0.48兆円</b> は FY2026 の 1 年（高校就学支援・給食費）</span></a></li>
+  </ol>
+
+  <footer>
+    <span>出典：財務省「予算書・決算書データベース」、各府省の概算要求書、行政事業レビュー見える化サイト（https://rssystem.go.jp）を加工して作成。国や各府省が作成した加工していない情報ではありません。</span>
+    <span>各回は、それぞれの「この数字の作り方と、確かめられないこと」を参照してください。</span>
+  </footer>
+</main>

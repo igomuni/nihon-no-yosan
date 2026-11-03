@@ -1,0 +1,290 @@
+<title>障害福祉の10年</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Zen+Kaku+Gothic+New:wght@700;900&display=swap">
+<style>
+/* layout: 1 本の読み物の列（最大 760px）。給付の種類は色、こども家庭庁へ移った分は斜線で示す */
+:root {
+  --bg: #f6f7f9; --surface: #ffffff; --ink: #18202b; --muted: #5b6573; --line: #d9dee5; --tag: #eef1f5;
+  --up: #d2542a; --down: #2a6fc9; --zero: #9aa3ae;
+  --c1: #2a78d6; --c2: #eb6834; --c3: #1baf7a; --c4: #eda100; --c5: #9aa3b2;
+  --display: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", sans-serif;
+  --body: "BIZ UDPGothic", "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #12161c; --surface: #1a2029; --ink: #e8ecf1; --muted: #9aa5b3; --line: #2c3440; --tag: #232b36;
+  --up: #f07a50; --down: #5b9cf0; --zero: #6b7582;
+  --c1: #3987e5; --c2: #d95926; --c3: #199e70; --c4: #c98500; --c5: #6b7385; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #12161c; --surface: #1a2029; --ink: #e8ecf1; --muted: #9aa5b3; --line: #2c3440; --tag: #232b36;
+  --up: #f07a50; --down: #5b9cf0; --zero: #6b7582;
+  --c1: #3987e5; --c2: #d95926; --c3: #199e70; --c4: #c98500; --c5: #6b7385; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.8;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 32px 64px; }
+main { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 56px; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; line-height: 1.35; margin: 0; }
+h1 { font-size: clamp(28px, 6vw, 40px); font-weight: 900; }
+h2 { font-size: 22px; font-weight: 700; }
+h3 { font-size: 16px; font-weight: 700; }
+p { margin: 0; max-width: 65ch; }
+section { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; color: var(--muted); }
+.num { font-variant-numeric: tabular-nums; }
+.up { color: var(--up); } .down { color: var(--down); }
+.big { font-family: var(--display); font-weight: 900; font-size: clamp(40px, 9vw, 60px); line-height: 1.1; color: var(--up); }
+.from-to { color: var(--muted); }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.kpi b { font-family: var(--display); font-size: 22px; font-variant-numeric: tabular-nums; }
+.kpi span { font-size: 12px; color: var(--muted); }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; min-width: 0; }
+.scroll { overflow-x: auto; }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { fill: var(--muted); font-family: var(--body); font-size: 11px; }
+.chart .lbl { fill: var(--ink); font-size: 12px; }
+.chart .val { font-variant-numeric: tabular-nums; }
+.grid line { stroke: var(--line); stroke-width: 1; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+.legend i.hatch { background: repeating-linear-gradient(45deg, var(--muted) 0 2px, transparent 2px 5px); border: 1px solid var(--muted); }
+.note { font-size: 13px; color: var(--muted); }
+.tag { display: inline-block; font-size: 11px; padding: 0 8px; border-radius: 999px; background: var(--tag); color: var(--muted); margin-right: 6px; white-space: nowrap; }
+.tag.src::before { content: "原資料"; } .tag.proc::before { content: "加工"; } .tag.ai::before { content: "AIの計算・解釈"; }
+.claims { display: flex; flex-direction: column; gap: 12px; padding: 0; margin: 0; list-style: none; }
+.claims li { display: grid; gap: 4px; }
+.badge { display: inline-block; font-size: 11px; padding: 0 6px; border-radius: 4px; border: 1px solid currentColor; margin-left: 6px; }
+.badge.ok { color: var(--c3); } .badge.cand { color: var(--c4); }
+table { border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
+th, td { padding: 4px 8px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; position: sticky; left: 0; background: var(--surface); }
+thead th { color: var(--muted); font-weight: 400; }
+details { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+summary { cursor: pointer; font-weight: 700; }
+summary:focus-visible { outline: 2px solid var(--down); outline-offset: 2px; }
+.notes { padding-left: 1.2em; margin: 0; display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--muted); }
+.questions { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.questions li { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+footer { font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+#tip { position: fixed; pointer-events: none; background: var(--ink); color: var(--bg); font-size: 12px; padding: 6px 8px; border-radius: 6px; line-height: 1.5; max-width: 280px; z-index: 5; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<main>
+  <header style="display:flex;flex-direction:column;gap:10px">
+    <span class="eyebrow">一般会計・当初予算（政府案）と補正・決算 · FY2017 → FY2026 · 厚生労働省「障害保健福祉費」＋こども家庭庁「障害児支援等対策費」</span>
+    <h1>障害福祉の予算は、10 年でどれだけ伸びたか</h1>
+    <div class="big num" id="heroDelta"></div>
+    <div class="from-to num" id="heroFromTo"></div>
+    <div class="kpis">
+      <div class="kpi"><b class="num" id="kGrowth"></b><span>障害福祉の 2 項の伸び（当初予算）</span></div>
+      <div class="kpi"><b class="num" id="kGen"></b><span>一般会計全体の伸び（同じ期間）</span></div>
+      <div class="kpi"><b class="num" id="kShare"></b><span>増えた分のうち、障害者自立支援給付費負担金</span></div>
+    </div>
+  </header>
+
+  <section>
+    <h2>増えた分の 6 割強は、障害者自立支援給付費負担金</h2>
+    <p id="leadStack"></p>
+    <div class="panel scroll"><svg class="chart" id="stackChart" role="img" aria-label="障害福祉の 2 項の当初予算を、目のまとまりで積み上げた年度推移"></svg></div>
+    <div class="legend" id="legend"></div>
+    <p class="note">FY2023 以降の障害児入所給付費等負担金（医療を含む）は、こども家庭庁の項にあります（斜線）。棒にカーソルを当てると内訳が出ます。</p>
+  </section>
+
+  <section>
+    <h2>伸び方を、目のまとまりで比べる</h2>
+    <div class="panel scroll"><svg class="chart" id="deltaChart" role="img" aria-label="目のまとまりごとの増減（FY2017 → FY2026）"></svg></div>
+    <ul class="claims">
+      <li><strong id="cJiritsu"></strong><span>障害福祉サービスの費用の国の負担分（目の名前から。中身の内訳はデータに無い）。毎年 0.05〜0.16兆円ずつ増え、減った年はありません。</span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+      <li><strong id="cJidou"></strong><span>伸び率は一番高く、2.8 倍です。FY2023 からはこども家庭庁の項に移りましたが、目の名前と分類コードは同じです。</span><span><span class="tag src"></span><span class="tag ai"></span></span></li>
+      <li><strong>地域生活支援事業費等補助金は、ほぼ横ばい</strong><span id="cOther"></span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>FY2023 の引っ越しを、データで確かめる</h2>
+    <p>FY2023 に、障害児の入所給付などが厚生労働省からこども家庭庁へ移りました。項の名前は変わり（障害保健福祉費 → 障害児支援等対策費）、年度をまたぐ項の対応はつながっていません。次の 4 つの手がかりで、確定と候補を分けました。</p>
+    <div class="panel scroll"><table id="moveTbl"></table></div>
+    <p class="note"><span class="badge ok">確定</span> = 原資料の額が円まで一致。<span class="badge cand">候補</span> = 目の名前と分類コードが同じで、前年度の一般会計に 1 つだけある（同じものだという記載は無い）。</p>
+  </section>
+
+  <section>
+    <h2>要求と政府案、補正、決算</h2>
+    <p id="leadFlow"></p>
+    <div class="panel scroll"><svg class="chart" id="flowChart" role="img" aria-label="概算要求・政府案・補正後・支出済の年度推移"></svg></div>
+    <div class="legend" id="flowLegend"></div>
+    <ul class="claims">
+      <li><strong id="cReq"></strong><span id="cReqText"></span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+      <li><strong id="cSupp"></strong><span id="cSuppText"></span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+      <li><strong id="cUnused"></strong><span id="cUnusedText"></span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>全部の数字（億円）</h2>
+    <details>
+      <summary>目のまとまり × 年度、と 2 項の合計を開く</summary>
+      <div class="scroll" style="margin-top:12px"><table id="allTbl"></table></div>
+    </details>
+  </section>
+
+  <section>
+    <h2>この数字の作り方と、確かめられないこと</h2>
+    <ul class="notes">
+      <li><span class="tag src"></span>財務省「予算書・決算書データベース」の予算書（項・事項・目の表）と決算書（項・目の表）、各府省の概算要求書（FY2023〜FY2027）。一般会計。当初予算は政府案（FY2025 は国会提出時の版。FY2017〜FY2021 は提出時か成立後かを判定できていない）。</li>
+      <li><span class="tag proc"></span>nihon-no-yosan が抽出・構造化したデータ。「障害福祉」の範囲は、厚生労働省の項「障害保健福祉費」と、こども家庭庁の項「障害児支援等対策費」（FY2023〜）の 2 項（FY2023 だけ、こども家庭庁に決算だけの「障害保健福祉費」0.009兆円がある）。名前に「障害」を含むほかの項（国立障害者リハビリテーションセンター、独立行政法人の運営費など。合計で年 0.02兆円未満）と、年金の障害年金、特別会計は含めていない。</li>
+      <li><span class="tag proc"></span>検算: 2 項の当初予算、主な目、決算の現額・支出済・不用・翌年度繰越を、予算書・決算書の CSV を直接足した値と照合し、全年度で一致した。</li>
+      <li><span class="tag ai"></span>目のまとまり（5 つ）、伸び率、割合、こども家庭庁へ移った分の対応（候補）は、この探索で計算・判断したもの。政府の公表値とは照合していない。</li>
+      <li>補正後の目の値は、補正予算書に個別の行がある目だけにある（「外N目」にまとめられた目は値なし）。補正の比較は、項の補正後で行った。</li>
+      <li>FY2027 の概算要求は、厚生労働省の要求書がデータに無い（こども家庭庁の要求だけがある）。FY2025・FY2026 の決算は無い。</li>
+      <li>名目の金額で、物価や報酬改定の影響は分けていない。利用者数・単価のデータは無いので、増えた理由は言えない。</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>次に、聞かせてください</h2>
+    <ol class="questions">
+      <li>障害者自立支援給付費負担金の伸び（10 年で 1.7 倍）は、どこまで追いたいですか。行政事業レビュー（RS）の事業と、支出先（自治体）まで降りられるか試せます。</li>
+      <li>障害児入所給付費等負担金は、FY2020〜FY2022 に毎年 0.06〜0.07兆円の不用が出ていました。こども家庭庁へ移った後の FY2024 は、ほぼ 0 です。この変化を年度ごとに追いますか。</li>
+      <li>年金特別会計の障害年金や、地方の負担分まで含めた「障害福祉の全体」を見ますか。範囲の決め方から一緒に考えたいです。</li>
+    </ol>
+  </section>
+
+  <footer>
+    <span>出典：財務省「予算書・決算書データベース」、各府省の概算要求書を加工して作成。国や各府省が作成した加工していない情報ではありません。</span>
+    <span>nihon-no-yosan の AI Data Stories PoC（ループ 4 回目、2026-11-03）。金額は億円・兆円（円・千円の値から計算し、表示で丸め）。</span>
+  </footer>
+</main>
+<div id="tip" hidden></div>
+
+<script>
+const D = {"Y": [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026, 2027], "groups": [{"k": "jiritsu", "n": "障害者自立支援給付費負担金", "bud": [10542, 11148, 11885, 12578, 13111, 13859, 14728, 15651, 16531, 18145, null], "req": [null, null, null, null, null, null, 14599, 15462, 16497, 17537, null], "cur": [10379, 11148, 11885, 12578, 13111, 13795, 14717, 16022, null, null, null], "spent": [10379, 11008, 11502, 12138, 13017, 13643, 14672, 16012, null, null, null], "unused": [0, 140, 383, 440, 93, 152, 45, 9, null, null, null]}, {"k": "jidou", "n": "障害児入所給付費等負担金（医療を含む）", "bud": [1840, 2382, 2870, 3478, 3890, 4309, 4537, 4744, 4925, 5202, null], "req": [null, null, null, null, null, null, 4706, 4741, 4914, 5123, 5402], "cur": [2004, 2382, 2870, 3599, 3890, 4310, 4540, 4750, null, null, null], "spent": [1987, 2268, 2570, 2892, 3316, 3669, 4222, 4743, null, null, null], "unused": [16, 113, 300, 707, 574, 642, 318, 7, null, null, null]}, {"k": "iryo", "n": "障害者医療費負担金", "bud": [2404, 2390, 2400, 2546, 2533, 2535, 2527, 2591, 2666, 2809, null], "req": [null, null, null, null, null, null, 2554, 2588, 2628, 2756, null], "cur": [2335, 2371, 2386, 2422, 2463, 2529, 2527, 2591, null, null, null], "spent": [2300, 2329, 2374, 2393, 2454, 2482, 2524, 2591, null, null, null], "unused": [35, 42, 12, 29, 10, 47, 3, 0, null, null, null]}, {"k": "teate", "n": "特別児童扶養手当・特別障害者手当等", "bud": [1619, 1637, 1681, 1724, 1748, 1787, 1861, 1977, 2093, 2197, null], "req": [null, null, null, null, null, null, 1836, 1935, 2037, 2158, null], "cur": [1619, 1637, 1681, 1724, 1748, 1787, 1861, 1961, null, null, null], "spent": [1583, 1613, 1657, 1705, 1738, 1765, 1849, 1946, null, null, null], "unused": [36, 24, 23, 19, 9, 22, 12, 15, null, null, null]}, {"k": "other", "n": "地域生活支援事業費等補助金・その他", "bud": [931, 908, 887, 927, 926, 907, 902, 903, 904, 917, null], "req": [null, null, null, null, null, null, 836, 824, 830, 906, 0], "cur": [934, 943, 1039, 1182, 1477, 1608, 1322, 1523, null, null, null], "spent": [910, 885, 952, 1065, 956, 1364, 1033, 1075, null, null, null], "unused": [24, 22, 60, 91, 18, 75, 58, 81, null, null, null]}], "tot": {"req": [null, null, null, null, null, null, 24530, 25550, 26906, 28479, 5402], "bud": [17336, 18465, 19723, 21253, 22207, 23397, 24554, 25867, 27118, 29269, null], "rev": [17268, 18480, 19725, 21476, 22662, 23526, 24796, 26612, 29448, null, null], "cur": [17271, 18480, 19860, 21505, 22688, 24029, 24967, 26845, null, null, null], "spent": [17159, 18104, 19055, 20193, 21481, 22923, 24299, 26366, null, null, null], "carried": [0, 36, 27, 27, 503, 169, 231, 367, null, null, null], "unused": [111, 341, 779, 1285, 705, 937, 436, 112, null, null, null]}, "cfa": {"req": [null, null, null, null, null, null, 4707, 4741, 4914, 5123, 5402], "bud": [null, null, null, null, null, null, 4537, 4744, 4925, 5202, null], "rev": [null, null, null, null, null, null, 4540, 4750, 5544, null, null]}, "mhlw": {"req": [null, null, null, null, null, null, 19823, 20809, 21992, 23356, null], "bud": [17336, 18465, 19723, 21253, 22207, 23397, 20018, 21123, 22194, 24067, null], "rev": [17268, 18480, 19725, 21476, 22662, 23526, 20256, 21862, 23905, null, null]}, "gen": [974547, 977128, 1014571, 1026580, 1066097, 1075964, 1143812, 1125717, 1155415, 1223092, null]};
+const Y = D.Y, I17 = 0, I26 = Y.indexOf(2026), I23 = Y.indexOf(2023);
+const tr = v => v / 10000;                       // 億円 → 兆円
+const f2 = v => v === null || v === undefined ? '—' : tr(v).toFixed(2);
+const f3 = v => v === null || v === undefined ? '—' : tr(v).toFixed(3);
+const ok = v => v === null || v === undefined ? '—' : v.toLocaleString('ja-JP');
+const sgn = (v, d = 2) => (v > 0 ? '+' : v < 0 ? '−' : '±') + Math.abs(tr(v)).toFixed(d);
+const NS = 'http://www.w3.org/2000/svg';
+const el = (tag, a = {}, p) => { const e = document.createElementNS(NS, tag); for (const k in a) e.setAttribute(k, a[k]); if (p) p.appendChild(e); return e; };
+const tip = document.getElementById('tip');
+function hover(node, html) {
+  node.addEventListener('pointermove', e => { tip.innerHTML = html; tip.hidden = false; tip.style.left = Math.min(e.clientX + 12, innerWidth - 290) + 'px'; tip.style.top = (e.clientY + 12) + 'px'; });
+  node.addEventListener('pointerleave', () => { tip.hidden = true; });
+}
+const COLORS = { jiritsu: 'var(--c1)', jidou: 'var(--c2)', iryo: 'var(--c3)', teate: 'var(--c4)', other: 'var(--c5)' };
+const SHORT = { jiritsu: '自立支援給付', jidou: '障害児入所給付（医療含む）', iryo: '障害者医療', teate: '特別児童扶養手当など', other: '地域生活支援・その他' };
+const T = D.tot, b0 = T.bud[I17], b1 = T.bud[I26], d = b1 - b0;
+const gen0 = D.gen[I17], gen1 = D.gen[I26];
+const G = Object.fromEntries(D.groups.map(g => [g.k, g]));
+const gd = k => G[k].bud[I26] - G[k].bud[I17];
+
+// ヒーロー
+document.getElementById('heroDelta').textContent = `+${tr(d).toFixed(2)}兆円`;
+document.getElementById('heroFromTo').textContent = `${f2(b0)}兆円（FY2017）→ ${f2(b1)}兆円（FY2026）`;
+document.getElementById('kGrowth').textContent = `+${((b1 / b0 - 1) * 100).toFixed(1)}%`;
+document.getElementById('kGen').textContent = `+${((gen1 / gen0 - 1) * 100).toFixed(1)}%`;
+document.getElementById('kShare').textContent = `${(gd('jiritsu') / d * 100).toFixed(0)}%`;
+document.getElementById('leadStack').textContent = `2 項の当初予算は ${f2(b0)}兆円から ${f2(b1)}兆円へ、毎年増えています（減った年はありません）。増えた ${tr(d).toFixed(2)}兆円のうち、障害者自立支援給付費負担金が ${sgn(gd('jiritsu'))}兆円、障害児入所給付費等負担金（医療を含む）が ${sgn(gd('jidou'))}兆円です。`;
+
+// 積み上げ棒（政府案。FY2017〜FY2026）
+(() => {
+  const s = document.getElementById('stackChart'), n = I26 + 1, W = 680, H = 280, L = 44, R = 12, Tp = 22, B = 24;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '520px';
+  const defs = el('defs', {}, s), pat = el('pattern', { id: 'hatch', width: 6, height: 6, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }, defs);
+  el('rect', { width: 2.2, height: 6, fill: 'var(--surface)', 'fill-opacity': 0.75 }, pat);
+  const max = Math.max(...T.bud.slice(0, n)), step = 5000, top = Math.ceil(max * 1.08 / step) * step;
+  const cw = (W - L - R) / n, bw = cw * 0.62, y = v => Tp + (H - Tp - B) * (1 - v / top);
+  const g = el('g', { class: 'grid' }, s);
+  for (let v = 0; v <= top; v += step) { el('line', { x1: L, x2: W - R, y1: y(v), y2: y(v) }, g); el('text', { x: L - 6, y: y(v) + 4, 'text-anchor': 'end' }, s).textContent = tr(v).toFixed(1); }
+  el('text', { x: 4, y: 12 }, s).textContent = '兆円';
+  for (let i = 0; i < n; i++) {
+    const x = L + cw * i + (cw - bw) / 2; let base = 0; const parts = [];
+    for (const k of ['jiritsu', 'jidou', 'iryo', 'teate', 'other']) {
+      const v = G[k].bud[i] ?? 0; if (v <= 0) continue;
+      const y0 = y(base), y1 = y(base + v), h = Math.max(0, y0 - y1 - (base ? 1 : 0));
+      el('rect', { x, y: y1 + (base ? 1 : 0), width: bw, height: h, fill: COLORS[k], rx: k === 'other' ? 2 : 0 }, s);
+      if (k === 'jidou' && Y[i] >= 2023) el('rect', { x, y: y1 + 1, width: bw, height: h, fill: 'url(#hatch)' }, s);
+      parts.push(`${SHORT[k]} ${f3(v)}兆円`); base += v;
+    }
+    el('text', { x: x + bw / 2, y: H - 8, 'text-anchor': 'middle' }, s).textContent = String(Y[i]).slice(2);
+    if (i === 0 || i === I23 || i === I26) el('text', { x: x + bw / 2, y: y(T.bud[i]) - 6, 'text-anchor': 'middle', class: 'lbl val' }, s).textContent = f2(T.bud[i]);
+    hover(el('rect', { x: L + cw * i, y: Tp, width: cw, height: H - Tp - B, fill: 'transparent' }, s), `<b>FY${Y[i]} 政府案 ${f3(T.bud[i])}兆円</b><br>${parts.join('<br>')}${Y[i] >= 2023 ? '<br>（障害児入所はこども家庭庁の項）' : ''}`);
+  }
+  document.getElementById('legend').innerHTML = Object.keys(SHORT).map(k => `<span><i style="background:${COLORS[k]}"></i>${SHORT[k]}</span>`).join('') + '<span><i class="hatch"></i>こども家庭庁の項（FY2023〜）</span>';
+})();
+
+// 増減の横棒
+(() => {
+  const rows = D.groups.map(g => ({ k: g.k, n: SHORT[g.k], d: gd(g.k), a: g.bud[I17], b: g.bud[I26] })).sort((p, q) => q.d - p.d);
+  const s = document.getElementById('deltaChart'), W = 680, rowH = 30, Tp = 6, L = 190, R = 150, H = Tp + rows.length * rowH + 22;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '540px';
+  const lo = Math.min(0, ...rows.map(r => r.d)), hi = Math.max(...rows.map(r => r.d)), x = v => L + (W - L - R) * (v - lo) / (hi - lo), x0 = x(0);
+  const g = el('g', { class: 'grid' }, s);
+  for (let v = 0; v <= hi; v += 2000) { el('line', { x1: x(v), x2: x(v), y1: Tp, y2: H - 20 }, g); el('text', { x: x(v), y: H - 4, 'text-anchor': 'middle' }, s).textContent = v === 0 ? '0' : `+${tr(v).toFixed(1)}兆`; }
+  rows.forEach((r, i) => {
+    const yy = Tp + i * rowH, up = r.d >= 0;
+    el('text', { x: L - 8, y: yy + 19, 'text-anchor': 'end', class: 'lbl' }, s).textContent = r.n;
+    el('rect', { x: Math.min(x(r.d), x0), y: yy + 7, width: Math.max(2, Math.abs(x(r.d) - x0)), height: rowH - 14, rx: 3, fill: COLORS[r.k] }, s);
+    const t = el('text', { x: Math.max(x(r.d), x0) + 6, y: yy + 19, class: 'val' }, s); t.textContent = `${sgn(r.d, 3)}兆円（${r.a ? (r.b / r.a).toFixed(2) + '倍' : '—'}）`;
+    hover(el('rect', { x: 0, y: yy, width: W, height: rowH, fill: 'transparent' }, s), `<b>${r.n}</b><br>${f3(r.a)} → ${f3(r.b)}兆円（${sgn(r.d, 3)}）`);
+  });
+  el('line', { x1: x0, x2: x0, y1: Tp, y2: H - 20, stroke: 'var(--zero)' }, s);
+  const J = G.jiritsu, K = G.jidou, O = G.other;
+  document.getElementById('cJiritsu').textContent = `障害者自立支援給付費負担金 ${f2(J.bud[I17])} → ${f2(J.bud[I26])}兆円（${sgn(gd('jiritsu'))}兆円、${(J.bud[I26] / J.bud[I17]).toFixed(2)} 倍）`;
+  document.getElementById('cJidou').textContent = `障害児入所給付費等負担金（医療を含む）${f3(K.bud[I17])} → ${f3(K.bud[I26])}兆円（${sgn(gd('jidou'), 3)}兆円）`;
+  document.getElementById('cOther').textContent = `地域生活支援事業費等補助金などは ${f3(O.bud[I17])} → ${f3(O.bud[I26])}兆円で、ほぼ変わっていません。障害者医療費負担金は ${f3(G.iryo.bud[I17])} → ${f3(G.iryo.bud[I26])}兆円、特別児童扶養手当などは ${f3(G.teate.bud[I17])} → ${f3(G.teate.bud[I26])}兆円です。`;
+})();
+
+// 引っ越しの手がかり
+document.getElementById('moveTbl').innerHTML = `<thead><tr><th>手がかり</th><th>FY2022（厚生労働省）</th><th>FY2023</th><th>判定</th></tr></thead><tbody>
+<tr><td>目「障害児入所給付費等負担金」の名前と分類コード（06-083-2-84-5）</td><td>4,256億円（一般会計に 1 つだけ）</td><td>こども家庭庁 4,483億円</td><td><span class="badge cand">候補</span></td></tr>
+<tr><td>目「障害児入所医療費等負担金」の名前と分類コード（03-083-2-84-5）</td><td>53億円（1 つだけ）</td><td>こども家庭庁 54億円</td><td><span class="badge cand">候補</span></td></tr>
+<tr><td>厚生労働省の同じ 2 つの目</td><td>—</td><td>予算書に、政府案 0 円・要求 0 円で残っている</td><td><span class="badge ok">原資料</span></td></tr>
+<tr><td>厚生労働省「障害保健福祉費」の前年度予算額（FY2023 の予算書）</td><td>補正後 23,526億円（障害児の分を含む）</td><td>前年度予算額 23,526億円、政府案 20,018億円</td><td><span class="badge ok">確定</span>（円まで一致）</td></tr>
+<tr><td>決算の「予算決定後移替」（FY2023）</td><td>—</td><td>厚生労働省 −89.19億円 / こども家庭庁「障害保健福祉費」+89.19億円</td><td><span class="badge ok">確定</span>（円まで一致）</td></tr>
+</tbody>`;
+
+// 要求・政府案・補正後・支出済
+(() => {
+  const s = document.getElementById('flowChart'), W = 680, H = 250, L = 44, R = 12, Tp = 14, B = 24, n = Y.length;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '520px';
+  const series = [['req', '概算要求', 'var(--c1)'], ['bud', '政府案', 'var(--c2)'], ['rev', '補正後', 'var(--c3)'], ['spent', '支出済（決算）', 'var(--c4)']];
+  const all = series.flatMap(([k]) => T[k].filter(v => v !== null && v > 6000));
+  const lo = Math.floor(Math.min(...all) * 0.95 / 5000) * 5000, hi = Math.ceil(Math.max(...all) * 1.04 / 5000) * 5000;
+  const x = i => L + (W - L - R) * (i + 0.5) / n, y = v => Tp + (H - Tp - B) * (1 - (v - lo) / (hi - lo));
+  const g = el('g', { class: 'grid' }, s);
+  for (let v = lo; v <= hi; v += 5000) { el('line', { x1: L, x2: W - R, y1: y(v), y2: y(v) }, g); el('text', { x: L - 6, y: y(v) + 4, 'text-anchor': 'end' }, s).textContent = tr(v).toFixed(1); }
+  el('text', { x: 4, y: 10 }, s).textContent = '兆円';
+  Y.forEach((yy, i) => { el('text', { x: x(i), y: H - 8, 'text-anchor': 'middle' }, s).textContent = String(yy).slice(2); });
+  for (const [k, , c] of series) {
+    let path = '', on = false;
+    T[k].forEach((v, i) => { const okv = v !== null && !(k === 'req' && Y[i] === 2027); if (okv) { path += `${on ? 'L' : 'M'}${x(i)},${y(v)} `; on = true; } else on = false; });
+    if (path) el('path', { d: path, fill: 'none', stroke: c, 'stroke-width': 2 }, s);
+    T[k].forEach((v, i) => { if (v === null || (k === 'req' && Y[i] === 2027)) return; const c0 = el('circle', { cx: x(i), cy: y(v), r: 3.5, fill: c, stroke: 'var(--surface)', 'stroke-width': 1 }, s); hover(el('circle', { cx: x(i), cy: y(v), r: 9, fill: 'transparent' }, s), `FY${Y[i]} ${series.find(q => q[0] === k)[1]} ${f3(v)}兆円`); });
+  }
+  document.getElementById('flowLegend').innerHTML = series.map(([, n2, c]) => `<span><i style="background:${c}"></i>${n2}</span>`).join('') + '<span>FY2027 は厚生労働省の要求書が無いので描かない</span>';
+  document.getElementById('leadFlow').textContent = `2 項の合計を、段階ごとに並べました。概算要求は FY2023〜FY2026、決算（支出済）は FY2017〜FY2024 です。`;
+  const reqRows = [2023, 2024, 2025, 2026].map(yy => { const i = Y.indexOf(yy); return [yy, T.bud[i] - T.req[i]]; });
+  document.getElementById('cReq').textContent = `政府案は、4 年とも要求と同じか上回った（${reqRows.map(([yy, v]) => `FY${yy} ${sgn(v, 3)}`).join('・')}兆円）`;
+  document.getElementById('cReqText').textContent = `ただし FY2023 の障害児入所給付費等負担金は、要求 0.465兆円に対し政府案 0.448兆円で、−0.017兆円でした。FY2027 のこども家庭庁の要求は 0.540兆円（FY2026 の要求 0.512兆円）です。`;
+  const sup = Y.map((yy, i) => [yy, T.rev[i] !== null && T.bud[i] !== null ? T.rev[i] - T.bud[i] : null]).filter(r => r[1] !== null);
+  const i25 = Y.indexOf(2025);
+  document.getElementById('cSupp').textContent = `補正は FY2025 が最大（${sgn(T.rev[i25] - T.bud[i25], 3)}兆円）`;
+  document.getElementById('cSuppText').textContent = `補正後 − 政府案は、${sup.map(([yy, v]) => `FY${yy} ${sgn(v, 3)}`).join('・')}兆円。FY2025 は、厚生労働省 ${sgn(D.mhlw.rev[i25] - D.mhlw.bud[i25], 3)}・こども家庭庁 ${sgn(D.cfa.rev[i25] - D.cfa.bud[i25], 3)}兆円で、目では障害者自立支援給付費負担金 +0.119兆円・障害児入所給付費等負担金 +0.062兆円が個別に載っています。`;
+  const st = Y.map((yy, i) => [yy, T.cur[i], T.unused[i]]).filter(r => r[1] !== null);
+  const peak = st.reduce((p, q) => (q[2] / q[1] > p[2] / p[1] ? q : p));
+  document.getElementById('cUnused').textContent = `決算の不用は FY${peak[0]} が最大（${f3(peak[2])}兆円、現額の ${(peak[2] / peak[1] * 100).toFixed(1)}%）`;
+  document.getElementById('cUnusedText').textContent = `8 年の不用は計 ${f3(st.reduce((a, r) => a + r[2], 0))}兆円。FY2024 は ${f3(T.unused[Y.indexOf(2024)])}兆円（${(T.unused[Y.indexOf(2024)] / T.cur[Y.indexOf(2024)] * 100).toFixed(1)}%）です。障害児入所給付費等負担金は FY2020〜FY2022 に毎年 0.06〜0.07兆円（現額の 15〜20%）が不用でした。翌年度への繰越は年 0〜0.05兆円と小さいです。`;
+})();
+
+// 全部の表
+(() => {
+  const head = `<thead><tr><th>億円</th>${Y.map(yy => `<th>FY${yy}</th>`).join('')}</tr></thead>`;
+  const row = (n, arr) => `<tr><td>${n}</td>${arr.map(v => `<td>${ok(v)}</td>`).join('')}</tr>`;
+  document.getElementById('allTbl').innerHTML = head + '<tbody>'
+    + D.groups.map(g => row(`政府案: ${SHORT[g.k]}`, g.bud)).join('')
+    + row('<b>政府案: 2 項の計</b>', T.bud) + row('うちこども家庭庁', D.cfa.bud)
+    + row('概算要求: 2 項の計', T.req) + row('補正後: 2 項の計', T.rev) + row('歳出予算現額', T.cur) + row('支出済', T.spent) + row('翌年度繰越', T.carried) + row('不用', T.unused)
+    + row('参考: 一般会計の政府案', D.gen) + '</tbody>';
+})();
+</script>

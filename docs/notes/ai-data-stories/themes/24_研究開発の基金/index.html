@@ -1,0 +1,272 @@
+<title>研究開発の基金</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Zen+Kaku+Gothic+New:wght@700;900&display=swap">
+<style>
+/* layout: 1 本の読み物の列（最大 760px）。基金は 4 色（科研費 = 藍、革新的 = 朱、創発的 = 緑、宇宙 = 黄）。補正の分は斜線 */
+:root {
+  --bg: #f6f7f9; --surface: #ffffff; --ink: #18202b; --muted: #5b6573; --line: #d9dee5; --tag: #eef1f5;
+  --kaken: #2a78d6; --kakushin: #eb6834; --sohatsu: #1baf7a; --uchu: #c98d00; --spent: #4a5563; --car: #8f6fe0; --un: #d2542a; --zero: #9aa3ae;
+  --display: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", sans-serif;
+  --body: "BIZ UDPGothic", "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #12161c; --surface: #1a2029; --ink: #e8ecf1; --muted: #9aa5b3; --line: #2c3440; --tag: #232b36;
+  --kaken: #3987e5; --kakushin: #d95926; --sohatsu: #199e70; --uchu: #e0a400; --spent: #9aa5b3; --car: #9c80ea; --un: #f07a50; --zero: #6b7582; color-scheme: dark } }
+:root[data-theme="dark"] { --bg: #12161c; --surface: #1a2029; --ink: #e8ecf1; --muted: #9aa5b3; --line: #2c3440; --tag: #232b36;
+  --kaken: #3987e5; --kakushin: #d95926; --sohatsu: #199e70; --uchu: #e0a400; --spent: #9aa5b3; --car: #9c80ea; --un: #f07a50; --zero: #6b7582; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.8;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 32px 64px; }
+main { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 52px; }
+h1, h2 { font-family: var(--display); text-wrap: balance; line-height: 1.35; margin: 0; }
+h1 { font-size: clamp(28px, 6vw, 40px); font-weight: 900; }
+h2 { font-size: 22px; font-weight: 700; }
+p { margin: 0; max-width: 65ch; }
+section { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; color: var(--muted); }
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 640px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.kpi b { font-family: var(--display); font-size: 24px; font-variant-numeric: tabular-nums; }
+.kpi span { font-size: 12px; color: var(--muted); }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px; min-width: 0; }
+.scroll { overflow-x: auto; }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { fill: var(--muted); font-family: var(--body); font-size: 11px; }
+.chart .lbl { fill: var(--ink); font-size: 12px; }
+.chart .val { font-variant-numeric: tabular-nums; }
+.grid line { stroke: var(--line); stroke-width: 1; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12px; color: var(--muted); }
+.sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
+.tag { display: inline-block; font-size: 11px; padding: 0 8px; border-radius: 999px; background: var(--tag); color: var(--muted); margin-right: 6px; white-space: nowrap; }
+.tag.src::before { content: "原資料"; } .tag.proc::before { content: "加工"; } .tag.ai::before { content: "AIの計算・解釈"; }
+.claims { display: flex; flex-direction: column; gap: 12px; padding: 0; margin: 0; list-style: none; }
+.claims li { display: grid; gap: 4px; }
+.note { font-size: 13px; color: var(--muted); }
+table { border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; width: 100%; }
+th, td { padding: 5px 8px; border-bottom: 1px solid var(--line); text-align: right; vertical-align: top; }
+th.l, td.l { text-align: left; }
+thead th { color: var(--muted); font-weight: 400; white-space: nowrap; }
+td.name { min-width: 14em; text-align: left; }
+.wide { min-width: 640px; }
+details { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+summary { cursor: pointer; font-weight: 700; }
+summary:focus-visible { outline: 2px solid var(--kaken); outline-offset: 2px; }
+.notes { padding-left: 1.2em; margin: 0; display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--muted); }
+.questions { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.questions li { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+.flow { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1.2fr) auto minmax(0, 1.2fr); gap: 8px; align-items: center; font-size: 13px; }
+.flow .box { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; min-width: 0; }
+.flow .box b { display: block; font-variant-numeric: tabular-nums; }
+.flow .arrow { color: var(--muted); }
+.flow .none { border-style: dashed; color: var(--muted); }
+@media (max-width: 560px) { .flow { grid-template-columns: 1fr; } .flow .arrow { transform: rotate(90deg); justify-self: center; } }
+footer { font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+#tip { position: fixed; pointer-events: none; background: var(--ink); color: var(--bg); font-size: 12px; padding: 6px 8px; border-radius: 6px; line-height: 1.5; max-width: 280px; z-index: 5; }
+</style>
+
+<main>
+  <header style="display:flex;flex-direction:column;gap:10px">
+    <span class="eyebrow">一般会計・予算書と決算 FY2017 → FY2026（決算は FY2024 まで）· 行政事業レビュー（2025 年度版）</span>
+    <h1>研究の基金は、積んだ年に使い切ったことになる</h1>
+    <p>科研費・ムーンショット・創発的研究・宇宙戦略基金の 4 つの基金の補助金を、予算書・決算書・行政事業レビュー（RS）で追いました。国の決算では、基金に積んだ年に全額が支出済になり、繰越も不用もありません。その先の使い道は、国の決算にも RS にもほとんど出てきません。</p>
+    <div class="kpis" id="kpis"></div>
+  </header>
+
+  <section>
+    <h2>4 つの基金に積んだお金</h2>
+    <p id="leadTotal"></p>
+    <div class="panel scroll"><svg class="chart" id="stack" role="img" aria-label="4 つの基金の年度ごとの予算（当初と補正）"></svg></div>
+    <div class="legend" id="legend"></div>
+    <ul class="claims">
+      <li><strong>科研費は当初予算、ほかの 3 つは補正予算</strong><span>科研費の基金（学術研究助成基金補助金）は、毎年の当初予算で 0.09〜0.19兆円を積みます。革新的研究開発推進・創発的研究推進・宇宙開発支援の 3 つは、ほぼ補正予算だけで積まれています（3 つの計の 99%）。</span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+      <li><strong>革新的研究開発推進基金は 5 府省</strong><span id="kakushinMin"></span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+      <li><strong>宇宙戦略基金は 3 府省から JAXA へ</strong><span>宇宙開発支援基金補助金は FY2023 から。FY2023 は文部科学省 1,500億円・経済産業省 1,260億円・総務省 240億円の計 3,000億円、FY2024 も計 3,000億円（文部科学省 1,550・経済産業省 1,000・総務省 450）、FY2025 は計 2,000億円です。</span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>積んだ年に、全額が支出済になる</h2>
+    <p>FY2017〜FY2024 の決算で、4 つの基金の目は 47 行あります。47 行すべてで、支出済歳出額が歳出予算額と円まで一致し、翌年度繰越も不用も 0 円でした。補正予算が年度の後半に成立しても、同じ年度に支出済になっています。同じ科学技術振興費の、ほかの目とは形が違います。</p>
+    <div class="panel scroll"><svg class="chart" id="cmpChart" role="img" aria-label="基金の目と、科学技術振興費のほかの目の、使えるお金の行き先"></svg></div>
+    <div class="legend"><span><i class="sw" style="background:var(--spent)"></i>支出済</span><span><i class="sw" style="background:var(--car)"></i>翌年度繰越</span><span><i class="sw" style="background:var(--un)"></i>不用</span></div>
+    <p class="note">FY2017〜FY2024 の 8 年の計。科学技術振興費は、目に付いた主要経費別の分類コード 13。</p>
+    <ul class="claims">
+      <li><strong>国の支出は、基金を管理する法人への交付</strong><span>国の決算の「支出済」は、日本学術振興会・科学技術振興機構・宇宙航空研究開発機構などへの補助金の交付です。研究者や企業に実際に渡った額や時期は、国の決算からは分かりません。</span><span><span class="tag src"></span><span class="tag ai"></span></span></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>科学技術振興費の中で、基金は 6 分の 1</h2>
+    <p id="shareLead"></p>
+    <div class="panel scroll"><svg class="chart" id="shareChart" role="img" aria-label="科学技術振興費の歳出予算現額に占める基金の割合"></svg></div>
+  </section>
+
+  <section>
+    <h2>RS で見えるのは、1 段目まで</h2>
+    <p>行政事業レビュー（RS）で、4 つの基金の目が予算の行に書かれた事業は 20 あります。支出先は、ほぼすべてが 1 段目の資金配分機関（日本学術振興会・科学技術振興機構・日本医療研究開発機構・宇宙航空研究開発機構など）で止まります。2 段目以降の支出先が書かれているのは、2 事業だけです。</p>
+    <div class="flow" aria-label="科研費の FY2024 の流れ">
+      <div class="box">文部科学省<b>2,473億円</b><span class="note">科学研究費助成事業（FY2024 執行）</span></div>
+      <div class="arrow">→</div>
+      <div class="box">日本学術振興会<b>基金 1,663億円</b><b>補助金 810億円</b></div>
+      <div class="arrow">→</div>
+      <div style="display:grid;gap:8px;min-width:0">
+        <div class="box none">基金の分の支出先: 書かれていない</div>
+        <div class="box">補助金の分: 研究者等 8,857 件 797億円、企業等 13億円<span class="note">（研究者の名前は出しません）</span></div>
+      </div>
+    </div>
+    <ul class="claims">
+      <li><strong>科研費は、補助金の分だけ先が見える</strong><span>RS の科研費の事業では、基金のブロック（1,663億円）から先のつながりが無く、補助金のブロック（810億円）だけが研究者等・企業等へつながっています。基金から研究者に渡ったお金は、RS のこの事業には出てきません。</span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+      <li><strong>宇宙戦略基金は、3 つの記録が一致</strong><span>FY2024 は、予算書の補正（3,000億円）、決算の支出済（3,000億円）、RS の 3 事業の執行額（文部科学省 1,550・経済産業省 1,000・総務省 450）が一致し、支出先はすべて宇宙航空研究開発機構です。その先は、RS に書かれていません。</span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+      <li><strong>AI の事業も 2 つある</strong><span>創発的研究推進基金の「次世代 AI 人材育成プログラム」（FY2023 補正 213.1億円）と、革新的研究開発推進基金の「AI for Science による科学研究革新プログラム」（FY2025 補正 320億円）です。どちらも名前に「AI」を含み、予算書の目の名前には「人工知能」も「AI」もありません。</span><span><span class="tag src"></span><span class="tag ai"></span></span></li>
+    </ul>
+    <details><summary>20 事業の一覧</summary><div class="scroll" style="margin-top:12px"><table class="wide" id="jigTbl"></table></div>
+      <p class="note" style="margin-top:8px">執行額は RS の 2-1（FY2024、合計）。1 段目の支出先は、事業の全体（基金以外の目の分を含む）。名前は法人番号のある法人だけ。</p></details>
+  </section>
+
+  <section>
+    <h2>予算書と RS の予算額は、FY2024 から円まで一致</h2>
+    <p id="cmpLead"></p>
+    <details><summary>FY2024・FY2025 の突き合わせ（26 組）</summary><div class="scroll" style="margin-top:12px"><table class="wide" id="cmpTbl"></table></div></details>
+  </section>
+
+  <section>
+    <h2>全部の数字（億円）</h2>
+    <details><summary>基金ごとの年度別の表を開く</summary><div class="scroll" style="margin-top:12px"><table class="wide" id="allTbl"></table></div></details>
+  </section>
+
+  <section>
+    <h2>この数字の作り方と、確かめられないこと</h2>
+    <ul class="notes">
+      <li><span class="tag src"></span>財務省「予算書・決算書データベース」の予算書（目の表・補正の目の表）と決算書（目の表）。一般会計。行政事業レビュー見える化サイトの 2025 年度版の CSV（2-1 サマリ、2-2 予算種別・歳出予算項目、5-1 支出情報、5-2 支出ブロックのつながり）。</li>
+      <li><span class="tag proc"></span>nihon-no-yosan が抽出・構造化したもの。基金は、目の名前に「学術研究助成基金」「革新的研究開発推進基金」「創発的研究推進基金」「宇宙開発支援基金」を含む目（すべて主要経費別 13 科学技術振興費、使途別 5 補助費等）。補正は、補正の回ごとの差引額の和。</li>
+      <li><span class="tag ai"></span>合計・割合・突き合わせ・「1 段目で止まる」の判断は、この探索で計算したもの。政府の基金の一覧や、基金の残高の公表値とは照合していません。</li>
+      <li>未確認: 基金に積んだ後の残高と、研究者・企業への支払いの額と時期。基金の名前を含まない目から積まれた基金（この 4 つ以外）。FY2025 以降の決算。RS の FY2021〜FY2023 は移行データで、目の記載が少ないため、突き合わせは FY2024・FY2025 だけにしました。</li>
+      <li>RS と予算書が合わなかった 3 組: FY2024 の経済産業省の宇宙開発支援基金の補正（RS の 2-2 に行が無い。2-1 の執行は 1,000億円）、FY2025 の内閣府の革新的研究開発推進基金の補正（RS に行が無い）、FY2025 の文部科学省の創発的研究推進基金の補正（予算書 832.4億円、RS 700.0億円）。理由は未確認です。</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>次に、聞かせてください</h2>
+    <ol class="questions">
+      <li>基金に積んだ後、研究者や企業にいつ、いくら渡ったかを知りたいですか。国の決算と RS では見えないので、別のデータ（基金を管理する法人の報告など）が要ります。</li>
+      <li>補正予算で積む基金と、毎年の当初予算で積む科研費の違い（予算の決め方）について、どちらを掘り下げたいですか。</li>
+      <li>FY2022 の経済産業省の革新的研究開発推進基金（補正 6,000億円）のように、単年度の大きな積み増しを、事業の単位で追いますか。</li>
+    </ol>
+  </section>
+
+  <footer>
+    <span>出典：財務省「予算書・決算書データベース」、行政事業レビュー見える化サイト（https://rssystem.go.jp）を加工して作成。国や各府省が作成した加工していない情報ではありません。</span>
+    <span>nihon-no-yosan の AI Data Stories PoC（ループ 5 回目）。金額は億円・兆円（千円・円の値から計算し、表示で丸め）。</span>
+  </footer>
+</main>
+<div id="tip" hidden></div>
+
+<script>
+const D = {"years": [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026], "fund": {"kaken": {"name": "学術研究助成基金（科研費）", "rows": [{"y": 2017, "b": 866.8, "s": null, "spent": 866.8, "cur": 866.8, "car": 0.0, "un": 0.0}, {"y": 2018, "b": 868.8, "s": 50.0, "spent": 918.8, "cur": 918.8, "car": 0.0, "un": 0.0}, {"y": 2019, "b": 972.1, "s": null, "spent": 972.1, "cur": 972.1, "car": 0.0, "un": 0.0}, {"y": 2020, "b": 979.2, "s": null, "spent": 979.2, "cur": 979.2, "car": 0.0, "un": 0.0}, {"y": 2021, "b": 979.2, "s": 110.0, "spent": 1089.2, "cur": 1089.2, "car": 0.0, "un": 0.0}, {"y": 2022, "b": 979.2, "s": 156.0, "spent": 1135.3, "cur": 1135.3, "car": 0.0, "un": 0.0}, {"y": 2023, "b": 1047.7, "s": 654.4, "spent": 1702.2, "cur": 1702.2, "car": 0.0, "un": 0.0}, {"y": 2024, "b": 1610.7, "s": 52.2, "spent": 1663.0, "cur": 1663.0, "car": 0.0, "un": 0.0}, {"y": 2025, "b": 1609.1, "s": 300.1, "spent": null, "cur": null, "car": null, "un": null}, {"y": 2026, "b": 1875.4, "s": null, "spent": null, "cur": null, "car": null, "un": null}], "byMin": {"文部科学省": 13111.1}}, "kakushin": {"name": "革新的研究開発推進基金", "rows": [{"y": 2017, "b": null, "s": null, "spent": null, "cur": null, "car": null, "un": null}, {"y": 2018, "b": null, "s": 800.0, "spent": 800.0, "cur": 800.0, "car": 0.0, "un": 0.0}, {"y": 2019, "b": 16.0, "s": 150.0, "spent": 166.0, "cur": 166.0, "car": 0.0, "un": 0.0}, {"y": 2020, "b": 19.0, "s": 500.0, "spent": 519.0, "cur": 519.0, "car": 0.0, "un": 0.0}, {"y": 2021, "b": 20.7, "s": 3279.0, "spent": 3299.7, "cur": 3299.7, "car": 0.0, "un": 0.0}, {"y": 2022, "b": 39.2, "s": 6080.3, "spent": 6119.5, "cur": 6119.5, "car": 0.0, "un": 0.0}, {"y": 2023, "b": 39.2, "s": 2059.2, "spent": 2098.4, "cur": 2098.4, "car": 0.0, "un": 0.0}, {"y": 2024, "b": 29.4, "s": 153.8, "spent": 183.3, "cur": 183.3, "car": 0.0, "un": 0.0}, {"y": 2025, "b": 24.9, "s": 478.2, "spent": null, "cur": null, "car": null, "un": null}, {"y": 2026, "b": 20.2, "s": null, "spent": null, "cur": null, "car": null, "un": null}], "byMin": {"経済産業省": 6508.0, "文部科学省": 4339.7, "内閣府": 2218.9, "厚生労働省": 514.3, "農林水産省": 128.2}}, "sohatsu": {"name": "創発的研究推進基金", "rows": [{"y": 2017, "b": null, "s": null, "spent": null, "cur": null, "car": null, "un": null}, {"y": 2018, "b": null, "s": null, "spent": null, "cur": null, "car": null, "un": null}, {"y": 2019, "b": null, "s": 500.0, "spent": 500.0, "cur": 500.0, "car": 0.0, "un": 0.0}, {"y": 2020, "b": 0.6, "s": 307.1, "spent": 307.7, "cur": 307.7, "car": 0.0, "un": 0.0}, {"y": 2021, "b": 0.6, "s": 400.0, "spent": 400.6, "cur": 400.6, "car": 0.0, "un": 0.0}, {"y": 2022, "b": 34.0, "s": 553.4, "spent": 587.4, "cur": 587.4, "car": 0.0, "un": 0.0}, {"y": 2023, "b": 38.0, "s": 717.8, "spent": 755.8, "cur": 755.8, "car": 0.0, "un": 0.0}, {"y": 2024, "b": 0.6, "s": null, "spent": 0.6, "cur": 0.6, "car": 0.0, "un": 0.0}, {"y": 2025, "b": 0.0, "s": 832.4, "spent": null, "cur": null, "car": null, "un": null}, {"y": 2026, "b": 0.0, "s": null, "spent": null, "cur": null, "car": null, "un": null}], "byMin": {"文部科学省": 3384.6}}, "uchu": {"name": "宇宙開発支援基金", "rows": [{"y": 2017, "b": null, "s": null, "spent": null, "cur": null, "car": null, "un": null}, {"y": 2018, "b": null, "s": null, "spent": null, "cur": null, "car": null, "un": null}, {"y": 2019, "b": null, "s": null, "spent": null, "cur": null, "car": null, "un": null}, {"y": 2020, "b": null, "s": null, "spent": null, "cur": null, "car": null, "un": null}, {"y": 2021, "b": null, "s": null, "spent": null, "cur": null, "car": null, "un": null}, {"y": 2022, "b": null, "s": null, "spent": null, "cur": null, "car": null, "un": null}, {"y": 2023, "b": null, "s": 3000.0, "spent": 3000.0, "cur": 3000.0, "car": 0.0, "un": 0.0}, {"y": 2024, "b": 0.0, "s": 3000.0, "spent": 3000.0, "cur": 3000.0, "car": 0.0, "un": 0.0}, {"y": 2025, "b": 0.0, "s": 2000.0, "spent": null, "cur": null, "car": null, "un": null}, {"y": 2026, "b": 0.0, "s": null, "spent": null, "cur": null, "car": null, "un": null}], "byMin": {"文部科学省": 4000.0, "経済産業省": 3000.0, "総務省": 1000.0}}}, "sci": {"2017": {"fund": 866.8, "other": 14810.6, "oSpent": 13712.1, "oCar": 1038.4, "oUn": 60.1}, "2018": {"fund": 1718.8, "other": 14818.8, "oSpent": 14074.5, "oCar": 662.8, "oUn": 81.5}, "2019": {"fund": 1638.1, "other": 18171.2, "oSpent": 14765.0, "oCar": 3346.3, "oUn": 59.9}, "2020": {"fund": 1806.0, "other": 48377.3, "oSpent": 45144.2, "oCar": 2781.0, "oUn": 452.2}, "2021": {"fund": 4789.5, "other": 35085.5, "oSpent": 31078.0, "oCar": 3520.0, "oUn": 487.5}, "2022": {"fund": 7842.2, "other": 37496.6, "oSpent": 33211.3, "oCar": 3883.3, "oUn": 402.0}, "2023": {"fund": 7556.3, "other": 37976.9, "oSpent": 31263.8, "oCar": 6487.3, "oUn": 225.8}, "2024": {"fund": 4846.8, "other": 23964.7, "oSpent": 20259.7, "oCar": 3366.8, "oUn": 338.2}}, "sciBook": {"2017": {"b": 13045.1, "s": 1508.1}, "2018": {"b": 13158.7, "s": 2340.5}, "2019": {"b": 13597.5, "s": 5530.9}, "2020": {"b": 13638.6, "s": 33188.9}, "2021": {"b": 13672.8, "s": 23420.9}, "2022": {"b": 13787.6, "s": 28031.1}, "2023": {"b": 13941.6, "s": 27708.4}, "2024": {"b": 14092.2, "s": 8223.9}, "2025": {"b": 14221.3, "s": 12773.8}, "2026": {"b": 14377.6, "s": 0.0}}, "jig": [{"id": "1644", "min": "文部科学省", "name": "科学研究費助成事業", "g": ["kaken"], "spent24": 2473.3, "d1": 2473.0, "first": ["独立行政法人日本学術振興会"], "deep": 2, "deepAmt": 810.1, "other": 5}, {"id": "19935", "min": "文部科学省", "name": "宇宙戦略基金事業", "g": ["uchu"], "spent24": 1550.0, "d1": 1550.0, "first": ["国立研究開発法人宇宙航空研究開発機構"], "deep": 0, "deepAmt": 0.0, "other": 0}, {"id": "7159", "min": "経済産業省", "name": "宇宙戦略基金事業", "g": ["uchu"], "spent24": 1000.0, "d1": 1000.0, "first": ["国立研究開発法人宇宙航空研究開発機構"], "deep": 0, "deepAmt": 0.0, "other": 1}, {"id": "2958", "min": "厚生労働省", "name": "医療研究開発推進事業費補助金(保健衛生医療調査等推進事業費補助金等を含む)", "g": ["kakushin"], "spent24": 553.7, "d1": 552.5, "first": ["国立研究開発法人日本医療研究開発機構"], "deep": 0, "deepAmt": 0.0, "other": 2}, {"id": "7754", "min": "総務省", "name": "宇宙戦略基金の創設(宇宙戦略基金事業)", "g": ["uchu"], "spent24": 450.0, "d1": 450.0, "first": ["国立研究開発法人宇宙航空研究開発機構"], "deep": 0, "deepAmt": 0.0, "other": 0}, {"id": "20350", "min": "文部科学省", "name": "医学系研究支援プログラム", "g": ["kakushin"], "spent24": 133.8, "d1": 133.8, "first": ["国立研究開発法人日本医療研究開発機構"], "deep": 0, "deepAmt": 0.0, "other": 1}, {"id": "1663", "min": "文部科学省", "name": "ムーンショット型研究開発プログラム", "g": ["kakushin"], "spent24": 24.7, "d1": 24.7, "first": ["国立研究開発法人科学技術振興機構"], "deep": 0, "deepAmt": 0.0, "other": 0}, {"id": "3326", "min": "農林水産省", "name": "ムーンショット型農林水産研究開発事業", "g": ["kakushin"], "spent24": 21.0, "d1": 21.0, "first": ["国立研究開発法人農業・食品産業技術総合研究機構生物系特定産業技術研究支援センター"], "deep": 0, "deepAmt": 0.0, "other": 0}, {"id": "3568", "min": "経済産業省", "name": "医療・健康推進事業(うち健康・医療分野におけるムーンショット型研究開発等事業)", "g": ["kakushin"], "spent24": 1.2, "d1": 1.2, "first": ["国立研究開発法人日本医療研究開発機構"], "deep": 0, "deepAmt": 0.0, "other": 0}, {"id": "6850", "min": "文部科学省", "name": "健康・医療分野におけるムーンショット型研究開発等事業", "g": ["kakushin"], "spent24": 1.2, "d1": 1.2, "first": ["国立研究開発法人日本医療研究開発機構"], "deep": 0, "deepAmt": 0.0, "other": 0}, {"id": "1642", "min": "文部科学省", "name": "創発的研究支援事業", "g": ["sohatsu"], "spent24": 0.6, "d1": 0.6, "first": ["国立研究開発法人科学技術振興機構"], "deep": 0, "deepAmt": 0.0, "other": 0}, {"id": "1637", "min": "文部科学省", "name": "博士後期課程学生の処遇向上と研究環境確保", "g": ["sohatsu"], "spent24": 0.3, "d1": 0.3, "first": ["株式会社アカリク"], "deep": 0, "deepAmt": 0.0, "other": 5}, {"id": "2963", "min": "厚生労働省", "name": "医療研究開発推進事業費補助金(シーズ開発・基礎研究プロジェクト)(保健衛生医療調査等推進事業費補助金を含む)", "g": ["kakushin"], "spent24": 0.0, "d1": 36.2, "first": ["国立研究開発法人日本医療研究開発機構"], "deep": 4, "deepAmt": 36.2, "other": 2}, {"id": "6797", "min": "文部科学省", "name": "国家戦略分野の若手研究者及び博士後期課程学生の育成(次世代AI人材育成プログラム)", "g": ["sohatsu"], "spent24": 0.0, "d1": 0.0, "first": [], "deep": 0, "deepAmt": 0.0, "other": 0}, {"id": "6851", "min": "文部科学省", "name": "ワクチン・新規モダリティ研究開発事業", "g": ["kakushin"], "spent24": 0.0, "d1": 0.0, "first": ["国立研究開発法人日本医療研究開発機構"], "deep": 0, "deepAmt": 0.0, "other": 0}, {"id": "6862", "min": "文部科学省", "name": "ワクチン開発のための世界トップレベル研究開発拠点の形成事業", "g": ["kakushin"], "spent24": 0.0, "d1": 0.0, "first": [], "deep": 0, "deepAmt": 0.0, "other": 0}, {"id": "21493", "min": "文部科学省", "name": "感染症危機対応医薬品等の研究開発プラットフォーム", "g": ["kakushin"], "spent24": null, "d1": 69.8, "first": ["国立研究開発法人日本医療研究開発機構"], "deep": 0, "deepAmt": 0.0, "other": 1}, {"id": "21529", "min": "文部科学省", "name": "産業・科学革新人材事業", "g": ["sohatsu"], "spent24": null, "d1": 0.0, "first": [], "deep": 0, "deepAmt": 0.0, "other": 2}, {"id": "22076", "min": "文部科学省", "name": "AI for Scienceによる科学研究革新プログラム", "g": ["kakushin"], "spent24": null, "d1": 0.0, "first": [], "deep": 0, "deepAmt": 0.0, "other": 2}, {"id": "22175", "min": "文部科学省", "name": "先端研究基盤刷新事業(EPOCH)", "g": ["sohatsu"], "spent24": null, "d1": 0.0, "first": [], "deep": 0, "deepAmt": 0.0, "other": 0}], "cmp": [{"y": 2024, "kind": "当初", "min": "厚生労働省", "g": "kakushin", "book": 1.2, "rs": 1.2}, {"y": 2024, "kind": "当初", "min": "文部科学省", "g": "kaken", "book": 1610.7, "rs": 1610.7}, {"y": 2024, "kind": "当初", "min": "文部科学省", "g": "kakushin", "book": 25.9, "rs": 25.9}, {"y": 2024, "kind": "当初", "min": "文部科学省", "g": "sohatsu", "book": 0.6, "rs": 0.6}, {"y": 2024, "kind": "当初", "min": "文部科学省", "g": "uchu", "book": 0.0, "rs": 0.0}, {"y": 2024, "kind": "当初", "min": "経済産業省", "g": "kakushin", "book": 1.2, "rs": 1.2}, {"y": 2024, "kind": "当初", "min": "農林水産省", "g": "kakushin", "book": 1.0, "rs": 1.0}, {"y": 2024, "kind": "補正", "min": "文部科学省", "g": "kaken", "book": 52.2, "rs": 52.2}, {"y": 2024, "kind": "補正", "min": "文部科学省", "g": "kakushin", "book": 133.8, "rs": 133.8}, {"y": 2024, "kind": "補正", "min": "文部科学省", "g": "uchu", "book": 1550.0, "rs": 1550.0}, {"y": 2024, "kind": "補正", "min": "経済産業省", "g": "uchu", "book": 1000.0, "rs": null}, {"y": 2024, "kind": "補正", "min": "総務省", "g": "uchu", "book": 450.0, "rs": 450.0}, {"y": 2024, "kind": "補正", "min": "農林水産省", "g": "kakushin", "book": 20.0, "rs": 20.0}, {"y": 2025, "kind": "当初", "min": "厚生労働省", "g": "kakushin", "book": 1.1, "rs": 1.1}, {"y": 2025, "kind": "当初", "min": "文部科学省", "g": "kaken", "book": 1609.1, "rs": 1609.1}, {"y": 2025, "kind": "当初", "min": "文部科学省", "g": "kakushin", "book": 21.7, "rs": 21.7}, {"y": 2025, "kind": "当初", "min": "文部科学省", "g": "uchu", "book": 0.0, "rs": 0.0}, {"y": 2025, "kind": "当初", "min": "経済産業省", "g": "kakushin", "book": 1.1, "rs": 1.1}, {"y": 2025, "kind": "当初", "min": "農林水産省", "g": "kakushin", "book": 1.0, "rs": 1.0}, {"y": 2025, "kind": "補正", "min": "内閣府", "g": "kakushin", "book": 119.9, "rs": null}, {"y": 2025, "kind": "補正", "min": "文部科学省", "g": "kaken", "book": 300.1, "rs": 300.1}, {"y": 2025, "kind": "補正", "min": "文部科学省", "g": "kakushin", "book": 358.3, "rs": 358.3}, {"y": 2025, "kind": "補正", "min": "文部科学省", "g": "sohatsu", "book": 832.4, "rs": 699.9}, {"y": 2025, "kind": "補正", "min": "文部科学省", "g": "uchu", "book": 950.0, "rs": 950.0}, {"y": 2025, "kind": "補正", "min": "経済産業省", "g": "uchu", "book": 740.0, "rs": 740.0}, {"y": 2025, "kind": "補正", "min": "総務省", "g": "uchu", "book": 310.0, "rs": 310.0}]};
+const G = ['kaken', 'kakushin', 'sohatsu', 'uchu'];
+const COLOR = { kaken: 'var(--kaken)', kakushin: 'var(--kakushin)', sohatsu: 'var(--sohatsu)', uchu: 'var(--uchu)' };
+const SHORT = { kaken: '科研費（学術研究助成基金）', kakushin: '革新的研究開発推進基金', sohatsu: '創発的研究推進基金', uchu: '宇宙開発支援基金' };
+const NS = 'http://www.w3.org/2000/svg';
+const el = (tag, attrs = {}, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+const tip = document.getElementById('tip');
+function hover(node, html) {
+  node.addEventListener('pointermove', e => { tip.innerHTML = html; tip.hidden = false; tip.style.left = Math.min(e.clientX + 12, innerWidth - 290) + 'px'; tip.style.top = (e.clientY + 12) + 'px'; });
+  node.addEventListener('pointerleave', () => { tip.hidden = true; });
+}
+const oku = v => v === null || v === undefined ? '—' : `${v.toLocaleString('ja-JP', { maximumFractionDigits: 1 })}億円`;
+const cho = v => `${(v / 10000).toFixed(2)}兆円`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const Y = D.years;
+const sum = (g, k, maxY = 9999) => D.fund[g].rows.filter(r => r.y <= maxY).reduce((s, r) => s + (r[k] ?? 0), 0);
+
+// KPI
+const totB = G.reduce((s, g) => s + sum(g, 'b'), 0), totS = G.reduce((s, g) => s + sum(g, 's'), 0);
+const sci22 = D.sci['2022'];
+document.getElementById('kpis').innerHTML = [
+  [cho(totB + totS), '4 つの基金の予算の計（FY2017〜FY2026、当初 + 補正）'],
+  [`${(totS / (totB + totS) * 100).toFixed(0)}%`, `うち補正予算（${cho(totS)}）`],
+  ['0 円', '決算の繰越・不用（47 行、FY2017〜FY2024）'],
+  [`${(sci22.fund / (sci22.fund + sci22.other) * 100).toFixed(1)}%`, '科学技術振興費に占める割合（FY2022、現額）'],
+].map(([b, s]) => `<div class="kpi"><b>${b}</b><span>${s}</span></div>`).join('');
+document.getElementById('leadTotal').textContent = `10 年度の予算は、当初 ${cho(totB)}、補正 ${cho(totS)} です。基金ごとには、科研費 ${cho(sum('kaken', 'b') + sum('kaken', 's'))}（うち当初 ${cho(sum('kaken', 'b'))}）、革新的研究開発推進 ${cho(sum('kakushin', 'b') + sum('kakushin', 's'))}、宇宙開発支援 ${cho(sum('uchu', 'b') + sum('uchu', 's'))}、創発的研究推進 ${cho(sum('sohatsu', 'b') + sum('sohatsu', 's'))}。`;
+const km = D.fund.kakushin.byMin;
+document.getElementById('kakushinMin').textContent = `10 年度の計（当初 + 補正）は、${Object.entries(km).map(([m, v]) => `${m} ${oku(v)}`).join('・')}。経済産業省の分は、ほぼ FY2022 の補正の 6,000億円です。`;
+
+// 積み上げ棒（当初 = 塗り、補正 = 斜線）
+(() => {
+  const s = document.getElementById('stack'), W = 680, H = 280, L = 52, R = 12, T = 22, B = 26;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '520px';
+  const defs = el('defs', {}, s);
+  for (const g of G) { const p = el('pattern', { id: `h-${g}`, width: 6, height: 6, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }, defs); el('rect', { width: 6, height: 6, fill: 'var(--surface)' }, p); el('rect', { width: 3, height: 6, fill: COLOR[g] }, p); }
+  const tot = Y.map((y, i) => G.reduce((t, g) => t + (D.fund[g].rows[i].b ?? 0) + (D.fund[g].rows[i].s ?? 0), 0));
+  const max = Math.max(...tot) * 1.12, step = max > 6000 ? 2000 : 1000;
+  const y = v => T + (H - T - B) * (1 - v / max), cw = (W - L - R) / Y.length, bw = cw * 0.6;
+  const gr = el('g', { class: 'grid' }, s);
+  for (let v = 0; v <= max; v += step) { el('line', { x1: L, x2: W - R, y1: y(v), y2: y(v) }, gr); el('text', { x: L - 6, y: y(v) + 4, 'text-anchor': 'end' }, s).textContent = (v / 10000).toFixed(1); }
+  el('text', { x: 4, y: 12 }, s).textContent = '兆円';
+  Y.forEach((yr, i) => {
+    const x = L + cw * i + (cw - bw) / 2; let base = 0; const tipRows = [];
+    for (const g of G) {
+      const r = D.fund[g].rows[i];
+      for (const [k, fill] of [['b', COLOR[g]], ['s', `url(#h-${g})`]]) {
+        const v = r[k] ?? 0; if (v <= 0) continue;
+        el('rect', { x, y: y(base + v), width: bw, height: Math.max(0.5, y(base) - y(base + v)), fill, stroke: COLOR[g], 'stroke-width': k === 's' ? 0.6 : 0 }, s); base += v;
+      }
+      if ((r.b ?? 0) + (r.s ?? 0) > 0) tipRows.push(`${SHORT[g]}: 当初 ${oku(r.b)}・補正 ${oku(r.s)}`);
+    }
+    el('text', { x: x + bw / 2, y: y(tot[i]) - 5, 'text-anchor': 'middle', class: 'lbl val' }, s).textContent = (tot[i] / 10000).toFixed(2);
+    el('text', { x: x + bw / 2, y: H - 8, 'text-anchor': 'middle' }, s).textContent = String(yr).slice(2);
+    hover(el('rect', { x: L + cw * i, y: T, width: cw, height: H - T - B, fill: 'transparent' }, s), `<b>FY${yr}</b> 計 ${oku(tot[i])}<br>${tipRows.join('<br>')}${yr >= 2026 ? '<br>（FY2026 は補正の第1号まで）' : ''}`);
+  });
+  document.getElementById('legend').innerHTML = G.map(g => `<span><i class="sw" style="background:${COLOR[g]}"></i>${SHORT[g]}</span>`).join('') + '<span>塗り = 当初、斜線 = 補正</span>';
+})();
+
+// 基金の目と、ほかの目の比較（100% 帯）
+(() => {
+  const F = Object.values(D.sci).reduce((a, d) => a + d.fund, 0);
+  const O = { cur: 0, sp: 0, car: 0, un: 0 }; for (const d of Object.values(D.sci)) { O.cur += d.other; O.sp += d.oSpent; O.car += d.oCar; O.un += d.oUn; }
+  const rows = [['基金の 4 目', F, F, 0, 0], ['科学技術振興費のほかの目', O.cur, O.sp, O.car, O.un]];
+  const s = document.getElementById('cmpChart'), W = 680, L = 170, R = 12, rowH = 44, H = rows.length * rowH + 10;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '480px';
+  rows.forEach(([n, cur, sp, car, un], i) => {
+    const y = 6 + i * rowH, w = W - L - R; let x = L;
+    el('text', { x: L - 8, y: y + 17, 'text-anchor': 'end', class: 'lbl' }, s).textContent = n;
+    el('text', { x: L - 8, y: y + 32, 'text-anchor': 'end' }, s).textContent = `現額 ${cho(cur)}`;
+    for (const [v, c, lab] of [[sp, 'var(--spent)', '支出済'], [car, 'var(--car)', '翌年度繰越'], [un, 'var(--un)', '不用']]) {
+      if (v <= 0) continue; const bw = w * v / cur;
+      const r = el('rect', { x, y: y + 4, width: Math.max(1, bw - 1), height: 26, rx: 2, fill: c }, s); hover(r, `<b>${n}</b><br>${lab} ${cho(v)}（${(v / cur * 100).toFixed(1)}%）`);
+      if (bw > 60) { const t = el('text', { x: x + 6, y: y + 21, class: 'val' }, s); t.textContent = `${lab} ${(v / cur * 100).toFixed(1)}%`; t.style.fill = 'var(--surface)'; }
+      x += bw;
+    }
+  });
+})();
+
+// 割合の折れ線
+(() => {
+  const ys = Object.keys(D.sci).map(Number), vals = ys.map(y => { const d = D.sci[y]; return d.fund / (d.fund + d.other) * 100; });
+  const top = Math.ceil(Math.max(...vals) / 5) * 5 + 5;
+  document.getElementById('shareLead').textContent = `科学技術振興費（分類コード 13）の目の、決算の歳出予算現額に占める 4 つの基金の割合です。FY2017 の ${vals[0].toFixed(1)}% から、FY2022 は ${vals[5].toFixed(1)}%、FY2024 は ${vals[7].toFixed(1)}% になりました。FY2020 は、ほかの目がコロナ期の補正で膨らんだため、${vals[3].toFixed(1)}% に下がっています。`;
+  const s = document.getElementById('shareChart'), W = 680, H = 200, L = 44, R = 20, T = 20, B = 26;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '480px';
+  const x = i => L + (W - L - R) * i / (ys.length - 1), y = v => T + (H - T - B) * (1 - v / top);
+  const gr = el('g', { class: 'grid' }, s);
+  for (let v = 0; v <= top; v += 5) { el('line', { x1: L, x2: W - R, y1: y(v), y2: y(v) }, gr); el('text', { x: L - 6, y: y(v) + 4, 'text-anchor': 'end' }, s).textContent = `${v}%`; }
+  el('polyline', { points: vals.map((v, i) => `${x(i)},${y(v)}`).join(' '), fill: 'none', stroke: 'var(--kaken)', 'stroke-width': 2 }, s);
+  vals.forEach((v, i) => {
+    el('circle', { cx: x(i), cy: y(v), r: 4, fill: 'var(--kaken)', stroke: 'var(--surface)', 'stroke-width': 1.5 }, s);
+    el('text', { x: x(i), y: y(v) - 8, 'text-anchor': 'middle', class: 'val' }, s).textContent = v.toFixed(1);
+    el('text', { x: x(i), y: H - 8, 'text-anchor': 'middle' }, s).textContent = String(ys[i]).slice(2);
+    const d = D.sci[ys[i]]; hover(el('circle', { cx: x(i), cy: y(v), r: 14, fill: 'transparent' }, s), `<b>FY${ys[i]}</b><br>基金の 4 目 ${oku(d.fund)}<br>ほかの目 ${oku(d.other)}<br>割合 ${v.toFixed(1)}%`);
+  });
+})();
+
+// 表
+document.getElementById('jigTbl').innerHTML = '<thead><tr><th class="l">府省</th><th class="l">事業名</th><th class="l">基金</th><th>FY2024 執行</th><th class="l">1 段目の支出先</th><th>2 段目以降のブロック</th></tr></thead><tbody>' +
+  D.jig.map(j => `<tr><td class="l">${esc(j.min)}</td><td class="name">${esc(j.name)}</td><td class="l">${j.g.map(g => SHORT[g].replace(/（.*）/, '')).join('、')}</td><td>${oku(j.spent24)}</td><td class="l">${j.first.length ? j.first.map(esc).join('<br>') : '—'}</td><td>${j.deep ? `${j.deep}（${oku(j.deepAmt)}）` : '—'}</td></tr>`).join('') + '</tbody>';
+const ok = D.cmp.filter(c => c.book !== null && c.rs !== null && Math.abs(c.book - c.rs) < 0.05).length;
+document.getElementById('cmpLead').textContent = `FY2024・FY2025 の、年度 × 当初/補正 × 府省 × 基金の ${D.cmp.length} 組のうち ${ok} 組で、予算書の額と RS の 2-2 の予算額が円まで一致しました（表示は億円）。RS の FY2021〜FY2023 は移行データで、目の記載が少ないので比べていません。`;
+document.getElementById('cmpTbl').innerHTML = '<thead><tr><th>年度</th><th class="l">種別</th><th class="l">府省</th><th class="l">基金</th><th>予算書</th><th>RS</th><th class="l">一致</th></tr></thead><tbody>' +
+  D.cmp.map(c => `<tr><td>FY${c.y}</td><td class="l">${c.kind}</td><td class="l">${esc(c.min)}</td><td class="l">${SHORT[c.g].replace(/（.*）/, '')}</td><td>${oku(c.book)}</td><td>${oku(c.rs)}</td><td class="l">${c.book !== null && c.rs !== null && Math.abs(c.book - c.rs) < 0.05 ? '一致' : c.rs === null ? 'RS に行なし' : '違う'}</td></tr>`).join('') + '</tbody>';
+document.getElementById('allTbl').innerHTML = '<thead><tr><th class="l">基金</th><th>年度</th><th>当初</th><th>補正</th><th>決算 現額</th><th>支出済</th><th>翌年度繰越</th><th>不用</th></tr></thead><tbody>' +
+  G.flatMap(g => D.fund[g].rows.filter(r => r.b !== null || r.s !== null || r.cur !== null).map(r => `<tr><td class="l">${SHORT[g]}</td><td>FY${r.y}</td><td>${oku(r.b)}</td><td>${oku(r.s)}</td><td>${oku(r.cur)}</td><td>${oku(r.spent)}</td><td>${oku(r.car)}</td><td>${oku(r.un)}</td></tr>`)).join('') + '</tbody>';
+</script>

@@ -1,0 +1,232 @@
+<title>お金の行き先</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Zen+Kaku+Gothic+New:wght@700;900&display=swap">
+<style>
+/* layout: 1 本の読み物の列（最大 760px）。支出先の種類は 1 色の濃淡ではなくラベルで区別し、段の深さだけ濃淡にする */
+:root {
+  --bg: #f6f7f9; --surface: #ffffff; --ink: #18202b; --muted: #5b6573; --line: #d9dee5;
+  --bar: #2a6fc9; --bar2: #8fb3e3; --bar3: #c6d7ef; --accent: #d2542a; --zero: #9aa3ae; --tag: #eef1f5;
+  --display: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", sans-serif;
+  --body: "BIZ UDPGothic", "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #12161c; --surface: #1a2029; --ink: #e8ecf1; --muted: #9aa5b3; --line: #2c3440;
+  --bar: #5b9cf0; --bar2: #3d6aa8; --bar3: #2b4466; --accent: #f07a50; --zero: #6b7582; --tag: #232b36; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #12161c; --surface: #1a2029; --ink: #e8ecf1; --muted: #9aa5b3; --line: #2c3440;
+  --bar: #5b9cf0; --bar2: #3d6aa8; --bar3: #2b4466; --accent: #f07a50; --zero: #6b7582; --tag: #232b36; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.8;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 32px 64px; }
+main { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 56px; }
+h1, h2 { font-family: var(--display); text-wrap: balance; line-height: 1.35; margin: 0; }
+h1 { font-size: clamp(28px, 6vw, 42px); font-weight: 900; }
+h2 { font-size: 22px; font-weight: 700; }
+p { margin: 0; max-width: 65ch; }
+section, header { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; color: var(--muted); }
+.num { font-variant-numeric: tabular-nums; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.tile b { font-family: var(--display); font-size: 24px; font-weight: 900; font-variant-numeric: tabular-nums; }
+.tile b.hl { color: var(--accent); }
+.tile span { font-size: 12px; color: var(--muted); line-height: 1.5; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; min-width: 0; }
+.scroll { overflow-x: auto; }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { fill: var(--muted); font-family: var(--body); font-size: 11px; }
+.chart .lbl { fill: var(--ink); font-size: 12px; }
+.chart .val { font-variant-numeric: tabular-nums; fill: var(--ink); }
+.grid line { stroke: var(--line); stroke-width: 1; }
+.note { font-size: 13px; color: var(--muted); }
+.tag { display: inline-block; font-size: 11px; padding: 0 8px; border-radius: 999px; background: var(--tag); color: var(--muted); margin-right: 6px; white-space: nowrap; }
+.tag.src::before { content: "原資料"; } .tag.proc::before { content: "加工"; } .tag.ai::before { content: "AIの計算・解釈"; }
+.claims { display: flex; flex-direction: column; gap: 12px; padding: 0; margin: 0; list-style: none; }
+.claims li { display: grid; gap: 4px; }
+table { border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; width: 100%; }
+th, td { padding: 5px 8px; border-bottom: 1px solid var(--line); text-align: right; vertical-align: top; }
+th.l, td.l { text-align: left; }
+thead th { color: var(--muted); font-weight: 400; white-space: nowrap; }
+td.name { min-width: 14em; }
+details { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+summary { cursor: pointer; font-weight: 700; }
+summary:focus-visible { outline: 2px solid var(--bar); outline-offset: 2px; }
+.notes { padding-left: 1.2em; margin: 0; display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--muted); }
+.questions { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.questions li { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12px; color: var(--muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+footer { font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+#tip { position: fixed; pointer-events: none; background: var(--ink); color: var(--bg); font-size: 12px; padding: 6px 8px; border-radius: 6px; line-height: 1.5; max-width: 280px; z-index: 5; }
+</style>
+
+<main>
+  <header>
+    <span class="eyebrow">行政事業レビュー（2025 年度版）の支出先 · FY2024 の執行</span>
+    <h1>国の事業のお金は、誰に払われたのか</h1>
+    <p id="lead"></p>
+    <div class="tiles" id="tiles"></div>
+  </header>
+
+  <section>
+    <h2>国が直接払った先を、種類で分ける</h2>
+    <p id="catLead"></p>
+    <div class="panel scroll"><svg class="chart" id="catChart" role="img" aria-label="支出先の種類ごとの額（国から直接、FY2024）"></svg></div>
+    <p class="note">「まとめ」は、RS で個別の支出先の代わりに「年金受給者」「その他」などとまとめて書かれた支出先です。棒にカーソルを当てると、分け方と件数が出ます。</p>
+    <ul class="claims">
+      <li><strong>4 割は、年金などの受給者への給付</strong><span>基礎年金給付（支出先「年金受給者」25.5兆円）と厚生年金の保険給付（「年金受給者等」24.2兆円）の 2 つだけで、国から直接払った額の約 4 割です。受給者は個人の集まりなので、RS では 1 行にまとめて書かれています。</span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+      <li><strong>会社への直接の支払いは 6.0兆円（4.7%）</strong><span>法人種別が株式会社・有限会社・合同会社などの支出先です。2 段目以降（委託先からさらに払われた先）でも、会社には 2.8兆円が出てきます。</span><span><span class="tag proc"></span><span class="tag ai"></span></span></li>
+      <li><strong>「国の機関」への 7.5兆円は、国の中の受け渡し</strong><span>たとえば総務省の 2.8兆円は、ほぼ全額が内閣府の「物価高騰対応重点支援地方創生臨時交付金」から総務省への支出です。国の外に出たお金ではありません。</span><span><span class="tag src"></span><span class="tag ai"></span></span></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>名前が分かる支出先の上位</h2>
+    <p>法人番号のある支出先を、法人番号でまとめて、国から直接払った額の順に並べました。個人や法人番号のない支出先は、名前を出していません。</p>
+    <div class="panel scroll"><table id="topTbl"></table></div>
+    <p class="note">同じ法人番号で名前の書き方が違う行は、1 つにまとめ、最も額の大きい名前を表示しています。都道府県は、警察・教育委員会などが同じ法人番号で出てくるため、それらを含みます。</p>
+  </section>
+
+  <section>
+    <h2>お金は、何段にも流れていく</h2>
+    <p id="depthLead"></p>
+    <div class="panel scroll"><svg class="chart" id="depthChart" role="img" aria-label="支出先ブロックの段ごとの合計額"></svg></div>
+    <ul class="claims">
+      <li><strong>2 段目以降の額は、国のお金の「内訳」とは限らない</strong><span>RS のブロックのつながり（5-2）には、段の間の額がありません。2 段目以降のブロックの合計には、受け取った側が自分の財源で払った額も入ることがあります。例えば、独立行政法人国際協力機構への出資の事業は、国から直接は 813億円ですが、2 段目以降のブロックの合計は 3.65兆円です（国際協力機構が開発途上地域の政府等へ貸し付ける額などと推測）。</span><span><span class="tag src"></span><span class="tag ai"></span></span></li>
+    </ul>
+    <div class="panel scroll"><svg class="chart" id="minChart" role="img" aria-label="府省ごとの、2 段目以降がある事業の割合"></svg></div>
+    <div class="legend"><span><i style="background:var(--bar)"></i>3 段目以上がある</span><span><i style="background:var(--bar2)"></i>2 段目まで</span><span><i style="background:var(--bar3)"></i>1 段だけ</span></div>
+    <p class="note">支出先ブロックのある事業が 30 以上の府省。割合は事業の数で数えています（額ではありません）。</p>
+    <details>
+      <summary>2 段目以降のブロックの合計が大きい事業（上位 10）</summary>
+      <div class="scroll" style="margin-top:12px"><table id="downTbl"></table></div>
+    </details>
+  </section>
+
+  <section>
+    <h2>この数字の作り方と、確かめられないこと</h2>
+    <ul class="notes" id="notes">
+      <li><span class="tag src"></span>行政事業レビュー見える化サイトの CSV（2025 年度版）の「5-1 支出先_支出情報」「5-2 支出先_支出ブロックのつながり」。額は「支出先の合計支出額」（円）。契約ごとの行は、二重に数えないよう使っていません。</li>
+      <li id="yearNote"><span class="tag ai"></span></li>
+      <li><span class="tag proc"></span>段の深さは、5-2 の「担当組織からの支出」を 1 段目として、ブロックからブロックへのつながりをたどって決めました。たどれないブロック（<span id="noDepth"></span>）は、どの段にも入れていません。</li>
+      <li><span class="tag ai"></span>支出先の種類は、法人種別のコード（国税庁の法人番号の区分。コードの意味は AI の知識によるもの）と、名前の語（「独立行政法人」「公益財団法人」など）で分けました。コードと名前の照合では、株式会社のコード（301）の 99.7%、地方公共団体（201）の 99.9%、国の機関（101）の 90.7% が、名前と合っていました。法人種別が空の行は、名前の語だけで分けています。</li>
+      <li>RS の額は事業単位の集計で、予算書・決算書の数値とは一致しません。5-3（費目・使途）の「使途」は自由記述（約 2 万種類）なので、ここでは分類していません。</li>
+      <li>法人番号は国税庁の、根拠法令名は e-Gov の利用条件に従います。個人や法人番号のない支出先は、名前を出していません。</li>
+      <li>未確認: 「まとめ」の支出先（とくに「その他」の 18.6兆円）の中身。2 段目以降の額のうち、国のお金に当たる部分。法人種別のコードの意味の公式の定義（このデータの中には書かれていません）。</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>次に、聞かせてください</h2>
+    <ol class="questions">
+      <li>「その他」とまとめられた 18.6兆円の中身を、事業ごとに見ますか。どの府省・事業で「その他」が多いかは、すぐ出せます。</li>
+      <li>会社への支払いを、契約の方式（一般競争・随意契約）や入札者数で見ますか。5-1 の契約の行に、その列があります。</li>
+      <li>再委託の深い事業（4〜5 段）を 1 つ選んで、お金の流れを図にしますか。</li>
+    </ol>
+  </section>
+
+  <footer>
+    <span>出典：行政事業レビュー見える化サイト（https://rssystem.go.jp）を加工して作成。国や各府省が作成した加工していない情報ではありません。</span>
+    <span>nihon-no-yosan の AI Data Stories PoC（2026-11-03）。</span>
+  </footer>
+</main>
+<div id="tip" hidden></div>
+
+<script>
+const D = {"cats": [{"c": "給付の受給者（まとめ）", "note": "まとめた支出先のうち、名前が「年金受給者」「児童手当の受給者」など", "s1": 50287428041000, "n1": 6, "all": 52032608825413, "nall": 13, "d2": 1745180784413, "dn": 0}, {"c": "「その他」（まとめ）", "note": "まとめた支出先のうち、名前が「その他」で始まるもの", "s1": 18632282765622, "n1": 1645, "all": 30095420829909, "nall": 3435, "d2": 9402580191964, "dn": 2060557872323}, {"c": "その他の法人", "note": "法人種別がその他の設立登記法人などで、名前の語で分けられなかった法人（全国健康保険協会・日本年金機構など）", "s1": 14200225980966, "n1": 1274, "all": 14588889700083, "nall": 2629, "d2": 384619809976, "dn": 4043909141}, {"c": "地方公共団体", "note": "", "s1": 10497392570333, "n1": 7064, "all": 14084394339716, "nall": 11146, "d2": 2358178212540, "dn": 1228823556843}, {"c": "国の機関", "note": "", "s1": 7470316148859, "n1": 1583, "all": 7637948066332, "nall": 1982, "d2": 154272036343, "dn": 13359881130}, {"c": "独立行政法人", "note": "", "s1": 6193613173816, "n1": 1005, "all": 6790879680833, "nall": 1604, "d2": 582601064598, "dn": 14665442419}, {"c": "会社", "note": "", "s1": 5966381884981, "n1": 14622, "all": 8890502676746, "nall": 30616, "d2": 2849458154556, "dn": 74662637209}, {"c": "法人番号なし・個人", "note": "法人番号が 9999999999999 の支出先（個人・海外の団体など。名前は出さない）", "s1": 4563542471275, "n1": 5878, "all": 6296892307155, "nall": 9948, "d2": 1702322098064, "dn": 31027737816}, {"c": "ほかの集まり（まとめ）", "note": "まとめた支出先のうち、上の 2 つと借入金の返済など以外（例: 開発途上地域の政府等、各地の農政局）", "s1": 4424912983875, "n1": 3042, "all": 7361654907395, "nall": 3848, "d2": 2837348633193, "dn": 99393290327}, {"c": "一般財団・社団法人", "note": "", "s1": 2758759556682, "n1": 1416, "all": 2858633287170, "nall": 2607, "d2": 99021593687, "dn": 852136801}, {"c": "協同組合・連合会など", "note": "", "s1": 726354327348, "n1": 351, "all": 1109521155016, "nall": 1076, "d2": 347815770356, "dn": 35351057312}, {"c": "国立大学法人等", "note": "", "s1": 574542674028, "n1": 776, "all": 760548586962, "nall": 2049, "d2": 186005912934, "dn": 0}, {"c": "公益法人", "note": "", "s1": 518652703176, "n1": 785, "all": 610316957724, "nall": 1363, "d2": 63226232290, "dn": 28438022258}, {"c": "学校法人", "note": "", "s1": 40157001967, "n1": 388, "all": 109977499654, "nall": 850, "d2": 69820390687, "dn": 107000}, {"c": "外国会社等", "note": "", "s1": 15868678863, "n1": 44, "all": 23659386794, "nall": 66, "d2": 7723529249, "dn": 67178682}, {"c": "地方独立行政法人", "note": "", "s1": 5901124393, "n1": 78, "all": 10481838919, "nall": 168, "d2": 4580714526, "dn": 0}, {"c": "社会福祉・医療法人", "note": "", "s1": 2356659797, "n1": 182, "all": 22157149134, "nall": 511, "d2": 19701954740, "dn": 98534597}, {"c": "法人番号なし（その他）", "note": "法人番号が空で、名前の語でも分けられなかった支出先（名前は出さない）", "s1": 157242000, "n1": 4, "all": 157242000, "nall": 4, "d2": 0, "dn": 0}, {"c": "借入金の返済など（まとめ）", "note": "まとめた支出先のうち、名前が借入金・回収金", "s1": 0, "n1": 0, "all": 3491282305716, "nall": 4, "d2": 1745641152858, "dn": 1745641152858}], "top": [{"name": "全国健康保険協会", "cat": "その他の法人", "amt": 12481491335402, "n": 11}, {"name": "国土交通省（同じ法人番号の地方支分部局などを含む）", "cat": "国の機関", "amt": 3345183983353, "n": 155}, {"name": "総務省", "cat": "国の機関", "amt": 2798957781000, "n": 13}, {"name": "国立研究開発法人新エネルギー・産業技術総合開発機構", "cat": "独立行政法人", "amt": 2156747882092, "n": 66}, {"name": "一般社団法人全国石油協会", "cat": "一般財団・社団法人", "amt": 1961936542517, "n": 6}, {"name": "東京都（警察・教育委員会など、同じ法人番号の機関を含む）", "cat": "地方公共団体", "amt": 909426304891, "n": 251}, {"name": "国立研究開発法人宇宙航空研究開発機構", "cat": "独立行政法人", "amt": 625823021161, "n": 16}, {"name": "三菱重工業株式会社", "cat": "会社", "amt": 625552544257, "n": 79}, {"name": "大阪府（警察・教育委員会など、同じ法人番号の機関を含む）", "cat": "地方公共団体", "amt": 538829909817, "n": 196}, {"name": "独立行政法人中小企業基盤整備機構", "cat": "独立行政法人", "amt": 522524760800, "n": 10}, {"name": "北海道（警察・教育委員会など、同じ法人番号の機関を含む）", "cat": "地方公共団体", "amt": 482424627709, "n": 234}, {"name": "大阪市（警察・教育委員会など、同じ法人番号の機関を含む）", "cat": "地方公共団体", "amt": 469174976734, "n": 89}, {"name": "大阪府後期高齢者医療広域連合", "cat": "地方公共団体", "amt": 450118696607, "n": 5}, {"name": "日本私立学校振興・共済事業団", "cat": "協同組合・連合会など", "amt": 443523489000, "n": 5}, {"name": "愛知県（警察・教育委員会など、同じ法人番号の機関を含む）", "cat": "地方公共団体", "amt": 441519983677, "n": 199}, {"name": "東京都後期高齢者医療広域連合", "cat": "地方公共団体", "amt": 437113551887, "n": 5}, {"name": "川崎重工業株式会社", "cat": "会社", "amt": 430552296976, "n": 61}, {"name": "独立行政法人エネルギー・金属鉱物資源機構", "cat": "独立行政法人", "amt": 402698932381, "n": 28}, {"name": "埼玉県（警察・教育委員会など、同じ法人番号の機関を含む）", "cat": "地方公共団体", "amt": 387443925090, "n": 162}, {"name": "文部科学省（同じ法人番号の地方支分部局などを含む）", "cat": "国の機関", "amt": 372634941000, "n": 23}], "mins": [{"m": "復興庁", "n": 152, "multi": 136, "d3": 79}, {"m": "デジタル庁", "n": 275, "multi": 229, "d3": 46}, {"m": "林野庁", "n": 44, "multi": 36, "d3": 1}, {"m": "国土交通省観光庁", "n": 70, "multi": 52, "d3": 12}, {"m": "農林水産省", "n": 294, "multi": 198, "d3": 72}, {"m": "経済産業省", "n": 451, "multi": 303, "d3": 82}, {"m": "法務省", "n": 46, "multi": 29, "d3": 2}, {"m": "環境省", "n": 231, "multi": 134, "d3": 15}, {"m": "警察庁", "n": 57, "multi": 32, "d3": 0}, {"m": "水産庁", "n": 77, "multi": 41, "d3": 4}, {"m": "特許庁", "n": 34, "multi": 15, "d3": 5}, {"m": "原子力規制委員会", "n": 49, "multi": 20, "d3": 0}, {"m": "内閣府", "n": 232, "multi": 92, "d3": 27}, {"m": "文部科学省", "n": 407, "multi": 161, "d3": 15}, {"m": "スポーツ庁", "n": 51, "multi": 18, "d3": 2}, {"m": "文化庁", "n": 66, "multi": 22, "d3": 1}, {"m": "総務省", "n": 216, "multi": 70, "d3": 23}, {"m": "厚生労働省", "n": 1154, "multi": 326, "d3": 15}, {"m": "国土交通省", "n": 616, "multi": 168, "d3": 17}, {"m": "財務省", "n": 52, "multi": 9, "d3": 2}, {"m": "消費者庁", "n": 37, "multi": 6, "d3": 0}, {"m": "こども家庭庁", "n": 108, "multi": 14, "d3": 0}, {"m": "防衛省", "n": 316, "multi": 27, "d3": 0}, {"m": "金融庁", "n": 43, "multi": 3, "d3": 0}, {"m": "外務省", "n": 394, "multi": 17, "d3": 1}], "stage": {"1": 126878845988981, "2": 20633285066950, "3": 3864951751587, "4": 61566893105, "5": 294525332, "None": 5336982516716}, "dist": {"1": 3356, "2": 1771, "3": 363, "4": 49, "None": 43, "5": 9}, "topDown": [{"min": "財務省", "name": "独立行政法人国際協力機構有償資金協力部門への出資", "down": 3653942305858, "s1": 81330000000, "maxd": 3}, {"min": "内閣府", "name": "物価高騰対応重点支援地方創生臨時交付金", "down": 2151949970000, "s1": 2789292629000, "maxd": 2}, {"min": "こども家庭庁", "name": "児童手当等交付金に必要な経費", "down": 1401293745413, "s1": 1401293745413, "maxd": 2}, {"min": "国土交通省", "name": "道路事業(直轄・改築等)", "down": 863762037479, "s1": 863762037479, "maxd": 2}, {"min": "文部科学省", "name": "独立行政法人日本学生支援機構貸与型奨学金事業", "down": 827093753816, "s1": 104173894310, "maxd": 2}, {"min": "国土交通省", "name": "北海道開発事業", "down": 639227528073, "s1": 670802710631, "maxd": 3}, {"min": "防衛省", "name": "米軍再編関係経費", "down": 465997263558, "s1": 474858257549, "maxd": 2}, {"min": "国土交通省", "name": "子育てエコホーム支援事業", "down": 418616115015, "s1": 209509968380, "maxd": 4}, {"min": "外務省", "name": "独立行政法人国際協力機構運営費交付金", "down": 334282778000, "s1": 167141389000, "maxd": 3}, {"min": "経済産業省", "name": "中小企業生産性革命推進事業補助金", "down": 312682398765, "s1": 157357215608, "maxd": 5}], "v24": {"exact": 3179, "within1pct": 1230, "other": 364, "noSpent": 119, "s1_plus_indirect": 126785052416947, "spent": 126409528795035}, "v23": {"exact": 125, "within1pct": 322, "other": 3971, "noSpent": 474, "s1_plus_indirect": 125576046986298, "spent": 124824570919096}, "spent24": 128407860724145, "nSpent24": 5240, "nBlocks": 20497, "nJigyo": 5591, "nRec": 73919, "noDepth": 191, "noDepthAmt": 5336982516716, "indirect": 32896230966};
+const NS = 'http://www.w3.org/2000/svg';
+const el = (tag, attrs = {}, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+const tip = document.getElementById('tip');
+function hover(node, html) {
+  node.addEventListener('pointermove', e => { tip.innerHTML = html; tip.hidden = false; tip.style.left = Math.min(e.clientX + 12, innerWidth - 290) + 'px'; tip.style.top = (e.clientY + 12) + 'px'; });
+  node.addEventListener('pointerleave', () => { tip.hidden = true; });
+}
+const cho = v => v / 1e12, oku = v => v / 1e8;
+const yen = v => Math.abs(v) >= 1e12 ? `${cho(v).toFixed(2)}兆円` : `${Math.round(oku(v)).toLocaleString('ja-JP')}億円`;
+const pct = (a, b) => (a / b * 100).toFixed(1) + '%';
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const S1 = D.stage['1'];
+const multi = ['2', '3', '4', '5'].reduce((s, k) => s + (D.dist[k] ?? 0), 0);
+const cat = name => D.cats.find(c => c.c === name);
+
+// 冒頭
+document.getElementById('lead').textContent = `行政事業レビュー（RS）の 2025 年度版には、${D.nJigyo.toLocaleString()} の事業について、お金を払った先（支出先）が載っています。国が直接払った額は ${yen(S1)}。その先で、委託先がさらに別の先へ払う流れも記録されています。`;
+const tiles = [
+  [yen(S1), 'FY2024 に、国が直接払った額（1 段目の支出先ブロックの合計）', true],
+  [pct(cat('給付の受給者（まとめ）').s1, S1), '年金などの受給者への給付（まとめた支出先）'],
+  [pct(cat('会社').s1, S1), '会社への直接の支払い（' + yen(cat('会社').s1) + '）'],
+  [pct(multi, D.nJigyo), `2 段目以降の支出先がある事業（${multi.toLocaleString()} / ${D.nJigyo.toLocaleString()}）`],
+];
+document.getElementById('tiles').innerHTML = tiles.map(([b, s, hl]) => `<div class="tile"><b class="${hl ? 'hl' : ''}">${b}</b><span>${s}</span></div>`).join('');
+
+// 種類ごとの棒（1 段目）
+(() => {
+  const rows = D.cats.filter(c => c.s1 > 0);
+  document.getElementById('catLead').textContent = `国から直接（1 段目）の ${yen(S1)} を、支出先の種類で分けました。一番大きいのは「${rows[0].c}」の ${yen(rows[0].s1)}（${pct(rows[0].s1, S1)}）です。`;
+  const s = document.getElementById('catChart'), W = 680, rowH = 24, T = 6, L = 178, R = 104, H = T + rows.length * rowH + 22;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '540px';
+  const max = Math.max(...rows.map(r => r.s1)), x = v => L + (W - L - R) * v / max;
+  const g = el('g', { class: 'grid' }, s);
+  const step = Math.pow(10, Math.floor(Math.log10(cho(max)))) * (cho(max) / Math.pow(10, Math.floor(Math.log10(cho(max)))) > 5 ? 2 : 1);
+  for (let v = 0; v <= cho(max); v += step) { el('line', { x1: x(v * 1e12), x2: x(v * 1e12), y1: T, y2: H - 20 }, g); el('text', { x: x(v * 1e12), y: H - 6, 'text-anchor': 'middle' }, s).textContent = v === 0 ? '0' : `${v}兆`; }
+  rows.forEach((r, i) => {
+    const y = T + i * rowH;
+    el('text', { x: L - 8, y: y + 16, 'text-anchor': 'end', class: 'lbl' }, s).textContent = r.c;
+    el('rect', { x: L, y: y + 5, width: Math.max(2, x(r.s1) - L), height: rowH - 9, rx: 3, fill: 'var(--bar)' }, s);
+    el('text', { x: x(r.s1) + 6, y: y + 16, class: 'val' }, s).textContent = `${yen(r.s1)}`;
+    hover(el('rect', { x: 0, y, width: W, height: rowH, fill: 'transparent' }, s), `<b>${esc(r.c)}</b>${r.note ? '<br>' + esc(r.note) : ''}<br>1 段目: ${yen(r.s1)}（${pct(r.s1, S1)}、${r.n1.toLocaleString()} 行）<br>2 段目以降: ${yen(r.d2)}`);
+  });
+})();
+
+// 上位の表
+document.getElementById('topTbl').innerHTML = '<thead><tr><th class="l">#</th><th class="l">支出先</th><th class="l">種類</th><th>国から直接</th><th>事業の数</th></tr></thead><tbody>' +
+  D.top.map((t, i) => `<tr><td class="l">${i + 1}</td><td class="l name">${esc(t.name)}</td><td class="l">${esc(t.cat)}</td><td>${yen(t.amt)}</td><td>${t.n}</td></tr>`).join('') + '</tbody>';
+
+// 段ごとの棒
+(() => {
+  const keys = ['1', '2', '3', '4', '5'], rows = keys.map(k => ({ k, v: D.stage[k] ?? 0, n: D.dist[k] ?? 0 }));
+  document.getElementById('depthLead').textContent = `支出先は「ブロック」に分かれ、ブロックからブロックへのつながりも記録されています。国から直接のブロックが 1 段目です。2 段目以降の支出先がある事業は ${multi.toLocaleString()}（${pct(multi, D.nJigyo)}）で、いちばん深い事業は 5 段目まであります。`;
+  const s = document.getElementById('depthChart'), W = 680, H = 230, L = 50, R = 16, T = 26, B = 40;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '480px';
+  const max = Math.max(...rows.map(r => r.v)), y = v => T + (H - T - B) * (1 - v / max), cw = (W - L - R) / rows.length, bw = cw * 0.5;
+  const g = el('g', { class: 'grid' }, s);
+  const top = Math.floor(cho(max) / 20) * 20;
+  for (let v = 0; v <= top; v += 20) { el('line', { x1: L, x2: W - R, y1: y(v * 1e12), y2: y(v * 1e12) }, g); el('text', { x: L - 6, y: y(v * 1e12) + 4, 'text-anchor': 'end' }, s).textContent = v; }
+  el('text', { x: 4, y: 12 }, s).textContent = '兆円';
+  rows.forEach((r, i) => {
+    const x = L + cw * i + (cw - bw) / 2;
+    el('rect', { x, y: y(r.v), width: bw, height: Math.max(1, y(0) - y(r.v)), rx: 3, fill: i === 0 ? 'var(--bar)' : i === 1 ? 'var(--bar2)' : 'var(--bar3)' }, s);
+    el('text', { x: x + bw / 2, y: y(r.v) - 6, 'text-anchor': 'middle', class: 'val' }, s).textContent = yen(r.v);
+    el('text', { x: x + bw / 2, y: H - 22, 'text-anchor': 'middle', class: 'lbl' }, s).textContent = `${r.k} 段目`;
+    el('text', { x: x + bw / 2, y: H - 6, 'text-anchor': 'middle' }, s).textContent = `最深がここの事業 ${r.n.toLocaleString()}`;
+    hover(el('rect', { x: L + cw * i, y: T, width: cw, height: H - T - B, fill: 'transparent' }, s), `<b>${r.k} 段目のブロック</b><br>合計 ${yen(r.v)}<br>いちばん深い段が ${r.k} 段目の事業: ${r.n.toLocaleString()}`);
+  });
+})();
+
+// 府省ごとの多段の割合
+(() => {
+  const rows = D.mins, s = document.getElementById('minChart'), W = 680, rowH = 24, T = 6, L = 150, R = 120, H = T + rows.length * rowH + 22;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '520px';
+  const x = p => L + (W - L - R) * p;
+  const g = el('g', { class: 'grid' }, s);
+  for (const p of [0, 0.25, 0.5, 0.75, 1]) { el('line', { x1: x(p), x2: x(p), y1: T, y2: H - 20 }, g); el('text', { x: x(p), y: H - 6, 'text-anchor': 'middle' }, s).textContent = `${p * 100}%`; }
+  rows.forEach((r, i) => {
+    const y = T + i * rowH, a = r.d3 / r.n, b = r.multi / r.n;
+    el('text', { x: L - 8, y: y + 16, 'text-anchor': 'end', class: 'lbl' }, s).textContent = r.m;
+    el('rect', { x: L, y: y + 5, width: x(1) - L, height: rowH - 9, fill: 'var(--bar3)' }, s);
+    el('rect', { x: L, y: y + 5, width: x(b) - L, height: rowH - 9, fill: 'var(--bar2)' }, s);
+    el('rect', { x: L, y: y + 5, width: x(a) - L, height: rowH - 9, fill: 'var(--bar)' }, s);
+    el('text', { x: x(1) + 6, y: y + 16, class: 'val' }, s).textContent = `${(b * 100).toFixed(0)}%（${r.multi}/${r.n}）`;
+    hover(el('rect', { x: 0, y, width: W, height: rowH, fill: 'transparent' }, s), `<b>${esc(r.m)}</b><br>支出先のある事業 ${r.n}<br>2 段目以降がある ${r.multi}（${(b * 100).toFixed(1)}%）<br>3 段目以上がある ${r.d3}`);
+  });
+})();
+
+// 2 段目以降の大きい事業
+document.getElementById('downTbl').innerHTML = '<thead><tr><th class="l">府省</th><th class="l">事業名</th><th>国から直接</th><th>2 段目以降の合計</th><th>最深</th></tr></thead><tbody>' +
+  D.topDown.map(r => `<tr><td class="l">${esc(r.min)}</td><td class="l name">${esc(r.name)}</td><td>${yen(r.s1)}</td><td>${yen(r.down)}</td><td>${r.maxd} 段</td></tr>`).join('') + '</tbody>';
+
+// 注記の数値
+document.getElementById('noDepth').textContent = `${D.noDepth} ブロック、${yen(D.noDepthAmt)}`;
+const v = D.v24;
+document.getElementById('yearNote').insertAdjacentHTML('beforeend', `どの年度の執行か: CSV の「事業年度」は 2025 ですが、事業ごとに 1 段目の合計（＋国自らが支出する間接経費）を予算・執行のサマリ（2-1）と比べると、2024 年度の執行額と円まで一致した事業が ${v.exact.toLocaleString()}、1% 以内が ${v.within1pct.toLocaleString()}、それ以外が ${v.other.toLocaleString()} でした（2023 年度の執行額と一致したのは ${D.v23.exact}）。合計は ${yen(v.s1_plus_indirect)} と ${yen(v.spent)} です。このため、FY2024 の執行と判断しました。`);
+</script>

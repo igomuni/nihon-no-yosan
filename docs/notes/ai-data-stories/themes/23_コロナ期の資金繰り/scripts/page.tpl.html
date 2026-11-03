@@ -1,0 +1,246 @@
+<title>コロナ期の資金繰り</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Zen+Kaku+Gothic+New:wght@700;900&display=swap">
+<style>
+/* layout: 1 本の読み物の列（最大 760px）。区分は 4 色（出資 = 藍、保証・利子 = 緑、給付金 = 朱、参考 = 灰）、不用は斜線 */
+:root {
+  --bg: #f6f7f9; --surface: #ffffff; --ink: #18202b; --muted: #5b6573; --line: #d9dee5;
+  --up: #d2542a; --down: #2a6fc9; --zero: #9aa3ae; --accent: #18202b; --tag: #eef1f5; --c1: #2a6fc9; --c2: #1b8f6a; --c3: #d2542a; --c4: #9aa3ae;
+  --display: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", sans-serif;
+  --body: "BIZ UDPGothic", "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #12161c; --surface: #1a2029; --ink: #e8ecf1; --muted: #9aa5b3; --line: #2c3440;
+  --up: #f07a50; --down: #5b9cf0; --zero: #6b7582; --accent: #e8ecf1; --tag: #232b36; --c1: #5b9cf0; --c2: #3cbf92; --c3: #f07a50; --c4: #6b7582; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #12161c; --surface: #1a2029; --ink: #e8ecf1; --muted: #9aa5b3; --line: #2c3440;
+  --up: #f07a50; --down: #5b9cf0; --zero: #6b7582; --accent: #e8ecf1; --tag: #232b36; --c1: #5b9cf0; --c2: #3cbf92; --c3: #f07a50; --c4: #6b7582; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.8;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 32px 64px; }
+main { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 56px; }
+h1, h2 { font-family: var(--display); text-wrap: balance; line-height: 1.35; margin: 0; }
+h1 { font-size: clamp(28px, 6vw, 42px); font-weight: 900; }
+h2 { font-size: 22px; font-weight: 700; }
+p { margin: 0; max-width: 65ch; }
+section { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; color: var(--muted); }
+.num { font-variant-numeric: tabular-nums; }
+.up { color: var(--up); } .down { color: var(--down); }
+.hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 24px; align-items: center; }
+@media (max-width: 640px) { .hero { grid-template-columns: 1fr; } }
+.big { font-family: var(--display); font-weight: 900; font-size: clamp(40px, 9vw, 64px); line-height: 1.1; }
+.from-to { font-size: 15px; color: var(--muted); }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; min-width: 0; }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { fill: var(--muted); font-family: var(--body); font-size: 11px; }
+.chart .lbl { fill: var(--ink); font-size: 12px; }
+.chart .val { font-variant-numeric: tabular-nums; }
+.grid line { stroke: var(--line); stroke-width: 1; }
+.tag { display: inline-block; font-size: 11px; padding: 0 8px; border-radius: 999px; background: var(--tag); color: var(--muted); margin-right: 6px; white-space: nowrap; }
+.tag.src::before { content: "原資料"; } .tag.proc::before { content: "加工"; } .tag.ai::before { content: "AIの計算・解釈"; }
+.claims { display: flex; flex-direction: column; gap: 12px; padding: 0; margin: 0; list-style: none; }
+.claims li { display: grid; gap: 4px; }
+.multiples { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; }
+.mini { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.mini .name { font-size: 13px; font-weight: 700; }
+.mini .delta { font-size: 13px; }
+.mini svg text { fill: var(--muted); font-size: 10px; }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; min-width: 720px; }
+th, td { padding: 4px 8px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; position: sticky; left: 0; background: var(--surface); }
+thead th { color: var(--muted); font-weight: 400; }
+details { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+summary { cursor: pointer; font-weight: 700; }
+summary:focus-visible, a:focus-visible { outline: 2px solid var(--down); outline-offset: 2px; }
+.notes { padding-left: 1.2em; margin: 0; display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--muted); }
+.questions { counter-reset: q; list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.questions li { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+footer { font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+#tip { position: fixed; pointer-events: none; background: var(--ink); color: var(--bg); font-size: 12px; padding: 6px 8px; border-radius: 6px; line-height: 1.5; max-width: 260px; z-index: 5; }
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 640px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.kpi b { font-family: var(--display); font-size: 24px; font-variant-numeric: tabular-nums; }
+.kpi span { font-size: 12px; color: var(--muted); line-height: 1.5; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
+#tip { position: fixed; pointer-events: none; background: var(--ink); color: var(--bg); font-size: 12px; padding: 6px 8px; border-radius: 6px; line-height: 1.5; max-width: 280px; z-index: 5; }
+</style>
+
+<main>
+  <header style="display:flex;flex-direction:column;gap:12px">
+    <span class="eyebrow">一般会計・決算 FY2020〜FY2022（参考に財政投融資特別会計）</span>
+    <h1>コロナ期の企業の資金繰り支援は、どこまで使われたか</h1>
+    <p>政策金融機関への出資、信用保証と利子補給、持続化給付金・家賃支援給付金を、一般会計の目の単位で足しました。入りは FY2020〜FY2022 の予算（前年度繰越・予備費・流用を含む）、出は同じ 3 年の支出・不用です。</p>
+    <div class="kpis" id="kpis"></div>
+  </header>
+
+  <section>
+    <h2>支出の山は FY2020、出資は 1 年遅れて FY2021</h2>
+    <p id="yearLead"></p>
+    <div class="legend" id="legend1"></div>
+    <div class="panel scroll"><svg class="chart" id="yearChart" role="img" aria-label="区分ごとの年度別の支出"></svg></div>
+  </section>
+
+  <section>
+    <h2>使い切ったもの、残ったもの</h2>
+    <p>FY2020〜FY2022 に入ったお金を、支出（塗り）と不用（斜線）に分けました。どの目も、FY2022 末に翌年度へ繰り越した額は 0 円です。</p>
+    <div class="panel scroll"><svg class="chart" id="useChart" role="img" aria-label="目ごとの支出と不用"></svg></div>
+    <ul class="claims" id="useClaims"></ul>
+  </section>
+
+  <section>
+    <h2>持続化給付金の 3 年</h2>
+    <p id="jzLead"></p>
+    <div class="panel scroll"><table id="jzTbl"></table></div>
+    <span><span class="tag src"></span><span class="tag proc"></span></span>
+  </section>
+
+  <section>
+    <h2>融資の原資は、別の層で数える</h2>
+    <p id="fzLead"></p>
+    <div class="legend"><span><i style="background:var(--c4)"></i>当初予算</span><span><i style="background:var(--c1)"></i>歳出予算現額</span><span><i style="background:var(--ink)"></i>支出済</span></div>
+    <div class="panel scroll"><svg class="chart" id="fzChart" role="img" aria-label="財政融資資金への繰入の年度推移"></svg></div>
+    <p style="font-size:13px;color:var(--muted)">一般会計の出資と、この繰入は足していません。どちらも政策金融機関の資金になりえますが、繰入の行き先（どの機関への貸付か）はこのデータに無く、重なりを確かめられないためです。</p>
+  </section>
+
+  <section>
+    <h2>目ごとの表（億円）</h2>
+    <details>
+      <summary>府省・項・目ごとの当初・補正・予備費・流用と、支出・不用を開く</summary>
+      <div class="scroll" style="margin-top:12px"><table id="tbl"></table></div>
+    </details>
+  </section>
+
+  <section>
+    <h2>この数字の作り方と、確かめられないこと</h2>
+    <ul class="notes">
+      <li><span class="tag src"></span>財務省「予算書・決算書データベース」の予算書（目の当初・補正の表、補正は回ごと）と決算書（目の表）。一般会計の FY2019〜FY2024 と、財政投融資特別会計の項。</li>
+      <li><span class="tag proc"></span>nihon-no-yosan が抽出・構造化した CSV（mof-archive の moku-general*.csv、kou-special*.csv）を使いました。</li>
+      <li><span class="tag ai"></span>対象の目は、目名で選びました（8 種類）: 日本政策金融公庫出資金（財務・経産・厚労・農水）、危機対応円滑化業務出資金、商工組合中央金庫出資金、経営安定関連保証等基金補助金、中小企業再生支援利子補給補助金、持続化給付金、家賃支援給付金、事業再構築促進補助金（参考。資金繰りではなく事業転換の補助なので、合計に入れない）。名前に出てこない資金繰り支援（自治体の制度融資への補助など）は数えていません。</li>
+      <li><span class="tag ai"></span>入り = FY2020 の前年度繰越 + FY2020〜FY2022 の歳出予算額・予備費使用額・流用等・移替の和。出 = 同じ 3 年の支出済・不用と、FY2022 末の翌年度繰越。目ごとに、入りと出は円まで一致しました（締め 0 円）。年度ごとの支出の棒は FY2019〜FY2024 で、FY2023 以降の公庫出資は平時の額です。</li>
+      <li><span class="tag ai"></span>一般会計 → 財政投融資特別会計 → 政策金融機関のような通り道の二重計上を避けるため、一般会計の目で数え、財政融資資金への繰入は別の層として合計に入れていません。一般会計から財投特会の投資勘定への繰入（FY2020 補正 0.2兆円）と、投資勘定の産業投資は、コロナ対応に限らないので扱っていません。</li>
+      <li>未確認: 出資・保証・利子補給を受けた機関の側での使われ方（貸付額、保証額）。危機対応円滑化業務出資金と商工中金出資金が不用になった理由。持続化給付金の FY2021 の補正 2.49兆円の中身（目名は同じ）。財政融資資金の貸付先。政府の公表値との照合。行政事業レビュー（2025 年度版）は FY2021 以降の事業で、2022 年度までに終わった給付金の事業は入っていない可能性があり、照合していません。</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>次に、聞かせてください</h2>
+    <ol class="questions">
+      <li>出資のうち、危機対応の 1.37兆円と商工中金の 0.40兆円が使われずに残りました。予算の段階の見込みと実際の差として、もっと見たいですか。</li>
+      <li>財政融資資金への繰入の山（FY2020 の 39.1兆円）が、どの機関への貸付だったかは、財政投融資計画など別の資料が要ります。そこまで広げますか。</li>
+      <li>給付金・補助金の支出先を、行政事業レビューの事業（事業再構築など）でたどってみますか。</li>
+    </ol>
+  </section>
+
+  <footer>
+    <span>出典：財務省「予算書・決算書データベース」を加工して作成。国や各府省が作成した加工していない情報ではありません。</span>
+    <span>nihon-no-yosan の AI Data Stories PoC（ループ 5 回目）。金額は円の値から計算し、表示で丸めています。</span>
+  </footer>
+</main>
+<div id="tip" hidden></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="var(--surface)"></rect><line x1="0" y1="0" x2="0" y2="6" stroke="var(--muted)" stroke-width="2"></line></pattern>
+</defs></svg>
+
+<script>
+const D = __DATA__;
+const tri = v => v / 10000; // 億円 → 兆円
+const f = (v, d = 2) => (v === null || v === undefined) ? '—' : tri(v).toFixed(d);
+const NS = 'http://www.w3.org/2000/svg';
+const el = (tag, attrs = {}, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+const tip = document.getElementById('tip');
+function hover(node, html) {
+  node.addEventListener('pointermove', e => { tip.innerHTML = html; tip.hidden = false; tip.style.left = Math.min(e.clientX + 12, innerWidth - 290) + 'px'; tip.style.top = (e.clientY + 12) + 'px'; });
+  node.addEventListener('pointerleave', () => { tip.hidden = true; });
+}
+const COL = { '出資（政策金融機関へ）': 'var(--c1)', '保証・利子補給': 'var(--c2)', '給付金': 'var(--c3)', '参考: 事業再構築の補助': 'var(--c4)' };
+const K = D.kpi;
+document.getElementById('kpis').innerHTML = [
+  [`${f(K.inflow)}兆円`, '入ったお金（出資・保証と利子・給付金の 3 区分、FY2020〜FY2022）'],
+  [`${f(K.spent)}兆円`, `支出（${(K.spent / K.inflow * 100).toFixed(0)}%）`],
+  [`${f(K.unused)}兆円`, `不用（${(K.unused / K.inflow * 100).toFixed(0)}%）`],
+  [`${f(K.fz20cur, 1)}兆円`, '別の層: 財政融資資金への繰入（FY2020 の現額。合計に入れない）'],
+].map(([b, s]) => `<div class="kpi"><b>${b}</b><span>${s}</span></div>`).join('');
+
+// 年度ごとの支出（積み上げ）
+(() => {
+  const s = document.getElementById('yearChart'), Y = D.Y, W = 680, H = 280, L = 40, R = 12, T = 22, B = 26;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '480px';
+  const tot = Y.map((_, i) => D.cats.reduce((a, c) => a + D.yearly[c][i], 0));
+  const maxT = Math.max(...tot), step = maxT > 60000 ? 20000 : 10000, top = Math.ceil(maxT / step) * step;
+  const y = v => T + (H - T - B) * (1 - v / top), cw = (W - L - R) / Y.length, bw = cw * 0.56;
+  const g = el('g', { class: 'grid' }, s);
+  for (let v = 0; v <= top; v += step) { el('line', { x1: L, x2: W - R, y1: y(v), y2: y(v) }, g); el('text', { x: L - 6, y: y(v) + 4, 'text-anchor': 'end' }, s).textContent = tri(v); }
+  el('text', { x: 4, y: 12 }, s).textContent = '兆円';
+  Y.forEach((yr, i) => {
+    const x = L + cw * i + (cw - bw) / 2; let base = 0;
+    for (const c of D.cats) { const v = D.yearly[c][i]; if (v <= 0) continue; el('rect', { x, y: y(base + v), width: bw, height: Math.max(1, y(base) - y(base + v) - (base ? 1.5 : 0)), fill: COL[c], rx: 2 }, s); base += v; }
+    el('text', { x: x + bw / 2, y: y(tot[i]) - 6, 'text-anchor': 'middle', class: 'lbl val' }, s).textContent = f(tot[i]);
+    el('text', { x: x + bw / 2, y: H - 8, 'text-anchor': 'middle' }, s).textContent = `FY${yr}`;
+    hover(el('rect', { x: L + cw * i, y: T, width: cw, height: H - T - B, fill: 'transparent' }, s), `<b>FY${yr} の支出</b><br>` + D.cats.map(c => `${c}: ${f(D.yearly[c][i])}兆円`).join('<br>'));
+  });
+  document.getElementById('legend1').innerHTML = D.cats.map(c => `<span><i style="background:${COL[c]}"></i>${c}</span>`).join('');
+  const d = D.detail, i20 = Y.indexOf(2020), i21 = Y.indexOf(2021);
+  document.getElementById('yearLead').textContent = `FY2020 の支出は ${f(tot[i20])}兆円で、給付金 ${f(D.yearly['給付金'][i20])}兆円と保証・利子補給 ${f(D.yearly['保証・利子補給'][i20])}兆円が大半です。日本政策金融公庫への出資は、FY2020 の補正で積みましたが、その年に払ったのは ${f(d.kou20spent)}兆円で、${f(d.kou20cout)}兆円を繰り越し、FY2021 に ${f(d.kou21spent)}兆円を払いました（財務省・経済産業省の計）。`;
+})();
+
+// 目ごとの支出と不用（横棒）
+(() => {
+  const rows = D.bars, s = document.getElementById('useChart'), W = 680, rowH = 30, T = 6, L = 200, R = 150, H = T + rows.length * rowH + 6;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '560px';
+  const max = Math.max(...rows.map(r => r.new)), x = v => L + (W - L - R) * v / max;
+  rows.forEach((r, i) => {
+    const y0 = T + i * rowH;
+    el('text', { x: L - 8, y: y0 + 19, 'text-anchor': 'end', class: 'lbl' }, s).textContent = r.n;
+    el('rect', { x: L, y: y0 + 7, width: Math.max(1, x(r.spent) - L), height: rowH - 12, rx: 2, fill: COL[r.cat] }, s);
+    if (r.unused > 0) el('rect', { x: x(r.spent), y: y0 + 7, width: Math.max(1, x(r.spent + r.unused) - x(r.spent)), height: rowH - 12, rx: 2, fill: 'url(#hatch)', stroke: COL[r.cat], 'stroke-width': 1 }, s);
+    el('text', { x: x(r.new) + 6, y: y0 + 19, class: 'val' }, s).textContent = `${f(r.new)}兆円（支出 ${(r.spent / r.new * 100).toFixed(0)}%）`;
+    hover(el('rect', { x: 0, y: y0, width: W, height: rowH, fill: 'transparent' }, s), `<b>${r.n}</b>（${r.minis}）<br>入り ${f(r.new, 3)}兆円<br>支出 ${f(r.spent, 3)}兆円<br>不用 ${f(r.unused, 3)}兆円`);
+  });
+  const by = n => rows.find(r => r.n === n);
+  const kr = by('危機対応円滑化業務への出資'), sc = by('商工組合中央金庫への出資'), jz = by('持続化給付金'), ho = by('信用保証の基金（経営安定関連）'), ri = by('利子補給（中小企業再生支援）');
+  document.getElementById('useClaims').innerHTML = [
+    [`出資は ${(rows.filter(r => r.cat.startsWith('出資')).reduce((a, r) => a + r.unused, 0) / rows.filter(r => r.cat.startsWith('出資')).reduce((a, r) => a + r.new, 0) * 100).toFixed(0)}% が不用`, `危機対応円滑化業務への出資（財務省・経済産業省）は、入り ${f(kr.new)}兆円のうち ${f(kr.unused)}兆円が不用でした。どちらも FY2020 の補正で積み、全額を繰り越し、FY2021 に一部だけ払って残りが不用になっています。商工組合中央金庫への出資 ${f(sc.new)}兆円は、払われずに全額が不用です。`, 'src ai'],
+    ['保証と利子補給は全額を支出', `信用保証の基金 ${f(ho.new)}兆円と利子補給 ${f(ri.new)}兆円は、ほぼ FY2020 のうちに全額を支出しました。`, 'src proc'],
+    ['持続化給付金の不用は 0.87兆円', `入り ${f(jz.new)}兆円のうち ${f(jz.spent)}兆円を支出し、${f(jz.unused)}兆円が不用でした。2 回目の「使い切れない予算」の 0.87兆円と一致します。`, 'src proc'],
+  ].map(([h, t, tags]) => `<li><strong>${h}</strong><span>${t}</span><span>${tags.split(' ').map(x => `<span class="tag ${x}"></span>`).join('')}</span></li>`).join('');
+})();
+
+// 持続化給付金
+(() => {
+  const r = D.detail.jz;
+  document.getElementById('jzLead').textContent = `FY2020 は補正 ${f(r[0].appr)}兆円に、予備費 ${f(r[0].res)}兆円と、同じ項の家賃支援給付金からの流用 ${f(r[0].ryu)}兆円が加わりました（家賃支援給付金は補正 ${f(D.detail.ycSupp)}兆円のうち ${f(-D.detail.ycRyu)}兆円を流用で出しています）。FY2021 にも同じ目に補正 ${f(r[1].appr)}兆円が付き、FY2022 は繰越分だけで、${f(r[2].unused)}兆円が不用になりました。`;
+  document.getElementById('jzTbl').innerHTML = '<thead><tr><th>年度</th><th>補正（歳出予算額）</th><th>予備費</th><th>流用</th><th>前年度繰越</th><th>支出済</th><th>翌年度繰越</th><th>不用</th></tr></thead><tbody>' + r.map(x => `<tr><td>FY${x.y}</td><td>${f(x.appr)}</td><td>${f(x.res)}</td><td>${f(x.ryu)}</td><td>${f(x.cin)}</td><td>${f(x.spent)}</td><td>${f(x.cout)}</td><td>${f(x.unused)}</td></tr>`).join('') + '</tbody>';
+  document.getElementById('jzTbl').style.minWidth = '560px';
+})();
+
+// 財政融資資金への繰入
+(() => {
+  const rows = D.fz, s = document.getElementById('fzChart'), W = 680, H = 250, L = 40, R = 12, T = 22, B = 26;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '480px';
+  const max = Math.max(...rows.flatMap(r => [r.budget, r.cur, r.spent])), step = 100000, top = Math.ceil(max / step) * step;
+  const y = v => T + (H - T - B) * (1 - v / top), cw = (W - L - R) / rows.length, bw = cw * 0.22;
+  const g = el('g', { class: 'grid' }, s);
+  for (let v = 0; v <= top; v += step) { el('line', { x1: L, x2: W - R, y1: y(v), y2: y(v) }, g); el('text', { x: L - 6, y: y(v) + 4, 'text-anchor': 'end' }, s).textContent = tri(v); }
+  el('text', { x: 4, y: 12 }, s).textContent = '兆円';
+  rows.forEach((r, i) => {
+    const x0 = L + cw * i + (cw - bw * 3) / 2;
+    [['budget', 'var(--c4)'], ['cur', 'var(--c1)'], ['spent', 'var(--ink)']].forEach(([k, c], j) => el('rect', { x: x0 + bw * j, y: y(r[k]), width: bw - 2, height: Math.max(1, y(0) - y(r[k])), fill: c, rx: 2 }, s));
+    el('text', { x: x0 + bw * 1.5, y: y(Math.max(r.budget, r.cur, r.spent)) - 6, 'text-anchor': 'middle', class: 'lbl val' }, s).textContent = f(r.spent, 1);
+    el('text', { x: x0 + bw * 1.5, y: H - 8, 'text-anchor': 'middle' }, s).textContent = `FY${r.y}`;
+    hover(el('rect', { x: L + cw * i, y: T, width: cw, height: H - T - B, fill: 'transparent' }, s), `<b>FY${r.y}</b><br>当初 ${f(r.budget)}兆円<br>補正 ${f(r.supp)}兆円<br>現額 ${f(r.cur)}兆円<br>支出済 ${f(r.spent)}兆円<br>不用 ${f(r.unused)}兆円`);
+  });
+  const r20 = rows.find(r => r.y === 2020), r19 = rows.find(r => r.y === 2019), R0 = D.fzR;
+  document.getElementById('fzLead').textContent = `財政投融資特別会計の「財政融資資金へ繰入」は、FY2019 の支出 ${f(r19.spent)}兆円に対し、FY2020 は当初 ${f(r20.budget)}兆円に補正 3 回（+${f(R0['1'], 1)}・+${f(R0['2'], 1)}・${f(R0['3'], 1)}兆円）で現額 ${f(r20.cur)}兆円、支出 ${f(r20.spent)}兆円でした。棒の上の数字は支出済です。`;
+})();
+
+// 表
+(() => {
+  const t = document.getElementById('tbl');
+  t.innerHTML = '<thead><tr><th>目（府省 · 項）</th><th>区分</th><th>FY2019 現額</th><th>当初</th><th>補正</th><th>予備費</th><th>流用・移替など</th><th>入り</th><th>支出</th><th>不用</th></tr></thead><tbody>' +
+    D.table.map(r => `<tr><td>${r.n}<br><span style="color:var(--muted)">${r.min} · ${r.kou}</span></td><td style="text-align:left">${r.cat}</td><td>${r.base19.toLocaleString()}</td><td>${r.budget.toLocaleString()}</td><td>${r.supp.toLocaleString()}</td><td>${r.res.toLocaleString()}</td><td>${r.ryu.toLocaleString()}</td><td>${r.new.toLocaleString()}</td><td>${r.spent.toLocaleString()}</td><td>${r.unused.toLocaleString()}</td></tr>`).join('') + '</tbody>';
+})();
+</script>

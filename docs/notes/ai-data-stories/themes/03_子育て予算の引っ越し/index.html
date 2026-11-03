@@ -1,0 +1,265 @@
+<title>子育て予算の引っ越し</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Zen+Kaku+Gothic+New:wght@700;900&display=swap">
+<style>
+/* layout: 1 本の読み物の列（最大 760px）。府省ごとに色を固定（内閣府 = 青、こども家庭庁 = 橙、厚生労働省 = 緑、文部科学省 = 黄、決められない = 灰） */
+:root {
+  --bg: #f6f7f9; --surface: #ffffff; --ink: #18202b; --muted: #5b6573; --line: #d9dee5; --tag: #eef1f5;
+  --cao: #2a78d6; --cfa: #eb6834; --mhlw: #1baf7a; --mext: #eda100; --unk: #9aa3ae; --sp: #8f6fe0;
+  --display: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", sans-serif;
+  --body: "BIZ UDPGothic", "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #12161c; --surface: #1a2029; --ink: #e8ecf1; --muted: #9aa5b3; --line: #2c3440; --tag: #232b36;
+  --cao: #3987e5; --cfa: #d95926; --mhlw: #199e70; --mext: #c98500; --unk: #6b7582; --sp: #7d5fd0; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #12161c; --surface: #1a2029; --ink: #e8ecf1; --muted: #9aa5b3; --line: #2c3440; --tag: #232b36;
+  --cao: #3987e5; --cfa: #d95926; --mhlw: #199e70; --mext: #c98500; --unk: #6b7582; --sp: #7d5fd0; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.8;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 32px 64px; }
+main { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 56px; }
+h1, h2 { font-family: var(--display); text-wrap: balance; line-height: 1.35; margin: 0; }
+h1 { font-size: clamp(28px, 6vw, 42px); font-weight: 900; }
+h2 { font-size: 22px; font-weight: 700; }
+p { margin: 0; max-width: 65ch; }
+section { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; color: var(--muted); }
+.num { font-variant-numeric: tabular-nums; }
+.hero { display: flex; flex-direction: column; gap: 12px; }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 560px) { .stats { grid-template-columns: 1fr; } }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.stat b { font-family: var(--display); font-size: 28px; font-weight: 900; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.stat span { font-size: 13px; color: var(--muted); }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; min-width: 0; }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { fill: var(--muted); font-family: var(--body); font-size: 11px; }
+.chart .lbl { fill: var(--ink); font-size: 12px; }
+.chart .val { font-variant-numeric: tabular-nums; }
+.grid line { stroke: var(--line); stroke-width: 1; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12px; color: var(--muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+.tag { display: inline-block; font-size: 11px; padding: 0 8px; border-radius: 999px; background: var(--tag); color: var(--muted); margin-right: 6px; white-space: nowrap; }
+.tag.src::before { content: "原資料"; } .tag.proc::before { content: "加工"; } .tag.ai::before { content: "AIの計算・解釈"; }
+.claims { display: flex; flex-direction: column; gap: 12px; padding: 0; margin: 0; list-style: none; }
+.claims li { display: grid; gap: 4px; }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; width: 100%; min-width: 620px; }
+th, td { padding: 4px 8px; border-bottom: 1px solid var(--line); text-align: right; vertical-align: top; }
+th:nth-child(-n+3), td:nth-child(-n+3) { text-align: left; }
+thead th { color: var(--muted); font-weight: 400; white-space: nowrap; }
+td.st { white-space: nowrap; }
+.pill { display: inline-block; font-size: 11px; padding: 0 6px; border-radius: 4px; border: 1px solid var(--line); color: var(--muted); }
+.pill.ok { border-color: var(--mhlw); color: var(--ink); }
+.notes { padding-left: 1.2em; margin: 0; display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--muted); }
+.questions { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.questions li { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+.small { font-size: 13px; color: var(--muted); }
+footer { font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+#tip { position: fixed; pointer-events: none; background: var(--ink); color: var(--bg); font-size: 12px; padding: 6px 8px; border-radius: 6px; line-height: 1.5; max-width: 280px; z-index: 5; }
+</style>
+
+<main>
+  <header class="hero">
+    <span class="eyebrow">一般会計・特別会計の当初予算（政府案）FY2017 → FY2026</span>
+    <h1>こども家庭庁の 3.97兆円は、どこから来たのか</h1>
+    <p>FY2023 にできたこども家庭庁の予算を、目（予算書の一番細かい単位）の名前と分類コードで、前の年度の予算書と照らし合わせました。</p>
+    <div class="stats">
+      <div class="stat"><span>FY2023 こども家庭庁（一般会計）</span><b>3.97兆円</b><span>額のある項 13・目 88</span></div>
+      <div class="stat"><span>前年度の目に照らせた額</span><b id="statMatched"></b><span id="statMatchedSub"></span></div>
+      <div class="stat"><span>照らせなかった額</span><b id="statRest"></b><span>新しい名前の目など</span></div>
+    </div>
+  </header>
+
+  <section>
+    <h2>9 割以上は、内閣府と厚生労働省から移った</h2>
+    <p id="flowLead"></p>
+    <div class="panel scroll"><svg class="chart" id="flow" role="img" aria-label="FY2022 の府省から FY2023 のこども家庭庁の項への流れ"></svg></div>
+    <div class="legend"><span><i style="background:var(--cao)"></i>内閣府</span><span><i style="background:var(--mhlw)"></i>厚生労働省</span><span><i style="background:var(--mext)"></i>文部科学省</span><span><i style="background:var(--unk)"></i>照らせない</span></div>
+    <p class="small">左は FY2022 の府省、右は FY2023 のこども家庭庁の項。帯の太さは FY2023 の政府案。帯にカーソルを当てると額が出ます。照らし合わせは「目名と分類コードが同じで、FY2022 の一般会計に 1 つだけある目」。名前の一致による候補で、確定した対応ではありません。</p>
+  </section>
+
+  <section>
+    <h2>項の名前では決まらなかった 1.2兆円</h2>
+    <p id="unLead"></p>
+    <div class="panel scroll"><table id="unTbl"></table></div>
+    <ul class="claims">
+      <li><strong>障害児支援は、厚生労働省の「障害保健福祉費」の一部だった</strong><span>目「障害児入所給付費等負担金」（分類コード 06-083-2-84-5）は、FY2022 は厚生労働省の障害保健福祉費の中にありました（0.43兆円）。障害保健福祉費は FY2022 の 2.34兆円から FY2023 の 2.00兆円に減っていて、移ったことと矛盾しません。項がまるごと移ったのではなく、項の一部が移ったので、項の名前では見つかりませんでした。</span><span><span class="tag src"></span><span class="tag ai"></span></span></li>
+      <li><strong>大学等修学支援費は、内閣府から</strong><span>FY2022 は、同じ名前の項が内閣府・文部科学省・厚生労働省の 3 か所にあり（政府案の額があるのは内閣府の 0.52兆円だけ）、項の名前では決まりませんでした。目（学資支給金補助金・授業料等減免費交付金など）で見ると、3 つとも内閣府の大学等修学支援費の目に 1 つずつ照らせました。</span><span><span class="tag src"></span><span class="tag ai"></span></span></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>予算書にも、引っ越しの跡が残っている</h2>
+    <p>FY2023 の予算書には、移った元の項が、政府案 0円のまま残っています。事項の「前年度予算額」に、FY2022 の額が載っています。</p>
+    <div class="panel scroll"><table id="ghostTbl"></table></div>
+    <p class="small">前年度予算額は、予算書が載せる額です。FY2022 の当初予算の額と同じとは限りません（補正後の額のことがあります）。</p>
+  </section>
+
+  <section>
+    <h2>お金の通り道: 一般会計から特別会計へ</h2>
+    <p>児童手当や保育の給付の多くは、一般会計から特別会計に繰り入れてから支払われます。その受け皿は、FY2025 に年金特別会計の子ども・子育て支援勘定から、新しい子ども・子育て支援特別会計に移りました。</p>
+    <div class="panel"><svg class="chart" id="pipe" viewBox="0 0 680 300" role="img" aria-label="一般会計からの繰入と、特別会計の勘定の規模の推移"></svg></div>
+    <div class="legend"><span><i style="background:var(--cao)"></i>繰入（内閣府）</span><span><i style="background:var(--cfa)"></i>繰入（こども家庭庁）</span><span><i style="background:var(--sp);opacity:.35"></i>年金特会 子ども・子育て支援勘定</span><span><i style="background:var(--sp)"></i>子ども・子育て支援特会 子ども・子育て支援勘定</span><span><i style="background:var(--mhlw)"></i>同 育児休業等給付勘定</span></div>
+    <ul class="claims">
+      <li><strong>繰入の出し手が、内閣府からこども家庭庁へ</strong><span>一般会計からの繰入は FY2022 の内閣府 2.49兆円から、FY2023 はこども家庭庁 2.50兆円に。FY2025 からは、繰入先が新しい特別会計になりました（2.61兆円）。FY2017 の 1.25兆円から FY2018 の 2.09兆円への増加は、このデータでは理由を確かめていません。</span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+      <li><strong>特別会計の勘定の引き継ぎは、データで確定</strong><span>FY2025 の子ども・子育て支援特別会計の子ども・子育て支援勘定の 8 つの項は、FY2024 の年金特別会計の同じ勘定の項と、確定した対応でつながります（前年度予算額の合計 3兆9,493億円が、前の年度の補正後の額と円まで一致）。児童手当は 1.53兆円（FY2024 当初）から 2.17兆円（FY2025）に増えています。</span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+      <li><strong>育児休業給付も、同じ特別会計へ</strong><span>FY2025 から、育児休業給付費（0.89兆円）は、労働保険特別会計の雇用勘定（FY2024 は 0.86兆円）から、子ども・子育て支援特別会計の育児休業等給付勘定に移りました。この移動も、確定した対応でつながります。</span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+    </ul>
+    <p class="small">特別会計の額には、一般会計からの繰入が含まれます。一般会計と足すと二重に数えるので、足していません。</p>
+  </section>
+
+  <section>
+    <h2>器の付け替えをならすと</h2>
+    <p>組織の名前ではなく、分類コード（主要経費別の「少子化対策費」）で数えると、付け替えの影響を受けません。こども家庭庁の一般会計の予算と並べると、こうなります。</p>
+    <div class="panel"><svg class="chart" id="smooth" viewBox="0 0 680 260" role="img" aria-label="少子化対策費とこども家庭庁の予算の推移"></svg></div>
+    <div class="legend"><span><i style="background:var(--ink)"></i>少子化対策費（一般会計・主要経費別）</span><span><i style="background:var(--cfa)"></i>こども家庭庁（一般会計）</span><span><i style="background:var(--unk)"></i>FY2022 の候補の目の合計</span></div>
+    <ul class="claims">
+      <li><strong>新しい器ができた年は、ほとんど増えていない</strong><span>FY2023 のこども家庭庁の目と照らせた FY2022 の目の合計は 3.85兆円で、照らせた分の FY2023 の額は 3.89兆円でした。器が新しくなった年の増え方は小さく、その後 FY2026 の 4.28兆円まで増えています。</span><span><span class="tag ai"></span></span></li>
+      <li><strong>少子化対策費は 10 年で 1.7 倍</strong><span>2.11兆円（FY2017）→ 3.53兆円（FY2026）。大きく増えたのは FY2020（+0.70兆円）と FY2024（+0.24兆円）です。こども家庭庁の予算には、少子化対策費のほかに、生活扶助等社会福祉費（障害児支援・児童扶養手当など、FY2023 で 0.81兆円）も入っています。</span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>この数字の作り方と、確かめられないこと</h2>
+    <ul class="notes">
+      <li><span class="tag src"></span>財務省「予算書・決算書データベース」の予算書（一般会計・特別会計の項・事項・目の表）。当初予算（政府案）。FY2025 は国会提出時の版。</li>
+      <li><span class="tag proc"></span>nihon-no-yosan が項・事項・目を抽出・構造化し、年度をまたぐ対応（項・事項の確定した対応）を付けたもの。こども家庭庁の FY2023 の合計 3.97兆円は、項・事項・目の 3 つの単位の合計がすべて一致することを確かめました。</li>
+      <li><span class="tag ai"></span>FY2022 の目との照らし合わせ（目名と分類コードが同じで、FY2022 の一般会計に 1 つだけある目）は、この探索で行ったものです。名前とコードの一致による<strong>候補</strong>で、同じ事業であることは確かめていません。項・事項の確定した対応は、こども家庭庁の項・事項には 1 つもありません（FY2023 の事項の前年度予算額が、すべて 0円のため）。</li>
+      <li>照らせなかった 0.08兆円のうち、0.07兆円は FY2022 に同じ名前の目が無い目（妊娠出産子育て支援交付金・就学前教育・保育施設整備交付金など）、0.01兆円は同じ名前の目が複数ある目（職員基本給・庁費など）です。新しい事業か、名前を変えた事業かは未確認です。</li>
+      <li>一般会計だけで見ています。こども家庭庁の特別会計の側の予算（勘定の歳出）は、一般会計と足していません。補正予算・決算も含めていません。金額は名目です。</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>次に、聞かせてください</h2>
+    <ol class="questions">
+      <li>「器は変わったが、中身はほぼ同じ」という見え方は、思っていたものと同じでしたか。違ったなら、どこが違いましたか。</li>
+      <li>FY2018 に一般会計からの繰入が 1.25兆円から 2.09兆円に増えています。この年に何が特別会計に移ったかを、事項の単位で追いますか。</li>
+      <li>児童手当は FY2025 に 1.53兆円から 2.17兆円に増えました。補正予算や決算（実際に支払った額）まで追いますか。</li>
+      <li>照らせなかった 0.08兆円の目（妊娠出産子育て支援交付金など）が、本当に新しい事業かを、概算要求書の説明で確かめますか。</li>
+    </ol>
+  </section>
+
+  <footer>
+    <span>出典：財務省「予算書・決算書データベース」を加工して作成。国や各府省が作成した加工していない情報ではありません。</span>
+    <span>nihon-no-yosan の AI Data Stories PoC（2026-11-03）。金額は千円単位の値から計算し、表示で丸めています（兆円・億円）。</span>
+  </footer>
+</main>
+<div id="tip" hidden></div>
+
+<script>
+const D = {"Y":[2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],"F":[{"f":"複数の候補","t":"その他の項","v":76},{"f":"一致なし","t":"その他の項","v":740},{"f":"厚生労働省","t":"その他の項","v":703},{"f":"内閣府","t":"年金特会への繰入","v":25033},{"f":"文部科学省","t":"その他の項","v":20},{"f":"厚生労働省","t":"児童虐待防止等","v":1607},{"f":"厚生労働省","t":"母子家庭等対策","v":1664},{"f":"厚生労働省","t":"障害児支援","v":4537},{"f":"内閣府","t":"大学等修学支援","v":5311}],"un":[{"k":"障害児支援等対策費","m":"障害児入所給付費等負担金","c":"06|083|2|84|5","b23":448269092,"st":"unique","from":"厚生労働省","fk":"障害保健福祉費","b22":425599192},{"k":"大学等修学支援費","m":"学資支給金補助金","c":"05|083|2|60|5","b23":260104415,"st":"unique","from":"内閣府","fk":"大学等修学支援費","b22":252468271},{"k":"大学等修学支援費","m":"授業料等減免費交付金","c":"05|083|2|71|5","b23":238498649,"st":"unique","from":"内閣府","fk":"大学等修学支援費","b22":239789765},{"k":"児童虐待防止等対策費","m":"児童保護費負担金","c":"05|083|2|81|5","b23":134757713,"st":"unique","from":"厚生労働省","fk":"児童虐待等防止対策費","b22":131680875},{"k":"大学等修学支援費","m":"授業料等減免費負担金","c":"05|083|2|86|5","b23":32455090,"st":"unique","from":"内閣府","fk":"大学等修学支援費","b22":27351314},{"k":"児童福祉施設等整備費","m":"就学前教育・保育施設整備交付金","c":"06|083|1|82|5","b23":29516570,"st":"none","from":null,"fk":null,"b22":null},{"k":"児童虐待防止等対策費","m":"児童福祉事業対策費等補助金","c":"06|083|2|81|5","b23":21211475,"st":"unique","from":"厚生労働省","fk":"児童虐待等防止対策費","b22":21555414},{"k":"児童福祉施設等整備費","m":"次世代育成支援対策施設整備交付金","c":"06|083|1|82|5","b23":6651786,"st":"unique","from":"厚生労働省","fk":"児童福祉施設整備費","b22":5991594},{"k":"障害児支援等対策費","m":"障害児入所医療費等負担金","c":"03|083|2|84|5","b23":5383558,"st":"unique","from":"厚生労働省","fk":"障害保健福祉費","b22":5330613},{"k":"児童虐待防止等対策費","m":"児童保護医療費負担金","c":"03|083|2|81|5","b23":4483907,"st":"unique","from":"厚生労働省","fk":"児童虐待等防止対策費","b22":4301250},{"k":"こども政策推進費","m":"こども政策推進事業費補助金","c":"06|083|2|81|5","b23":3687128,"st":"none","from":null,"fk":null,"b22":null},{"k":"こども安全対策費","m":"災害共済給付補助金","c":"15|071|2|40|5","b23":2031615,"st":"unique","from":"文部科学省","fk":"教育政策推進費","b22":2031615},{"k":"こども政策推進費","m":"こども政策推進事業委託費","c":"06|083|2|12|5","b23":1820294,"st":"none","from":null,"fk":null,"b22":null},{"k":"こども家庭庁共通費","m":"庁費","c":"95|016|2|12|3","b23":1719805,"st":"multi","from":null,"fk":null,"b22":null},{"k":"こども家庭庁共通費","m":"職員基本給","c":"95|016|2|11|1","b23":1636211,"st":"multi","from":null,"fk":null,"b22":null},{"k":"こども政策推進費","m":"地域少子化対策重点推進交付金","c":"06|083|2|81|5","b23":1000000,"st":"none","from":null,"fk":null,"b22":null},{"k":"こども家庭庁共通費","m":"土地建物借料","c":"95|016|2|12|3","b23":969243,"st":"multi","from":null,"fk":null,"b22":null},{"k":"こども家庭庁共通費","m":"職員諸手当","c":"95|016|2|11|1","b23":847077,"st":"multi","from":null,"fk":null,"b22":null},{"k":"こども家庭庁共通費","m":"賠償償還及払戻金","c":"95|016|2|95|9","b23":704428,"st":"multi","from":null,"fk":null,"b22":null},{"k":"こども政策推進費","m":"こども家庭行政推進調査事業費補助金","c":"07|086|2|71|5","b23":645235,"st":"none","from":null,"fk":null,"b22":null},{"k":"児童福祉施設等整備費","m":"児童育成事業費補助金","c":"06|083|1|92|5","b23":500000,"st":"unique","from":"厚生労働省","fk":"児童福祉施設整備費","b22":500000},{"k":"こども家庭庁共通費","m":"国家公務員共済組合負担金","c":"95|016|2|11|5","b23":467612,"st":"multi","from":null,"fk":null,"b22":null},{"k":"こども家庭庁共通費","m":"超過勤務手当","c":"95|016|2|11|1","b23":369076,"st":"multi","from":null,"fk":null,"b22":null},{"k":"国立児童自立支援施設","m":"職員基本給","c":"06|083|2|11|1","b23":360352,"st":"unique","from":"厚生労働省","fk":"国立更生援護機関共通費","b22":3017958},{"k":"こども政策推進費","m":"こども家庭科学研究費補助金","c":"13|087|2|71|5","b23":302000,"st":"none","from":null,"fk":null,"b22":null},{"k":"国立児童自立支援施設","m":"職員諸手当","c":"06|083|2|11|1","b23":206142,"st":"unique","from":"厚生労働省","fk":"国立更生援護機関共通費","b22":1446312},{"k":"児童虐待防止等対策費","m":"児童虐待防止対策推進事業委託費","c":"06|083|2|12|5","b23":205000,"st":"unique","from":"厚生労働省","fk":"児童虐待等防止対策費","b22":205000},{"k":"こども家庭庁共通費","m":"情報処理業務庁費","c":"95|016|2|12|3","b23":204573,"st":"multi","from":null,"fk":null,"b22":null},{"k":"こども家庭庁共通費","m":"退職手当","c":"95|016|2|11|1","b23":121834,"st":"multi","from":null,"fk":null,"b22":null},{"k":"国立児童自立支援施設","m":"児童自立支援庁費","c":"05|083|2|12|3","b23":116503,"st":"unique","from":"厚生労働省","fk":"国立児童自立支援施設運営費","b22":116710},{"k":"こども家庭庁共通費","m":"委員等旅費","c":"95|016|2|12|2","b23":80850,"st":"multi","from":null,"fk":null,"b22":null},{"k":"こども家庭庁共通費","m":"委員手当","c":"95|016|2|11|1","b23":75718,"st":"multi","from":null,"fk":null,"b22":null},{"k":"児童虐待防止等対策費","m":"児童相談支援事業委託費","c":"06|083|2|12|5","b23":74305,"st":"unique","from":"厚生労働省","fk":"児童虐待等防止対策費","b22":68072},{"k":"こども家庭庁共通費","m":"職員旅費","c":"95|016|2|12|2","b23":69229,"st":"multi","from":null,"fk":null,"b22":null},{"k":"国立児童自立支援施設","m":"庁費","c":"06|083|2|12|3","b23":68499,"st":"multi","from":null,"fk":null,"b22":null},{"k":"国立児童自立支援施設","m":"超過勤務手当","c":"06|083|2|11|1","b23":56503,"st":"unique","from":"厚生労働省","fk":"国立更生援護機関共通費","b22":278861},{"k":"こども家庭庁共通費","m":"非常勤職員手当","c":"95|016|2|11|1","b23":50391,"st":"multi","from":null,"fk":null,"b22":null},{"k":"国立児童自立支援施設","m":"各所修繕","c":"06|083|2|12|3","b23":40364,"st":"multi","from":null,"fk":null,"b22":null},{"k":"こども家庭庁共通費","m":"諸謝金","c":"95|016|2|12|9","b23":39483,"st":"multi","from":null,"fk":null,"b22":null},{"k":"国立児童自立支援施設整備費","m":"施設整備費","c":"06|083|1|20|4","b23":37000,"st":"unique","from":"厚生労働省","fk":"国立更生援護機関施設費","b22":70449},{"k":"国立児童自立支援施設","m":"入所児童食糧費","c":"05|083|2|12|3","b23":35436,"st":"unique","from":"厚生労働省","fk":"国立児童自立支援施設運営費","b22":35436},{"k":"国立児童自立支援施設","m":"非常勤職員手当","c":"06|083|2|11|1","b23":23559,"st":"unique","from":"厚生労働省","fk":"国立更生援護機関共通費","b22":22715},{"k":"こども家庭庁共通費","m":"赴任旅費","c":"95|016|2|12|2","b23":22388,"st":"multi","from":null,"fk":null,"b22":null},{"k":"国立児童自立支援施設","m":"諸謝金","c":"06|083|2|12|9","b23":18819,"st":"multi","from":null,"fk":null,"b22":null},{"k":"こども家庭庁共通費","m":"児童手当","c":"95|089|2|11|1","b23":15595,"st":"multi","from":null,"fk":null,"b22":null},{"k":"こども家庭庁共通費","m":"経済協力開発機構拠出金","c":"95|016|2|72|5","b23":13712,"st":"multi","from":null,"fk":null,"b22":null},{"k":"こども政策推進費","m":"こども家庭統計調査費","c":"06|083|2|12|3","b23":10519,"st":"none","from":null,"fk":null,"b22":null},{"k":"こども家庭庁共通費","m":"短時間勤務職員給与","c":"95|016|2|11|1","b23":4855,"st":"multi","from":null,"fk":null,"b22":null},{"k":"国立児童自立支援施設整備費","m":"施設施工庁費","c":"06|083|1|20|3","b23":4570,"st":"multi","from":null,"fk":null,"b22":null},{"k":"国立児童自立支援施設","m":"児童手当","c":"06|089|2|11|1","b23":4170,"st":"unique","from":"厚生労働省","fk":"国立更生援護機関共通費","b22":36750},{"k":"国立児童自立支援施設","m":"短時間勤務職員給与","c":"06|083|2|11|1","b23":3863,"st":"unique","from":"厚生労働省","fk":"国立更生援護機関共通費","b22":166957},{"k":"こども家庭庁共通費","m":"休職者給与","c":"95|016|2|11|1","b23":3450,"st":"multi","from":null,"fk":null,"b22":null},{"k":"国立児童自立支援施設","m":"児童保護指導等旅費","c":"05|083|2|12|2","b23":2714,"st":"unique","from":"厚生労働省","fk":"国立児童自立支援施設運営費","b22":2781},{"k":"国立児童自立支援施設","m":"委員等旅費","c":"06|083|2|12|2","b23":2458,"st":"multi","from":null,"fk":null,"b22":null},{"k":"こども家庭庁共通費","m":"監査旅費","c":"95|016|2|12|2","b23":2243,"st":"multi","from":null,"fk":null,"b22":null},{"k":"国立児童自立支援施設","m":"職員旅費","c":"06|083|2|12|2","b23":2067,"st":"multi","from":null,"fk":null,"b22":null},{"k":"こども家庭庁共通費","m":"国会図書館支部庁費","c":"95|016|2|12|3","b23":1875,"st":"multi","from":null,"fk":null,"b22":null},{"k":"国立児童自立支援施設","m":"入所児童見学等旅費","c":"05|083|2|12|2","b23":1629,"st":"unique","from":"厚生労働省","fk":"国立児童自立支援施設運営費","b22":1629},{"k":"こども家庭庁共通費","m":"こども政策推進調査費","c":"95|016|2|12|3","b23":888,"st":"none","from":null,"fk":null,"b22":null},{"k":"国立児童自立支援施設","m":"国有資産所在市町村交付金","c":"06|029|2|13|5","b23":352,"st":"unique","from":"厚生労働省","fk":"国立更生援護機関共通費","b22":6235},{"k":"こども家庭庁共通費","m":"報償費","c":"95|016|2|95|9","b23":180,"st":"multi","from":null,"fk":null,"b22":null},{"k":"国立児童自立支援施設","m":"自動車重量税","c":"06|199|2|13|3","b23":176,"st":"unique","from":"厚生労働省","fk":"国立更生援護機関共通費","b22":745},{"k":"国立児童自立支援施設整備費","m":"施設施工旅費","c":"06|083|1|20|2","b23":116,"st":"multi","from":null,"fk":null,"b22":null},{"k":"こども家庭庁共通費","m":"交際費","c":"95|016|2|12|9","b23":111,"st":"multi","from":null,"fk":null,"b22":null},{"k":"こども家庭庁共通費","m":"自動車重量税","c":"95|199|2|13|3","b23":94,"st":"multi","from":null,"fk":null,"b22":null},{"k":"こども家庭庁共通費","m":"公務災害補償費","c":"95|016|2|15|1","b23":58,"st":"multi","from":null,"fk":null,"b22":null},{"k":"こども家庭庁共通費","m":"参考人等旅費","c":"95|016|2|12|2","b23":40,"st":"multi","from":null,"fk":null,"b22":null}],"series":{"tr_naikakufu":[12468,20865,22838,25095,24896,24920,0,null,null,null],"tr_cfa_nenkin":[null,null,null,null,null,null,25033,26197,null,null],"tr_cfa_new":[null,null,null,null,null,null,null,null,26093,26078],"tr_mhlw_ikukyu":[null,null,null,null,null,null,null,null,1108,1113],"sp_nenkin":[16611,26144,29099,32394,32450,32738,33447,37572,null,null],"sp_new":[null,null,null,null,null,null,null,null,47114,47969],"sp_ikukyu":[null,null,null,null,null,null,null,null,10687,11043],"cfa":[null,null,null,null,null,null,39691,41457,42367,42795],"c05":[21149,21437,23440,30387,30458,31094,31412,33823,35213,35335]}};
+const Y = D.Y;
+const tri = v => v / 10000; // 億円 → 兆円
+const fT = (v, d = 2) => v === null || v === undefined ? '—' : tri(v).toFixed(d);
+const NS = 'http://www.w3.org/2000/svg';
+const el = (tag, attrs = {}, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+const tip = document.getElementById('tip');
+function hover(node, html) {
+  node.addEventListener('pointermove', e => { tip.innerHTML = html; tip.hidden = false; tip.style.left = Math.min(e.clientX + 12, innerWidth - 290) + 'px'; tip.style.top = (e.clientY + 12) + 'px'; });
+  node.addEventListener('pointerleave', () => { tip.hidden = true; });
+}
+const COL = { '内閣府': 'var(--cao)', '厚生労働省': 'var(--mhlw)', '文部科学省': 'var(--mext)', '一致なし': 'var(--unk)', '複数の候補': 'var(--unk)' };
+
+// 数字の見出し
+const total = D.F.reduce((s, f) => s + f.v, 0);
+const matched = D.F.filter(f => f.f !== '一致なし' && f.f !== '複数の候補').reduce((s, f) => s + f.v, 0);
+const byFrom = {}; for (const f of D.F) byFrom[f.f] = (byFrom[f.f] || 0) + f.v;
+document.getElementById('statMatched').textContent = `${fT(matched)}兆円`;
+document.getElementById('statMatchedSub').textContent = `${(matched / total * 100).toFixed(0)}%（内閣府 ${fT(byFrom['内閣府'])}・厚労 ${fT(byFrom['厚生労働省'])}）`;
+document.getElementById('statRest').textContent = `${fT(total - matched)}兆円`;
+document.getElementById('flowLead').textContent = `FY2023 のこども家庭庁の 3.97兆円のうち、${fT(byFrom['内閣府'])}兆円は FY2022 の内閣府の目と、${fT(byFrom['厚生労働省'])}兆円は厚生労働省の目と照らせました。最大は、年金特別会計への繰入（2.50兆円）です。`;
+
+// 流れの図
+(() => {
+  const s = document.getElementById('flow'), W = 680, H = 380, T = 10, B = 10, gap = 10, nodeW = 12, LX = 150, RX = W - 170;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '560px';
+  const lefts = ['内閣府', '厚生労働省', '文部科学省', '一致なし', '複数の候補'].filter(k => byFrom[k]);
+  const rights = ['年金特会への繰入', '大学等修学支援', '障害児支援', '母子家庭等対策', '児童虐待防止等', 'その他の項'];
+  const byTo = {}; for (const f of D.F) byTo[f.t] = (byTo[f.t] || 0) + f.v;
+  const MIN = 2, avail = H - T - B - gap * (Math.max(lefts.length, rights.length) - 1), k = avail / total;
+  const hgt = v => Math.max(MIN, v * k);
+  const place = (keys, sum) => { let y = T; const o = {}; for (const key of keys) { o[key] = { y, h: hgt(sum[key]), off: 0 }; y += hgt(sum[key]) + gap; } return o; };
+  const L = place(lefts, byFrom), R = place(rights, byTo);
+  const order = [...D.F].sort((a, b) => rights.indexOf(a.t) - rights.indexOf(b.t) || lefts.indexOf(a.f) - lefts.indexOf(b.f));
+  for (const f of order) {
+    const h = Math.max(1, f.v * k), l = L[f.f], r = R[f.t];
+    const y0 = l.y + l.off, y1 = r.y + r.off; l.off += h; r.off += h;
+    const x0 = LX + nodeW, x1 = RX, mx = (x0 + x1) / 2;
+    const p = el('path', { d: `M${x0},${y0} C${mx},${y0} ${mx},${y1} ${x1},${y1} L${x1},${y1 + h} C${mx},${y1 + h} ${mx},${y0 + h} ${x0},${y0 + h} Z`, fill: COL[f.f], 'fill-opacity': 0.35 }, s);
+    hover(p, `${f.f} → ${f.t}<br>${fT(f.v, 3)}兆円（FY2023 の政府案）`);
+  }
+  for (const key of lefts) { const n = L[key]; el('rect', { x: LX, y: n.y, width: nodeW, height: n.h, rx: 2, fill: COL[key] }, s); el('text', { x: LX - 8, y: n.y + Math.max(n.h / 2, 6) + 4, 'text-anchor': 'end', class: 'lbl' }, s).textContent = key; el('text', { x: LX - 8, y: n.y + Math.max(n.h / 2, 6) + 18, 'text-anchor': 'end', class: 'val' }, s).textContent = n.h > 24 ? `${fT(byFrom[key])}兆円` : ''; }
+  for (const key of rights) { const n = R[key]; el('rect', { x: RX, y: n.y, width: nodeW, height: n.h, rx: 2, fill: 'var(--cfa)' }, s); el('text', { x: RX + nodeW + 8, y: n.y + n.h / 2 + 4, class: 'lbl' }, s).textContent = `${key} ${fT(byTo[key])}`; }
+  el('text', { x: LX, y: H - 0 }, s);
+})();
+
+// 1.2兆円の表
+(() => {
+  const un = D.un, tot = un.reduce((s, r) => s + r.b23, 0), ok = un.filter(r => r.st === 'unique').reduce((s, r) => s + r.b23, 0);
+  document.getElementById('unLead').textContent = `項の名前で FY2022 に照らせなかった項（障害児支援等対策費・大学等修学支援費・児童虐待防止等対策費など 9 項）の目は ${(tot / 1e9).toFixed(2)}兆円。目の名前と分類コードで見ると、そのうち ${(ok / 1e9).toFixed(2)}兆円（${(ok / tot * 100).toFixed(0)}%）を FY2022 の目 1 つに照らせました。`;
+  const fmt = v => v === null ? '—' : (v / 1e9).toFixed(3);
+  const big = un.filter(r => r.b23 >= 1e6);
+  const rest = un.filter(r => r.b23 < 1e6);
+  const st = r => r.st === 'unique' ? '<span class="pill ok">候補 1 つ</span>' : r.st === 'multi' ? '<span class="pill">候補が複数</span>' : '<span class="pill">同じ目なし</span>';
+  document.getElementById('unTbl').innerHTML = `<thead><tr><th>FY2023 の項 / 目</th><th>FY2022 の府省 / 項</th><th>照らし合わせ</th><th>FY2023 兆円</th><th>FY2022 兆円</th></tr></thead><tbody>` +
+    big.map(r => `<tr><td>${r.k}<br><span class="small">${r.m}（${r.c.split('|').join('-')}）</span></td><td>${r.from ? `${r.from}<br><span class="small">${r.fk}</span>` : '—'}</td><td class="st">${st(r)}</td><td>${fmt(r.b23)}</td><td>${fmt(r.b22)}</td></tr>`).join('') +
+    `<tr><td colspan="3">ほか ${rest.length} 目（各 10億円未満）</td><td>${fmt(rest.reduce((s, r) => s + r.b23, 0))}</td><td></td></tr></tbody>`;
+})();
+
+// 予算書に残った跡（FY2023 で政府案 0円の項）
+(() => {
+  const G = [['内閣府', '子ども・子育て支援年金特別会計へ繰入', 2520939330 + 43386178], ['内閣府', '大学等修学支援費', 519609350], ['厚生労働省', '母子家庭等対策費', 182234774 + 66987], ['厚生労働省', '母子保健衛生対策費', 3717424 + 148690554 + 530288], ['厚生労働省', '保育対策費', 148926738 + 26889], ['厚生労働省', '児童虐待等防止対策費', 4301250 + 133095739 + 20820960 + 317049], ['内閣府', '子ども・子育て本部', 278075 + 10041090], ['厚生労働省', '児童福祉施設整備費', 10810477], ['厚生労働省', '子ども・子育て支援対策費', 4358863 + 64883], ['厚生労働省', '国立児童自立支援施設運営費', 126768 + 21277]];
+  document.getElementById('ghostTbl').innerHTML = `<thead><tr><th>FY2023 の予算書の項</th><th>府省</th><th></th><th>政府案</th><th>事項の前年度予算額の計</th></tr></thead><tbody>` + G.map(([g, n, v]) => `<tr><td>${n}</td><td>${g}</td><td></td><td>0円</td><td>${(v / 1e5).toLocaleString('ja-JP', { maximumFractionDigits: 0 })}億円</td></tr>`).join('') + '</tbody>';
+})();
+
+// 通り道の図（繰入の線と、特別会計の勘定の棒）
+(() => {
+  const s = document.getElementById('pipe'), W = 680, H = 300, L = 44, R = 12, T = 14, B = 28, S = D.series;
+  const max = 6, x = i => L + (W - L - R) * (i + 0.5) / Y.length, bw = (W - L - R) / Y.length * 0.56, y = v => T + (H - T - B) * (1 - tri(v) / max);
+  const g = el('g', { class: 'grid' }, s);
+  for (let v = 0; v <= max; v += 1) { el('line', { x1: L, x2: W - R, y1: y(v * 10000), y2: y(v * 10000) }, g); el('text', { x: L - 6, y: y(v * 10000) + 4, 'text-anchor': 'end' }, s).textContent = v; }
+  el('text', { x: L - 6, y: 10, 'text-anchor': 'end' }, s).textContent = '兆円';
+  Y.forEach((yr, i) => {
+    el('text', { x: x(i), y: H - 8, 'text-anchor': 'middle' }, s).textContent = yr;
+    const stack = [[S.sp_nenkin[i], 'var(--sp)', 0.35, '年金特会 子ども・子育て支援勘定'], [S.sp_new[i], 'var(--sp)', 1, '子ども・子育て支援特会 子ども・子育て支援勘定'], [S.sp_ikukyu[i], 'var(--mhlw)', 1, '子ども・子育て支援特会 育児休業等給付勘定']];
+    let base = 0;
+    for (const [v, c, op, name] of stack) { if (v === null || v === 0) continue; const r = el('rect', { x: x(i) - bw / 2, y: y(base + v), width: bw, height: y(base) - y(base + v) - (base ? 2 : 0), rx: 3, fill: c, 'fill-opacity': op }, s); hover(r, `FY${yr} ${name}<br>${fT(v)}兆円（歳出の項の計）`); base += v; }
+  });
+  const line = (arr, color, name) => {
+    const pts = arr.map((v, i) => v === null || v === 0 ? null : [x(i), y(v), v, Y[i]]).filter(Boolean);
+    if (pts.length > 1) el('polyline', { points: pts.map(p => `${p[0]},${p[1]}`).join(' '), fill: 'none', stroke: color, 'stroke-width': 2 }, s);
+    for (const p of pts) { el('circle', { cx: p[0], cy: p[1], r: 4, fill: color, stroke: 'var(--surface)', 'stroke-width': 1.5 }, s); const h = el('circle', { cx: p[0], cy: p[1], r: 11, fill: 'transparent' }, s); hover(h, `FY${p[3]} ${name}<br>${fT(p[2])}兆円`); }
+  };
+  line(S.tr_naikakufu, 'var(--cao)', '一般会計からの繰入（内閣府）');
+  line(S.tr_cfa_nenkin.map((v, i) => v ?? S.tr_cfa_new[i]), 'var(--cfa)', '一般会計からの繰入（こども家庭庁）');
+  // 内閣府 → こども家庭庁のつなぎ（点線）
+  el('line', { x1: x(5), y1: y(S.tr_naikakufu[5]), x2: x(6), y2: y(S.tr_cfa_nenkin[6]), stroke: 'var(--muted)', 'stroke-dasharray': '3 3', 'stroke-width': 1.5 }, s);
+  el('text', { x: x(9), y: y(S.tr_cfa_new[9]) - 10, 'text-anchor': 'end', class: 'lbl val' }, s).textContent = `繰入 ${fT(S.tr_cfa_new[9])}`;
+  el('text', { x: x(9) + bw / 2, y: y(S.sp_new[9] + S.sp_ikukyu[9]) - 6, 'text-anchor': 'end', class: 'lbl val' }, s).textContent = `特会 ${fT(S.sp_new[9] + S.sp_ikukyu[9])}`;
+})();
+
+// ならした推移
+(() => {
+  const s = document.getElementById('smooth'), W = 680, H = 260, L = 44, R = 70, T = 14, B = 28, S = D.series;
+  const lo = 0, hi = 5, x = i => L + (W - L - R) * i / (Y.length - 1), y = v => T + (H - T - B) * (1 - (tri(v) - lo) / (hi - lo));
+  const g = el('g', { class: 'grid' }, s);
+  for (let v = 0; v <= hi; v++) { el('line', { x1: L, x2: W - R, y1: y(v * 10000), y2: y(v * 10000) }, g); el('text', { x: L - 6, y: y(v * 10000) + 4, 'text-anchor': 'end' }, s).textContent = v; }
+  el('text', { x: L - 6, y: 10, 'text-anchor': 'end' }, s).textContent = '兆円';
+  Y.forEach((yr, i) => { if (i % 3 === 0 || i === 9) el('text', { x: x(i), y: H - 8, 'text-anchor': 'middle' }, s).textContent = yr; });
+  const draw = (arr, color, name) => {
+    const pts = arr.map((v, i) => v === null ? null : [x(i), y(v), v, Y[i]]).filter(Boolean);
+    el('polyline', { points: pts.map(p => `${p[0]},${p[1]}`).join(' '), fill: 'none', stroke: color, 'stroke-width': 2 }, s);
+    for (const p of pts) { el('circle', { cx: p[0], cy: p[1], r: 3.5, fill: color, stroke: 'var(--surface)', 'stroke-width': 1.5 }, s); const h = el('circle', { cx: p[0], cy: p[1], r: 11, fill: 'transparent' }, s); hover(h, `FY${p[3]} ${name}<br>${fT(p[2])}兆円`); }
+    const last = pts[pts.length - 1]; el('text', { x: last[0] + 8, y: last[1] + 4, class: 'lbl val' }, s).textContent = fT(last[2]);
+  };
+  draw(S.c05, 'var(--ink)', '少子化対策費（一般会計）');
+  draw(S.cfa, 'var(--cfa)', 'こども家庭庁（一般会計）');
+  const c22 = 38540; // FY2022 の候補の目の合計（億円）
+  const p = el('rect', { x: x(5) - 5, y: y(c22) - 5, width: 10, height: 10, rx: 2, fill: 'var(--unk)', stroke: 'var(--surface)', 'stroke-width': 1.5 }, s);
+  const h = el('circle', { cx: x(5), cy: y(c22), r: 11, fill: 'transparent' }, s); hover(h, 'FY2022 の候補の目の合計<br>3.85兆円（こども家庭庁の目と照らせた FY2022 の目）');
+  el('line', { x1: x(5), y1: y(c22), x2: x(6), y2: y(S.cfa[6]), stroke: 'var(--unk)', 'stroke-dasharray': '3 3', 'stroke-width': 1.5 }, s);
+})();
+</script>

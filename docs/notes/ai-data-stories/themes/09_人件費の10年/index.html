@@ -1,0 +1,309 @@
+<title>人件費の10年</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Zen+Kaku+Gothic+New:wght@700;900&display=swap">
+<style>
+/* layout: 1 本の読み物の列（最大 760px）。給与明細のように、基本給・諸手当・退職手当を行で並べる。増 = 朱、減 = 藍 */
+:root {
+  --bg: #f6f7f8; --surface: #ffffff; --ink: #1a1f27; --muted: #5d6672; --line: #d9dde3;
+  --up: #c9532c; --down: #2a6fc9; --zero: #9aa2ad; --bar: #3d4a5c; --soft: #b9c2cf; --tag: #eef0f4;
+  --display: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", sans-serif;
+  --body: "BIZ UDPGothic", "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121519; --surface: #1a1f26; --ink: #e7eaee; --muted: #9aa3ae; --line: #2c333d;
+  --up: #ef7a52; --down: #5b9cf0; --zero: #6b7480; --bar: #aab6c6; --soft: #4a5566; --tag: #232a33; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #121519; --surface: #1a1f26; --ink: #e7eaee; --muted: #9aa3ae; --line: #2c333d;
+  --up: #ef7a52; --down: #5b9cf0; --zero: #6b7480; --bar: #aab6c6; --soft: #4a5566; --tag: #232a33; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.8;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 32px 64px; }
+main { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 56px; }
+h1, h2 { font-family: var(--display); text-wrap: balance; line-height: 1.35; margin: 0; }
+h1 { font-size: clamp(28px, 6vw, 42px); font-weight: 900; }
+h2 { font-size: 22px; font-weight: 700; }
+p { margin: 0; max-width: 65ch; }
+section { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; color: var(--muted); }
+.num { font-variant-numeric: tabular-nums; }
+.up { color: var(--up); } .down { color: var(--down); }
+.hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 24px; align-items: center; }
+@media (max-width: 640px) { .hero { grid-template-columns: 1fr; } }
+.big { font-family: var(--display); font-weight: 900; font-size: clamp(40px, 9vw, 60px); line-height: 1.1; }
+.sub { font-size: 14px; color: var(--muted); }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; min-width: 0; }
+.scroll { overflow-x: auto; }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { fill: var(--muted); font-family: var(--body); font-size: 11px; }
+.chart .lbl { fill: var(--ink); font-size: 12px; }
+.chart .val { font-variant-numeric: tabular-nums; }
+.grid line { stroke: var(--line); stroke-width: 1; }
+.note { font-size: 13px; color: var(--muted); }
+.tag { display: inline-block; font-size: 11px; padding: 0 8px; border-radius: 999px; background: var(--tag); color: var(--muted); margin-right: 6px; white-space: nowrap; }
+.tag.src::before { content: "原資料"; } .tag.proc::before { content: "加工"; } .tag.ai::before { content: "AIの計算・解釈"; }
+.claims { display: flex; flex-direction: column; gap: 12px; padding: 0; margin: 0; list-style: none; }
+.claims li { display: grid; gap: 4px; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; display: flex; flex-direction: column; gap: 2px; }
+.kpi b { font-family: var(--display); font-size: 22px; font-variant-numeric: tabular-nums; }
+.kpi span { font-size: 12px; color: var(--muted); }
+table { border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
+th, td { padding: 4px 8px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; position: sticky; left: 0; background: var(--surface); }
+thead th { color: var(--muted); font-weight: 400; }
+details { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+summary { cursor: pointer; font-weight: 700; }
+summary:focus-visible { outline: 2px solid var(--down); outline-offset: 2px; }
+.notes { padding-left: 1.2em; margin: 0; display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--muted); }
+.questions { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.questions li { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+footer { font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+#tip { position: fixed; pointer-events: none; background: var(--ink); color: var(--bg); font-size: 12px; padding: 6px 8px; border-radius: 6px; line-height: 1.5; max-width: 260px; z-index: 5; }
+</style>
+
+<main>
+  <header class="hero">
+    <div style="display:flex;flex-direction:column;gap:8px;min-width:0">
+      <span class="eyebrow">使途別「人件費」· 一般会計の当初予算 · FY2017 → FY2026</span>
+      <h1>国の人件費は、10年でどれだけ増えたか</h1>
+      <div class="big num up" id="heroDelta"></div>
+      <div class="sub num" id="heroSub"></div>
+    </div>
+    <div class="panel"><svg class="chart" id="heroChart" viewBox="0 0 420 230" role="img" aria-label="一般会計の人件費の推移"></svg></div>
+  </header>
+
+  <section>
+    <h2>予算全体ほどは増えていない</h2>
+    <div class="kpis" id="kpis"></div>
+    <p id="shareText"></p>
+    <div class="panel"><svg class="chart" id="shareChart" viewBox="0 0 680 150" role="img" aria-label="一般会計に占める人件費の割合"></svg></div>
+  </section>
+
+  <section>
+    <h2>増えた分の半分は防衛省</h2>
+    <p id="minText"></p>
+    <div class="panel scroll"><svg class="chart" id="minChart" role="img" aria-label="府省別の人件費の増減"></svg></div>
+    <ul class="claims">
+      <li><strong>防衛省の比重は 4 割強のまま</strong><span id="defText"></span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+      <li><strong>外務省は現地の職員の給与が増えた</strong><span>外務省は 0.103 → 0.156兆円（+0.053兆円）。目「現地補助員給与」が 0.014 → 0.029兆円と倍になりました。</span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+      <li><strong>新しくできた組織</strong><span>デジタル庁の人件費は、FY2021 の 30億円から FY2026 の 140億円になりました。こども家庭庁は FY2026 で 50億円です。どちらも、前の組織から移った分を含みます（どこから移ったかは、このデータでは分けていません）。</span><span><span class="tag src"></span><span class="tag ai"></span></span></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>給与明細で見ると</h2>
+    <p>人件費の目（給与の費目）ごとの増減です。基本給より諸手当の伸びが大きく、退職手当は減っています。</p>
+    <div class="panel scroll"><svg class="chart" id="nameChart" role="img" aria-label="人件費の目ごとの増減"></svg></div>
+    <p class="note">目の名前は、予算書のままです。自衛官の給与も「職員基本給」「職員諸手当」の目に入っています（防衛省の内訳は下の表）。</p>
+  </section>
+
+  <section>
+    <h2>FY2026 は 1 年で 0.17兆円増えた</h2>
+    <p id="y26Text"></p>
+    <div class="panel scroll"><table id="y26Table"></table></div>
+  </section>
+
+  <section>
+    <h2>特別会計の人件費は小さい</h2>
+    <p id="speText"></p>
+    <div class="panel scroll"><table id="acctTable"></table></div>
+    <p class="note">一般会計から特別会計への繰入は、使途別では「他会計へ繰入」に分類され、人件費には入りません。そのため、2 つを足しても二重には数えていません。</p>
+  </section>
+
+  <section>
+    <h2>決算では、どれだけ使われたか</h2>
+    <p id="settleText"></p>
+    <div class="panel scroll"><svg class="chart" id="settleChart" role="img" aria-label="人件費の決算（不用額と翌年度繰越）"></svg></div>
+    <ul class="claims">
+      <li><strong>FY2023 から、退職手当の繰越が出てきた</strong><span id="carText"></span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+      <li><strong>FY2024 は、成立した予算が当初より 0.11兆円多い</strong><span id="supText"></span><span><span class="tag src"></span><span class="tag ai"></span></span></li>
+    </ul>
+    <details>
+      <summary>府省別の不用（FY2017〜FY2024 の 8 年合計）を開く</summary>
+      <div class="scroll" style="margin-top:12px"><table id="unTable"></table></div>
+    </details>
+  </section>
+
+  <section>
+    <h2>全部の数字</h2>
+    <details>
+      <summary>府省別・目別・防衛省の目別・決算の表を開く</summary>
+      <div class="scroll" style="margin-top:12px;display:flex;flex-direction:column;gap:16px"><table id="tMin"></table><table id="tName"></table><table id="tDef"></table><table id="tSettle"></table></div>
+    </details>
+  </section>
+
+  <section>
+    <h2>この数字の作り方と、確かめられないこと</h2>
+    <ul class="notes">
+      <li><span class="tag src"></span>財務省「予算書・決算書データベース」の予算書・決算書（目の表）。当初予算は政府案。FY2025 は国会提出時の版。FY2017〜FY2021 は、提出時か成立後かを判定できていません。</li>
+      <li><span class="tag proc"></span>nihon-no-yosan が目の行を抽出・構造化し、分類コードを付けたもの。人件費は、目の使途別分類コードが「1」の行です（一般会計は 5 つ目、特別会計は 4 つ目のコード）。</li>
+      <li><span class="tag ai"></span>年度・府省・目ごとの合計、増減、割合、文章の解釈は、この探索で計算したものです。予算書の目の CSV を直接読んで足した合計とも、全年度で千円まで一致しました。決算は、目の CSV で「現額 = 歳出予算額 + 前年度繰越 + 予備費使用 + 流用等 + 移替」「現額 = 支出済 + 翌年度繰越 + 不用」が、全年度で円まで成り立つことを確かめました。</li>
+      <li>人数のデータは無いので、一人当たりの給与は分かりません。給与改定・定員の増減・年齢構成のどれが効いたかは、このデータからは分かりません。</li>
+      <li>委託費・補助金の中で払われる人件費や、独立行政法人・地方公共団体の人件費は入っていません。名目の金額で、物価の調整はしていません。</li>
+      <li>当初予算と、成立した予算（決算の「歳出予算額」）の差は、補正予算などによるものと考えられますが、目ごとの補正の記録とは照合していません。</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>次に、聞かせてください</h2>
+    <ol class="questions">
+      <li>人件費の伸び（+11%）は、予算全体（+25%）より小さいと感じましたか、大きいと感じましたか。</li>
+      <li>FY2024 の当初と成立の差（+0.11兆円）や、FY2026 の伸びが、給与改定によるものかを確かめたいですか。補正予算の目の表と突き合わせられます。</li>
+      <li>委託費・補助金の中の人件費（外の組織で働く人の給与）にも、目を向けますか。</li>
+    </ol>
+  </section>
+
+  <footer>
+    <span>出典：財務省「予算書・決算書データベース」を加工して作成。国や各府省が作成した加工していない情報ではありません。</span>
+    <span>nihon-no-yosan の AI Data Stories PoC（2026-11-03）。単位は兆円・億円（千円・円の値から計算し、表示で丸め）。</span>
+  </footer>
+</main>
+<div id="tip" hidden></div>
+
+<script>
+const D = {"Y":[2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],"S":[2017,2018,2019,2020,2021,2022,2023,2024],"gen":[43899,44255,44553,44502,45020,45010,44747,45654,47162,48841],"spe":[1948,1950,1965,1949,1965,1914,1865,1953,1954,2016],"all":[974547,977128,1014571,1026580,1066097,1075964,1143812,1125717,1155415,1223092],"min":[{"n":"国会","v":[715,721,737,734,752,726,726,742,750,790]},{"n":"裁判所","v":[2260,2294,2297,2313,2320,2292,2240,2315,2310,2392]},{"n":"会計検査院","v":[121,124,125,120,119,117,112,115,115,120]},{"n":"内閣","v":[199,203,209,210,215,214,206,216,222,240]},{"n":"内閣府","v":[239,244,249,254,255,258,252,260,273,273]},{"n":"宮内庁","v":[88,90,97,95,99,98,93,97,95,106]},{"n":"公正取引委員会","v":[76,76,79,80,80,77,83,88,93,96]},{"n":"警察庁","v":[766,792,813,809,808,803,792,812,826,883]},{"n":"個人情報保護委員会","v":[10,12,13,14,14,19,20,21,23,25]},{"n":"金融庁","v":[153,155,157,159,160,159,160,161,165,172]},{"n":"消費者庁","v":[35,38,39,40,41,41,43,50,53,57]},{"n":"総務省","v":[470,476,478,475,475,467,449,465,451,499]},{"n":"法務省","v":[4197,4270,4336,4410,4401,4356,4289,4492,4480,4769]},{"n":"外務省","v":[1027,1063,1112,1110,1105,1132,1290,1365,1478,1558]},{"n":"財務省","v":[5996,5936,6031,6097,6073,5959,6116,5889,6084,6154]},{"n":"文部科学省","v":[238,244,245,242,244,244,241,252,253,270]},{"n":"厚生労働省","v":[1894,1899,1942,1956,1974,1977,1897,1961,1897,2025]},{"n":"農林水産省","v":[1897,1892,1891,1867,1850,1822,1691,1756,1699,1760]},{"n":"経済産業省","v":[514,513,527,521,515,509,502,531,534,570]},{"n":"国土交通省","v":[4277,4298,4355,4376,4360,4313,4182,4356,4323,4537]},{"n":"環境省","v":[156,166,170,175,177,186,187,198,199,219]},{"n":"防衛省","v":[18571,18752,18644,18431,18937,19159,19040,19356,20658,21089]},{"n":"カジノ管理委員会","v":[null,null,8,14,16,17,18,18,18,20]},{"n":"デジタル庁","v":[null,null,null,null,29,67,79,98,116,137]},{"n":"こども家庭庁","v":[null,null,null,null,null,null,38,40,45,53]},{"n":"サイバー通信情報監理委員会","v":[null,null,null,null,null,null,null,null,null,7]},{"n":"防災庁","v":[null,null,null,null,null,null,null,null,null,19]}],"name":[{"n":"議員歳費","v":[155,154,155,156,153,146,155,157,157,157]},{"n":"職員基本給","v":[23579,23631,23718,23857,23878,24044,24170,24366,24703,25442]},{"n":"職員諸手当","v":[11789,12064,12246,12454,12363,11823,12395,12864,13393,13944]},{"n":"超過勤務手当","v":[1448,1454,1479,1481,1470,1526,1535,1575,1596,1644]},{"n":"議員秘書手当","v":[187,185,189,189,192,188,190,192,198,214]},{"n":"非常勤職員手当","v":[147,158,181,196,208,234,267,305,351,404]},{"n":"休職者給与","v":[75,76,80,83,88,91,103,113,124,121]},{"n":"短時間勤務職員給与","v":[308,336,363,397,410,424,442,429,458,442]},{"n":"公務災害補償費","v":[112,111,109,108,100,103,106,104,104,109]},{"n":"退職手当","v":[3749,3697,3607,3158,3735,4052,2909,3035,3184,3460]},{"n":"議員秘書退職手当","v":[5,4,11,5,15,10,6,6,13,7]},{"n":"弔慰金","v":[1,1,1,1,1,1,1,1,1,1]},{"n":"児童手当","v":[397,391,386,378,367,365,355,396,512,490]},{"n":"委員手当","v":[100,98,98,97,97,98,99,98,96,97]},{"n":"国際機関等派遣職員給与","v":[26,27,28,26,27,25,25,27,28,24]},{"n":"会員手当","v":[1,1,1,1,1,1,1,1,1,1]},{"n":"待命職員給与","v":[2,2,2,2,2,2,2,2,2,2]},{"n":"旧外地職員給与費","v":[0,0,0,0,0,0,0,0,0,0]},{"n":"政府開発援助職員基本給","v":[69,72,72,73,74,64,65,67,69,68]},{"n":"政府開発援助職員諸手当","v":[162,168,172,170,167,147,173,182,194,210]},{"n":"現地補助員給与","v":[136,144,151,152,151,175,223,247,281,294]},{"n":"政府開発援助現地補助員給与","v":[108,115,120,121,120,109,139,154,167,174]},{"n":"日本学士院会員年金","v":[4,4,4,4,4,4,4,4,4,4]},{"n":"日本芸術院会員手当","v":[3,3,3,3,3,3,3,3,3,3]},{"n":"政府職員等失業者退職手当","v":[5,5,4,4,4,4,6,6,5,5]},{"n":"統計調査員手当","v":[11,12,11,13,15,17,17,16,18,20]},{"n":"雇用均等行政特別協助員手当","v":[1,1,1,1,1,1,1,1,1,1]},{"n":"常勤職員給与","v":[7,6,4,3,2,2,2,2,2,2]},{"n":"化学物質安全対策非常勤職員手当","v":[1,1,1,1,1,1,null,null,null,null]},{"n":"消費税転嫁等対策非常勤職員手当","v":[16,16,22,22,19,null,null,null,null,null]},{"n":"特別弔慰金","v":[0,0,0,0,0,0,0,0,0,0]},{"n":"駐留軍等労働者特別協定給与","v":[1219,1251,1269,1287,1294,1281,1296,1252,1414,1397]},{"n":"駐留軍等労働者地位協定給与","v":[29,25,21,17,16,13,13,5,15,7]},{"n":"予備隊員手当","v":[49,44,45,44,44,43,43,43,67,95]},{"n":"ハンセン病元患者家族補償金支給等業務委員手当","v":[null,null,null,0,0,0,0,0,0,0]},{"n":"旧優生保護一時金支給等業務委員手当","v":[null,null,null,0,0,0,0,0,null,null]},{"n":"技術研究開発業務非常勤職員手当","v":[null,null,null,0,0,0,0,0,0,0]},{"n":"特定石綿被害建設業務労働者等給付金等支給業務委員手当","v":[null,null,null,null,null,0,0,0,0,0]},{"n":"取引適正化等対策非常勤職員手当","v":[null,null,null,null,null,13,null,null,null,null]},{"n":"産業技術・環境・産業標準政策推進研究開発等委員手当","v":[null,null,null,null,null,null,0,0,0,0]},{"n":"産業技術・環境・産業標準政策推進研究開発等非常勤職員手当","v":[null,null,null,null,null,null,0,0,0,0]},{"n":"中小企業情報処理・サービス・製造産業振興非常勤職員手当","v":[null,null,null,null,null,null,1,1,1,1]},{"n":"特定任期付職員業績手当","v":[null,null,null,null,null,null,null,0,0,null]},{"n":"旧優生保護補償金等支給等業務委員手当","v":[null,null,null,null,null,null,null,null,0,0]},{"n":"中小企業産業保安確保非常勤職員手当","v":[null,null,null,null,null,null,null,null,1,1]}],"acct":[{"n":"地震再保険特別会計","v":[0,1,1,1,1,1,1,1,1,1]},{"n":"外国為替資金特別会計","v":[4,4,4,4,4,4,4,4,4,4]},{"n":"財政投融資特別会計","v":[32,32,33,33,33,32,33,33,33,35]},{"n":"エネルギー対策特別会計","v":[82,85,85,85,84,80,80,81,86,87]},{"n":"労働保険特別会計","v":[677,685,697,689,724,721,696,736,727,754]},{"n":"年金特別会計","v":[53,51,50,47,45,44,43,44,37,40]},{"n":"食料安定供給特別会計","v":[32,29,27,24,21,19,17,16,17,17]},{"n":"特許特別会計","v":[303,310,312,315,318,308,308,320,317,337]},{"n":"自動車安全特別会計","v":[650,640,650,650,646,628,603,641,643,653]},{"n":"東日本大震災復興特別会計","v":[114,113,107,102,90,78,80,78,78,77]},{"n":"子ども・子育て支援特別会計","v":[null,null,null,null,null,null,null,null,11,12]}],"def":[{"n":"職員基本給","v":[10312,10346,10376,10489,10522,10640,10715,10814,11062,11289]},{"n":"職員諸手当","v":[5042,5161,5241,5367,5354,5138,5382,5673,5966,6123]},{"n":"超過勤務手当","v":[68,69,70,72,79,115,116,115,118,121]},{"n":"委員手当","v":[0,0,0,0,0,0,0,0,0,0]},{"n":"非常勤職員手当","v":[9,11,19,24,26,27,31,36,40,47]},{"n":"休職者給与","v":[17,19,18,20,22,23,28,32,35,30]},{"n":"国際機関等派遣職員給与","v":[1,0,0,0,0,0,1,0,0,0]},{"n":"短時間勤務職員給与","v":[28,36,41,47,52,58,54,52,55,50]},{"n":"公務災害補償費","v":[54,55,55,55,47,53,58,57,57,58]},{"n":"退職手当","v":[1518,1510,1268,791,1272,1554,1097,1045,1531,1589]},{"n":"特別弔慰金","v":[0,0,0,0,0,0,0,0,0,0]},{"n":"児童手当","v":[225,225,221,217,210,212,206,230,298,283]},{"n":"駐留軍等労働者特別協定給与","v":[1219,1251,1269,1287,1294,1281,1296,1252,1414,1397]},{"n":"駐留軍等労働者地位協定給与","v":[29,25,21,17,16,13,13,5,15,7]},{"n":"予備隊員手当","v":[49,44,45,44,44,43,43,43,67,95]}],"settle":[{"y":2017,"tou":43899,"ann":43599,"carIn":31,"res":1,"ryu":-4,"cur":43627,"spent":43082,"car":37,"un":508},{"y":2018,"tou":44255,"ann":44002,"carIn":37,"res":9,"ryu":-14,"cur":44034,"spent":43476,"car":52,"un":506},{"y":2019,"tou":44553,"ann":44253,"carIn":52,"res":8,"ryu":-6,"cur":44307,"spent":43600,"car":51,"un":656},{"y":2020,"tou":44502,"ann":43901,"carIn":51,"res":2,"ryu":-25,"cur":43929,"spent":43129,"car":49,"un":751},{"y":2021,"tou":45020,"ann":44716,"carIn":49,"res":0,"ryu":-15,"cur":44750,"spent":44020,"car":50,"un":680},{"y":2022,"tou":45010,"ann":44812,"carIn":50,"res":0,"ryu":-15,"cur":44847,"spent":44060,"car":50,"un":736},{"y":2023,"tou":44747,"ann":44805,"carIn":50,"res":13,"ryu":-25,"cur":44844,"spent":43796,"car":442,"un":606},{"y":2024,"tou":45654,"ann":46717,"carIn":442,"res":8,"ryu":-10,"cur":47158,"spent":46149,"car":355,"un":654}],"minUnused":[{"n":"防衛省","cur":151423,"un":941},{"n":"財務省","cur":48132,"un":881},{"n":"国土交通省","cur":34656,"un":670},{"n":"法務省","cur":34647,"un":478},{"n":"農林水産省","cur":14504,"un":364},{"n":"厚生労働省","cur":15357,"un":291},{"n":"外務省","cur":9179,"un":244},{"n":"国会","cur":5776,"un":191},{"n":"裁判所","cur":18351,"un":176},{"n":"総務省","cur":3656,"un":147},{"n":"内閣府","cur":1970,"un":122},{"n":"内閣","cur":1642,"un":104},{"n":"経済産業省","cur":4076,"un":86},{"n":"警察庁","cur":6392,"un":79},{"n":"文部科学省","cur":1933,"un":69},{"n":"環境省","cur":1397,"un":64},{"n":"会計検査院","cur":938,"un":35},{"n":"金融庁","cur":1242,"un":35},{"n":"デジタル庁","cur":268,"un":33},{"n":"公正取引委員会","cur":611,"un":28},{"n":"消費者庁","cur":320,"un":22},{"n":"宮内庁","cur":750,"un":19},{"n":"カジノ管理委員会","cur":79,"un":9},{"n":"個人情報保護委員会","cur":116,"un":7},{"n":"こども家庭庁","cur":80,"un":2}],"carried":[{"n":"退職手当","y23":301,"y24":295},{"n":"超過勤務手当","y23":61,"y24":60},{"n":"駐留軍等労働者特別協定給与","y23":72,"y24":0},{"n":"駐留軍等労働者地位協定給与","y23":8,"y24":0}]};
+const Y = D.Y, S = D.S;
+const NS = 'http://www.w3.org/2000/svg';
+const el = (tag, attrs = {}, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+const cho = v => v / 10000; // 億円 → 兆円
+const fc = (v, d = 3) => v === null || v === undefined ? '—' : cho(v).toFixed(d);
+const fo = v => v === null || v === undefined ? '—' : Math.round(v).toLocaleString('ja-JP');
+const sg = (v, d = 3) => (v > 0 ? '+' : v < 0 ? '−' : '±') + Math.abs(cho(v)).toFixed(d);
+const tip = document.getElementById('tip');
+function hover(node, html) {
+  node.addEventListener('pointermove', e => { tip.innerHTML = html; tip.hidden = false; tip.style.left = Math.min(e.clientX + 12, innerWidth - 270) + 'px'; tip.style.top = (e.clientY + 12) + 'px'; });
+  node.addEventListener('pointerleave', () => { tip.hidden = true; });
+}
+const last = Y.length - 1;
+const g0 = D.gen[0], g1 = D.gen[last], a0 = D.all[0], a1 = D.all[last];
+const dl = r => (r.v[last] ?? 0) - (r.v[0] ?? 0);
+const seriesTip = r => Y.map((y, i) => `FY${y}: ${fc(r.v[i])}兆円`).join('<br>');
+
+document.getElementById('heroDelta').textContent = `+${cho(g1 - g0).toFixed(2)}兆円`;
+document.getElementById('heroSub').textContent = `${fc(g0, 2)}兆円 → ${fc(g1, 2)}兆円（+${((g1 / g0 - 1) * 100).toFixed(1)}%）`;
+
+// ヒーロー: 年度ごとの棒（0 から）
+(() => {
+  const s = document.getElementById('heroChart'), W = 420, H = 230, L = 36, R = 8, T = 22, B = 24;
+  const max = 5, bw = (W - L - R) / Y.length;
+  const y = v => T + (H - T - B) * (1 - cho(v) / max);
+  const g = el('g', { class: 'grid' }, s);
+  for (const v of [0, 1, 2, 3, 4, 5]) { el('line', { x1: L, x2: W - R, y1: y(v * 10000), y2: y(v * 10000) }, g); el('text', { x: L - 6, y: y(v * 10000) + 4, 'text-anchor': 'end' }, s).textContent = v; }
+  el('text', { x: L, y: 12 }, s).textContent = '兆円';
+  D.gen.forEach((v, i) => {
+    const x = L + bw * i + bw * 0.18, w = bw * 0.64;
+    el('rect', { x, y: y(v), width: w, height: y(0) - y(v), rx: 3, fill: i === last ? 'var(--up)' : 'var(--bar)' }, s);
+    if (i === 0 || i === last) el('text', { x: x + w / 2, y: y(v) - 6, 'text-anchor': 'middle', class: 'lbl val' }, s).textContent = fc(v, 2);
+    if (i % 3 === 0 || i === last) el('text', { x: x + w / 2, y: H - 6, 'text-anchor': 'middle' }, s).textContent = Y[i];
+    const hit = el('rect', { x: L + bw * i, y: T, width: bw, height: H - T - B, fill: 'transparent' }, s);
+    hover(hit, `FY${Y[i]}<br>人件費 ${fc(v)}兆円<br>一般会計の ${(v / D.all[i] * 100).toFixed(2)}%`);
+  });
+})();
+
+// KPI と割合
+(() => {
+  const k = document.getElementById('kpis');
+  const items = [[`+${((g1 / g0 - 1) * 100).toFixed(1)}%`, '人件費（一般会計）の伸び'], [`+${((a1 / a0 - 1) * 100).toFixed(1)}%`, '一般会計全体の伸び'], [`${(g0 / a0 * 100).toFixed(2)}% → ${(g1 / a1 * 100).toFixed(2)}%`, '一般会計に占める割合']];
+  k.innerHTML = items.map(([b, s]) => `<div class="kpi"><b class="num">${b}</b><span>${s}</span></div>`).join('');
+  document.getElementById('shareText').textContent = `一般会計は 25% 増えましたが、人件費は 11% の増加です。割合は ${(g0 / a0 * 100).toFixed(2)}% から ${(g1 / a1 * 100).toFixed(2)}% に下がりました。FY2023 が一番低い ${(D.gen[6] / D.all[6] * 100).toFixed(2)}% なのは、この年の一般会計が、防衛力強化のための資金への繰入（3.38兆円）などで膨らんだためです。`;
+  const s = document.getElementById('shareChart'), W = 680, H = 150, L = 40, R = 40, T = 20, B = 24, lo = 3.5, hi = 4.75;
+  const x = i => L + (W - L - R) * i / last, y = p => T + (H - T - B) * (1 - (p - lo) / (hi - lo));
+  const sh = D.gen.map((v, i) => v / D.all[i] * 100);
+  const g = el('g', { class: 'grid' }, s);
+  for (const p of [3.5, 4.0, 4.5]) { el('line', { x1: L, x2: W - R, y1: y(p), y2: y(p) }, g); el('text', { x: L - 6, y: y(p) + 4, 'text-anchor': 'end' }, s).textContent = p.toFixed(1) + '%'; }
+  el('polyline', { points: sh.map((p, i) => `${x(i)},${y(p)}`).join(' '), fill: 'none', stroke: 'var(--bar)', 'stroke-width': 2 }, s);
+  sh.forEach((p, i) => {
+    el('circle', { cx: x(i), cy: y(p), r: i === last || i === 0 ? 4.5 : 3, fill: i === last ? 'var(--up)' : 'var(--bar)', stroke: 'var(--surface)', 'stroke-width': 1.5 }, s);
+    if (i === 0 || i === last || i === 6) el('text', { x: x(i), y: y(p) - 9, 'text-anchor': 'middle', class: 'lbl val' }, s).textContent = p.toFixed(2) + '%';
+    el('text', { x: x(i), y: H - 6, 'text-anchor': 'middle' }, s).textContent = String(Y[i]).slice(2);
+    hover(el('circle', { cx: x(i), cy: y(p), r: 14, fill: 'transparent' }, s), `FY${Y[i]}: ${p.toFixed(2)}%`);
+  });
+})();
+
+// 横棒（増減）
+function divBars(id, rows, labelW, opts = {}) {
+  const s = document.getElementById(id), W = 680, rowH = 26, T = 8, L = labelW, R = 96, H = T + rows.length * rowH + 24;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = (opts.minW || 540) + 'px';
+  const vals = rows.map(dl), max = Math.max(0, ...vals), min = Math.min(0, ...vals);
+  const x = v => L + (W - L - R) * (v - min) / (max - min || 1), x0 = x(0);
+  const g = el('g', { class: 'grid' }, s);
+  const step = opts.step || 500;
+  for (let v = Math.ceil(min / step) * step; v <= max; v += step) { el('line', { x1: x(v), x2: x(v), y1: T, y2: H - 22 }, g); el('text', { x: x(v), y: H - 6, 'text-anchor': 'middle' }, s).textContent = v === 0 ? '0' : (v > 0 ? '+' : '−') + Math.abs(cho(v)).toFixed(2); }
+  rows.forEach((r, i) => {
+    const d = dl(r), yy = T + i * rowH, up = d >= 0, bx = Math.min(x(d), x0), bw = Math.max(2, Math.abs(x(d) - x0));
+    el('text', { x: L - 8, y: yy + 17, 'text-anchor': 'end', class: 'lbl' }, s).textContent = r.n.length > 13 ? r.n.slice(0, 13) + '…' : r.n;
+    el('rect', { x: bx, y: yy + 6, width: bw, height: rowH - 10, rx: 3, fill: up ? 'var(--up)' : 'var(--down)' }, s);
+    el('text', { x: Math.max(x(d), x0) + 6, y: yy + 17, class: 'val' }, s).textContent = sg(d) + '兆円';
+    hover(el('rect', { x: 0, y: yy, width: W, height: rowH, fill: 'transparent' }, s), `<b>${r.n}</b><br>${sg(d)}兆円<br>${seriesTip(r)}`);
+  });
+  el('line', { x1: x0, x2: x0, y1: T, y2: H - 22, stroke: 'var(--zero)', 'stroke-width': 1 }, s);
+}
+// 府省
+(() => {
+  const rows = D.min.filter(r => Math.abs(dl(r)) >= 50).sort((a, b) => dl(b) - dl(a));
+  divBars('minChart', rows, 120);
+  const def = D.min.find(r => r.n === '防衛省'), dd = dl(def), tot = g1 - g0;
+  document.getElementById('minText').textContent = `一般会計の人件費の増加 ${cho(tot).toFixed(3)}兆円のうち、防衛省が ${cho(dd).toFixed(3)}兆円（${(dd / tot * 100).toFixed(0)}%）。次が法務省・外務省・国土交通省・財務省です。減ったのは農林水産省（${sg(dl(D.min.find(r => r.n === '農林水産省')))}兆円）などです。`;
+  const share = i => def.v[i] / D.gen[i] * 100;
+  document.getElementById('defText').textContent = `防衛省の人件費は ${fc(def.v[0])} → ${fc(def.v[last])}兆円。一般会計の人件費に占める割合は ${share(0).toFixed(1)}% → ${share(last).toFixed(1)}% で、10 年間 41〜44% の間です。目で見ると、職員基本給 ${fc(D.def.find(r => r.n === '職員基本給').v[0])} → ${fc(D.def.find(r => r.n === '職員基本給').v[last])}兆円、職員諸手当 ${fc(D.def.find(r => r.n === '職員諸手当').v[0])} → ${fc(D.def.find(r => r.n === '職員諸手当').v[last])}兆円、在日米軍の駐留軍等労働者の給与（特別協定）${fc(D.def.find(r => r.n === '駐留軍等労働者特別協定給与').v[0])} → ${fc(D.def.find(r => r.n === '駐留軍等労働者特別協定給与').v[last])}兆円。`;
+})();
+// 目
+(() => {
+  const rows = D.name.filter(r => Math.abs(dl(r)) >= 50).sort((a, b) => dl(b) - dl(a));
+  divBars('nameChart', rows, 170);
+})();
+// FY2026
+(() => {
+  const i5 = last - 1, d26 = g1 - D.gen[i5];
+  const top = (arr, n) => arr.map(r => ({ n: r.n, a: r.v[i5], b: r.v[last], d: (r.v[last] ?? 0) - (r.v[i5] ?? 0) })).sort((p, q) => Math.abs(q.d) - Math.abs(p.d)).slice(0, n);
+  const nm = top(D.name, 5), mn = top(D.min, 5);
+  document.getElementById('y26Text').textContent = `FY2025 の ${fc(D.gen[i5])}兆円から、FY2026 は ${fc(g1)}兆円（${sg(d26)}兆円、+${((g1 / D.gen[i5] - 1) * 100).toFixed(1)}%）。10 年の増加の ${(d26 / (g1 - g0) * 100).toFixed(0)}% が、この 1 年に集まっています。目では職員基本給・職員諸手当・退職手当、府省では防衛省・法務省・国土交通省が大きく増えました。`;
+  const row = r => `<tr><td>${r.n}</td><td>${fo(r.a)}</td><td>${fo(r.b)}</td><td class="${r.d >= 0 ? 'up' : 'down'}">${r.d >= 0 ? '+' : '−'}${fo(Math.abs(r.d))}</td></tr>`;
+  document.getElementById('y26Table').innerHTML = `<thead><tr><th>目（億円）</th><th>FY2025</th><th>FY2026</th><th>増減</th></tr></thead><tbody>${nm.map(row).join('')}</tbody><thead><tr><th>府省（億円）</th><th></th><th></th><th></th></tr></thead><tbody>${mn.map(row).join('')}</tbody>`;
+})();
+// 特別会計
+(() => {
+  const s0 = D.spe[0], s1 = D.spe[last];
+  document.getElementById('speText').textContent = `特別会計（人件費のある ${D.acct.length} の会計）の人件費は、${fo(s0)}億円 → ${fo(s1)}億円です。一般会計と合わせると ${fc(g0 + s0, 2)} → ${fc(g1 + s1, 2)}兆円で、一般会計が 96% を占めます。特別会計の中では、労働保険・自動車安全・特許の 3 つで大半です。`;
+  const rows = [...D.acct].sort((a, b) => (b.v[last] ?? 0) - (a.v[last] ?? 0));
+  document.getElementById('acctTable').innerHTML = `<thead><tr><th>特別会計（億円）</th><th>FY2017</th><th>FY2026</th><th>増減</th></tr></thead><tbody>${rows.map(r => `<tr><td>${r.n}</td><td>${fo(r.v[0])}</td><td>${fo(r.v[last])}</td><td>${r.v[0] === null || r.v[last] === null ? '—' : (dl(r) >= 0 ? '+' : '−') + fo(Math.abs(dl(r)))}</td></tr>`).join('')}<tr><td><b>計</b></td><td><b>${fo(s0)}</b></td><td><b>${fo(s1)}</b></td><td><b>+${fo(s1 - s0)}</b></td></tr></tbody>`;
+})();
+// 決算
+(() => {
+  const st = D.settle;
+  const rate = r => r.un / r.cur * 100;
+  document.getElementById('settleText').textContent = `一般会計の人件費は、決算でも予算のほとんどが使われています。不用（使われずに残った額）は、歳出予算現額の ${Math.min(...st.map(rate)).toFixed(2)}〜${Math.max(...st.map(rate)).toFixed(2)}%（年 ${fo(Math.min(...st.map(r => r.un)))}〜${fo(Math.max(...st.map(r => r.un)))}億円）です。`;
+  const s = document.getElementById('settleChart'), W = 680, H = 210, L = 44, R = 12, T = 24, B = 26;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '520px';
+  const max = 1200, bw = (W - L - R) / st.length, y = v => T + (H - T - B) * (1 - v / max);
+  const g = el('g', { class: 'grid' }, s);
+  for (const v of [0, 300, 600, 900, 1200]) { el('line', { x1: L, x2: W - R, y1: y(v), y2: y(v) }, g); el('text', { x: L - 6, y: y(v) + 4, 'text-anchor': 'end' }, s).textContent = v; }
+  el('text', { x: L, y: 12 }, s).textContent = '億円';
+  st.forEach((r, i) => {
+    const x = L + bw * i + bw * 0.22, w = bw * 0.56;
+    el('rect', { x, y: y(r.un), width: w, height: y(0) - y(r.un), fill: 'var(--soft)' }, s);
+    el('rect', { x, y: y(r.un + r.car), width: w, height: y(r.un) - y(r.un + r.car) - (r.car > 0 ? 2 : 0), fill: 'var(--up)' }, s);
+    el('text', { x: x + w / 2, y: y(r.un + r.car) - 6, 'text-anchor': 'middle', class: 'val' }, s).textContent = fo(r.un + r.car);
+    el('text', { x: x + w / 2, y: H - 8, 'text-anchor': 'middle' }, s).textContent = r.y;
+    hover(el('rect', { x: L + bw * i, y: T, width: bw, height: H - T - B, fill: 'transparent' }, s), `FY${r.y}<br>現額 ${fo(r.cur)}億円<br>支出済 ${fo(r.spent)}億円<br>翌年度繰越 ${fo(r.car)}億円<br>不用 ${fo(r.un)}億円（${rate(r).toFixed(2)}%）`);
+  });
+  const lg = el('g', {}, s);
+  el('rect', { x: W - 230, y: 6, width: 10, height: 10, fill: 'var(--soft)' }, lg); el('text', { x: W - 216, y: 15 }, lg).textContent = '不用';
+  el('rect', { x: W - 170, y: 6, width: 10, height: 10, fill: 'var(--up)' }, lg); el('text', { x: W - 156, y: 15 }, lg).textContent = '翌年度繰越';
+  const c = D.carried.find(r => r.n === '退職手当');
+  document.getElementById('carText').textContent = `FY2017〜FY2022 は、人件費の翌年度繰越が毎年 37〜52億円でした。FY2023 は ${fo(st[6].car)}億円、FY2024 は ${fo(st[7].car)}億円です。そのうち退職手当が、FY2023 は ${fo(c.y23)}億円、FY2024 は ${fo(c.y24)}億円でした。繰り越した理由は、このデータには書かれていません。`;
+  const r24 = st[7], r20 = st[3];
+  document.getElementById('supText').textContent = `決算の「歳出予算額」（成立した予算。補正を含む）は、FY2024 が ${fo(r24.ann)}億円で、当初予算 ${fo(r24.tou)}億円より ${fo(r24.ann - r24.tou)}億円多くなっています。FY2017〜FY2022 は逆に、当初より 200〜600億円少ない年が続きました（FY2020 は −${fo(Math.abs(r20.ann - r20.tou))}億円）。給与改定などの補正による可能性がありますが、補正の目の記録とは照合していません（推測）。`;
+  const un = D.minUnused.filter(r => (r.cur ?? 0) >= 1000);
+  document.getElementById('unTable').innerHTML = `<thead><tr><th>府省（億円）</th><th>現額</th><th>不用</th><th>不用の割合</th></tr></thead><tbody>${un.map(r => `<tr><td>${r.n}</td><td>${fo(r.cur)}</td><td>${fo(r.un)}</td><td>${(r.un / r.cur * 100).toFixed(2)}%</td></tr>`).join('')}</tbody>`;
+})();
+// 全部の表
+(() => {
+  const head = t => `<thead><tr><th>${t}（兆円）</th>${Y.map(y => `<th>FY${y}</th>`).join('')}<th>増減</th></tr></thead>`;
+  const row = r => `<tr><td>${r.n}</td>${r.v.map(v => `<td>${fc(v)}</td>`).join('')}<td>${r.v[0] === null || r.v[last] === null ? '—' : sg(dl(r))}</td></tr>`;
+  const sorted = a => [...a].sort((p, q) => (q.v[last] ?? 0) - (p.v[last] ?? 0));
+  document.getElementById('tMin').innerHTML = head('府省') + '<tbody>' + sorted(D.min).map(row).join('') + `<tr><td><b>一般会計の人件費</b></td>${D.gen.map(v => `<td><b>${fc(v)}</b></td>`).join('')}<td><b>${sg(g1 - g0)}</b></td></tr></tbody>`;
+  document.getElementById('tName').innerHTML = head('目') + '<tbody>' + sorted(D.name).filter(r => Math.max(...r.v.map(v => v ?? 0)) >= 10).map(row).join('') + '</tbody>';
+  document.getElementById('tDef').innerHTML = head('防衛省の目') + '<tbody>' + sorted(D.def).map(row).join('') + '</tbody>';
+  document.getElementById('tSettle').innerHTML = `<thead><tr><th>決算（億円）</th>${S.map(y => `<th>FY${y}</th>`).join('')}</tr></thead><tbody>` + [['当初予算', 'tou'], ['歳出予算額', 'ann'], ['前年度繰越', 'carIn'], ['予備費使用', 'res'], ['流用等', 'ryu'], ['歳出予算現額', 'cur'], ['支出済', 'spent'], ['翌年度繰越', 'car'], ['不用', 'un']].map(([l, k]) => `<tr><td>${l}</td>${D.settle.map(r => `<td>${fo(r[k])}</td>`).join('')}</tr>`).join('') + '</tbody>';
+})();
+</script>

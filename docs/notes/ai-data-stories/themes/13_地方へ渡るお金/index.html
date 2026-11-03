@@ -1,0 +1,242 @@
+<title>地方へ渡るお金</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Zen+Kaku+Gothic+New:wght@700;900&display=swap">
+<style>
+/* layout: 1 本の読み物の列（最大 760px）。区分の色は固定（交付税=青、譲与税=緑、特例交付金等=黄、国庫補助負担金=橙、子ども・子育て=紫、その他=灰） */
+:root {
+  --bg: #f6f7f9; --surface: #ffffff; --ink: #18202b; --muted: #5b6573; --line: #d9dee5; --tag: #eef1f5;
+  --up: #d2542a; --down: #2a6fc9; --zero: #9aa3ae;
+  --c1: #2a78d6; --c2: #1baf7a; --c3: #eda100; --c4: #eb6834; --c5: #8f6fe0; --c6: #9aa3b2;
+  --display: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", sans-serif;
+  --body: "BIZ UDPGothic", "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #12161c; --surface: #1a2029; --ink: #e8ecf1; --muted: #9aa5b3; --line: #2c3440; --tag: #232b36;
+  --up: #f07a50; --down: #5b9cf0; --zero: #6b7582;
+  --c1: #3987e5; --c2: #199e70; --c3: #c98500; --c4: #d95926; --c5: #7d5fd0; --c6: #6b7385; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #12161c; --surface: #1a2029; --ink: #e8ecf1; --muted: #9aa5b3; --line: #2c3440; --tag: #232b36;
+  --up: #f07a50; --down: #5b9cf0; --zero: #6b7582;
+  --c1: #3987e5; --c2: #199e70; --c3: #c98500; --c4: #d95926; --c5: #7d5fd0; --c6: #6b7385; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.8;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 32px 64px; }
+main { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 56px; }
+h1, h2 { font-family: var(--display); text-wrap: balance; line-height: 1.35; margin: 0; }
+h1 { font-size: clamp(28px, 6vw, 42px); font-weight: 900; }
+h2 { font-size: 22px; font-weight: 700; }
+p { margin: 0; max-width: 65ch; }
+section, header { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; color: var(--muted); }
+.num { font-variant-numeric: tabular-nums; }
+.up { color: var(--up); } .down { color: var(--down); }
+.big { font-family: var(--display); font-weight: 900; font-size: clamp(40px, 9vw, 60px); line-height: 1.1; color: var(--up); }
+.from-to { color: var(--muted); }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; min-width: 0; }
+.scroll { overflow-x: auto; }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { fill: var(--muted); font-family: var(--body); font-size: 11px; }
+.chart .lbl { fill: var(--ink); font-size: 12px; }
+.chart .val { font-variant-numeric: tabular-nums; }
+.grid line { stroke: var(--line); stroke-width: 1; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--muted); padding: 0; margin: 0; list-style: none; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+.tag { display: inline-block; font-size: 11px; padding: 0 8px; border-radius: 999px; background: var(--tag); color: var(--muted); margin-right: 6px; white-space: nowrap; }
+.tag.src::before { content: "原資料"; } .tag.proc::before { content: "加工"; } .tag.ai::before { content: "AIの計算・解釈"; }
+.claims { display: flex; flex-direction: column; gap: 12px; padding: 0; margin: 0; list-style: none; }
+.claims li { display: grid; gap: 4px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.card b { font-family: var(--display); font-size: 22px; font-variant-numeric: tabular-nums; }
+.card span { font-size: 12px; color: var(--muted); }
+table { border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
+th, td { padding: 4px 8px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+thead th { color: var(--muted); font-weight: 400; }
+details { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+summary { cursor: pointer; font-weight: 700; }
+summary:focus-visible { outline: 2px solid var(--down); outline-offset: 2px; }
+.notes { padding-left: 1.2em; margin: 0; display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--muted); }
+.questions { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.questions li { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+.small { font-size: 13px; color: var(--muted); }
+footer { font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+#tip { position: fixed; pointer-events: none; background: var(--ink); color: var(--bg); font-size: 12px; padding: 6px 8px; border-radius: 6px; line-height: 1.5; max-width: 280px; z-index: 5; }
+</style>
+
+<main>
+  <header>
+    <span class="eyebrow">国 → 地方（都道府県・市町村）・当初予算（政府案）FY2017 → FY2026</span>
+    <h1>国から地方へ渡るお金は、10 年でどう変わったか</h1>
+    <div class="big num" id="heroDelta"></div>
+    <div class="from-to num" id="heroFromTo"></div>
+    <p>予算書の目には、経済性質別の分類コードが付いています。そのうち「対地方政府移転」（コード 80〜86）を、一般会計と特別会計で足しました。地方交付税は、一般会計から交付税特別会計を通って地方へ渡るので、特別会計の側で数えています。</p>
+  </header>
+
+  <section>
+    <h2>増えた分の 4 割強は、地方交付税</h2>
+    <p id="leadMix"></p>
+    <div class="panel scroll"><svg class="chart" id="mixChart" role="img" aria-label="地方へ渡るお金の年度推移（区分の積み上げ）"></svg></div>
+    <ul class="legend" id="mixLegend"></ul>
+    <ul class="claims">
+      <li><strong>地方交付税 16.7兆円 → 20.2兆円（+3.6兆円）</strong><span>交付税特別会計から地方へ渡る額です。FY2023 の 17.0兆円から、3 年で +3.2兆円と、伸びが早まっています。</span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+      <li><strong>子ども・子育ての給付は、特別会計を通るようになった</strong><span>FY2017 は、一般会計の「子どものための教育・保育給付費負担金」0.79兆円が、地方へ直接渡っていました。FY2018 にこの目は一般会計から無くなり、年金特別会計（子ども・子育て支援勘定）から地方へ渡る額が 1.52兆円 → 2.42兆円に増えています。FY2025 からは、子ども・子育て支援特別会計（4.4兆円）が受け持っています。</span><span><span class="tag src"></span><span class="tag ai"></span></span></li>
+      <li><strong>地方譲与税 2.5兆円 → 3.2兆円</strong><span>FY2020 から「特別法人事業譲与税譲与金」（FY2026 は 2.60兆円）が加わりました。</span><span><span class="tag src"></span></span></li>
+      <li><strong>地方特例交付金は年で大きく動く</strong><span>FY2024 は 1.13兆円、FY2026 は 0.82兆円（うち「軽油引取税減収補填特例交付金」0.43兆円が FY2026 に新しく出た）。ほかの年は 0.1〜0.4兆円です。</span><span><span class="tag src"></span></span></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>地方交付税の通り道</h2>
+    <p>一般会計は、地方交付税の財源を交付税特別会計へ繰り入れます。特別会計は、それを地方へ渡し、あわせて過去の借入金の返済などのために国債整理基金特別会計へ繰り入れます。</p>
+    <div class="panel scroll"><svg class="chart" id="flowChart" role="img" aria-label="交付税特別会計の入りと出の年度推移"></svg></div>
+    <ul class="legend" id="flowLegend"></ul>
+    <ul class="claims">
+      <li><strong>国債整理基金への繰入は 32.7兆円 → 26.8兆円</strong><span>地方へ渡す地方交付税（20.2兆円）より大きい額です。この中に、借入金の元本・利子・借換えの分がどれだけあるかは、このデータでは分けられません（交付税特別会計の歳入が無いため）。</span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+      <li><strong>FY2025 は、一般会計からの繰入（18.9兆円）が、地方へ渡す地方交付税（18.3兆円）を上回った</strong><span>ほかの 9 年度は、地方へ渡す額の方が大きい年です（差は FY2017 で 1.2兆円）。理由はこのデータでは分かりません（未確認）。</span><span><span class="tag src"></span><span class="tag ai"></span></span></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>一般会計から直接渡るお金（国庫補助負担金など）</h2>
+    <p id="leadGen"></p>
+    <div class="panel scroll"><svg class="chart" id="mokuChart" role="img" aria-label="目ごとの増減（FY2017 → FY2026）"></svg></div>
+    <p class="small">目の名前ごとに、府省・項をまたいで足しました（こども家庭庁への移管をならすため）。「防災・安全社会資本整備交付金」は FY2022 に「防災・安全交付金」に名前が変わったので、まとめています。</p>
+    <ul class="claims">
+      <li><strong>一番増えたのは、障害者自立支援給付費負担金（1.05兆円 → 1.81兆円）</strong><span>毎年増え続けています。障害児入所給付費等負担金も 0.18兆円 → 0.51兆円です。</span><span><span class="tag src"></span><span class="tag proc"></span></span></li>
+      <li><strong>公共事業の交付金は減った</strong><span>社会資本整備総合交付金 0.89兆円 → 0.46兆円、防災・安全交付金 1.11兆円 → 0.85兆円。かわりに、道路更新防災等対策事業費補助（FY2020 から 0.23兆円前後）や下水道防災事業費補助のような、目的を絞った補助が増えています。</span><span><span class="tag src"></span><span class="tag ai"></span></span></li>
+      <li><strong>FY2026 の新顔</strong><span>給食費負担軽減交付金 0.16兆円。高等学校等就学支援金交付金は 0.40兆円 → 0.58兆円と、1 年で 0.18兆円増えています。</span><span><span class="tag src"></span></span></li>
+      <li><strong>「地方創生推進交付金」（FY2024 まで約 0.06兆円）は、FY2025 から無い</strong><span>FY2025 に「新しい地方経済・生活環境創生交付金」（0.14兆円）が出ています。後継かどうかは、このデータでは確かめていません（推測）。</span><span><span class="tag src"></span><span class="tag ai"></span></span></li>
+    </ul>
+    <details>
+      <summary>府省ごとの額（一般会計の対地方政府移転、兆円）</summary>
+      <div class="scroll" style="margin-top:12px"><table id="minTbl"></table></div>
+    </details>
+  </section>
+
+  <section>
+    <h2>数えなかったもの: 医療・介護の保険への国の負担</h2>
+    <p id="leadSocial"></p>
+    <div class="panel scroll"><table id="socialTbl"></table></div>
+    <p class="small">後期高齢者医療は広域連合、介護保険・国民健康保険は市町村などが運営しますが、予算書の経済性質別では「対地方政府移転」ではなく「他に分類されない国内経常移転」（コード 71）です。この LP は、分類コードどおりに、上の合計に入れていません。名前だけで地方向けと決めると、この額だけ合計が大きくなります。表は、一般会計の経済性質別 71 の目のうち、目名に「後期高齢者」「介護」「国民健康保険」を含む負担金・交付金・補助金です。全国健康保険協会・国民健康保険組合（運営するのが地方ではないもの）と、災害の臨時の補助金は除きました。「等」が付いた改称 3 件は、まとめています。</p>
+  </section>
+
+  <section>
+    <h2>この数字の作り方と、確かめられないこと</h2>
+    <ul class="notes">
+      <li><span class="tag src"></span>財務省「予算書・決算書データベース」の予算書（目の表）の当初予算額と、目の経済性質別分類コード。コード 80〜86 の名前（対地方政府移転、経常支出、資本形成、現金による社会保障給付、社会扶助給付、経常補助金、その他）は、予算書のコード表のページから。FY2025 は国会提出時の版。FY2017〜FY2021 は、提出時か成立後かを判定できていません。</li>
+      <li><span class="tag proc"></span>nihon-no-yosan が目の行を抽出・構造化したもの。コード 80〜86 の合計は、予算書の目の CSV を直接足した値と、全年度・一般会計と特別会計とも千円単位で一致しました。交付税特別会計の項の額も、項の CSV と一致しました。</li>
+      <li><span class="tag ai"></span>区分の分け方（交付税特別会計の項、子ども・子育て、その他）、目の名前ごとの合算、名前の変更 1 件のまとめ、FY2018 の付け替えの読み方、医療・介護の保険を合計に入れない判断は、この探索で決めたものです。</li>
+      <li>一般会計から特別会計への繰入（コード 30「会計間重複」）は数えていないので、二重には数えていません。ただし、特別会計が自分の財源（税・借入など）から渡す分も含みます。財源の内訳は、歳入のデータが無いので分かりません。</li>
+      <li>地方が受け取った額（決算）や、地方側の歳入とは照合していません。総務省・財務省が公表する「国から地方への財政移転」の額とも照合していません。名目の金額で、物価の調整はしていません。補正予算は含めていません。</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>次に、聞かせてください</h2>
+    <ol class="questions">
+      <li>交付税特別会計から国債整理基金への 26.8兆円のうち、借入金の返済と借換えの分はどれくらいか。国債整理基金特別会計の側の「交付税特会からの繰入」と突き合わせますか。</li>
+      <li>補正予算や決算では、地方へ渡るお金はどれくらい増えるか（コロナ期の地方創生臨時交付金など）。</li>
+      <li>障害者自立支援給付費負担金の伸びは、どの府省・どの制度の分か。事項や目の単位まで降りますか。</li>
+    </ol>
+  </section>
+
+  <footer>
+    <span>出典：財務省「予算書・決算書データベース」を加工して作成。国や各府省が作成した加工していない情報ではありません。</span>
+    <span>nihon-no-yosan の AI Data Stories PoC（2026-11-03）。単位は兆円（千円単位の値を億円に丸めて計算し、表示で丸め）。</span>
+  </footer>
+</main>
+<div id="tip" hidden></div>
+
+<script>
+const D = {"Y":[2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],"rows":[{"y":2017,"kofuTax":166762,"jouyo":25364,"tokurei":1949,"gen":119694,"kodomo":15245,"otherSp":9914,"total":338928,"social":108579,"genKofu":154343,"spKofu":166762,"spDebt":326709,"nenkinKodomo":15245,"kodomoSp":0},{"y":2018,"kofuTax":163342,"jouyo":25754,"tokurei":2146,"gen":112260,"kodomo":24183,"otherSp":9022,"total":336706,"social":109720,"genKofu":153606,"spKofu":163342,"spDebt":325839,"nenkinKodomo":24183,"kodomoSp":0},{"y":2019,"kofuTax":160844,"jouyo":27123,"tokurei":4908,"gen":121111,"kodomo":26814,"otherSp":8987,"total":349786,"social":112693,"genKofu":155510,"spKofu":160844,"spDebt":318496,"nenkinKodomo":26814,"kodomoSp":0},{"y":2020,"kofuTax":169306,"jouyo":26086,"tokurei":2550,"gen":121055,"kodomo":29644,"otherSp":7552,"total":356193,"social":116483,"genKofu":156085,"spKofu":169306,"spDebt":317897,"nenkinKodomo":29644,"kodomoSp":0},{"y":2021,"kofuTax":175711,"jouyo":18462,"tokurei":4103,"gen":116003,"kodomo":30112,"otherSp":4134,"total":348526,"social":116541,"genKofu":155912,"spKofu":175711,"spDebt":319739,"nenkinKodomo":30112,"kodomoSp":0},{"y":2022,"kofuTax":168907,"jouyo":25978,"tokurei":2802,"gen":116819,"kodomo":30707,"otherSp":3705,"total":348918,"social":118385,"genKofu":156558,"spKofu":168907,"spDebt":301832,"nenkinKodomo":30707,"kodomoSp":0},{"y":2023,"kofuTax":170024,"jouyo":26001,"tokurei":2685,"gen":117789,"kodomo":31226,"otherSp":3637,"total":351362,"social":120326,"genKofu":161823,"spKofu":170024,"spDebt":296695,"nenkinKodomo":31226,"kodomoSp":0},{"y":2024,"kofuTax":182439,"jouyo":27293,"tokurei":11807,"gen":119362,"kodomo":35099,"otherSp":3818,"total":379817,"social":123332,"genKofu":166543,"spKofu":182439,"spDebt":297102,"nenkinKodomo":35099,"kodomoSp":0},{"y":2025,"kofuTax":183437,"jouyo":29661,"tokurei":2411,"gen":121091,"kodomo":43673,"otherSp":3845,"total":384118,"social":123802,"genKofu":188848,"spKofu":183437,"spDebt":291653,"nenkinKodomo":0,"kodomoSp":43673},{"y":2026,"kofuTax":202305,"jouyo":31932,"tokurei":8594,"gen":127701,"kodomo":44096,"otherSp":3602,"total":418229,"social":127150,"genKofu":200622,"spKofu":202305,"spDebt":267789,"nenkinKodomo":0,"kodomoSp":44096}],"mins":[{"n":"厚生労働省","v":[57222,57361,59159,59700,59721,60779,52728,53700,54602,56665]},{"n":"文部科学省","v":[20591,20571,21386,21387,20804,20640,20815,21219,21796,26314]},{"n":"国土交通省","v":[23717,23862,27565,27317,23994,24045,23987,24096,23713,23741]},{"n":"こども家庭庁","v":[null,null,null,null,null,null,9513,10011,9683,10075]},{"n":"農林水産省","v":[4810,5149,5695,5529,4990,4873,4875,4857,4932,4821]},{"n":"内閣府（外局を含む。こども家庭庁を除く）","v":[11680,3539,5254,3813,3793,3432,3156,3154,4256,3884]},{"n":"防衛省","v":[778,868,884,867,874,909,948,982,1051,1082]},{"n":"環境省","v":[616,581,646,670,542,543,543,541,533,536]},{"n":"総務省","v":[258,301,484,1694,1123,1120,779,549,292,316]},{"n":"デジタル庁","v":[null,null,null,null,113,290,325,221,203,233]},{"n":"経済産業省","v":[21,24,29,29,20,21,21,21,22,23]},{"n":"法務省","v":[null,3,10,48,29,168,99,12,10,10]}],"up":[{"n":"障害者自立支援給付費負担金","v":[10542,11148,11885,12578,13111,13859,14728,15651,16531,18145]},{"n":"障害児入所給付費等負担金","v":[1778,2320,2810,3420,3835,4256,4483,4690,4871,5148]},{"n":"道路更新防災等対策事業費補助","v":[45,65,213,2343,2326,2333,2349,2362,2387,2415]},{"n":"高等学校等就学支援金交付金","v":[3624,3678,3709,4248,4141,4114,4104,4063,4048,5800]},{"n":"義務教育費国庫負担金","v":[15248,15228,15200,15221,15164,15015,15216,15627,16210,17118]},{"n":"給食費負担軽減交付金","v":[null,null,null,null,null,null,null,null,null,1649]},{"n":"下水道防災事業費補助","v":[2,2,104,244,384,524,665,805,1023,1223]},{"n":"新しい地方経済・生活環境創生交付金","v":[null,null,null,null,null,null,null,null,1402,1042]}],"down":[{"n":"子どものための教育・保育給付費負担金","v":[7879,null,null,null,null,null,null,null,null,null]},{"n":"社会資本整備総合交付金","v":[8935,8886,8713,7627,6311,5817,5492,5065,4874,4597]},{"n":"防災・安全交付金","v":[11057,11117,13173,10388,8540,8156,8313,8707,8470,8529]},{"n":"高齢者医療制度円滑運営臨時特例交付金","v":[1688,1011,430,131,1,0,0,0,0,null]},{"n":"生活扶助費等負担金","v":[14521,14177,13752,13298,13308,13402,13555,13721,13398,13160]},{"n":"地方創生推進交付金","v":[599,609,603,572,552,532,532,552,0,null]}],"social":[{"n":"後期高齢者医療給付費等負担金","v":[37420,38335,39441,40454,40210,41232,42869,44734,45542,47173]},{"n":"介護給付費等負担金","v":[18323,18952,20361,21933,22731,23512,24379,24878,25047,25400]},{"n":"国民健康保険療養給付費等負担金","v":[20194,18582,18287,18206,17909,17538,16362,16301,15960,16026]},{"n":"後期高齢者医療等財政調整交付金","v":[12194,12498,12867,13165,13087,13411,13925,14483,14734,15258]},{"n":"介護給付費財政調整交付金","v":[4974,5127,5413,5747,5955,6159,6400,6588,6619,6771]},{"n":"国民健康保険財政調整交付金","v":[5626,6274,6254,6222,6145,6018,5651,5634,5569,5623]},{"n":"国民健康保険後期高齢者医療費支援金等負担金","v":[5254,5040,5105,5010,4971,4859,5273,5230,5020,5440]},{"n":"国民健康保険介護納付金負担金","v":[2055,1957,1779,1896,1743,1885,1834,1797,1703,1728]},{"n":"国民健康保険後期高齢者医療費支援金等財政調整交付金","v":[1478,1417,1436,1409,1398,1367,1483,1471,1412,1530]},{"n":"国民健康保険保険者努力支援交付金","v":[null,667,912,1412,1412,1412,1212,1292,1292,1292]},{"n":"国民健康保険介護納付金財政調整交付金","v":[578,550,500,533,490,530,516,506,479,486]},{"n":"介護保険保険者努力支援交付金","v":[null,null,null,200,200,200,200,200,200,200]},{"n":"国民健康保険制度関係業務準備事業費補助金","v":[200,null,null,null,null,null,null,null,null,null]},{"n":"国民健康保険特定健康診査・保健指導負担金","v":[172,172,172,172,169,159,129,131,132,132]},{"n":"後期高齢者医療制度事業費補助金","v":[56,57,56,50,50,50,49,50,51,52]},{"n":"国民健康保険団体連合会等補助金","v":[44,29,39,27,23,22,23,19,16,16]},{"n":"国民健康保険制度関係業務事業費補助金","v":[null,49,56,32,32,21,10,9,9,9]},{"n":"後期高齢者医療制度関係業務事業費補助金","v":[9,11,12,12,13,9,9,9,9,9]},{"n":"介護保険関係業務費補助金","v":[3,2,3,2,2,2,2,2,9,7]},{"n":"年金生活者支援給付金支給準備国民健康保険中央会補助金","v":[0,0,null,null,null,null,null,null,null,null]},{"n":"年金生活者支援給付金支給業務国民健康保険団体連合会等補助金","v":[null,null,0,1,0,0,0,0,0,0]},{"n":"介護職員処遇改善支援補助金","v":[null,null,null,null,null,0,null,0,null,null]}]};
+const Y = D.Y, I = Y.length - 1;
+const tri = v => v / 10000;
+const f = (v, d = 2) => v === null || v === undefined ? '—' : tri(v).toFixed(d);
+const sgn = v => (v > 0 ? '+' : v < 0 ? '−' : '±') + Math.abs(tri(v)).toFixed(2);
+const NS = 'http://www.w3.org/2000/svg';
+const el = (tag, attrs = {}, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+const tip = document.getElementById('tip');
+function hover(node, html) {
+  node.addEventListener('pointermove', e => { tip.innerHTML = html; tip.hidden = false; tip.style.left = Math.min(e.clientX + 12, innerWidth - 290) + 'px'; tip.style.top = (e.clientY + 12) + 'px'; });
+  node.addEventListener('pointerleave', () => { tip.hidden = true; });
+}
+const legend = (id, items) => { document.getElementById(id).innerHTML = items.map(([c, n]) => `<li><i style="background:var(${c})"></i>${n}</li>`).join(''); };
+const niceStep = max => { const raw = max / 5, p = Math.pow(10, Math.floor(Math.log10(raw))); return [1, 2, 2.5, 5, 10].map(m => m * p).find(s => s >= raw); };
+const R = D.rows, r0 = R[0], r1 = R[I];
+
+// ヒーロー
+document.getElementById('heroDelta').textContent = `+${tri(r1.total - r0.total).toFixed(1)}兆円`;
+document.getElementById('heroFromTo').textContent = `${f(r0.total, 1)}兆円 → ${f(r1.total, 1)}兆円（+${((r1.total / r0.total - 1) * 100).toFixed(1)}%）。一般会計の当初予算の伸び +25.5% とほぼ同じ`;
+
+// 区分の積み上げ
+const CATS = [['kofuTax', '--c1', '地方交付税'], ['jouyo', '--c2', '地方譲与税'], ['tokurei', '--c3', '地方特例交付金・交通安全対策特別交付金'], ['gen', '--c4', '一般会計から直接（国庫補助負担金など）'], ['kodomo', '--c5', '子ども・子育て（特別会計）'], ['otherSp', '--c6', 'その他の特別会計']];
+{
+  const d = (k) => r1[k] - r0[k];
+  document.getElementById('leadMix').textContent = `10 年で ${f(r1.total - r0.total, 1)}兆円増えました。地方交付税が ${sgn(d('kofuTax'))}兆円（${(d('kofuTax') / (r1.total - r0.total) * 100).toFixed(0)}%）、子ども・子育ての特別会計が ${sgn(d('kodomo'))}兆円、一般会計から直接渡る分は ${sgn(d('gen'))}兆円です。`;
+  const s = document.getElementById('mixChart'), W = 680, H = 300, L = 44, Rm = 12, T = 22, B = 26;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '520px';
+  const maxV = Math.max(...R.map(r => r.total)), step = niceStep(tri(maxV)), top = Math.ceil(tri(maxV) / step) * step * 10000;
+  const y = v => T + (H - T - B) * (1 - v / top), cw = (W - L - Rm) / Y.length, bw = cw * 0.62;
+  const g = el('g', { class: 'grid' }, s);
+  for (let v = 0; v <= tri(top) + 1e-9; v += step) { el('line', { x1: L, x2: W - Rm, y1: y(v * 10000), y2: y(v * 10000) }, g); el('text', { x: L - 6, y: y(v * 10000) + 4, 'text-anchor': 'end' }, s).textContent = v; }
+  el('text', { x: 4, y: 12 }, s).textContent = '兆円';
+  R.forEach((r, i) => {
+    const x = L + cw * i + (cw - bw) / 2; let base = 0;
+    for (const [k, c] of CATS) { const v = r[k] ?? 0; if (v <= 0) continue; const y0 = y(base), y1 = y(base + v); el('rect', { x, y: y1 + (base ? 1 : 0), width: bw, height: Math.max(0.5, y0 - y1 - (base ? 1 : 0)), fill: `var(${c})` }, s); base += v; }
+    el('text', { x: x + bw / 2, y: H - 8, 'text-anchor': 'middle' }, s).textContent = String(Y[i]).slice(2);
+    if (i === 0 || i === I) el('text', { x: x + bw / 2, y: y(r.total) - 6, 'text-anchor': 'middle', class: 'lbl val' }, s).textContent = f(r.total, 1);
+    hover(el('rect', { x: L + cw * i, y: T, width: cw, height: H - T - B, fill: 'transparent' }, s), `<b>FY${Y[i]}</b> 計 ${f(r.total)}兆円<br>` + CATS.map(([k, , n]) => `${n}: ${f(r[k])}`).join('<br>'));
+  });
+  legend('mixLegend', CATS.map(([, c, n]) => [c, n]));
+}
+
+// 交付税特会の入りと出
+{
+  const LINES = [['genKofu', '--c4', '一般会計 → 交付税特会（地方交付税交付金の繰入）'], ['spKofu', '--c1', '交付税特会 → 地方（地方交付税交付金）'], ['spDebt', '--c6', '交付税特会 → 国債整理基金特会（繰入）']];
+  const s = document.getElementById('flowChart'), W = 680, H = 260, L = 44, Rm = 50, T = 16, B = 26;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '520px';
+  const maxV = Math.max(...R.flatMap(r => LINES.map(([k]) => r[k] ?? 0))), step = niceStep(tri(maxV)), top = Math.ceil(tri(maxV) / step) * step * 10000;
+  const x = i => L + (W - L - Rm) * i / I, y = v => T + (H - T - B) * (1 - v / top);
+  const g = el('g', { class: 'grid' }, s);
+  for (let v = 0; v <= tri(top) + 1e-9; v += step) { el('line', { x1: L, x2: W - Rm, y1: y(v * 10000), y2: y(v * 10000) }, g); el('text', { x: L - 6, y: y(v * 10000) + 4, 'text-anchor': 'end' }, s).textContent = v; }
+  el('text', { x: 4, y: 12 }, s).textContent = '兆円';
+  Y.forEach((yr, i) => { if (i % 3 === 0 || i === I) el('text', { x: x(i), y: H - 8, 'text-anchor': 'middle' }, s).textContent = yr; });
+  for (const [k, c, n] of LINES) {
+    el('polyline', { points: R.map((r, i) => `${x(i)},${y(r[k])}`).join(' '), fill: 'none', stroke: `var(${c})`, 'stroke-width': 2 }, s);
+    R.forEach((r, i) => { const cc = el('circle', { cx: x(i), cy: y(r[k]), r: 3, fill: `var(${c})` }, s); hover(el('circle', { cx: x(i), cy: y(r[k]), r: 10, fill: 'transparent' }, s), `FY${Y[i]} ${n}<br>${f(r[k])}兆円`); });
+    el('text', { x: x(I) + 6, y: y(r1[k]) + 4, class: 'lbl val' }, s).textContent = f(r1[k], 1);
+  }
+  legend('flowLegend', LINES.map(([, c, n]) => [c, n]));
+}
+
+// 一般会計の目ごとの増減
+{
+  document.getElementById('leadGen').textContent = `一般会計から地方へ直接渡る額は ${f(r0.gen)}兆円 → ${f(r1.gen)}兆円（${sgn(r1.gen - r0.gen)}兆円）で、10 年でほとんど変わっていません。中身は入れ替わっています。`;
+  const rows = [...D.up, ...D.down].map(r => ({ ...r, d: (r.v[I] ?? 0) - (r.v[0] ?? 0) })).sort((a, b) => b.d - a.d);
+  const s = document.getElementById('mokuChart'), W = 680, rowH = 26, T = 6, L = 250, Rm = 70, H = T + rows.length * rowH + 26;
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`); s.style.minWidth = '560px';
+  const max = Math.max(...rows.map(r => r.d)), min = Math.min(0, ...rows.map(r => r.d));
+  const x = v => L + (W - L - Rm) * (v - min) / (max - min), x0 = x(0);
+  const g = el('g', { class: 'grid' }, s);
+  const st = niceStep(tri(max - min));
+  for (let v = Math.ceil(tri(min) / st) * st; v <= tri(max) + 1e-9; v += st) { el('line', { x1: x(v * 10000), x2: x(v * 10000), y1: T, y2: H - 22 }, g); el('text', { x: x(v * 10000), y: H - 6, 'text-anchor': 'middle' }, s).textContent = (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(1); }
+  rows.forEach((r, i) => {
+    const yy = T + i * rowH, up = r.d >= 0, bx = Math.min(x(r.d), x0), bw = Math.max(2, Math.abs(x(r.d) - x0));
+    el('text', { x: L - 8, y: yy + 17, 'text-anchor': 'end', class: 'lbl' }, s).textContent = r.n.length > 18 ? r.n.slice(0, 18) + '…' : r.n;
+    el('rect', { x: bx, y: yy + 6, width: bw, height: rowH - 10, rx: 3, fill: up ? 'var(--up)' : 'var(--down)' }, s);
+    el('text', { x: up ? x(r.d) + 6 : x0 + 6, y: yy + 17, class: 'val' }, s).textContent = sgn(r.d) + (r.v[0] === null ? '（新）' : r.v[I] === null ? '（無し）' : '');
+    hover(el('rect', { x: 0, y: yy, width: W, height: rowH, fill: 'transparent' }, s), `<b>${r.n}</b><br>` + Y.map((y, j) => `FY${y}: ${f(r.v[j])}兆円`).join('<br>'));
+  });
+  el('line', { x1: x0, x2: x0, y1: T, y2: H - 22, stroke: 'var(--zero)', 'stroke-width': 1 }, s);
+}
+// 府省の表
+document.getElementById('minTbl').innerHTML = `<thead><tr><th>府省</th>${Y.map(y => `<th>FY${y}</th>`).join('')}</tr></thead><tbody>` + D.mins.map(r => `<tr><td>${r.n}</td>${r.v.map(v => `<td>${f(v)}</td>`).join('')}</tr>`).join('') + `<tr><td><b>計</b></td>${R.map(r => `<td><b>${f(r.gen)}</b></td>`).join('')}</tr></tbody>`;
+// 医療・介護の保険
+{
+  const tot = Y.map((_, j) => D.social.reduce((s, r) => s + (r.v[j] ?? 0), 0));
+  document.getElementById('leadSocial').textContent = `一般会計の、後期高齢者医療・介護保険・国民健康保険への負担金と交付金は ${f(tot[0], 1)}兆円 → ${f(tot[I], 1)}兆円です。地方へ直接渡る国庫補助負担金（${f(r1.gen, 1)}兆円）と同じくらいの規模です。`;
+  const TOPN = 7, shown = D.social.slice(0, TOPN), rest = D.social.slice(TOPN);
+  const restRow = { n: `その他（${rest.length} 目）`, v: Y.map((_, j) => rest.reduce((s, r) => s + (r.v[j] ?? 0), 0)) };
+  document.getElementById('socialTbl').innerHTML = `<thead><tr><th>目（経済性質別 71）</th><th>FY2017</th><th>FY2026</th><th>増減</th></tr></thead><tbody>` + [...shown, restRow].map(r => `<tr><td>${r.n}</td><td>${f(r.v[0])}</td><td>${f(r.v[I])}</td><td>${r.v[0] === null ? '（新）' : r.v[I] === null ? '（無し）' : sgn(r.v[I] - r.v[0])}</td></tr>`).join('') + `<tr><td><b>計</b></td><td><b>${f(tot[0])}</b></td><td><b>${f(tot[I])}</b></td><td><b>${sgn(tot[I] - tot[0])}</b></td></tr></tbody>`;
+}
+</script>
