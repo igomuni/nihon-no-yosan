@@ -305,14 +305,6 @@ export function LifecyclePage() {
   // RS の事業の一覧（選んだ年度の事業。項に結べない事業も含める）
   const rsYearRows = useMemo<RsListRow[]>(() => (rs && activeYear !== null ? rsListRows(rs, activeYear) : []), [rs, activeYear]);
   const rsList = useMemo(() => sortRsRows(filterRsRows(rsYearRows, rsFilters, NONE_SELECTED), rsSortKey, rsSortDir), [rsYearRows, rsFilters, rsSortKey, rsSortDir]);
-  const agg = aggView === view;
-  const aggRows = useMemo(() => {
-    if (!agg || !data) return [];
-    if (view === 'list') return aggregateKous(list.map(x => x.chain.members), data.kous, valuesOf);
-    if (view === 'jikou') return jikou ? aggregateJikou(jikou, jikouList.map(r => r.node)) : [];
-    if (view === 'moku') return moku ? aggregateMoku(moku, mokuList.map(r => r.node), chainIdsOf) : [];
-    return rs ? aggregateRs(rs, rsList.map(r => r.idx)) : [];
-  }, [agg, data, view, list, valuesOf, jikou, jikouList, moku, mokuList, chainIdsOf, rs, rsList]);
   const rsMinistries = useMemo(() => (rs ? rs.data.jigyo.map(j => j[2]) : []), [rs]);
   const onRsSort = (k: RsSortKey) => {
     if (k === rsSortKey) setRsSortDir(d => (d === 1 ? -1 : 1));
@@ -328,6 +320,16 @@ export function LifecyclePage() {
     const i = kouIndexById.get(moku.data.kous[moku.data.nodes[selectedMokuNode]![0]]!);
     return i === undefined ? [] : chainOf(i).members.map(m => data.kous[m]!.id);
   }, [moku, selectedMokuNode, kouIndexById, chainOf, data]);
+  // 何も選んでいないときは、集計行を選んだ状態にする（右ペインに一覧全体の年度推移）
+  const nothingSelected = view === 'rs' ? selectedRs === null : view === 'moku' ? selectedMokuNode === null : view === 'jikou' ? selectedJikouNode === null : !(selectedId !== null && data?.kous.some(k => k.id === selectedId && k.year === activeYear));
+  const agg = aggView === view || nothingSelected;
+  const aggRows = useMemo(() => {
+    if (!agg || !data) return [];
+    if (view === 'list') return aggregateKous(list.map(x => x.chain.members), data.kous, valuesOf);
+    if (view === 'jikou') return jikou ? aggregateJikou(jikou, jikouList.map(r => r.node)) : [];
+    if (view === 'moku') return moku ? aggregateMoku(moku, mokuList.map(r => r.node), chainIdsOf) : [];
+    return rs ? aggregateRs(rs, rsList.map(r => r.idx)) : [];
+  }, [agg, data, view, list, valuesOf, jikou, jikouList, moku, mokuList, chainIdsOf, rs, rsList]);
   const mokuWhy = (r: MokuListRow) => (moku ? { supp: mokuSuppNote(moku.data, moku.data.nodes[r.node]!), settle: mokuSettleNote(moku.data, moku.data.nodes[r.node]!) } : { supp: null, settle: null });
   const onMokuSort = (k: MokuSortKey) => {
     if (k === mokuSortKey) setMokuSortDir(d => (d === 1 ? -1 : 1));
@@ -384,7 +386,9 @@ export function LifecyclePage() {
         </section>
         <Splitter label="詳細の幅" width={detailWidth} limits={DETAIL_WIDTH} dir={-1} onChange={setDetailWidth} />
         <section aria-label={view === 'rs' ? 'RS の事業の詳細' : view === 'jikou' ? '事項の詳細' : view === 'moku' ? '目の詳細' : '項の詳細'} data-pane="detail" tabIndex={-1} className={`${pane} overflow-auto lg:col-span-2 xl:col-span-1 xl:w-[var(--dw)] xl:shrink-0 outline-0 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-emerald-500/50`} style={{ '--dw': `${detailWidth}px` } as CSSProperties}>
-          {agg ? (
+          {agg && (view === 'jikou' ? jikou === null : view === 'moku' ? moku === null : view === 'rs' ? rs === null : false) ? (
+            <p className="p-4 text-xs text-neutral-500">読み込み中…</p>
+          ) : agg ? (
             <AggregateDetail
               heading={view === 'rs' ? '一覧全体（事業）' : view === 'moku' ? '一覧全体（目）' : view === 'jikou' ? '一覧全体（事項）' : '一覧全体（項）'}
               unit={view === 'rs' ? '事業' : view === 'moku' ? '目' : view === 'jikou' ? '事項' : '項'}
