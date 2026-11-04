@@ -1,8 +1,8 @@
 {
- "tag": "dataset-rs-spend-v0",
+ "tag": "dataset-rs-spend-v0-r2",
  "asset": "rs-spend-v0.tar.gz",
- "sha256": "35a73dad4b4a2557161452554b88d83db0e6c34ffaac58f53bbc314fee73a1c4",
- "bytes": 8263312,
- "manifestSha256": "3c86e8f49eb54aff382ffaeb15c3564b2a1a79d58ec0d5aaa2e57b7da295b9d4",
+ "sha256": "19f5d14a636aa39f1852fbe8e049dec6030abcd0100ac94c3be5ee1b94181291",
+ "bytes": 8275361,
+ "manifestSha256": "c1ec8568acc8993e9fe1e05ee7f9093fec087fa81f75cc94ef6bccf00074860a",
  "files": 5
 }

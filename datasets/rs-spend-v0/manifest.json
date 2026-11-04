@@ -1,6 +1,6 @@
 {
  "schema": "nihon-no-yosan/rs-spend-manifest/v0",
- "note": "行政事業レビュー見える化サイト（RS システム）の CSV（2025 年度版）のうち、支出先の 4 ファイル（5-1〜5-4）を、個人名の可能性がある名前を伏せて加工した。伏せた箇所は「非表示（個人名の可能性あり）」。機械的な規則による加工で、取りこぼしや、伏せすぎがありうる。出典: 行政事業レビュー見える化サイト（https://rssystem.go.jp）を加工して作成。法人番号は、国税庁法人番号公表サイト（国税庁）（https://www.houjin-bangou.nta.go.jp/）を加工して作成。利用条件: https://rssystem.go.jp/terms と https://www.houjin-bangou.nta.go.jp/riyokiyaku/（いずれも PDL1.0 に準拠）。加工したものを、国（府省庁）が作ったように見せない。取得日の記録は無い（docs/guides/rs-link.md）",
+ "note": "行政事業レビュー見える化サイト（RS システム）の CSV（2025 年度版）のうち、支出先の 4 ファイル（5-1〜5-4）を加工した。加工は、(1) 見出しとセルの文字の正規化（NFKC。全角の英数字・かっこ・スペースを半角にする。元号は変えない）と前後の空白の除去、(2) 個人名の可能性がある名前を伏せること。伏せた箇所は「非表示（個人名の可能性あり）」。機械的な規則による加工で、取りこぼしや、伏せすぎがありうる。出典: 行政事業レビュー見える化サイト（https://rssystem.go.jp）を加工して作成。法人番号は、国税庁法人番号公表サイト（国税庁）（https://www.houjin-bangou.nta.go.jp/）を加工して作成。利用条件: https://rssystem.go.jp/terms と https://www.houjin-bangou.nta.go.jp/riyokiyaku/（いずれも PDL1.0 に準拠）。加工したものを、国（府省庁）が作ったように見せない。取得日の記録は無い（docs/guides/rs-link.md）",
  "source": {
   "page": "https://rssystem.go.jp/download-csv/2025",
   "terms": [
@@ -10,33 +10,33 @@
  },
  "redaction": {
   "marker": "非表示（個人名の可能性あり）",
-  "maskedDistinctNames": 4395,
-  "freeTextNamesExcludedAsGeneric": 70,
-  "freeTextNamesUsed": 4270,
-  "corpNamesKeptByRule5": 20319,
-  "keptDistinctNamesWithoutCorpNumber": 2183,
-  "keptRowsWithoutCorpNumber": 18434,
+  "maskedDistinctNames": 4404,
+  "freeTextNamesExcludedAsGeneric": 69,
+  "freeTextNamesUsed": 4279,
+  "corpNamesKeptByRule5": 20429,
+  "keptDistinctNamesWithoutCorpNumber": 2193,
+  "keptRowsWithoutCorpNumber": 18431,
   "stat": {
    "5-1": {
-    "rows": 194738,
-    "nameMaskedRows": 19859,
+    "rows": 193912,
+    "nameMaskedRows": 19861,
     "addrMasked": 364,
-    "freeCellsChanged": 1834,
-    "freeReplacements": 1848
+    "freeCellsChanged": 1822,
+    "freeReplacements": 1836
    },
    "5-2": {
     "rows": 23381,
     "nameMaskedRows": 0,
     "addrMasked": 0,
-    "freeCellsChanged": 1225,
-    "freeReplacements": 1227
+    "freeCellsChanged": 1217,
+    "freeReplacements": 1219
    },
    "5-3": {
     "rows": 34307,
-    "nameMaskedRows": 1707,
+    "nameMaskedRows": 1708,
     "addrMasked": 0,
     "freeCellsChanged": 278,
-    "freeReplacements": 282
+    "freeReplacements": 281
    },
    "5-4": {
     "rows": 9716,
@@ -49,23 +49,23 @@
  },
  "files": {
   "5-1_RS_2025_支出先_支出情報.csv": {
-   "sha256": "8f7a480b92c77c228e081adbde50583dfb097ea4e88d6939e1c947ea0b3311d6",
-   "bytes": 64954429,
-   "rows": 194738
+   "sha256": "9847fb609e2844ea323bb530c05fadf5216464a263c49e97fc86b61f4a546409",
+   "bytes": 64837414,
+   "rows": 193912
   },
   "5-2_RS_2025_支出先_支出ブロックのつながり.csv": {
-   "sha256": "18d9846d289e4ccf21bf6356a9305e05ea1d5c07f2d83b14c9bef8f3a56ba565",
-   "bytes": 5774034,
+   "sha256": "dde3f46363f36643384717eb5dcb781293a2ea59ad34d8bddf2e58a78ae5dfa5",
+   "bytes": 5778193,
    "rows": 23381
   },
   "5-3_RS_2025_支出先_費目・使途.csv": {
-   "sha256": "8075bf255d2d5fb9fd3df97259bc2385ccb45cf7630ed5c9e7d20c1d9e7d00ec",
-   "bytes": 12847940,
+   "sha256": "47e4fe6d9a370f3d42a25fab0c5a836ad5fb887293d894ec69a872c39c52974e",
+   "bytes": 12881058,
    "rows": 34307
   },
   "5-4_RS_2025_支出先_国庫債務負担行為等による契約.csv": {
-   "sha256": "fc8eedb80050f59077443d7c2b95aa419641b6b7e0d1348a3d241a3aaa71ed93",
-   "bytes": 2866093,
+   "sha256": "93bbb277c5127358fe80d2284aeb4906284fac1e0b064349b108e7f732c1fff6",
+   "bytes": 2867126,
    "rows": 9716
   }
  }
