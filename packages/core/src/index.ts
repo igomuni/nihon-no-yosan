@@ -16,7 +16,7 @@ export type {
   BudgetRequestTrendRow,
   BudgetRequestTrendYear,
 } from './budget-request-trend.ts';
-export { amount, parseCsv, readCsv, type Rec } from './csv.ts';
+export { amount, normalizeRsText, parseCsv, readCsv, readRsCsv, type Rec } from './csv.ts';
 export {
   mofAmountJikou,
   mofAmountKou,

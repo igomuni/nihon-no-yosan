@@ -1,8 +1,8 @@
 /**
- * RS の支出先の CSV のデータセット（`rs-spend-v0`）を、個人名の可能性がある名前を伏せて、GitHub Releases に置く tar.gz にまとめる。仕様: docs/guides/rs-spend.md
+ * RS の支出先の CSV のデータセット（`rs-spend-v0`）を、文字をそろえ（NFKC・前後の空白の除去）、個人名の可能性がある名前を伏せて、GitHub Releases に置く tar.gz にまとめる。仕様: docs/guides/rs-spend.md
  *
  * 使い方: node packages/pipeline/src/migrate/package-rs-spend.ts <RS の CSV のディレクトリ> <terms.json> <出力ディレクトリ> [リリースのタグ（既定 dataset-rs-spend-v0）]
- * - 入れるのは、5-1（支出情報）・5-2（支出ブロックのつながり）・5-3（費目・使途）・5-4（国庫債務負担行為等による契約）を、伏せた形にしたもの（列・行は元のまま。名前などの値だけ置き換える）と、`manifest.json`。
+ * - 入れるのは、5-1（支出情報）・5-2（支出ブロックのつながり）・5-3（費目・使途）・5-4（国庫債務負担行為等による契約）を、サイトの配布物から作ったもの（見出しとセルを NFKC にし、前後の空白を除き、個人名の可能性がある名前を伏せる。列・行は元のまま。元号は変えない）と、`manifest.json`。
  * - 公開してよいのは、`terms.json` で `rssystem.go.jp` と `houjin-bangou.nta.go.jp` が、どちらも利用条件の本文を読んだ（`basis` = `page-read`）PDL1.0（`status` = `pdl1.0`）のとき。違えば止まる。
  * - 出力: `manifest.json`（ファイル名・SHA-256・バイト数・伏せた件数）、`rs-spend-v0.tar.gz`、`release.json`、確認用の `kept-names-without-corp-number.txt`（tar.gz には入れない）。
  *   tar.gz のバイト列は作るたびに変わりうるので、リリースに置いたものを正とする。
@@ -12,7 +12,7 @@ import { createHash } from 'node:crypto';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
-import { parseCsv, readCsv, redactSpend, SPEND_KEYS, type Rec, type SpendKey } from '@nihon-no-yosan/core';
+import { normalizeRsText, parseCsv, redactSpend, SPEND_KEYS, type Rec, type SpendKey } from '@nihon-no-yosan/core';
 
 const [csvDir, termsPath, outDir, tag = 'dataset-rs-spend-v0'] = process.argv.slice(2);
 if (!csvDir || !termsPath || !outDir) throw new Error('usage: package-rs-spend.ts <rsCsvDir> <terms.json> <outDir> [tag]');
@@ -37,9 +37,10 @@ for (const k of SPEND_KEYS) {
   const hit = fs.readdirSync(csvDir).filter(f => WANTED[k].test(f));
   if (hit.length !== 1) throw new Error(`${WANTED[k]} に合うファイルが 1 つでない: ${hit.length}`);
   fileOf[k] = hit[0]!;
-  const text = fs.readFileSync(path.join(csvDir, hit[0]!), 'utf8');
-  input[k] = readCsv(text);
-  header[k] = parseCsv(text.replace(/^\uFEFF/, ''))[0] ?? [];
+  // サイトの配布物のまま読み、見出しとセルを NFKC にして前後の空白を除く（全角の英数字・かっこ・スペースを半角にする）。伏せる規則の判定と、出力はこの形
+  const [head = [], ...body] = parseCsv(fs.readFileSync(path.join(csvDir, hit[0]!), 'utf8').replace(/^\uFEFF/, ''));
+  header[k] = head.map(normalizeRsText);
+  input[k] = body.filter(r => r.length > 1 || (r[0] ?? '') !== '').map(r => Object.fromEntries(header[k].map((h, i) => [h, normalizeRsText(r[i] ?? '')])));
 }
 
 const result = redactSpend(input);
@@ -58,7 +59,7 @@ for (const k of SPEND_KEYS) {
 
 const manifest = {
   schema: 'nihon-no-yosan/rs-spend-manifest/v0',
-  note: '行政事業レビュー見える化サイト（RS システム）の CSV（2025 年度版）のうち、支出先の 4 ファイル（5-1〜5-4）を、個人名の可能性がある名前を伏せて加工した。伏せた箇所は「非表示（個人名の可能性あり）」。機械的な規則による加工で、取りこぼしや、伏せすぎがありうる。出典: 行政事業レビュー見える化サイト（https://rssystem.go.jp）を加工して作成。法人番号は、国税庁法人番号公表サイト（国税庁）（https://www.houjin-bangou.nta.go.jp/）を加工して作成。利用条件: https://rssystem.go.jp/terms と https://www.houjin-bangou.nta.go.jp/riyokiyaku/（いずれも PDL1.0 に準拠）。加工したものを、国（府省庁）が作ったように見せない。取得日の記録は無い（docs/guides/rs-link.md）',
+  note: '行政事業レビュー見える化サイト（RS システム）の CSV（2025 年度版）のうち、支出先の 4 ファイル（5-1〜5-4）を加工した。加工は、(1) 見出しとセルの文字の正規化（NFKC。全角の英数字・かっこ・スペースを半角にする。元号は変えない）と前後の空白の除去、(2) 個人名の可能性がある名前を伏せること。伏せた箇所は「非表示（個人名の可能性あり）」。機械的な規則による加工で、取りこぼしや、伏せすぎがありうる。出典: 行政事業レビュー見える化サイト（https://rssystem.go.jp）を加工して作成。法人番号は、国税庁法人番号公表サイト（国税庁）（https://www.houjin-bangou.nta.go.jp/）を加工して作成。利用条件: https://rssystem.go.jp/terms と https://www.houjin-bangou.nta.go.jp/riyokiyaku/（いずれも PDL1.0 に準拠）。加工したものを、国（府省庁）が作ったように見せない。取得日の記録は無い（docs/guides/rs-link.md）',
   source: { page: 'https://rssystem.go.jp/download-csv/2025', terms: ['https://rssystem.go.jp/terms', 'https://www.houjin-bangou.nta.go.jp/riyokiyaku/'] },
   redaction: result.report,
   files,

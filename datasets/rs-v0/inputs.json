@@ -1,6 +1,6 @@
 {
  "schema": "nihon-no-yosan/rs-inputs/v0",
- "note": "行政事業レビュー見える化サイト（RS システム）の CSV（2025 年度版）。手元にあったもの（前のリポジトリの data/year_2025 からのコピー。公式の ZIP を展開した CSV）。取得日の記録は無い。取得元のページは https://rssystem.go.jp/download-csv/2025（2026-10-28 に読んだ。ページに「データは 2026 年 1 月 19 日時点のもの」とある。手元のファイルが、その版と同じかは未確認。ZIP のバイト数・SHA-256 の記録は無い）。ファイル名の頭は、公式の `1-1_基本情報_組織情報` に、年度の `RS_2025_` が挟まる形",
+ "note": "行政事業レビュー見える化サイト（RS システム）の CSV（2025 年度版）。サイトの配布物（ZIP）を展開した CSV を、そのまま使う。2026-11-04 に、サイトの現行の ZIP 15 本（https://rssystem.go.jp/files/2025/rs/<ファイル名>.zip。ページに「データは 2026 年 1 月 19 日時点のもの」とある）をブラウザのメモリ上で取得し、手元の ZIP と、サイズ・SHA-256（先頭 12 桁以上）・中の CSV の SHA-256 が一致することを確かめた。手元の ZIP は、前のリポジトリの data/download/rssystem.go.jp/download-csv/2025/（2026-09-19 のダウンロード）。以前使っていた data/download/rs/2025（前のリポジトリの data/year_2025、2026-04-14）は、この版と中身が違う（文字がそろえられ、元号が西暦、空白が除かれ、3-2 の 2 列が無い）ため使わない。ファイル名の頭は、公式の `1-1_基本情報_組織情報` に、年度の `RS_2025_` が挟まる形。この CSV は、見出しが全角のかっこ・スラッシュ・ハイフン、5-1 の番号・金額のセルの後ろに空白がある。読む側（readRsCsv）が、見出しを NFKC にし、セルの前後の空白を除く。",
  "source": {
   "page": "https://rssystem.go.jp/download-csv/2025",
   "terms": "https://rssystem.go.jp/terms",
@@ -8,64 +8,94 @@
  },
  "inputs": {
   "1-1_RS_2025_基本情報_組織情報.csv": {
-   "sha256": "9bb04a9c97be8bdf291d3dbcfdec86327841e9765191843599984209439b5601",
-   "bytes": 1907993
+   "sha256": "c39f75914d765a522032062b2a282ddc5d32adcbf68990e58348f95ff743df25",
+   "bytes": 1929810,
+   "zipSha256": "a9d353df76661fd140ca9fa38db9ab6059441bc7c657dd36fdf60ddb6fb1736b",
+   "zipBytes": 258071
   },
   "1-2_RS_2025_基本情報_事業概要等.csv": {
-   "sha256": "045829a3e3f4dbf93acd9da36bfd6107db5f39ebbd7241d8507cba1005355be9",
-   "bytes": 13317359
+   "sha256": "663bd4c6ab389f9234dae118a6976067dfe96f76dfb72526fbd3b8a5b5709b8b",
+   "bytes": 13596708,
+   "zipSha256": "4030473de09a9e622d9d6ab049c3e3dc4cda9cfacafb2f962bd62da08e9b98c2",
+   "zipBytes": 3261688
   },
   "1-3_RS_2025_基本情報_政策・施策、法令等.csv": {
-   "sha256": "9fba8f1948458c83852d55234d7ddfee250683faf423e326abebb3bf993236f9",
-   "bytes": 6962237
+   "sha256": "567823cec88561a5e8f35805b314293897e3afcbca26802f5dad1c6fb175f963",
+   "bytes": 7149430,
+   "zipSha256": "a1cb674ebea3ef7808fea9384110785fc9f71b3dd39ee098b618bf05f05603a6",
+   "zipBytes": 836837
   },
   "1-4_RS_2025_基本情報_補助率等.csv": {
-   "sha256": "b70396ed0b255ba864060afcd56f1429c4ba2a2ad48334281569e6c1c6eef705",
-   "bytes": 1560186
+   "sha256": "14517fa8711bf4c1d47c85c7737e97b899eac13cacfccdd8d4fd76dc9f1e4e48",
+   "bytes": 1602420,
+   "zipSha256": "c3f9ae7f7b85e8423446986a5921af9fad645ddd862f1f67ca3355653ac6c346",
+   "zipBytes": 316778
   },
   "1-5_RS_2025_基本情報_関連事業.csv": {
-   "sha256": "f996e6b0b8e26920fa46c4e47ff2a9f71a653cb67e1f73272158ac4080056432",
-   "bytes": 1276385
+   "sha256": "f209bd7719c6ea08c32b177205c6f76df8fcec8265308fbcd5cf1d6deeb44023",
+   "bytes": 1291819,
+   "zipSha256": "a2984b0ada0cf723281f44208b83f848b48e03de83c462ce1e36dbfd1556a143",
+   "zipBytes": 200353
   },
   "2-1_RS_2025_予算・執行_サマリ.csv": {
-   "sha256": "ecd83db2378b8d177f9298e94c70a2d047a9b20959284eb1e5ed658dce473254",
-   "bytes": 15209120
+   "sha256": "0be8ff30f6ecf51c21544e0f0d9b544ffca8a3dd5ee4bb84749fdd06fd76f646",
+   "bytes": 15360334,
+   "zipSha256": "6540aa6a8902a061656233c4888e164b3596e9592a86cde4df9d1afe6064d1b6",
+   "zipBytes": 1757530
   },
   "2-2_RS_2025_予算・執行_予算種別・歳出予算項目.csv": {
-   "sha256": "89243038ea005cdf04af58cc048d21a225d3aaa9252719e451ff6c392e6f8a9b",
-   "bytes": 21455463
+   "sha256": "4d63365a4ce66f6c0c5d23263a97e34b04bf2e14787a83bc8473292ac58ed6eb",
+   "bytes": 21617075,
+   "zipSha256": "2419675cd011192e35eed1bf332c6028366d3cbc07272630d99378e41b90b7c6",
+   "zipBytes": 1231793
   },
   "3-1_RS_2025_効果発現経路_目標・実績.csv": {
-   "sha256": "1a5854f03aaa22eb3229be113cf9402621355ddb695a423c87a2f74f37d89337",
-   "bytes": 78375360
+   "sha256": "7a721cd17fdefee2ecaa2c489b43f0d81a5ab4b017ecb84f12cb1016e5d00c0b",
+   "bytes": 79561169,
+   "zipSha256": "bd94115f5fa638fd44dc7b1bd324c6ebe8d35c7f21108b14b861c4cc0635fda6",
+   "zipBytes": 5309287
   },
   "3-2_RS_2025_効果発現経路_目標のつながり.csv": {
-   "sha256": "2f976ba147986b30902db8a23f62f74802455a32b91aa1a2ae1864f548536ffc",
-   "bytes": 22277994
+   "sha256": "6652f24986cc32d7ebf4e7f8ba45bae62f59f2910b057dbadef4a07175b8ea6d",
+   "bytes": 26654899,
+   "zipSha256": "ddb3ad38e460243f08e6d8cdf3d240fcd4b26b78ce9d3b14302e68d615ffd3f4",
+   "zipBytes": 3698528
   },
   "4-1_RS_2025_点検・評価.csv": {
-   "sha256": "2d4bcb53b61ee581c6fdf4feb725661b3953973f4714fc6801de8cdca7a4f416",
-   "bytes": 11058802
+   "sha256": "2d9a4d9a5dda4ea6fc94b7e002934b837138938fb150609a7026786cc484aceb",
+   "bytes": 11175625,
+   "zipSha256": "93248128997ba9cef4ada8f49c4d012dcb5f6fbb72a9a3148e9c07d1ae98184d",
+   "zipBytes": 2451332
   },
   "5-1_RS_2025_支出先_支出情報.csv": {
-   "sha256": "76d3c719873c78003c8a4302bfa82722a5992adf5a55dd61e2223c96c73890d2",
-   "bytes": 64761347
+   "sha256": "843c6858308f0d27287df5544abb4626484936290b77b9b869b15217803fc474",
+   "bytes": 66876957,
+   "zipSha256": "e379dbc4aa4653b06f9a310cdb84fc795c880799cc68c5c5c7f8de194be2634c",
+   "zipBytes": 6078771
   },
   "5-2_RS_2025_支出先_支出ブロックのつながり.csv": {
-   "sha256": "a13707c57b225053f404fa243b7ee57888a33cdc49726824c500302ce75b0407",
-   "bytes": 5786023
+   "sha256": "b184d13ede06e7216fe15d4fa6c1c7b2cd09cdec5111b5d49284e4bea5486046",
+   "bytes": 5867800,
+   "zipSha256": "0a2636df78c68fcd94b1296ff1aa9580d936658121039e3a204025c99bed3a68",
+   "zipBytes": 566177
   },
   "5-3_RS_2025_支出先_費目・使途.csv": {
-   "sha256": "bee49d6f9543bed6d960bae26d0210719c6a45a4da4e05dc2c4c7f32ec90c754",
-   "bytes": 12870610
+   "sha256": "d50ee1dbc3bd763d43f94c6366fdc39cd8e1698d7d374fc61ec12a288899ed13",
+   "bytes": 13085173,
+   "zipSha256": "addd97465e8916b05b27a908447e2f8bc44ec7d78456825ab45895d283490965",
+   "zipBytes": 1477461
   },
   "5-4_RS_2025_支出先_国庫債務負担行為等による契約.csv": {
-   "sha256": "9327efbec24cbf750ae59ff31ab18068524b3167307594c3784cef723a2f96bc",
-   "bytes": 2874494
+   "sha256": "c43a74df1a7c1f272766efc569500701b4a1a22f84cd4915b6f1b1b3a3dea22c",
+   "bytes": 2983120,
+   "zipSha256": "7dcc56293b9bc7d8a04e6ce4064a717f7e94618e07299812a145ad92e6a34e56",
+   "zipBytes": 408787
   },
   "6-1_RS_2025_その他備考.csv": {
-   "sha256": "c8dd7b330a8f86246a2cfbc0217783a8c4fff40ad78a8a030f576f584159a369",
-   "bytes": 1112615
+   "sha256": "acbf07fa44cb8c1e891253db4f2536b6cc55087fc317d5b66b61346f735db3bc",
+   "bytes": 1126871,
+   "zipSha256": "ad748fa644e14a691470d5a9f41c653f23a4b69353f037afc0ba53cd0b5d8ba3",
+   "zipBytes": 201951
   }
  }
 }

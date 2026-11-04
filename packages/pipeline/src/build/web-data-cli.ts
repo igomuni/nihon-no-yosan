@@ -18,7 +18,7 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as zlib from 'node:zlib';
-import { nameKey, readCsv, type LifecycleCodeTables, type Rec, type SiteAbout, type SiteAboutAuthority } from '@nihon-no-yosan/core';
+import { nameKey, readRsCsv, type LifecycleCodeTables, type Rec, type SiteAbout, type SiteAboutAuthority } from '@nihon-no-yosan/core';
 import { buildBudgetRequestJikouYoukyu } from './jikou-youkyu.ts';
 import { buildJikouLinkData } from './jikou-links.ts';
 import { buildLifecycle, lifecycleRequestOnlyRows, lifecycleSources, sameYearPairsOf } from './lifecycle.ts';
@@ -90,7 +90,7 @@ const rsBuilt = rsDir ? (() => {
   const csv = (re: RegExp): Rec[] => {
     const f = fs.readdirSync(rsDir).find(x => re.test(x));
     if (!f) throw new Error(`RS の CSV が無い: ${re} (${rsDir})`);
-    return readCsv(fs.readFileSync(path.join(rsDir, f), 'utf8'));
+    return readRsCsv(fs.readFileSync(path.join(rsDir, f), 'utf8'));
   };
   const mokuKeys = new Set(lifecycleMoku.data.nodes.map(n => `${lifecycleMoku.data.kous[n[0]]}|${nameKey(n[2])}`));
   const link = buildRsLink(csv(/^2-2_.*予算・執行_予算種別・歳出予算項目\.csv$/), lifecycle.kous, (kouId, key) => mokuKeys.has(`${kouId}|${key}`));

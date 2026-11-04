@@ -8,7 +8,7 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as zlib from 'node:zlib';
-import { nameKey, readCsv, type LifecycleKou, type LifecycleMokuData } from '@nihon-no-yosan/core';
+import { nameKey, readRsCsv, type LifecycleKou, type LifecycleMokuData } from '@nihon-no-yosan/core';
 import { buildRsLink } from './rs-link.ts';
 
 const [rsDir, lifecycleDir, outDir] = process.argv.slice(2);
@@ -21,7 +21,7 @@ const { kous } = gunzip<{ kous: LifecycleKou[] }>('data.json.gz');
 const moku = gunzip<LifecycleMokuData>('moku.json.gz');
 const mokuKeys = new Set(moku.nodes.map(n => `${moku.kous[n[0]]!}|${nameKey(n[2])}`));
 
-const { rows, stats } = buildRsLink(readCsv(fs.readFileSync(path.join(rsDir, file), 'utf8')), kous, (kouId, key) => mokuKeys.has(`${kouId}|${key}`));
+const { rows, stats } = buildRsLink(readRsCsv(fs.readFileSync(path.join(rsDir, file), 'utf8')), kous, (kouId, key) => mokuKeys.has(`${kouId}|${key}`));
 
 const cell = (v: unknown): string => {
   const s = String(v);

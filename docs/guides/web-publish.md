@@ -37,7 +37,7 @@ cp <出力ディレクトリ>/release.json datasets/mof-history-v0/release.json
 
 画面の「RS」タブ（`rs-tab.md`）のデータは、行政事業レビュー見える化サイトの CSV から作る。基準データ・過去年度とは別の、3 つ目のデータセットとして、GitHub Releases（タグ `dataset-rs-v0`）に置く。
 
-- **入れるもの:** 画面のデータ作りに使う 3 ファイル（`1-2` 事業概要等、`2-1` 予算・執行サマリ、`2-2` 予算種別・歳出予算項目）を、**手を加えずに**、と `manifest.json`。計 4 ファイル、6.4 MB（tar.gz。展開すると 48 MB）。ほかの 12 ファイル（支出先・効果発現経路など）は入れない。
+- **入れるもの:** 画面のデータ作りに使う 3 ファイル（`1-2` 事業概要等、`2-1` 予算・執行サマリ、`2-2` 予算種別・歳出予算項目）を、**手を加えずに**（サイトの配布物の ZIP を展開した CSV。`datasets/rs-v0/inputs.json` に、サイトの ZIP との照合を記録）、と `manifest.json`。見出しの NFKC とセルの前後の空白の除去は、読む側（`readRsCsv`）が行う。計 4 ファイル、6.5 MB（tar.gz。展開すると 約 50 MB）。ほかの 12 ファイル（支出先・効果発現経路など）は入れない。
 - **作り方:** `node packages/pipeline/src/migrate/package-rs.ts <RS の CSV のディレクトリ> datasets/terms.json <出力ディレクトリ>`。`terms.json` で `rssystem.go.jp` が、本文を読んだ（`page-read`）PDL1.0 でなければ止まる。出力は `manifest.json`・`rs-v0.tar.gz`・`release.json`。`gh release create dataset-rs-v0 <出力ディレクトリ>/rs-v0.tar.gz ...` で置き、`manifest.json` と `release.json` を `datasets/rs-v0/` に置く。tar.gz の SHA-256 は、リリースに置いたものを正とする。
 - **CI:** `pages.yml` が、タグから tar.gz をダウンロードし、SHA-256 を `release.json` と照合し、`data/download/rs/2025/` に展開して、`verify.ts` で manifest と全件照合してから、`npm run build:data`（RS のディレクトリがあれば `rs/jigyo.json.gz` を作り、`about.json` に `rs` を出す）に渡す。展開した 3 ファイルから作ったデータは、手元の CSV から作ったものと同じだった（`rs/jigyo.json.gz` の SHA-256 が一致。2026-10-28）。
 - **中身を足して出し直すときは、タグを変える**（過去年度と同じ。同じタグの差し替えは、`main` の CI が SHA-256 の不一致で失敗する）。**順序:** Releases に置いてから、`release.json` をコミットした変更を `main` に入れる。
@@ -48,7 +48,7 @@ cp <出力ディレクトリ>/release.json datasets/mof-history-v0/release.json
 RS の支出先の CSV（5-1〜5-4）を、個人名の可能性がある名前を伏せて配る、4 つ目のデータセット。規則と限界は `rs-spend.md`。画面は読まない（`build:data` と CI は使わない）。
 
 - **作り方:** `node packages/pipeline/src/migrate/package-rs-spend.ts <RS の CSV のディレクトリ> datasets/terms.json <出力ディレクトリ>`（約 2 分）。`terms.json` で `rssystem.go.jp` と `houjin-bangou.nta.go.jp` が、どちらも本文を読んだ（`page-read`）PDL1.0 でなければ止まる。出力は `manifest.json`・`rs-spend-v0.tar.gz`・`release.json`・`kept-names-without-corp-number.txt`（確認用。tar.gz には入れない）。
-- **置くもの:** 4 ファイルと `manifest.json`（計 5 ファイル、8.3 MB（tar.gz））。`manifest.json` は `datasets/rs-spend-v0/manifest.json` に置く。
+- **置くもの:** 4 ファイルと `manifest.json`（計 5 ファイル、8.3 MB（tar.gz））。サイトの配布物から、見出しとセルの NFKC・前後の空白の除去と、伏せ字をして作る（元号は変えない）。`manifest.json` は `datasets/rs-spend-v0/manifest.json` に置く。
 - **公開:** Releases（タグ `dataset-rs-spend-v0`、2026-11-04）に置いた。`release.json` は `datasets/rs-spend-v0/`。tar.gz の SHA-256 は、リリースに置いたものを正とする。中身を出し直すときは、タグを変える。
 
 ## AI・プログラムから使うための入口
