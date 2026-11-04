@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { normalizeRsText } from './csv.ts';
 import { hasNoCorpNumber, redactSpend, REDACT_MARK, type SpendKey } from './rs-spend-redact.ts';
 import type { Rec } from './csv.ts';
 
@@ -62,5 +63,17 @@ describe('redactSpend', () => {
     expect(o.tables['5-1'][0]!['支出先名']).toBe(REDACT_MARK);
     expect(o.tables['5-1'][1]!['契約概要']).toBe('あいうの件');
     expect(o.report.freeTextNamesExcludedAsGeneric).toBe(1);
+  });
+});
+
+describe('redactSpend on full-width (September) input', () => {
+  it('keeps foreign organizations written in full-width letters once the text is normalized', () => {
+    const raw = empty();
+    raw['5-1'] = [r51('ＡＡＩＣ\u3000Ｐａｒｔｎｅｒｓ\u3000Ａｆｒｉｃａ\u3000Ｌｉｍｉｔｅｄ', ''), r51('山田太郎', '')];
+    const norm = empty();
+    norm['5-1'] = raw['5-1'].map(r => Object.fromEntries(Object.entries(r).map(([k, v]) => [k, normalizeRsText(v)])));
+    expect(redactSpend(norm).tables['5-1'].map(r => r['支出先名'])).toEqual(['AAIC Partners Africa Limited', REDACT_MARK]);
+    // 正規化しないと、全角の英字は規則（英語の組織語）に当たらず、伏せすぎになる
+    expect(redactSpend(raw).tables['5-1'][0]!['支出先名']).toBe(REDACT_MARK);
   });
 });

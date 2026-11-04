@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { amount, parseCsv, readCsv } from './csv.ts';
+import { amount, normalizeRsText, parseCsv, readCsv, readRsCsv } from './csv.ts';
 
 describe('parseCsv', () => {
   it('handles quoted commas, newlines and doubled quotes, and drops CR', () => {
@@ -28,5 +28,15 @@ describe('amount', () => {
     expect(amount('')).toBeNull();
     expect(amount(undefined)).toBeNull();
     expect(amount('－')).toBeNull();
+  });
+});
+
+describe('readRsCsv', () => {
+  it('normalizes the header to NFKC and trims cell edges, but keeps the cell text otherwise', () => {
+    const text = '\uFEFF予算事業ID,当初予算（合計）,事業名\n1,3025000 ,令和７年度　事業（Ａ）\n';
+    expect(readRsCsv(text)).toEqual([{ 予算事業ID: '1', '当初予算(合計)': '3025000', 事業名: '令和７年度　事業（Ａ）' }]);
+  });
+  it('normalizeRsText applies NFKC and trims', () => {
+    expect(normalizeRsText(' ＡＢＣ\u3000Ｌｔｄ． ')).toBe('ABC Ltd.');
   });
 });
