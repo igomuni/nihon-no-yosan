@@ -43,6 +43,14 @@ cp <出力ディレクトリ>/release.json datasets/mof-history-v0/release.json
 - **中身を足して出し直すときは、タグを変える**（過去年度と同じ。同じタグの差し替えは、`main` の CI が SHA-256 の不一致で失敗する）。**順序:** Releases に置いてから、`release.json` をコミットした変更を `main` に入れる。
 - **出典:** 出典は「行政事業レビュー見える化サイト（https://rssystem.go.jp）」。RS のタブの出典の表示と、「出典と利用条件」の RS の節は、`about.json` の `rs` から出す。
 
+## RS の支出先のデータ（`rs-spend-v0`）
+
+RS の支出先の CSV（5-1〜5-4）を、個人名の可能性がある名前を伏せて配る、4 つ目のデータセット。規則と限界は `rs-spend.md`。画面は読まない（`build:data` と CI は使わない）。
+
+- **作り方:** `node packages/pipeline/src/migrate/package-rs-spend.ts <RS の CSV のディレクトリ> datasets/terms.json <出力ディレクトリ>`（約 2 分）。`terms.json` で `rssystem.go.jp` と `houjin-bangou.nta.go.jp` が、どちらも本文を読んだ（`page-read`）PDL1.0 でなければ止まる。出力は `manifest.json`・`rs-spend-v0.tar.gz`・`release.json`・`kept-names-without-corp-number.txt`（確認用。tar.gz には入れない）。
+- **置くもの:** 4 ファイルと `manifest.json`（計 5 ファイル、8.3 MB（tar.gz））。`manifest.json` は `datasets/rs-spend-v0/manifest.json` に置く。
+- **置く前（未実施）:** Releases（タグ `dataset-rs-spend-v0`）に置く操作は、公開にあたる。置いてから、`release.json` を `datasets/rs-spend-v0/` に置く。tar.gz の SHA-256 は、リリースに置いたものを正とする。
+
 ## AI・プログラムから使うための入口
 
 `data/index.json`（データの目録）、`llms.txt`、`index.html` の説明は、`ai-access.md`。
