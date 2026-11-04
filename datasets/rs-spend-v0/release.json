@@ -1,0 +1,8 @@
+{
+ "tag": "dataset-rs-spend-v0",
+ "asset": "rs-spend-v0.tar.gz",
+ "sha256": "35a73dad4b4a2557161452554b88d83db0e6c34ffaac58f53bbc314fee73a1c4",
+ "bytes": 8263312,
+ "manifestSha256": "3c86e8f49eb54aff382ffaeb15c3564b2a1a79d58ec0d5aaa2e57b7da295b9d4",
+ "files": 5
+}
