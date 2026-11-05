@@ -2,8 +2,18 @@
 使い方: python3 -I v1.py <RS の CSV のディレクトリ> <c1.json>
 """
 import csv, json, sys, collections
+import unicodedata as _ud
+def read_rs_rows(path):
+    """RS の配布物（サイトの CSV）を、そのまま読む。見出しとセルを NFKC にし、セルの前後の空白を除く（`rs-spend-v0` を作るときと同じ。契約方式などの名前の全角のかっこを半角にそろえる）。(見出し, 行) を返す"""
+    f = open(path, encoding='utf-8-sig', newline='')
+    r = csv.reader(f)
+    h = [_ud.normalize('NFKC', x).strip() for x in next(r)]
+    return h, ([_ud.normalize('NFKC', x).strip() for x in row] + [''] * (len(h) - len(row)) for row in r)
+def read_rs_dict(path):
+    h, rows = read_rs_rows(path)
+    return (dict(zip(h, row)) for row in rows)
 src, c1 = sys.argv[1], json.load(open(sys.argv[2]))
-f = open(f'{src}/5-1_RS_2025_支出先_支出情報.csv', encoding='utf-8-sig'); rd = csv.reader(f); h = next(rd); ix = {k: i for i, k in enumerate(h)}
+h, rd = read_rs_rows(f'{src}/5-1_RS_2025_支出先_支出情報.csv'); ix = {k: i for i, k in enumerate(h)}
 tot = collections.Counter(); one = collections.Counter(); one_n = collections.Counter(); n = collections.Counter(); comp = collections.Counter()
 for row in rd:
     amt, name, sup_total = row[ix['金額']], row[ix['支出先名']], row[ix['支出先の合計支出額']]

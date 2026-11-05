@@ -1,11 +1,21 @@
 """検算: 5-1 を csv.reader の列番号で読み直し、防衛省・1 段目の調達の額・件数、随意契約(その他)の額、競争の入札者 1 者の件数を出す（d1.py と別の読み方）。
 1 段目の判定は 5-2 の「担当組織からの支出」が TRUE のブロック（深さ 1 だけなので、つながりをたどらない）。"""
 import csv, sys, re
+import unicodedata as _ud
+def read_rs_rows(path):
+    """RS の配布物（サイトの CSV）を、そのまま読む。見出しとセルを NFKC にし、セルの前後の空白を除く（`rs-spend-v0` を作るときと同じ。契約方式などの名前の全角のかっこを半角にそろえる）。(見出し, 行) を返す"""
+    f = open(path, encoding='utf-8-sig', newline='')
+    r = csv.reader(f)
+    h = [_ud.normalize('NFKC', x).strip() for x in next(r)]
+    return h, ([_ud.normalize('NFKC', x).strip() for x in row] + [''] * (len(h) - len(row)) for row in r)
+def read_rs_dict(path):
+    h, rows = read_rs_rows(path)
+    return (dict(zip(h, row)) for row in rows)
 src = sys.argv[1]
-f2 = csv.reader(open(f'{src}/5-2_RS_2025_支出先_支出ブロックのつながり.csv', encoding='utf-8-sig')); h2 = next(f2)
+h2, f2 = read_rs_rows(f'{src}/5-2_RS_2025_支出先_支出ブロックのつながり.csv')
 iI, iOrg, iTo = h2.index('予算事業ID'), h2.index('担当組織からの支出'), h2.index('支出先の支出先ブロック')
 first = {(r[iI], r[iTo]) for r in f2 if r[iOrg] == 'TRUE' and r[iTo]}
-f = csv.reader(open(f'{src}/5-1_RS_2025_支出先_支出情報.csv', encoding='utf-8-sig')); h = next(f)
+h, f = read_rs_rows(f'{src}/5-1_RS_2025_支出先_支出情報.csv')
 c = {k: h.index(k) for k in ('府省庁', '予算事業ID', '支出先ブロック番号', '支出先名', '支出先の合計支出額', '契約概要', '金額', '契約方式等', '入札者数')}
 PROC = {'一般競争契約(最低価格)', '一般競争契約(総合評価)', '指名競争契約(最低価格)', '指名競争契約(総合評価)', '随意契約(企画競争)', '随意契約(公募)', '随意契約(不落・不調)', '随意契約(少額)', '随意契約(その他)'}
 proc = n = nc = comp = one = allamt = kok = 0

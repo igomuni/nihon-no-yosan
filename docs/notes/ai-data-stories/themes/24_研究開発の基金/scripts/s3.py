@@ -1,6 +1,16 @@
 """科学技術振興費（主要経費 13）の目の決算（FY2017〜FY2024）: 基金 4 目とそれ以外で、繰越・不用を比べる。
 RS 2-2 の基金の目の行と、予算書（当初・補正差引）を、年度 × 予算種別 × 所管 × 基金で突き合わせる。出力 s3.json"""
 import csv, glob, json, re, collections
+import unicodedata as _ud
+def read_rs_rows(path):
+    """RS の配布物（サイトの CSV）を、そのまま読む。見出しとセルを NFKC にし、セルの前後の空白を除く（`rs-spend-v0` を作るときと同じ。契約方式などの名前の全角のかっこを半角にそろえる）。(見出し, 行) を返す"""
+    f = open(path, encoding='utf-8-sig', newline='')
+    r = csv.reader(f)
+    h = [_ud.normalize('NFKC', x).strip() for x in next(r)]
+    return h, ([_ud.normalize('NFKC', x).strip() for x in row] + [''] * (len(h) - len(row)) for row in r)
+def read_rs_dict(path):
+    h, rows = read_rs_rows(path)
+    return (dict(zip(h, row)) for row in rows)
 ROOT = '/Users/igomuni/orca/nihon-no-yosan/data/dataset'
 G = {'kakushin': '革新的研究開発推進基金', 'uchu': '宇宙開発支援基金', 'sohatsu': '創発的研究推進基金', 'kaken': '学術研究助成基金'}
 grp = lambda m: next((k for k, t in G.items() if t in (m or '')), None)
@@ -33,7 +43,7 @@ for y in range(2017, 2027):
             if g: book[(y, '補正', x['所管'], g)] += int(x[c] or 0)
 # RS 2-2（円）
 rs = collections.Counter(); rsn = collections.Counter()
-for r in csv.DictReader(open('/Users/igomuni/orca/nihon-no-yosan/data/download/rs/2025/2-2_RS_2025_予算・執行_予算種別・歳出予算項目.csv', encoding='utf-8-sig')):
+for r in read_rs_dict('/Users/igomuni/orca/nihon-no-yosan/data/download/rs/2025/2-2_RS_2025_予算・執行_予算種別・歳出予算項目.csv'):
     g = grp(r['目'])
     if not g: continue
     kind = '当初' if r['予算種別'] == '当初予算' else '補正' if '補正' in r['予算種別'] else r['予算種別']

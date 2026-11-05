@@ -1,5 +1,15 @@
 # RS（2025 年度版）: 予算書の基金系の目に結ぶ事業、事業名・支出ブロック名に「基金」がある事業、その支出先
 import csv, json, re, collections, sys
+import unicodedata as _ud
+def read_rs_rows(path):
+    """RS の配布物（サイトの CSV）を、そのまま読む。見出しとセルを NFKC にし、セルの前後の空白を除く（`rs-spend-v0` を作るときと同じ。契約方式などの名前の全角のかっこを半角にそろえる）。(見出し, 行) を返す"""
+    f = open(path, encoding='utf-8-sig', newline='')
+    r = csv.reader(f)
+    h = [_ud.normalize('NFKC', x).strip() for x in next(r)]
+    return h, ([_ud.normalize('NFKC', x).strip() for x in row] + [''] * (len(h) - len(row)) for row in r)
+def read_rs_dict(path):
+    h, rows = read_rs_rows(path)
+    return (dict(zip(h, row)) for row in rows)
 D='/Users/igomuni/orca/nihon-no-yosan/data/download/rs/2025/'
 def cls(name):
     if re.search(r'特別会計へ繰入|運営費交付金|分担金|拠出金|給付費負担金|事務局|国際交流基金|年金基金', name): return None
@@ -11,8 +21,8 @@ def cls(name):
 by_cls=collections.defaultdict(lambda: collections.defaultdict(int)); jig_cls=collections.defaultdict(set); names={}
 cand_moku=set(json.load(open('f3.json'))['list'] and [x['name'] for x in json.load(open('f3.json'))['list']])
 cand_jig=collections.defaultdict(set)
-with open(D+'2-2_RS_2025_予算・執行_予算種別・歳出予算項目.csv',encoding='utf-8-sig') as f:
-    for r in csv.DictReader(f):
+if True:
+    for r in read_rs_dict(D+'2-2_RS_2025_予算・執行_予算種別・歳出予算項目.csv'):
         names[r['予算事業ID']]=(r['事業名'],r['府省庁'])
         if r['会計区分']!='一般会計': continue
         c=cls(r['目'] or '')
@@ -25,8 +35,8 @@ fund_ids=set().union(*[v for (c,y),v in jig_cls.items() if c=='fund' and y in('2
 name_ids={i for i,(n,_) in names.items() if '基金' in n}
 # 5-1: 支出ブロック名に「基金」、基金系事業の支出先（1 段目のブロック）
 blk_ids=set(); recips=collections.defaultdict(int); recip_kind=collections.defaultdict(int)
-with open(D+'5-1_RS_2025_支出先_支出情報.csv',encoding='utf-8-sig') as f:
-    for r in csv.DictReader(f):
+if True:
+    for r in read_rs_dict(D+'5-1_RS_2025_支出先_支出情報.csv'):
         i=r['予算事業ID']
         if '基金' in (r['支出先ブロック名'] or '') or '基金' in (r['事業を行う上での役割'] or ''): blk_ids.add(i)
         if i in fund_ids and r['支出先ブロック番号'] and r['支出先ブロック番号'][:1]=='A' and r['支出先名'] and r['法人番号'] and r['法人番号']!='9999999999999':

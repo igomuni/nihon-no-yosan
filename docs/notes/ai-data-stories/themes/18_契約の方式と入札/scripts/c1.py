@@ -2,8 +2,18 @@
 使い方: python3 -I c1.py <RS の CSV のディレクトリ> <出力ディレクトリ>
 """
 import csv, json, re, sys, collections
+import unicodedata as _ud
+def read_rs_rows(path):
+    """RS の配布物（サイトの CSV）を、そのまま読む。見出しとセルを NFKC にし、セルの前後の空白を除く（`rs-spend-v0` を作るときと同じ。契約方式などの名前の全角のかっこを半角にそろえる）。(見出し, 行) を返す"""
+    f = open(path, encoding='utf-8-sig', newline='')
+    r = csv.reader(f)
+    h = [_ud.normalize('NFKC', x).strip() for x in next(r)]
+    return h, ([_ud.normalize('NFKC', x).strip() for x in row] + [''] * (len(h) - len(row)) for row in r)
+def read_rs_dict(path):
+    h, rows = read_rs_rows(path)
+    return (dict(zip(h, row)) for row in rows)
 src, out = sys.argv[1], sys.argv[2]
-rd = lambda name: csv.DictReader(open(f'{src}/{name}', encoding='utf-8-sig'))
+rd = lambda name: read_rs_dict(f'{src}/{name}')
 num = lambda s: int(s) if re.fullmatch(r'-?\d+', s or '') else None
 
 # ---- 段の深さ（3 回目の s1.py と同じ。5-2 の担当組織 → ブロック、ブロック → ブロック）
@@ -25,7 +35,7 @@ for i, firsts in org_to.items():
 # 契約方式の区分（RS の「契約方式等」の値そのもの。調達 = 競争契約と随意契約）
 PROC = ['一般競争契約(最低価格)', '一般競争契約(総合評価)', '指名競争契約(最低価格)', '指名競争契約(総合評価)',
         '随意契約(企画競争)', '随意契約(公募)', '随意契約(不落・不調)', '随意契約(少額)', '随意契約(その他)']
-NONPROC = ['補助金等交付', '交付', '国庫債務負担行為等', 'その他', '']
+NONPROC = ['補助金等交付', '運営費交付金交付', '国庫債務負担行為等', 'その他', '']
 COMPANY = {'301', '302', '303', '304', '305'}
 EMPTY_REASON = re.compile(r'^[\s\-－ー―‐−‑—]*$')
 
