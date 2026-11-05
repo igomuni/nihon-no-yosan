@@ -129,7 +129,7 @@ footer { font-size: 12px; color: var(--muted); display: flex; flex-direction: co
       <li><span class="tag src"></span>行政事業レビュー見える化サイトの CSV（2025 年度版）の「5-1 支出先_支出情報」。事業年度は 2025 だが、額は FY2024 の執行（3 回目の「お金の行き先」で、2-1 の FY2024 の執行額と照合した）。</li>
       <li><span class="tag proc"></span>5-1 には、支出先の合計の行と、その内訳の契約の行がある。契約の行の「金額」を足すと、支出先の合計と一致した（<span id="chk"></span>）。この LP の額は、すべて契約の行の合計。</li>
       <li><span class="tag proc"></span>段（国から直接・2 段目以降）は、「5-2 支出ブロックのつながり」でたどった。2 段目以降の契約は、委託先などが結んだもので、国が結んだ契約ではない。府省ごとの表と大きい契約は 1 段目だけ。</li>
-      <li><span class="tag ai"></span>調達 = 「契約方式等」が一般競争・指名競争・随意契約の 9 つ。補助金等交付・交付・国庫債務負担行為等・その他・空欄は調達に入れない。この分け方は AI の判断。</li>
+      <li><span class="tag ai"></span>調達 = 「契約方式等」が一般競争・指名競争・随意契約の 9 つ。補助金等交付・運営費交付金交付・国庫債務負担行為等・その他・空欄は調達に入れない。この分け方は AI の判断。</li>
       <li><span class="tag ai"></span>「随意契約（その他）」が、いわゆる競争性のない随意契約にあたるかは推測。データの列名に「一者応札・一者応募又は競争性のない随意契約となった理由（支出額 10 億円以上）」があるので、そう読める。</li>
       <li>未確認: 「入札者数」「落札率」の定義（随意契約の入札者数・落札率が何を指すか、落札率 0 や 100 超の意味）。0 と空欄は未記入として扱った。落札率が 100 の行は、予定価格と同じ額で契約したのか、記入の慣習なのかは分からない。</li>
       <li>未確認: 「その他の契約」が TRUE の行（<span id="othChk"></span>）は、支出先ごとに個別の契約をまとめた行とみられる（推測）。方式はその行の値をそのまま使った。</li>
@@ -186,7 +186,7 @@ document.getElementById('tiles').innerHTML = tiles.map(([b, s, hl]) => `<div cla
 // 4 区分
 (() => {
   const proc = D.methods.filter(x => x.proc).reduce((a, x) => a + mt(x), 0);
-  const G = [['補助金等交付', [M['補助金等交付']]], ['その他（「契約方式等」が「その他」）', [M['その他']]], ['交付・国庫債務負担行為等・空欄', [M['交付'], M['国庫債務負担行為等'], M['（空欄）']]], ['調達（競争・随意契約）', D.methods.filter(x => x.proc)]];
+  const G = [['補助金等交付', [M['補助金等交付']]], ['その他（「契約方式等」が「その他」）', [M['その他']]], ['運営費交付金交付・国庫債務負担行為等・空欄', [M['運営費交付金交付'], M['国庫債務負担行為等'], M['（空欄）']]], ['調達（競争・随意契約）', D.methods.filter(x => x.proc)]];
   const rows = G.map(([n, xs]) => ({ n, v: xs.reduce((a, x) => a + mt(x), 0), c: xs.reduce((a, x) => a + x.n, 0) }));
   document.getElementById('allText').textContent = `契約の行の合計は ${yen(D.grand)} です。「その他」${yen(rows[1].v)}（うち国から直接の ${yen(D.other_matome)} は、年金の受給者など、まとめて書かれた支出先）と「補助金等交付」${yen(rows[0].v)} で 9 割を超え、一般競争・指名競争・随意契約による調達は ${yen(proc)}（${pct(proc, D.grand)}）です。`;
   const s = document.getElementById('groupChart'), W = 680, rowH = 30, T = 6, L = 230, R = 110, H = T + rows.length * rowH + 6;

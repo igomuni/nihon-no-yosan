@@ -2,11 +2,21 @@
 使い方: python3 -I s2.py <RS の CSV のディレクトリ> <s1.json のあるディレクトリ>
 """
 import csv, json, re, sys, collections
+import unicodedata as _ud
+def read_rs_rows(path):
+    """RS の配布物（サイトの CSV）を、そのまま読む。見出しとセルを NFKC にし、セルの前後の空白を除く（`rs-spend-v0` を作るときと同じ。契約方式などの名前の全角のかっこを半角にそろえる）。(見出し, 行) を返す"""
+    f = open(path, encoding='utf-8-sig', newline='')
+    r = csv.reader(f)
+    h = [_ud.normalize('NFKC', x).strip() for x in next(r)]
+    return h, ([_ud.normalize('NFKC', x).strip() for x in row] + [''] * (len(h) - len(row)) for row in r)
+def read_rs_dict(path):
+    h, rows = read_rs_rows(path)
+    return (dict(zip(h, row)) for row in rows)
 src, out = sys.argv[1], sys.argv[2]
 s1 = json.load(open(f'{out}/s1.json'))
 num = lambda s: int(s) if re.fullmatch(r'-?\d+', s or '') else None
 spent = collections.defaultdict(dict)  # 年度 → 事業 ID → 執行額（合計の行）
-for r in csv.DictReader(open(f'{src}/2-1_RS_2025_予算・執行_サマリ.csv', encoding='utf-8-sig')):
+for r in read_rs_dict(f'{src}/2-1_RS_2025_予算・執行_サマリ.csv'):
     if r['会計区分']: continue  # 合計の行だけ
     v = num(r['執行額(合計)'])
     if v is not None: spent[int(r['予算年度'])][r['予算事業ID']] = v

@@ -1,8 +1,18 @@
 """RS 2025 年度版: 4 つの基金の目が 2-2 に書かれた事業の、予算行・サマリ（FY2024 執行）・支出先（5-1・5-2、段の深さ）。出力 s2.json
 使い方: python3 -I s2.py <RS の CSV のディレクトリ>"""
 import csv, json, re, sys, collections
+import unicodedata as _ud
+def read_rs_rows(path):
+    """RS の配布物（サイトの CSV）を、そのまま読む。見出しとセルを NFKC にし、セルの前後の空白を除く（`rs-spend-v0` を作るときと同じ。契約方式などの名前の全角のかっこを半角にそろえる）。(見出し, 行) を返す"""
+    f = open(path, encoding='utf-8-sig', newline='')
+    r = csv.reader(f)
+    h = [_ud.normalize('NFKC', x).strip() for x in next(r)]
+    return h, ([_ud.normalize('NFKC', x).strip() for x in row] + [''] * (len(h) - len(row)) for row in r)
+def read_rs_dict(path):
+    h, rows = read_rs_rows(path)
+    return (dict(zip(h, row)) for row in rows)
 src = sys.argv[1]
-rd = lambda name: csv.DictReader(open(f'{src}/{name}', encoding='utf-8-sig'))
+rd = lambda name: read_rs_dict(f'{src}/{name}')
 num = lambda s: int(s) if re.fullmatch(r'-?\d+', s or '') else None
 G = {'kakushin': '革新的研究開発推進基金', 'uchu': '宇宙開発支援基金', 'sohatsu': '創発的研究推進基金', 'kaken': '学術研究助成基金'}
 grp = lambda m: next((k for k, t in G.items() if t in (m or '')), None)

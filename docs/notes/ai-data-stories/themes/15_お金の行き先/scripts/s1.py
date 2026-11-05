@@ -2,8 +2,18 @@
 使い方: python3 -I s1.py <RS の CSV のディレクトリ> <出力ディレクトリ>
 """
 import csv, json, re, sys, collections
+import unicodedata as _ud
+def read_rs_rows(path):
+    """RS の配布物（サイトの CSV）を、そのまま読む。見出しとセルを NFKC にし、セルの前後の空白を除く（`rs-spend-v0` を作るときと同じ。契約方式などの名前の全角のかっこを半角にそろえる）。(見出し, 行) を返す"""
+    f = open(path, encoding='utf-8-sig', newline='')
+    r = csv.reader(f)
+    h = [_ud.normalize('NFKC', x).strip() for x in next(r)]
+    return h, ([_ud.normalize('NFKC', x).strip() for x in row] + [''] * (len(h) - len(row)) for row in r)
+def read_rs_dict(path):
+    h, rows = read_rs_rows(path)
+    return (dict(zip(h, row)) for row in rows)
 src, out = sys.argv[1], sys.argv[2]
-rd = lambda name: csv.DictReader(open(f'{src}/{name}', encoding='utf-8-sig'))
+rd = lambda name: read_rs_dict(f'{src}/{name}')
 num = lambda s: int(s) if re.fullmatch(r'-?\d+', s or '') else None
 
 # ---- 5-2: ブロックのつながり（担当組織 → ブロック、ブロック → ブロック）。額は無い
