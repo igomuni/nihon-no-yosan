@@ -32,7 +32,7 @@ for (const n of names) { const b = fs.readFileSync(path.join(csvDir, n)); files[
 fs.mkdirSync(outDir, { recursive: true });
 const manifest = {
   schema: 'nihon-no-yosan/rs-manifest/v0',
-  note: '行政事業レビュー見える化サイト（RS システム）の CSV（2025 年度版）のうち、画面のデータ作りに使う 3 ファイルを、手を加えずに入れた（サイトの配布物の ZIP を展開した CSV。2026-11-04 にサイトの現行の ZIP と SHA-256 が一致することを確かめた。datasets/rs-v0/inputs.json）。見出しが全角のかっこ・スラッシュ・ハイフンで、5-1 などの数のセルの後ろに空白があるため、読む側が見出しを NFKC にし、セルの前後の空白を除く。出典: 行政事業レビュー見える化サイト（https://rssystem.go.jp）。利用条件: https://rssystem.go.jp/terms（PDL1.0 に準拠）。サイトのページに「データは 2026 年 1 月 19 日時点」とある',
+  note: '行政事業レビュー見える化サイト（RS システム）の CSV（2025 年度版）のうち、画面のデータ作りに使う 3 ファイルを、手を加えずに入れた（サイトの配布物の ZIP を展開した CSV。2026-11-05 にサイトの現行の ZIP と SHA-256 が一致することを確かめた。datasets/rs-v0/inputs.json）。見出しが全角のかっこ・スラッシュ・ハイフンで、5-1 などの数のセルの後ろに空白があるため、読む側が見出しを NFKC にし、セルの前後の空白を除く。出典: 行政事業レビュー見える化サイト（https://rssystem.go.jp）。利用条件: https://rssystem.go.jp/terms（PDL1.0 に準拠）。サイトのページに「データは 2026 年 1 月 19 日時点」とある',
   source: { page: 'https://rssystem.go.jp/download-csv/2025', terms: 'https://rssystem.go.jp/terms' },
   files,
 };
