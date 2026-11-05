@@ -67,7 +67,7 @@ export function normalizeRsText(v: string): string {
  * RS（行政事業レビュー見える化サイト）の CSV を、ヘッダの列名で引ける行にする。仕様: docs/guides/rs-link.md
  *
  * サイトの配布物は、見出しが全角のかっこ・スラッシュ・ハイフン（`当初予算（合計）`）で、5-1 の番号・金額のセルの後ろに空白がある。
- * 見出しを NFKC にし（処理が期待する半角の見出しになる）、セルの前後の空白を除く。セルの中身は NFKC にしない（元号・全角は残る）。
+ * 見出しを NFKC にし（処理が期待する半角の見出しになる）、セルの前後の空白を除く。セルの中身は NFKC にしない（項名のローマ数字「Ⅴ」が「V」に変わり、予算書の項名と一致しなくなるため。全角の英数字・かっこは残る。NFKC は元号を変えない）。
  */
 export function readRsCsv(text: string): Rec[] {
   const [header = [], ...rest] = parseCsv(text.replace(/^\uFEFF/, ''));
