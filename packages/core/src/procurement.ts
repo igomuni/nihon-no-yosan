@@ -6,6 +6,7 @@
  * 年度は、原本のファイルの年度（落札決定日が 4 月〜翌 3 月）。
  */
 import type { LifecycleSortDir } from './lifecycle-list.ts';
+import { fold } from './names.ts';
 import { textMatches } from './trend-view.ts';
 
 /** 行（原本の列の順）: 調達案件番号、調達案件名称、落札決定日（YYYY-MM-DD）、落札価格（円。原本は小数 2 桁で、円未満が 0 でない行がある）、府省コード、入札方式コード、落札者（`vendors` の添字） */
@@ -48,6 +49,10 @@ export interface ProcurementListRow {
   vendorName: string;
   /** 法人番号（原本が空なら空文字） */
   corp: string;
+  /** 検索用の案件名（`procurementSearchKey`）。表示には使わない */
+  nameSearch: string;
+  /** 検索用の落札者名（`procurementSearchKey`）。表示には使わない */
+  vendorSearch: string;
   /** 落札者の同定の鍵。法人番号があれば法人番号、なければ商号又は名称（法人番号の無い行どうしだけが、名前で同じとみなされる） */
   vendorKey: string;
 }
@@ -62,6 +67,12 @@ export interface ProcurementIndex {
   /** 落札者の鍵 → 行の添字 */
   byVendor: ReadonlyMap<string, readonly number[]>;
 }
+
+/**
+ * 検索用の正規化。全角の英数字・記号を半角に、半角のカナを全角に揃え（`fold`。それ以外の互換文字は変えない）、英字は小文字にする。
+ * 案件名・落札者名と、入力の検索語の両方に掛ける（`NTT` で `ＮＴＴ` が、`ｼｽﾃﾑ` で `システム` が見つかる）。表示は原本のまま。
+ */
+export const procurementSearchKey = (s: string): string => fold(s).toLowerCase();
 
 export const vendorKeyOf = (name: string, corp: string): string => (corp !== '' ? `c:${corp}` : `n:${name}`);
 
@@ -81,7 +92,7 @@ export function procurementIndex(data: ProcurementYearData, meta: Pick<Procureme
     const vendorKey = vendorKeyOf(vendor[0], vendor[1]);
     (byCase.get(caseNo) ?? byCase.set(caseNo, []).get(caseNo)!).push(i);
     (byVendor.get(vendorKey) ?? byVendor.set(vendorKey, []).get(vendorKey)!).push(i);
-    return { i, caseNo, name, date, yen, ministry, ministryName: mName, method, methodName: bName, vendorName: vendor[0], corp: vendor[1], vendorKey };
+    return { i, caseNo, name, date, yen, ministry, ministryName: mName, method, methodName: bName, vendorName: vendor[0], corp: vendor[1], nameSearch: procurementSearchKey(name), vendorSearch: procurementSearchKey(vendor[0]), vendorKey };
   });
   return { data, ministryName, methodName, rows, byCase, byVendor };
 }
@@ -116,11 +127,13 @@ export function filterProcurementRows(rows: readonly ProcurementListRow[], f: Pr
   const methods = new Set(f.methods);
   const min = parseYenInput(f.minYen);
   const max = parseYenInput(f.maxYen);
+  const nameQuery = procurementSearchKey(f.name);
+  const vendorQuery = procurementSearchKey(f.vendor);
   return rows.filter(r =>
     (ministries.size === 0 || ministries.has(r.ministry))
     && (methods.size === 0 || methods.has(r.method))
-    && textMatches(r.name, f.name, f.nameRegex)
-    && textMatches(r.vendorName, f.vendor, f.vendorRegex)
+    && textMatches(r.nameSearch, nameQuery, f.nameRegex)
+    && textMatches(r.vendorSearch, vendorQuery, f.vendorRegex)
     && (f.corp === 'all' || (f.corp === 'with') === (r.corp !== ''))
     && (min === null || r.yen >= min)
     && (max === null || r.yen <= max));

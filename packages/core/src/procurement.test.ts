@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { INITIAL_PROCUREMENT_FILTERS, filterProcurementRows, parseYenInput, procurementIndex, procurementTotals, procurementTrend, sortProcurementRows, vendorKeyOf, yenText, type ProcurementYearData } from './procurement.ts';
+import { INITIAL_PROCUREMENT_FILTERS, filterProcurementRows, parseYenInput, procurementIndex, procurementSearchKey, procurementTotals, procurementTrend, sortProcurementRows, vendorKeyOf, yenText, type ProcurementYearData } from './procurement.ts';
 
 const NONE = '__none__';
 const meta = {
@@ -50,6 +50,26 @@ describe('filterProcurementRows', () => {
     expect(f({ name: '^システム.*追加', nameRegex: true })).toEqual([1]);
     expect(f({ vendor: 'Ａ社' })).toEqual([0, 1]);
     expect(f({ vendor: '(', vendorRegex: true })).toEqual([]);
+  });
+  it('ignores full-width / half-width and case when searching (the displayed text stays as in the original)', () => {
+    const w = procurementIndex({
+      year: 2026,
+      vendors: [['ＮＴＴデータ', ''], ['ｱｸｾﾝﾁｭｱ株式会社', '']],
+      rows: [
+        ['0000000000000000001', '令和７年度ＡＩ基盤（第２期）', '2026-04-01', 1, 'W1', '8004030', 0],
+        ['0000000000000000002', 'ai tool', '2026-04-02', 1, 'W1', '8004030', 1],
+      ],
+    }, meta);
+    const g = (patch: Partial<typeof INITIAL_PROCUREMENT_FILTERS>) => filterProcurementRows(w.rows, { ...INITIAL_PROCUREMENT_FILTERS, ...patch }, NONE).map(r => r.i);
+    expect(g({ vendor: 'NTT' })).toEqual([0]);
+    expect(g({ vendor: 'ntt' })).toEqual([0]);
+    expect(g({ vendor: 'アクセンチュア' })).toEqual([1]); // 半角カナの原本に、全角カナで
+    expect(g({ vendor: 'ｱｸｾﾝﾁｭｱ' })).toEqual([1]);
+    expect(g({ name: '令和7年度AI' })).toEqual([0]); // 全角数字・全角英字の原本に、半角で
+    expect(g({ name: '（第2期）' })).toEqual([0]); // 全角括弧の入力でも
+    expect(g({ name: 'AI' })).toEqual([0, 1]);
+    expect(g({ name: '^令和.年度ai', nameRegex: true })).toEqual([0]);
+    expect(w.rows[0]!.name).toBe('令和７年度ＡＩ基盤（第２期）'); // 表示用の値は変えない
   });
   it('filters by whether the 法人番号 is empty in the original', () => {
     expect(f({ corp: 'with' })).toEqual([0, 1]);
@@ -111,5 +131,13 @@ describe('procurementTrend', () => {
   });
   it('gives 0 rows (not null) for a loaded year where nothing matches', () => {
     expect(procurementTrend([2025], rowsOf, { ...INITIAL_PROCUREMENT_FILTERS, name: '該当なし' }, NONE)[0]!.totals).toEqual({ rows: 0, yen: 0, vendors: 0, cases: 0, ministries: 0 });
+  });
+});
+
+describe('procurementSearchKey', () => {
+  it('folds width and case, and leaves other compatibility characters alone', () => {
+    expect(procurementSearchKey('ＮＴＴ　Ｄａｔａ')).toBe('ntt\u3000data'); // 全角空白は変えない（fold は ASCII の範囲だけ）
+    expect(procurementSearchKey('ｼｽﾃﾑ')).toBe('システム');
+    expect(procurementSearchKey('㈱')).toBe('㈱');
   });
 });
