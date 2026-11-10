@@ -7,7 +7,7 @@ const short = (yen: number): string => (yen === 0 ? '0円' : formatSen(yen / 100
 const full = (yen: number): string => `${yen.toLocaleString('ja-JP', { maximumFractionDigits: 2 })} 円`;
 
 /**
- * 一覧全体の詳細（右ペイン。中ペインの集計行を選んだとき）。今の絞り込みを、全年度の落札実績にそのまま掛けた集計を、グラフ（落札価格の合計・行数）と、年度を縦に並べた表で見る。
+ * 一覧全体の詳細（右ペイン。中ペインの集計行を選んだとき）。今の絞り込みを、全年度の落札実績にそのまま掛けた集計を、グラフ（落札価格の合計）と、年度を縦に並べた表で見る。
  * 年度のファイルは、集計行を選んだときに、足りない分を読み込む。読み込んでいない年度は「—」（0 とは別）。年度を押す・J / K で、中ペインの年度が移る。
  */
 export function ProcurementAggregateDetail({ trend, failed, year, onYear }: {
@@ -37,11 +37,6 @@ export function ProcurementAggregateDetail({ trend, failed, year, onYear }: {
         <h3 className="font-semibold" title={PROCUREMENT_SUM_NOTE}>落札価格の合計</h3>
         <YearBars label="落札価格の合計" points={trend.map(t => ({ year: t.year, value: t.totals ? t.totals.yen : null, title: t.totals ? full(t.totals.yen) : '未読み込み' }))} current={year} onSelect={onYear} format={short} />
         <p className="text-[11px] text-neutral-500">{PROCUREMENT_SUM_NOTE}。</p>
-      </section>
-
-      <section className="flex flex-col gap-2" aria-label="行数の年度推移">
-        <h3 className="font-semibold">行数</h3>
-        <YearBars label="行数" points={trend.map(t => ({ year: t.year, value: t.totals ? t.totals.rows : null, title: t.totals ? `${t.totals.rows.toLocaleString()} 行` : '未読み込み' }))} current={year} onSelect={onYear} format={v => Math.round(v).toLocaleString()} />
       </section>
 
       <section className="flex flex-col gap-2" aria-label="年度の表">
