@@ -81,8 +81,8 @@ export function ProcurementPage() {
   const [loaded, setLoaded] = useState<ReadonlyMap<number, ProcurementIndex>>(new Map());
   const [failed, setFailed] = useState<ReadonlyMap<number, string>>(new Map());
   const requested = useRef(new Set<number>());
-  // 集計行を選んでいるか（選ぶと、右ペインに一覧全体の年度推移）。保存しない（再読み込みで、全年度を読み込み始めないため）
-  const [summarySelected, setSummarySelected] = useState(false);
+  // 集計行を選んでいるか（選ぶと、右ペインに一覧全体の年度推移）。初期は選んでいる（開くと、全年度のファイルを読み込み始める）。保存しない（選んだ行は、再読み込みで戻らない）
+  const [summarySelected, setSummarySelected] = useState(true);
   usePaneKeys();
 
   useEffect(() => {
