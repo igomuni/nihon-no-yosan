@@ -6,6 +6,7 @@ export const PAGES = [
   { id: 'trend', label: '概算要求 年度推移' },
   { id: 'mof', label: '概算要求と当初予算' },
   { id: 'lifecycle', label: '予算の推移' },
+  { id: 'procurement', label: '調達を観る' },
   { id: 'about', label: '出典と利用条件' },
 ] as const;
 

@@ -21,4 +21,6 @@ export interface SiteAbout {
   budgetBook: { authority: string; domain: string; termsUrl: string };
   /** RS（行政事業レビュー）の事業を載せた版だけ。出典と利用条件（`docs/guides/rs-tab.md`） */
   rs?: { authority: string; domain: string; termsUrl: string; /** 事業の数 */ jigyo: number; /** 予算年度 */ years: number[] };
+  /** 調達ポータルの落札実績を載せた版だけ。出典と利用条件（`docs/guides/procurement.md`） */
+  procurement?: { authority: string; domain: string; termsUrl: string; /** 行数（全年度） */ rows: number; /** 年度 */ years: number[]; /** 原本を取得した日時 */ retrievedAt: string };
 }

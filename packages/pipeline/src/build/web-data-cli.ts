@@ -1,7 +1,7 @@
 /**
  * 画面（apps/web）が読む JSON を、基準データからまとめて作る。
  *
- * 使い方: node packages/pipeline/src/build/web-data-cli.ts <基準データのディレクトリ> <出力ディレクトリ> [terms.json] [過去年度のデータセットのディレクトリ] [RS の CSV のディレクトリ]
+ * 使い方: node packages/pipeline/src/build/web-data-cli.ts <基準データのディレクトリ> <出力ディレクトリ> [terms.json] [過去年度のデータセットのディレクトリ] [RS の CSV のディレクトリ] [落札実績のデータセットのディレクトリ]
  * 基準データのディレクトリ直下の `manifest.json`（公開分の manifest でよい）と `terms.json` から、「出典と利用条件」の `about.json` も作る。
  * 出力:
  *   trend/{kou,jikou,detail}.json.gz   概算要求の年度推移（`docs/guides/trend.md`、`jikou-youkyu.md`、`trend-detail.md`）
@@ -11,6 +11,7 @@
  *   lifecycle/moku.json.gz             予算の一生の画面の目タブ用（`docs/guides/lifecycle-moku.md`。タブを開いたときに読む）
  *   lifecycle/codes.json.gz            主要経費別・使途別のコードの名前（`datasets/mof-code-tables/code-tables.json` から。`docs/guides/budget-codes.md`）
  *   rs/jigyo.json.gz                   RS の事業の一覧（RS の CSV のディレクトリがあるときだけ。`docs/guides/rs-tab.md`。タブを開いたときに読む）
+ *   procurement/{meta,{年度}}.json.gz  調達ポータルの落札実績（落札実績のデータセットのディレクトリがあるときだけ。`docs/guides/procurement.md`。ページを開いたときに読む）
  *   about.json                         出典と利用条件（`docs/guides/web-publish.md`）
  *   index.json                         データの目録（各ファイルの説明・キーの形・大きさ・SHA-256、読み方の約束、元の CSV の置き場。`docs/guides/ai-access.md`）
  * 出力ディレクトリは git に入れない（`.gitignore` の `data/`）。
@@ -28,16 +29,20 @@ import { buildBudgetRequestMofUi, mofUiMatchesFromDataset } from './mof-ui.ts';
 import { buildRsJigyo } from './rs-jigyo.ts';
 import { buildDataCatalog, withColumns } from './data-catalog.ts';
 import { buildRsLink } from './rs-link.ts';
+import { buildProcurement, type ProcurementManifest } from './procurement.ts';
 import { buildBudgetRequestTrend, matchesFromDataset } from './trend.ts';
 import { buildBudgetRequestTrendDetail } from './trend-detail.ts';
 
-const [dataset, outDir, termsPath = path.join('datasets', 'terms.json'), historyArg, rsArg] = process.argv.slice(2);
+const [dataset, outDir, termsPath = path.join('datasets', 'terms.json'), historyArg, rsArg, procurementArg] = process.argv.slice(2);
 if (!dataset || !outDir) throw new Error('usage: web-data-cli.ts <dataset> <outDir> [terms.json] [historyDataset]');
 // 過去年度のデータセット（FY2017〜FY2022。`docs/guides/mof-history.md`）は、ディレクトリがあるときだけ使う（無ければ FY2023 以降だけ）
 const historyDir = historyArg && fs.existsSync(historyArg) ? historyArg : undefined;
 
 // RS の CSV（`docs/guides/rs-tab.md`）は、ディレクトリがあるときだけ使う（無ければ RS のタブを出さない）
 const rsDir = rsArg && fs.existsSync(rsArg) ? rsArg : undefined;
+
+// 調達ポータルの落札実績（`docs/guides/procurement.md`）は、データセット（CSV と manifest）のディレクトリがあるときだけ使う（無ければ「調達を観る」のデータを作らない）
+const procurementDir = procurementArg && fs.existsSync(procurementArg) ? procurementArg : undefined;
 
 const fail = (msg: string): never => { throw new Error(msg); };
 const matches = matchesFromDataset(dataset);
@@ -98,6 +103,15 @@ const rsBuilt = rsDir ? (() => {
   return buildRsJigyo(csv(/^1-2_.*基本情報_事業概要等\.csv$/), csv(/^2-1_.*予算・執行_サマリ\.csv$/), link.rows);
 })() : null;
 
+// 調達ポータルの落札実績。コード表（仕様書の PDF から `procurement-codes-cli.ts` で作ったもの）と、取り込みの記録（`manifest.json`）と、全ファイルを照合して作る
+const procurementBuilt = procurementDir ? (() => {
+  const codes = JSON.parse(fs.readFileSync(path.join(path.dirname(termsPath), 'p-portal-code-tables', 'code-tables.json'), 'utf8')) as { source: { edition: string }; ministries: [string, string][]; methods: [string, string][] };
+  const manifest = JSON.parse(fs.readFileSync(path.join(procurementDir, 'manifest.json'), 'utf8')) as ProcurementManifest;
+  const csvs = new Map(fs.readdirSync(procurementDir).filter(f => f.endsWith('.csv')).map(f => [f, fs.readFileSync(path.join(procurementDir, f))] as const));
+  if (manifest.spec.edition !== codes.source.edition) throw new Error(`落札実績の仕様書の版が、manifest とコード表で違う: ${manifest.spec.edition} / ${codes.source.edition}`);
+  return buildProcurement(csvs, manifest, { edition: codes.source.edition, ministries: codes.ministries, methods: codes.methods });
+})() : null;
+
 // 主要経費別・使途別のコードの名前。コード表のページごと（`code-tables-cli.ts` の出力）から、2 つの区分だけを取る
 const codeTables: LifecycleCodeTables = (() => {
   const src = JSON.parse(fs.readFileSync(path.join(path.dirname(termsPath), 'mof-code-tables', 'code-tables.json'), 'utf8')) as { pages: { year: number; form: string; sections: { title: string; items: [string, string][] }[] }[] };
@@ -117,6 +131,10 @@ const outputs: [string, Buffer][] = [
   ['lifecycle/moku.json.gz', gz(withColumns('lifecycle/moku.json.gz', lifecycleMoku.data))],
   ['lifecycle/codes.json.gz', gz(codeTables)],
   ...(rsBuilt ? [['rs/jigyo.json.gz', gz(withColumns('rs/jigyo.json.gz', rsBuilt))] as [string, Buffer]] : []),
+  ...(procurementBuilt ? [
+    ['procurement/meta.json.gz', gz(withColumns('procurement/meta.json.gz', procurementBuilt.meta))] as [string, Buffer],
+    ...procurementBuilt.years.map(y => [`procurement/${y.year}.json.gz`, gz(withColumns('procurement/{年度}.json.gz', y))] as [string, Buffer]),
+  ] : []),
 ];
 for (const [name, bytes] of outputs) {
   fs.mkdirSync(path.dirname(path.join(outDir, name)), { recursive: true });
@@ -141,6 +159,7 @@ const authorities: SiteAboutAuthority[] = [...books]
     return { authority: t.authority, domain, status: t.status as SiteAboutAuthority['status'], termsUrl: t.url, books: n };
   })
   .sort((a, b) => b.books - a.books || a.domain.localeCompare(b.domain));
+const portalTerms = (): TermsDomain => { const t = terms['p-portal.go.jp']; if (!t) throw new Error('terms.json に p-portal.go.jp が無い'); if (t.status !== 'gov-terms-2.0') throw new Error(`公開できない状態のドメイン: p-portal.go.jp (${t.status})`); return t; };
 const rsTerms = (d: string): TermsDomain => { const t = terms[d]; if (!t) throw new Error(`terms.json に ${d} が無い`); if (t.status !== 'pdl1.0') throw new Error(`公開できない状態のドメイン: ${d} (${t.status})`); return t; };
 const bb = terms['bb.mof.go.jp'];
 if (!bb) throw new Error('terms.json に bb.mof.go.jp が無い');
@@ -148,6 +167,7 @@ const about: SiteAbout = {
   dataset: { version: manifest.version, books: manifest.sources.length, files: manifest.summary.files },
   authorities,
   budgetBook: { authority: '財務省 予算書・決算書データベース', domain: 'bb.mof.go.jp', termsUrl: bb.url },
+  ...(procurementBuilt ? { procurement: { authority: portalTerms().authority, domain: 'p-portal.go.jp', termsUrl: portalTerms().url, rows: procurementBuilt.years.reduce((n, y) => n + y.rows.length, 0), years: procurementBuilt.years.map(y => y.year), retrievedAt: procurementBuilt.meta.retrievedAt } } : {}),
   ...(rsBuilt ? { rs: { authority: rsTerms('rssystem.go.jp').authority, domain: 'rssystem.go.jp', termsUrl: rsTerms('rssystem.go.jp').url, jigyo: rsBuilt.jigyo.length, years: rsBuilt.years } } : {}),
 };
 fs.writeFileSync(path.join(outDir, 'about.json'), JSON.stringify(about, null, 1) + '\n');
@@ -162,9 +182,10 @@ const releaseOf = (dir: string, name: string): { name: string; tag: string; asse
 };
 const catalog = buildDataCatalog({
   files: catalogFiles,
-  releases: [releaseOf('reference-v0', '基準データ（概算要求書・予算書の CSV。公開分）'), releaseOf('mof-history-v0', '過去年度（FY2017〜FY2022 の予算書・決算書の CSV）'), releaseOf('rs-v0', '行政事業レビュー（RS）の CSV 3 ファイル')].filter(r => r !== null),
+  releases: [releaseOf('reference-v0', '基準データ（概算要求書・予算書の CSV。公開分）'), releaseOf('mof-history-v0', '過去年度（FY2017〜FY2022 の予算書・決算書の CSV）'), releaseOf('rs-v0', '行政事業レビュー（RS）の CSV 3 ファイル'), releaseOf('p-portal-v0', '調達ポータルの落札実績の CSV（14 年度）')].filter(r => r !== null),
 });
 fs.writeFileSync(path.join(outDir, 'index.json'), JSON.stringify(catalog, null, 1) + '\n');
 console.log(`wrote ${outputs.length + 2} files to ${outDir}`);
 console.log(`目: ${JSON.stringify(lifecycleMoku.stats)}`);
 if (rsBuilt) console.log(`RS: 事業 ${rsBuilt.jigyo.length}、額 ${rsBuilt.amounts.length}、項に結べた行 ${rsBuilt.links.length}、つなぎ ${JSON.stringify(rsLinkStats)}`);
+if (procurementBuilt) console.log(`落札実績: ${procurementBuilt.years.length} 年度、${procurementBuilt.years.reduce((n, y) => n + y.rows.length, 0)} 行（${procurementBuilt.meta.specEdition}、取得 ${procurementBuilt.meta.retrievedAt}）`);

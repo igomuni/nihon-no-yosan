@@ -8,7 +8,7 @@
 export const slugOf = (localPdfPath: string): string =>
   localPdfPath.replace(/^data\/download\//, '').replaceAll('/', '__').replace(/\.pdf$/i, '');
 
-export type TermsStatus = 'pdl1.0' | 'diet-courts' | 'unconfirmed';
+export type TermsStatus = 'pdl1.0' | 'gov-terms-2.0' | 'diet-courts' | 'unconfirmed';
 export type TermsBasis = 'page-read' | 'search-summary' | 'none';
 export interface DomainTerms {
   authority: string;

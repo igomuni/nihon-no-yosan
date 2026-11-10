@@ -98,6 +98,22 @@ export function AboutPage() {
                 </p>
               </section>
             )}
+            {about.procurement && (
+              <section className="flex flex-col gap-2">
+                <h2 className="font-semibold">調達ポータル（落札実績）</h2>
+                <p>
+                  出典: 調達ポータル（
+                  <a className={link} href="https://www.p-portal.go.jp/" target="_blank" rel="noopener noreferrer">https://www.p-portal.go.jp/</a>
+                  ）の「落札実績オープンデータ」（全件データ）を加工して作成。「調達を観る」の画面の一覧は、原本の CSV の行を、府省コード・入札方式コードの名前（仕様書の表）と合わせて表示したものです。国や各府省が作成した、加工していない情報ではありません。
+                </p>
+                <p>
+                  利用条件は
+                  <a className={link} href={about.procurement.termsUrl} target="_blank" rel="noopener noreferrer">調達ポータルの「ご利用にあたって」</a>
+                  （政府標準利用規約（第2.0版）に準拠。CC BY 4.0 と互換）。{about.procurement.rows.toLocaleString()} 行、FY{about.procurement.years[0]}〜FY{about.procurement.years[about.procurement.years.length - 1]}（原本の取得: {about.procurement.retrievedAt.slice(0, 10)}）。
+                  載っているのは落札が決まった案件だけで、落札価格は単価契約の単価など総額でない値を含みえます。
+                </p>
+              </section>
+            )}
             <section className="flex flex-col gap-2">
               <h2 className="font-semibold">取り込んだ資料</h2>
               <p>基準データ {about.dataset.version}: 概算要求書 {about.dataset.books} 書（FY2023〜FY2027）と、予算書の CSV。</p>

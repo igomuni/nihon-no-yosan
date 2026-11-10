@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import * as zlib from 'node:zlib';
-import { DATA_FILE_SPECS, buildDataCatalog, withColumns } from './data-catalog.ts';
+import { DATA_FILE_SPECS, buildDataCatalog, specPathOf, withColumns } from './data-catalog.ts';
 
 const gz = (v: unknown): Buffer => zlib.gzipSync(JSON.stringify(v));
 const releases = [{ name: '基準データ', tag: 'dataset-x', asset: 'x.tar.gz', bytes: 10, sha256: 'ab' }];
@@ -36,7 +36,21 @@ describe('buildDataCatalog', () => {
   });
 
   it('describes every file that the build writes (the spec has an entry for each output file)', () => {
-    expect(Object.keys(DATA_FILE_SPECS).sort()).toEqual(['about.json', 'lifecycle/codes.json.gz', 'lifecycle/data.json.gz', 'lifecycle/jikou.json.gz', 'lifecycle/moku.json.gz', 'mof/detail.json.gz', 'mof/kou.json.gz', 'rs/jigyo.json.gz', 'trend/detail.json.gz', 'trend/jikou.json.gz', 'trend/kou.json.gz']);
+    expect(Object.keys(DATA_FILE_SPECS).sort()).toEqual(['about.json', 'lifecycle/codes.json.gz', 'lifecycle/data.json.gz', 'lifecycle/jikou.json.gz', 'lifecycle/moku.json.gz', 'mof/detail.json.gz', 'mof/kou.json.gz', 'procurement/meta.json.gz', 'procurement/{年度}.json.gz', 'rs/jigyo.json.gz', 'trend/detail.json.gz', 'trend/jikou.json.gz', 'trend/kou.json.gz']);
+  });
+});
+
+describe('年度ごとのファイル', () => {
+  it('maps procurement/{year}.json.gz to one description, and leaves other paths as they are', () => {
+    expect(specPathOf('procurement/2024.json.gz')).toBe('procurement/{年度}.json.gz');
+    expect(specPathOf('procurement/meta.json.gz')).toBe('procurement/meta.json.gz');
+    expect(specPathOf('lifecycle/data.json.gz')).toBe('lifecycle/data.json.gz');
+  });
+  it('lists every year file in the catalog with the columns of the shared definition', () => {
+    const y = (year: number) => gz(withColumns('procurement/{年度}.json.gz', { year, vendors: [['Ａ社', '']], rows: [['0000000000000000001', 'x', `${year}-04-01`, 1, 'W1', '8004030', 0]] }));
+    const c = buildDataCatalog({ files: new Map([['procurement/2024.json.gz', y(2024)], ['procurement/2025.json.gz', y(2025)]]), releases: [] });
+    expect(c.files.map(f => f.path)).toEqual(['procurement/2024.json.gz', 'procurement/2025.json.gz']);
+    expect(c.files[0]!.columns?.['rows']).toHaveLength(7);
   });
 });
 

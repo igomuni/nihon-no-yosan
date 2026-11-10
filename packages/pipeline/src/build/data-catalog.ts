@@ -28,8 +28,8 @@ export const DATA_FILE_SPECS: Record<string, DataFileSpec> = {
   'about.json': {
     description: '出典と利用条件。取り込んだ機関（要求書の公開元）と利用規約のページ、基準データの版、予算書・RS の出どころ。',
     docs: [guide('web-publish'), guide('data')],
-    optionalKeys: ['rs'],
-    keys: { dataset: '基準データの版と、取り込んだ書・ファイルの数', authorities: '取り込んだ機関（要求書の公開元）と、利用規約のページと、状態', budgetBook: '予算書の出どころ（財務省 予算書・決算書データベース）', rs: '行政事業レビュー（RS）の出どころと、事業数・予算年度（RS を載せたビルドだけ）' },
+    optionalKeys: ['rs', 'procurement'],
+    keys: { dataset: '基準データの版と、取り込んだ書・ファイルの数', authorities: '取り込んだ機関（要求書の公開元）と、利用規約のページと、状態', budgetBook: '予算書の出どころ（財務省 予算書・決算書データベース）', rs: '行政事業レビュー（RS）の出どころと、事業数・予算年度（RS を載せたビルドだけ）', procurement: '調達ポータルの落札実績の出どころと、行数・年度（落札実績を載せたビルドだけ）' },
   },
   'lifecycle/data.json.gz': {
     description: '予算の一生の表（項の粒度。FY2017〜FY2027）。項ごとに、概算要求・政府案（当初予算）・補正・決算の値（events）と、年度をまたぐ項の対応（links）、検算（checks）。',
@@ -62,6 +62,16 @@ export const DATA_FILE_SPECS: Record<string, DataFileSpec> = {
     docs: [guide('rs-tab'), guide('rs-link')],
     keys: { years: '予算年度', kous: '項の id（`lifecycle/data.json.gz` の kous[].id）。links の項の添字は、この配列の添字', jigyo: '事業 1 件。配列の配列（予算事業 ID・事業名・府省庁・局・庁・主要経費）', amounts: '事業 × 予算年度の額（円）。配列の配列。先頭は jigyo の添字', links: '予算書の項に結べた行（RS の歳出予算項目）。配列の配列。額は円' },
   },
+  'procurement/meta.json.gz': {
+    description: '調達ポータルの落札実績（画面「調達を観る」、#/procurement）の目録。年度ごとの行数と落札決定日の範囲、府省コード・入札方式コードの名前（仕様書の表の全件）、原本を取得した日時（落札実績を載せたビルドだけ）。',
+    docs: [guide('procurement')],
+    keys: { years: '年度ごとの行数と、落札決定日の最小・最大', ministries: '府省コード → 名称（配列の配列）', methods: '入札方式コード → 名称（配列の配列）', retrievedAt: '原本を取得した日時', specEdition: '仕様書の版' },
+  },
+  'procurement/{年度}.json.gz': {
+    description: '調達ポータルの落札実績の、年度ごとのファイル（`procurement/2024.json.gz` など。落札決定日が 4 月〜翌 3 月）。原本の CSV（落札実績オープンデータの全件データ）の 1 行が 1 行。落札価格は、単価契約の単価など、総額でない値も含みうる。',
+    docs: [guide('procurement')],
+    keys: { year: '年度（西暦。原本のファイルの年度）', vendors: '落札者（商号又は名称・法人番号）。配列の配列。rows の落札者は、この配列の添字', rows: '落札実績 1 行。配列の配列（原本の列の順）。額は円' },
+  },
   'trend/kou.json.gz': {
     description: '概算要求の年度推移（項の粒度。FY2023〜FY2027）。画面「年度推移」（#/trend）のデータ。',
     docs: [guide('trend'), guide('trend-screen')],
@@ -89,12 +99,15 @@ export const DATA_FILE_SPECS: Record<string, DataFileSpec> = {
   },
 };
 
+/** 年度ごとのファイル（`procurement/2024.json.gz` など）は、1 つの説明（`procurement/{年度}.json.gz`）で持つ */
+export const specPathOf = (path: string): string => path.replace(/^(procurement)\/\d{4}\.json\.gz$/, '$1/{年度}.json.gz');
+
 /** 読み方の約束（目録の先頭に置く） */
 export const CONVENTIONS: string[] = [
   '各 `*.json.gz` は、gzip で圧縮した JSON。サーバーが Content-Encoding を付けるかは配信先しだいなので、受け取ったバイト列が gzip（先頭が 1f 8b）なら、伸ばしてから読む。`about.json` と、この `index.json` は、そのままの JSON。',
   '年度は西暦（令和 8 年度 = 2026）。一部のデータは、予算書が無い年度（FY2027 は概算要求だけ）を含む。',
   '値が無いことは `null`（0 とは別）。画面は「—」で出す。0 は、観測した値が 0。',
-  '額の単位は、`lifecycle/jikou.json.gz`・`lifecycle/moku.json.gz`・`trend/*`・`mof/*` が千円、`rs/jigyo.json.gz` と `lifecycle/data.json.gz` の events の「円」の列が円。決算の目の額は、原本が円なので、千円に直した値で、小数がありうる。',
+  '額の単位は、`lifecycle/jikou.json.gz`・`lifecycle/moku.json.gz`・`trend/*`・`mof/*` が千円、`rs/jigyo.json.gz`・`procurement/*` と `lifecycle/data.json.gz` の events の「円」の列が円。決算の目の額は、原本が円なので、千円に直した値で、小数がありうる。',
   '項の id は `{年度}:{general|special}:{鍵}`。一般会計の鍵は `所管|組織|項コード|項名`、特別会計は `特別会計|勘定|項コード|項名`、概算要求書にだけある項は `request|所管|勘定|組織|項名`。`lifecycle/*` と `rs/jigyo.json.gz` の項は、この id で結べる（`kous` の配列と、その添字）。',
   '多くの配列は、列名の無い配列（タプル。位置で意味が決まる）。列の名前・型・単位・意味は、各ファイルのトップレベルの `columns`（キー → 列の配列）と、この目録の `files[].columns` にある。ビットの列は `bits`、取りうる値が決まっている列は `values`。',
   '分類コード（目）: 一般会計は 主要経費別|目的別|財政法|経済性質別|使途別、特別会計は 主要経費別|目的別|経済性質別|使途別（財政法の区分が無い）。コードの名前は `lifecycle/codes.json.gz`（主要経費別・使途別だけ）。',
@@ -143,7 +156,7 @@ export function buildDataCatalog(input: {
 }): DataCatalog {
   const files: CatalogFile[] = [];
   for (const [path, bytes] of [...input.files].sort((a, b) => a[0].localeCompare(b[0]))) {
-    const spec = DATA_FILE_SPECS[path];
+    const spec = DATA_FILE_SPECS[specPathOf(path)];
     if (!spec) throw new Error(`データの目録に説明が無いファイル: ${path}（data-catalog.ts の DATA_FILE_SPECS に足す）`);
     const gz = path.endsWith('.gz');
     const { columns, ...body } = JSON.parse((gz ? zlib.gunzipSync(bytes) : bytes).toString('utf8')) as Record<string, unknown> & { columns?: Record<string, DataColumn[]> };

@@ -1,0 +1,186 @@
+{
+ "schema": "nihon-no-yosan/p-portal-manifest/v0",
+ "note": "調達ポータル（デジタル庁）の「落札実績オープンデータ」の全件データ（CSV）。サイトの配布物の zip を展開した CSV を、手を加えずに入れた（zip の SHA-256 は files の zip に記録）。ヘッダ行はない（列は仕様書 2.2）。出典: 調達ポータル（https://www.p-portal.go.jp/）。利用条件: 調達ポータルの「ご利用にあたって」（政府標準利用規約 第 2.0 版に準拠。CC BY 4.0 と互換）。",
+ "source": {
+  "page": "https://www.p-portal.go.jp/pps-web-biz/UAB02/OAB0201",
+  "terms": "https://www.p-portal.go.jp/pps-web-biz/resources/app/html/sitepolicy.html"
+ },
+ "retrievedAt": "2026-11-10T21:23:44+09:00",
+ "spec": {
+  "file": "rakusatsuopendata.pdf",
+  "url": "https://www.p-portal.go.jp/pps-web-biz/resources/app/pdf/rakusatsuopendata.pdf",
+  "bytes": 587762,
+  "sha256": "4c3601f56a1625d563f2e23d2478004ae9c4ea9d2627b5702f143734a9179e86",
+  "edition": "令和 8 年 10 月版"
+ },
+ "files": {
+  "successful_bid_record_info_all_2013.csv": {
+   "sha256": "b47dba67471c7153f65c10ea43eb134173a2402c16cb2631a7dc85ffbaada46a",
+   "bytes": 182,
+   "year": 2013,
+   "rows": 1,
+   "zip": {
+    "file": "successful-bid-record/successful_bid_record_info_all_2013.zip",
+    "url": "https://api.p-portal.go.jp/pps-web-biz/UAB03/OAB0301?fileversion=v001&filename=successful_bid_record_info_all_2013.zip",
+    "sha256": "99bc61e3829c84319bae5cd4a51d5ce4044b14c9c8cc86d43312b7a97bf77705",
+    "bytes": 355
+   }
+  },
+  "successful_bid_record_info_all_2014.csv": {
+   "sha256": "96eeae5d7e3149e0f9908d9c3f32b6dfc68d19e478527b36623a5b04aea682f9",
+   "bytes": 1381871,
+   "year": 2014,
+   "rows": 7088,
+   "zip": {
+    "file": "successful-bid-record/successful_bid_record_info_all_2014.zip",
+    "url": "https://api.p-portal.go.jp/pps-web-biz/UAB03/OAB0301?fileversion=v001&filename=successful_bid_record_info_all_2014.zip",
+    "sha256": "e382a32b494a482a2f08e53fdc14fd7ddefde5380cf739217d3bc8f14660d6cf",
+    "bytes": 348277
+   }
+  },
+  "successful_bid_record_info_all_2015.csv": {
+   "sha256": "7a9066a6e98d32dcba95db440b583f75ef875a3b5a931a73cdb25b61f7b03c53",
+   "bytes": 2340398,
+   "year": 2015,
+   "rows": 12027,
+   "zip": {
+    "file": "successful-bid-record/successful_bid_record_info_all_2015.zip",
+    "url": "https://api.p-portal.go.jp/pps-web-biz/UAB03/OAB0301?fileversion=v001&filename=successful_bid_record_info_all_2015.zip",
+    "sha256": "a9bcc60c34bcbacddfdda044f678007032b225aba1bb856ac026b01509574718",
+    "bytes": 611562
+   }
+  },
+  "successful_bid_record_info_all_2016.csv": {
+   "sha256": "03caaed80e7442b38ebfd7d235ef8915a899a3114758765a70f1e674acd99ed0",
+   "bytes": 3144161,
+   "year": 2016,
+   "rows": 16420,
+   "zip": {
+    "file": "successful-bid-record/successful_bid_record_info_all_2016.zip",
+    "url": "https://api.p-portal.go.jp/pps-web-biz/UAB03/OAB0301?fileversion=v001&filename=successful_bid_record_info_all_2016.zip",
+    "sha256": "71c9c9506a97caee2f1c314140b5e51d503b6be1a66d9a0c00f8cffddc1ca14b",
+    "bytes": 846203
+   }
+  },
+  "successful_bid_record_info_all_2017.csv": {
+   "sha256": "28a8892d71a5f1a03c7cbeb84d2feaf6c7e58caa6930c851d9758d5956bde41f",
+   "bytes": 4136033,
+   "year": 2017,
+   "rows": 21688,
+   "zip": {
+    "file": "successful-bid-record/successful_bid_record_info_all_2017.zip",
+    "url": "https://api.p-portal.go.jp/pps-web-biz/UAB03/OAB0301?fileversion=v001&filename=successful_bid_record_info_all_2017.zip",
+    "sha256": "fa30aa63c8abd97b17d3ac70f2d49691031e7b8bcb2a73394a911ea5b2e42b49",
+    "bytes": 1092631
+   }
+  },
+  "successful_bid_record_info_all_2018.csv": {
+   "sha256": "443cf10da7d522a36680091d5c226523c67ca8d622037cb851f8430e39cfbf58",
+   "bytes": 4413436,
+   "year": 2018,
+   "rows": 23132,
+   "zip": {
+    "file": "successful-bid-record/successful_bid_record_info_all_2018.zip",
+    "url": "https://api.p-portal.go.jp/pps-web-biz/UAB03/OAB0301?fileversion=v001&filename=successful_bid_record_info_all_2018.zip",
+    "sha256": "d7230cfd35a6a21b46924cabe99130a28f44a09a35f580e07a9d19b7e17fba6f",
+    "bytes": 1173880
+   }
+  },
+  "successful_bid_record_info_all_2019.csv": {
+   "sha256": "9205cc4d58cfa7aa0adeef7079b2d36875f7cb0c74c8fb3b36721b71f881a520",
+   "bytes": 4859450,
+   "year": 2019,
+   "rows": 25539,
+   "zip": {
+    "file": "successful-bid-record/successful_bid_record_info_all_2019.zip",
+    "url": "https://api.p-portal.go.jp/pps-web-biz/UAB03/OAB0301?fileversion=v001&filename=successful_bid_record_info_all_2019.zip",
+    "sha256": "445eb8af31e1371d3b563c8c3b843f9c249bad47757152caac38076d976a6353",
+    "bytes": 1305643
+   }
+  },
+  "successful_bid_record_info_all_2020.csv": {
+   "sha256": "dcaa45f37c113a6c7ce400a26fca036f373fb4facc6e68c9247a1822a6337efc",
+   "bytes": 5248963,
+   "year": 2020,
+   "rows": 27586,
+   "zip": {
+    "file": "successful-bid-record/successful_bid_record_info_all_2020.zip",
+    "url": "https://api.p-portal.go.jp/pps-web-biz/UAB03/OAB0301?fileversion=v001&filename=successful_bid_record_info_all_2020.zip",
+    "sha256": "bd098069b56fe548f07ac18723a0d399776b6060f70b249ee9a98bb922c4179a",
+    "bytes": 1414726
+   }
+  },
+  "successful_bid_record_info_all_2021.csv": {
+   "sha256": "7a36b847f3bb03580957b8b416d0901336f77e39f02f7781f044b18c84c986c3",
+   "bytes": 5737795,
+   "year": 2021,
+   "rows": 29896,
+   "zip": {
+    "file": "successful-bid-record/successful_bid_record_info_all_2021.zip",
+    "url": "https://api.p-portal.go.jp/pps-web-biz/UAB03/OAB0301?fileversion=v001&filename=successful_bid_record_info_all_2021.zip",
+    "sha256": "db9f27834250def13552bcc3d456bd1d98712e45adffc78798367911e83765fa",
+    "bytes": 1551123
+   }
+  },
+  "successful_bid_record_info_all_2022.csv": {
+   "sha256": "6f9bf3734fff3727de359f84f71d1028fed4f9c73b0430c3734038da24508b21",
+   "bytes": 6118141,
+   "year": 2022,
+   "rows": 31662,
+   "zip": {
+    "file": "successful-bid-record/successful_bid_record_info_all_2022.zip",
+    "url": "https://api.p-portal.go.jp/pps-web-biz/UAB03/OAB0301?fileversion=v001&filename=successful_bid_record_info_all_2022.zip",
+    "sha256": "ac20051f2c16d689ab923d4540ddad7b264d18f832f820b550086754a9e47ce8",
+    "bytes": 1656129
+   }
+  },
+  "successful_bid_record_info_all_2023.csv": {
+   "sha256": "d29c222fcdbf16005b1aa83c717f983bf2fe6962a434a97c1517e1e6f2547f09",
+   "bytes": 6559087,
+   "year": 2023,
+   "rows": 33862,
+   "zip": {
+    "file": "successful-bid-record/successful_bid_record_info_all_2023.zip",
+    "url": "https://api.p-portal.go.jp/pps-web-biz/UAB03/OAB0301?fileversion=v001&filename=successful_bid_record_info_all_2023.zip",
+    "sha256": "4a4d139d8d30c3948c19556628c6c4a8e81467315e7952abd74310fce7047c21",
+    "bytes": 1787638
+   }
+  },
+  "successful_bid_record_info_all_2024.csv": {
+   "sha256": "3d9ea952807752238b716a8863190990b71e20c6910cb83ca21445eb6e330285",
+   "bytes": 7031077,
+   "year": 2024,
+   "rows": 36236,
+   "zip": {
+    "file": "successful-bid-record/successful_bid_record_info_all_2024.zip",
+    "url": "https://api.p-portal.go.jp/pps-web-biz/UAB03/OAB0301?fileversion=v001&filename=successful_bid_record_info_all_2024.zip",
+    "sha256": "7a3c203f6b77a08a3f886d4fc01b0c84eabd1faa4c0584cb570e7ea5811c32ca",
+    "bytes": 1918541
+   }
+  },
+  "successful_bid_record_info_all_2025.csv": {
+   "sha256": "f75e2566a6dea6ec1c108f5e6d90ab176443c7fe635fc1a488cd35ee438e7fc9",
+   "bytes": 6600807,
+   "year": 2025,
+   "rows": 33776,
+   "zip": {
+    "file": "successful-bid-record/successful_bid_record_info_all_2025.zip",
+    "url": "https://api.p-portal.go.jp/pps-web-biz/UAB03/OAB0301?fileversion=v001&filename=successful_bid_record_info_all_2025.zip",
+    "sha256": "bd0f32667b5123257f96980809699f8aeefb49fc7b4ac24acdd2866cc0ddfd51",
+    "bytes": 1797707
+   }
+  },
+  "successful_bid_record_info_all_2026.csv": {
+   "sha256": "74bb6a08c71e0ea847149cad558b0f0a7ef4c394c40c187151238fa8cb9000ff",
+   "bytes": 3443104,
+   "year": 2026,
+   "rows": 17368,
+   "zip": {
+    "file": "successful-bid-record/successful_bid_record_info_all_2026.zip",
+    "url": "https://api.p-portal.go.jp/pps-web-biz/UAB03/OAB0301?fileversion=v001&filename=successful_bid_record_info_all_2026.zip",
+    "sha256": "8b883ac2a6066b7cf278e989c545234aa8e3cbe00d03712363d18f30fe37d013",
+    "bytes": 930176
+   }
+  }
+ }
+}
