@@ -51,6 +51,16 @@ RS の支出先の CSV（5-1〜5-4）を、個人名の可能性がある名前�
 - **置くもの:** 4 ファイルと `manifest.json`（計 5 ファイル、8.3 MB（tar.gz））。サイトの配布物から、見出しとセルの NFKC・前後の空白の除去と、伏せ字をして作る（元号は変えない）。`manifest.json` は `datasets/rs-spend-v0/manifest.json` に置く。
 - **公開:** Releases（タグ `dataset-rs-spend-v0`、2026-11-04）に置いた。`release.json` は `datasets/rs-spend-v0/`。tar.gz の SHA-256 は、リリースに置いたものを正とする。中身を出し直すときは、タグを変える。
 
+## 調達ポータルの落札実績のデータ（`p-portal-v0`）
+
+画面「調達を観る」（`procurement.md`）のデータは、調達ポータルの落札実績オープンデータ（全件データ）から作る、5 つ目のデータセット（タグ `dataset-p-portal-v0`）。
+
+- **入れるもの:** 取り込んだ zip を展開した CSV（年度ごと 14 個。手を加えない）と `manifest.json`。計 15 ファイル、16.4 MB（tar.gz。展開すると 約 55 MB）。zip そのものと、仕様書の PDF は入れない。
+- **作り方:** `node packages/pipeline/src/migrate/package-procurement.ts <取り込みのディレクトリ> datasets/terms.json <出力ディレクトリ>`。`terms.json` で `p-portal.go.jp` が、本文を読んだ（`page-read`）`gov-terms-2.0` でなければ止まる。出力は `manifest.json`・`p-portal-v0.tar.gz`・`release.json`。`gh release create dataset-p-portal-v0 <出力ディレクトリ>/p-portal-v0.tar.gz ...` で置き、`manifest.json` と `release.json` を `datasets/p-portal-v0/` に置く。tar.gz の SHA-256 は、リリースに置いたものを正とする（置いたものを取り直して、`release.json` と一致することを確かめた）。
+- **CI:** `pages.yml` が、タグから tar.gz をダウンロードし、SHA-256 を `release.json` と照合し、`data/dataset/p-portal-v0/` に展開して、`verify.ts` で manifest と全件照合してから、`npm run build:data`（ディレクトリがあれば `procurement/*.json.gz` を作り、`about.json` に `procurement` を出す）に渡す。
+- **中身を足して出し直すときは、タグを変える**（同じタグの差し替えは、`main` の CI が SHA-256 の不一致で失敗する）。**順序:** Releases に置いてから、`release.json` をコミットした変更を `main` に入れる。
+- **出典:** 「出典：調達ポータル（https://www.p-portal.go.jp/）」。画面の下の出典の表示と、「出典と利用条件」の調達ポータルの節は、`about.json` の `procurement` から出す。
+
 ## AI・プログラムから使うための入口
 
 `data/index.json`（データの目録）、`llms.txt`、`index.html` の説明は、`ai-access.md`。

@@ -25,7 +25,7 @@ FY2017〜FY2022 の項・目の CSV は、基準データ（`reference-v0`）と
 
 ## 調達ポータルの落札実績（別のデータセット）
 
-画面「調達を観る」のデータ。調達ポータルの落札実績オープンデータ（全件データ）の zip を、`data/download/p-portal/` に原本のまま置き（git に入れない）、URL と SHA-256 を `manifest.json` に書く。画面用の JSON は `npm run build:data` が作る。作り方・検査・限界は `docs/guides/procurement.md`。利用条件は `datasets/terms.json` の `p-portal.go.jp`（`gov-terms-2.0`）。公開サイトには、まだ載せていない。
+画面「調達を観る」のデータ。調達ポータルの落札実績オープンデータ（全件データ）の zip を、`data/download/p-portal/` に原本のまま置き（git に入れない）、URL と SHA-256 を `manifest.json` に書く。zip を展開した CSV と manifest を、データセット `p-portal-v0`（`data/dataset/p-portal-v0/`。GitHub Releases の `dataset-p-portal-v0`）にする。画面用の JSON は `npm run build:data` が作る。作り方・検査・限界は `docs/guides/procurement.md`、配り方は `docs/guides/web-publish.md`。利用条件は `datasets/terms.json` の `p-portal.go.jp`（`gov-terms-2.0`）。
 
 ## 公開の関門
 

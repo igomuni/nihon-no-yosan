@@ -54,9 +54,18 @@ UTF-8（BOM つき）、改行 CRLF、全項目を `"` で囲み `,` で区切�
 - **落札価格は、総額でないことがある。** 円未満が 0 でない行が 1,831 行ある。そのうち 1,443 行は 100 円未満で、単価契約の単価と見られる（例: 上のマスク）。113 行は 100 万円以上で、これは総額と見られる（理由は未確認）。原本の列からは、総額と単価を区別できない。したがって、落札価格の合計は支出の総額ではない。画面は、合計に注意書きを付ける。
 - 法人番号が同じで、名称が違う落札者が 7 件ある（名称の表記ゆれ・改称と見られる。未確認）。
 
-## 画面用のデータ（`build:data`）
+## データセット（`p-portal-v0`）と画面用のデータ（`build:data`）
 
-`npm run build:data` が、`data/download/p-portal/successful-bid-record/` があるときだけ、`apps/web/public/data/procurement/` に作る（git に入れない）。
+zip（原本）から、データセット `p-portal-v0`（zip を展開した CSV 14 個と `manifest.json`。手を加えない）を作り、`build:data` はそこから、`apps/web/public/data/procurement/` に画面用のデータを作る（git に入れない）。
+
+```bash
+node packages/pipeline/src/migrate/package-procurement.ts data/download/p-portal datasets/terms.json <出力ディレクトリ>
+mkdir -p data/dataset/p-portal-v0 && tar -xzf <出力ディレクトリ>/p-portal-v0.tar.gz -C data/dataset/p-portal-v0
+npm run build:data
+```
+
+- `package-procurement.ts` は、`terms.json` で `p-portal.go.jp` が、本文を読んだ（`page-read`）`gov-terms-2.0` でなければ止まる。取り込みの記録（`data/download/p-portal/manifest.json`）と、zip・CSV の SHA-256・行数を照合し、合わなければ止まる。出力は `manifest.json`（`datasets/p-portal-v0/manifest.json`）、`p-portal-v0.tar.gz`、`release.json`。
+- `build:data` は、`data/dataset/p-portal-v0/` があるときだけ作る。CSV の SHA-256・バイト数・行数を manifest と照合し、合わなければ止まる。zip から直接作った出力と、CSV から作った出力は、バイト単位で同じだった（15 ファイル）。
 
 | ファイル | 中身 |
 |---|---|
@@ -65,7 +74,6 @@ UTF-8（BOM つき）、改行 CRLF、全項目を `"` で囲み `,` で区切�
 
 - 原本の値は、変えない・補わない。府省コード・入札方式コードは原本のコードのまま（名前は `meta.json.gz` で引く）。落札価格は、数に直す（小数 2 桁まで正確。`toFixed(2)` で書き戻した文字が原本と一致することを、全行で確かめる）。
 - 行数 316,281（原本と同じ）。年度ごとの gzip は、最大約 1.5 MB（2024 年度）、全体で約 13 MB。列の定義は、各ファイルの `columns` と目録（`index.json`）にある。
-- 作る前に、zip の SHA-256・CSV の SHA-256・行数を、`manifest.json` と照合する。取り込んだ後に原本が変わっていれば、止まる。
 - コード表は `datasets/p-portal-code-tables/code-tables.json`（git に入れる。仕様書の PDF から `procurement-codes-cli.ts` で作る。項番が 1 から続くこと、コードが重ならないことを確かめる）。
 
 ```bash
@@ -95,4 +103,4 @@ npm run build:data
 
 - 調達ポータルの「ご利用にあたって」（2026-11-10 に本文を読んだ）は、政府標準利用規約（第 2.0 版）に準拠し、CC BY 4.0 と互換で、商用利用も可能とする。出典の記載（`出典：調達ポータル（https://www.p-portal.go.jp/）`）が必要で、加工したときは、そのことも書く。加工したものを、国が作ったように見せない。第三者の権利があるものは、利用者の責任で確かめる。
 - `datasets/terms.json` に `p-portal.go.jp`（状態 `gov-terms-2.0`、`page-read`）を入れた。PDL1.0 そのものではないので、別の状態にした。
-- **公開サイトには、まだ載せていない。** 公開サイトのデータは、GitHub Releases のデータセットから CI で作る（`web-publish.md`）。落札実績のデータセットは、まだ Releases に置いていない。置くまで、公開サイトの「調達を観る」は、データの読み込みに失敗する（画面は、その旨を出す）。置くときは、`package-rs.ts` と同じ手順で、新しいデータセットとして作る（別の作業）。
+- **公開**: データセットは、GitHub Releases（タグ `dataset-p-portal-v0`、2026-11-10）に置いた（`p-portal-v0.tar.gz`、16.4 MB。CSV 14 個と `manifest.json`。zip・仕様書の PDF は入れない）。公開サイトは、CI（`pages.yml`）が、このタグから tar.gz を取り、SHA-256 を `datasets/p-portal-v0/release.json` と、全ファイルを `datasets/p-portal-v0/manifest.json` と照合してから、`build:data` に渡して作る（`web-publish.md`）。中身を出し直すときは、タグを変える。

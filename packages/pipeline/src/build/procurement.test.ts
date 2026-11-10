@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import * as zlib from 'node:zlib';
 import { describe, expect, it } from 'vitest';
-import { buildProcurement, buildProcurementYear, readSingleZip, type ProcurementDownloadManifest } from './procurement.ts';
+import { buildProcurement, buildProcurementYear, procurementDataset, readSingleZip, type ProcurementDownloadManifest, type ProcurementManifest } from './procurement.ts';
 
 const codes = { edition: '令和 8 年 10 月版', ministries: [['W1', 'デジタル庁'], ['N1', '財務省']] as [string, string][], methods: [['8002010', '一般競争入札・最低価格'], ['8004030', '随意契約方式・公募型プロポーザル方式']] as [string, string][] };
 
@@ -69,24 +69,48 @@ describe('buildProcurementYear', () => {
   });
 });
 
-describe('buildProcurement', () => {
+describe('procurementDataset / buildProcurement', () => {
   const text = csv(row(), row({ 0: '0000000000000000002' }));
-  const zip = makeZip('successful_bid_record_info_all_2026.csv', Buffer.from(text));
-  const manifest = (over: Partial<ProcurementDownloadManifest['files'][number]> = {}): ProcurementDownloadManifest => ({
+  const csvBuf = Buffer.from(text);
+  const zip = makeZip('successful_bid_record_info_all_2026.csv', csvBuf);
+  const sha = (b: Buffer): string => createHash('sha256').update(b).digest('hex');
+  const dl = (over: Partial<ProcurementDownloadManifest['files'][number]> = {}): ProcurementDownloadManifest => ({
     retrievedAt: '2026-11-10T21:23:44+09:00',
     spec: { edition: '令和 8 年 10 月版' },
-    files: [{ file: 'successful-bid-record/successful_bid_record_info_all_2026.zip', sha256: createHash('sha256').update(zip).digest('hex'), bytes: zip.length, csvSha256: createHash('sha256').update(text).digest('hex'), rows: 2, ...over }],
+    files: [{ file: 'successful-bid-record/successful_bid_record_info_all_2026.zip', url: 'https://example.invalid/x', sha256: sha(zip), bytes: zip.length, csv: 'successful_bid_record_info_all_2026.csv', csvSha256: sha(csvBuf), csvBytes: csvBuf.length, rows: 2, ...over }],
   });
-  it('builds the years and the meta, checking the manifest', () => {
-    const b = buildProcurement(new Map([[2026, zip]]), manifest(), codes);
-    expect(b.years).toHaveLength(1);
-    expect(b.meta).toMatchObject({ years: [{ year: 2026, rows: 2, dateMin: '2026-04-01', dateMax: '2026-04-01' }], retrievedAt: '2026-11-10T21:23:44+09:00', specEdition: '令和 8 年 10 月版' });
+
+  describe('procurementDataset', () => {
+    it('extracts the CSV unchanged and records the year, rows, and the source zip', () => {
+      const { csvs, manifest } = procurementDataset(new Map([[2026, zip]]), dl());
+      expect(csvs.get('successful_bid_record_info_all_2026.csv')!.equals(csvBuf)).toBe(true);
+      expect(manifest.files['successful_bid_record_info_all_2026.csv']).toMatchObject({ sha256: sha(csvBuf), bytes: csvBuf.length, year: 2026, rows: 2, zip: { sha256: sha(zip), url: 'https://example.invalid/x' } });
+      expect(manifest).toMatchObject({ schema: 'nihon-no-yosan/p-portal-manifest/v0', retrievedAt: '2026-11-10T21:23:44+09:00', spec: { edition: '令和 8 年 10 月版' } });
+    });
+    it('stops when a file differs from the download record, or a year is missing on either side', () => {
+      expect(() => procurementDataset(new Map([[2026, zip]]), dl({ sha256: '0'.repeat(64) }))).toThrow('zip の SHA-256');
+      expect(() => procurementDataset(new Map([[2026, zip]]), dl({ csvSha256: '0'.repeat(64) }))).toThrow('CSV の SHA-256');
+      expect(() => procurementDataset(new Map([[2026, zip]]), dl({ rows: 3 }))).toThrow('行数');
+      expect(() => procurementDataset(new Map([[2025, zip]]), dl())).toThrow('記録に無い年度');
+      expect(() => procurementDataset(new Map(), dl())).toThrow('zip が無い');
+    });
   });
-  it('stops when a file differs from the manifest, or a year is missing on either side', () => {
-    expect(() => buildProcurement(new Map([[2026, zip]]), manifest({ sha256: '0'.repeat(64) }), codes)).toThrow('SHA-256');
-    expect(() => buildProcurement(new Map([[2026, zip]]), manifest({ csvSha256: '0'.repeat(64) }), codes)).toThrow('CSV の SHA-256');
-    expect(() => buildProcurement(new Map([[2026, zip]]), manifest({ rows: 3 }), codes)).toThrow('行数');
-    expect(() => buildProcurement(new Map([[2025, zip]]), manifest(), codes)).toThrow('manifest に無い年度');
-    expect(() => buildProcurement(new Map(), manifest(), codes)).toThrow('zip が無い');
+
+  describe('buildProcurement', () => {
+    const { csvs, manifest } = procurementDataset(new Map([[2026, zip]]), dl());
+    const name = 'successful_bid_record_info_all_2026.csv';
+    it('builds the years and the meta from the CSV, checking the manifest', () => {
+      const b = buildProcurement(csvs, manifest, codes);
+      expect(b.years).toHaveLength(1);
+      expect(b.meta).toMatchObject({ years: [{ year: 2026, rows: 2, dateMin: '2026-04-01', dateMax: '2026-04-01' }], retrievedAt: '2026-11-10T21:23:44+09:00', specEdition: '令和 8 年 10 月版' });
+    });
+    it('stops when a CSV differs from the manifest, or a CSV is missing or extra', () => {
+      const m = (patch: Partial<ProcurementManifest['files'][string]>): ProcurementManifest => ({ ...manifest, files: { [name]: { ...manifest.files[name]!, ...patch } } });
+      expect(() => buildProcurement(new Map([[name, Buffer.from(`${text}x`)]]), manifest, codes)).toThrow('manifest と合わない');
+      expect(() => buildProcurement(csvs, m({ rows: 3 }), codes)).toThrow('行数');
+      expect(() => buildProcurement(csvs, m({ year: 2025 }), codes)).toThrow('名前と年度');
+      expect(() => buildProcurement(new Map(), manifest, codes)).toThrow('CSV が無い');
+      expect(() => buildProcurement(new Map([...csvs, ['other.csv', csvBuf]]), manifest, codes)).toThrow('manifest に無い CSV');
+    });
   });
 });

@@ -1,7 +1,7 @@
 /**
  * 画面（apps/web）が読む JSON を、基準データからまとめて作る。
  *
- * 使い方: node packages/pipeline/src/build/web-data-cli.ts <基準データのディレクトリ> <出力ディレクトリ> [terms.json] [過去年度のデータセットのディレクトリ] [RS の CSV のディレクトリ] [落札実績の zip のディレクトリ]
+ * 使い方: node packages/pipeline/src/build/web-data-cli.ts <基準データのディレクトリ> <出力ディレクトリ> [terms.json] [過去年度のデータセットのディレクトリ] [RS の CSV のディレクトリ] [落札実績のデータセットのディレクトリ]
  * 基準データのディレクトリ直下の `manifest.json`（公開分の manifest でよい）と `terms.json` から、「出典と利用条件」の `about.json` も作る。
  * 出力:
  *   trend/{kou,jikou,detail}.json.gz   概算要求の年度推移（`docs/guides/trend.md`、`jikou-youkyu.md`、`trend-detail.md`）
@@ -11,7 +11,7 @@
  *   lifecycle/moku.json.gz             予算の一生の画面の目タブ用（`docs/guides/lifecycle-moku.md`。タブを開いたときに読む）
  *   lifecycle/codes.json.gz            主要経費別・使途別のコードの名前（`datasets/mof-code-tables/code-tables.json` から。`docs/guides/budget-codes.md`）
  *   rs/jigyo.json.gz                   RS の事業の一覧（RS の CSV のディレクトリがあるときだけ。`docs/guides/rs-tab.md`。タブを開いたときに読む）
- *   procurement/{meta,{年度}}.json.gz  調達ポータルの落札実績（落札実績の zip のディレクトリがあるときだけ。`docs/guides/procurement.md`。ページを開いたときに読む）
+ *   procurement/{meta,{年度}}.json.gz  調達ポータルの落札実績（落札実績のデータセットのディレクトリがあるときだけ。`docs/guides/procurement.md`。ページを開いたときに読む）
  *   about.json                         出典と利用条件（`docs/guides/web-publish.md`）
  *   index.json                         データの目録（各ファイルの説明・キーの形・大きさ・SHA-256、読み方の約束、元の CSV の置き場。`docs/guides/ai-access.md`）
  * 出力ディレクトリは git に入れない（`.gitignore` の `data/`）。
@@ -29,7 +29,7 @@ import { buildBudgetRequestMofUi, mofUiMatchesFromDataset } from './mof-ui.ts';
 import { buildRsJigyo } from './rs-jigyo.ts';
 import { buildDataCatalog, withColumns } from './data-catalog.ts';
 import { buildRsLink } from './rs-link.ts';
-import { buildProcurement, type ProcurementDownloadManifest } from './procurement.ts';
+import { buildProcurement, type ProcurementManifest } from './procurement.ts';
 import { buildBudgetRequestTrend, matchesFromDataset } from './trend.ts';
 import { buildBudgetRequestTrendDetail } from './trend-detail.ts';
 
@@ -41,7 +41,7 @@ const historyDir = historyArg && fs.existsSync(historyArg) ? historyArg : undefi
 // RS の CSV（`docs/guides/rs-tab.md`）は、ディレクトリがあるときだけ使う（無ければ RS のタブを出さない）
 const rsDir = rsArg && fs.existsSync(rsArg) ? rsArg : undefined;
 
-// 調達ポータルの落札実績（`docs/guides/procurement.md`）は、zip のディレクトリがあるときだけ使う（無ければ「調達を観る」のデータを作らない）
+// 調達ポータルの落札実績（`docs/guides/procurement.md`）は、データセット（CSV と manifest）のディレクトリがあるときだけ使う（無ければ「調達を観る」のデータを作らない）
 const procurementDir = procurementArg && fs.existsSync(procurementArg) ? procurementArg : undefined;
 
 const fail = (msg: string): never => { throw new Error(msg); };
@@ -106,10 +106,10 @@ const rsBuilt = rsDir ? (() => {
 // 調達ポータルの落札実績。コード表（仕様書の PDF から `procurement-codes-cli.ts` で作ったもの）と、取り込みの記録（`manifest.json`）と、全ファイルを照合して作る
 const procurementBuilt = procurementDir ? (() => {
   const codes = JSON.parse(fs.readFileSync(path.join(path.dirname(termsPath), 'p-portal-code-tables', 'code-tables.json'), 'utf8')) as { source: { edition: string }; ministries: [string, string][]; methods: [string, string][] };
-  const manifest = JSON.parse(fs.readFileSync(path.join(procurementDir, '..', 'manifest.json'), 'utf8')) as ProcurementDownloadManifest;
-  const zips = new Map(fs.readdirSync(procurementDir).flatMap(f => { const m = /^successful_bid_record_info_all_(\d{4})\.zip$/.exec(f); return m ? [[Number(m[1]), fs.readFileSync(path.join(procurementDir, f))] as const] : []; }));
+  const manifest = JSON.parse(fs.readFileSync(path.join(procurementDir, 'manifest.json'), 'utf8')) as ProcurementManifest;
+  const csvs = new Map(fs.readdirSync(procurementDir).filter(f => f.endsWith('.csv')).map(f => [f, fs.readFileSync(path.join(procurementDir, f))] as const));
   if (manifest.spec.edition !== codes.source.edition) throw new Error(`落札実績の仕様書の版が、manifest とコード表で違う: ${manifest.spec.edition} / ${codes.source.edition}`);
-  return buildProcurement(zips, manifest, { edition: codes.source.edition, ministries: codes.ministries, methods: codes.methods });
+  return buildProcurement(csvs, manifest, { edition: codes.source.edition, ministries: codes.ministries, methods: codes.methods });
 })() : null;
 
 // 主要経費別・使途別のコードの名前。コード表のページごと（`code-tables-cli.ts` の出力）から、2 つの区分だけを取る
@@ -182,7 +182,7 @@ const releaseOf = (dir: string, name: string): { name: string; tag: string; asse
 };
 const catalog = buildDataCatalog({
   files: catalogFiles,
-  releases: [releaseOf('reference-v0', '基準データ（概算要求書・予算書の CSV。公開分）'), releaseOf('mof-history-v0', '過去年度（FY2017〜FY2022 の予算書・決算書の CSV）'), releaseOf('rs-v0', '行政事業レビュー（RS）の CSV 3 ファイル')].filter(r => r !== null),
+  releases: [releaseOf('reference-v0', '基準データ（概算要求書・予算書の CSV。公開分）'), releaseOf('mof-history-v0', '過去年度（FY2017〜FY2022 の予算書・決算書の CSV）'), releaseOf('rs-v0', '行政事業レビュー（RS）の CSV 3 ファイル'), releaseOf('p-portal-v0', '調達ポータルの落札実績の CSV（14 年度）')].filter(r => r !== null),
 });
 fs.writeFileSync(path.join(outDir, 'index.json'), JSON.stringify(catalog, null, 1) + '\n');
 console.log(`wrote ${outputs.length + 2} files to ${outDir}`);

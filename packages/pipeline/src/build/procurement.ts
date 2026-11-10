@@ -2,6 +2,7 @@
  * 調達ポータルの落札実績（全件データの CSV）から、画面用の年度ごとのデータを作る。仕様: docs/guides/procurement.md
  *
  * 原本: `data/download/p-portal/successful-bid-record/successful_bid_record_info_all_{年度}.zip`（zip 1 つに CSV 1 つ。UTF-8 の BOM つき、ヘッダ行なし、全項目を引用符で囲む。列は仕様書 2.2）。
+ * データセット（`p-portal-v0`。`data/dataset/p-portal-v0/`）: zip を展開した CSV（手を加えない）と `manifest.json`。`procurementDataset` が zip から作り、`buildProcurement` が画面用のデータにする。
  * 全行を検査し、合わない行があれば止まる（捨てない・直さない）:
  *   8 列 / 調達案件番号 19 桁の数字 / 案件名・落札者が空でない / 落札決定日が日付で、ファイルの年度（4 月〜翌 3 月）に入る /
  *   落札価格が数字（小数 2 桁まで）で、数に直して書き戻すと同じ文字になる / 府省コード・入札方式コードが仕様書の表にある / 法人番号が空か 13 桁の数字。
@@ -77,8 +78,61 @@ export function buildProcurementYear(year: number, csvText: string, codes: Pick<
 /** 取り込みの記録（`data/download/p-portal/manifest.json` のうち、ここで使う部分） */
 export interface ProcurementDownloadManifest {
   retrievedAt: string;
-  spec: { edition: string };
-  files: { file: string; sha256: string; bytes: number; csvSha256: string; rows: number }[];
+  spec: { edition: string; file?: string; url?: string; bytes?: number; sha256?: string };
+  files: { file: string; url: string; sha256: string; bytes: number; csv: string; csvSha256: string; csvBytes: number; rows: number }[];
+}
+
+/** データセットの CSV の名前 */
+export const procurementCsvName = (year: number): string => `successful_bid_record_info_all_${year}.csv`;
+
+/** データセットの manifest（`datasets/p-portal-v0/manifest.json`）。`verify.ts` が読む `files` の `sha256`・`bytes` のほかに、年度・行数・元の zip の記録を持つ */
+export interface ProcurementManifest {
+  schema: 'nihon-no-yosan/p-portal-manifest/v0';
+  note: string;
+  source: { page: string; terms: string };
+  retrievedAt: string;
+  spec: { edition: string; file?: string; url?: string; bytes?: number; sha256?: string };
+  files: Record<string, { sha256: string; bytes: number; year: number; rows: number; zip: { file: string; url: string; sha256: string; bytes: number } }>;
+}
+
+const sha256 = (b: Buffer): string => createHash('sha256').update(b).digest('hex');
+
+/** CSV の行数（引用符の中の改行を数えない。末尾の空行は数えない） */
+const csvRows = (csv: Buffer): number => parseCsv(csv.toString('utf8').replace(/^\uFEFF/, '')).filter(r => !(r.length === 1 && r[0] === '')).length;
+
+/**
+ * 取り込んだ zip（年度 → zip）から、データセット（CSV と manifest）を作る。CSV は zip の中身そのまま。
+ * zip・CSV の SHA-256 と行数を、取り込みの記録（`manifest.json`）と照合し、合わなければ止まる。年度が記録と食い違っても止まる。
+ */
+export function procurementDataset(zips: ReadonlyMap<number, Buffer>, dl: ProcurementDownloadManifest): { csvs: Map<string, Buffer>; manifest: ProcurementManifest } {
+  const byYear = new Map(dl.files.map(f => [Number(/_all_(\d{4})\.zip$/.exec(f.file)?.[1]), f] as const));
+  for (const y of zips.keys()) if (!byYear.has(y)) throw new Error(`取り込みの記録に無い年度の zip: ${y}`);
+  for (const y of byYear.keys()) if (!zips.has(y)) throw new Error(`取り込みの記録にある年度の zip が無い: ${y}`);
+  const csvs = new Map<string, Buffer>();
+  const files: ProcurementManifest['files'] = {};
+  for (const year of [...zips.keys()].sort((a, b) => a - b)) {
+    const zip = zips.get(year)!;
+    const rec = byYear.get(year)!;
+    if (sha256(zip) !== rec.sha256) throw new Error(`${year} 年度の zip の SHA-256 が、取り込みの記録と合わない（取り込んだ後に変わった）`);
+    const { data } = readSingleZip(zip);
+    if (sha256(data) !== rec.csvSha256) throw new Error(`${year} 年度の CSV の SHA-256 が、取り込みの記録と合わない`);
+    const rows = csvRows(data);
+    if (rows !== rec.rows) throw new Error(`${year} 年度の行数が、取り込みの記録と合わない: ${rows} / ${rec.rows}`);
+    const name = procurementCsvName(year);
+    csvs.set(name, data);
+    files[name] = { sha256: sha256(data), bytes: data.length, year, rows, zip: { file: rec.file, url: rec.url, sha256: rec.sha256, bytes: rec.bytes } };
+  }
+  return {
+    csvs,
+    manifest: {
+      schema: 'nihon-no-yosan/p-portal-manifest/v0',
+      note: '調達ポータル（デジタル庁）の「落札実績オープンデータ」の全件データ（CSV）。サイトの配布物の zip を展開した CSV を、手を加えずに入れた（zip の SHA-256 は files の zip に記録）。ヘッダ行はない（列は仕様書 2.2）。出典: 調達ポータル（https://www.p-portal.go.jp/）。利用条件: 調達ポータルの「ご利用にあたって」（政府標準利用規約 第 2.0 版に準拠。CC BY 4.0 と互換）。',
+      source: { page: 'https://www.p-portal.go.jp/pps-web-biz/UAB02/OAB0201', terms: 'https://www.p-portal.go.jp/pps-web-biz/resources/app/html/sitepolicy.html' },
+      retrievedAt: dl.retrievedAt,
+      spec: dl.spec,
+      files,
+    },
+  };
 }
 
 export interface ProcurementBuild {
@@ -87,24 +141,19 @@ export interface ProcurementBuild {
 }
 
 /**
- * 全年度を作る。`zips` は、年度 → zip のバイト列。manifest の SHA-256・行数と照合し、合わなければ止まる（取り込んだ後に原本が変わっていないことの確認）。
- * 年度のファイルが manifest に無い、または manifest にあるのに渡されていなければ止まる。
+ * データセット（CSV と manifest）から、全年度の画面用のデータを作る。CSV の SHA-256・バイト数・行数を manifest と照合し、合わなければ止まる。
+ * manifest にあるのに CSV が無い年度、manifest に無い CSV があっても止まる。
  */
-export function buildProcurement(zips: ReadonlyMap<number, Buffer>, manifest: ProcurementDownloadManifest, codes: ProcurementCodeTables): ProcurementBuild {
+export function buildProcurement(csvs: ReadonlyMap<string, Buffer>, manifest: ProcurementManifest, codes: ProcurementCodeTables): ProcurementBuild {
+  for (const name of csvs.keys()) if (!manifest.files[name]) throw new Error(`manifest に無い CSV: ${name}`);
+  for (const name of Object.keys(manifest.files)) if (!csvs.has(name)) throw new Error(`manifest にある CSV が無い: ${name}`);
   const years: ProcurementYearData[] = [];
-  const byYear = new Map(manifest.files.map(f => [Number(/_all_(\d{4})\.zip$/.exec(f.file)?.[1]), f] as const));
-  for (const y of zips.keys()) if (!byYear.has(y)) throw new Error(`manifest に無い年度の zip: ${y}`);
-  for (const y of byYear.keys()) if (!zips.has(y)) throw new Error(`manifest にある年度の zip が無い: ${y}`);
-  for (const year of [...zips.keys()].sort((a, b) => a - b)) {
-    const zip = zips.get(year)!;
-    const rec = byYear.get(year)!;
-    const sha = createHash('sha256').update(zip).digest('hex');
-    if (sha !== rec.sha256) throw new Error(`${year} 年度の zip の SHA-256 が、manifest と合わない（取り込んだ後に変わった）: ${sha}`);
-    const { data } = readSingleZip(zip);
-    const csvSha = createHash('sha256').update(data).digest('hex');
-    if (csvSha !== rec.csvSha256) throw new Error(`${year} 年度の CSV の SHA-256 が、manifest と合わない: ${csvSha}`);
-    const built = buildProcurementYear(year, data.toString('utf8'), codes);
-    if (built.rows.length !== rec.rows) throw new Error(`${year} 年度の行数が、manifest と合わない: ${built.rows.length} / ${rec.rows}`);
+  for (const [name, rec] of Object.entries(manifest.files).sort((a, b) => a[1].year - b[1].year)) {
+    const csv = csvs.get(name)!;
+    if (name !== procurementCsvName(rec.year)) throw new Error(`CSV の名前と年度が合わない: ${name} / ${rec.year}`);
+    if (csv.length !== rec.bytes || sha256(csv) !== rec.sha256) throw new Error(`${rec.year} 年度の CSV が、manifest と合わない（SHA-256・バイト数）`);
+    const built = buildProcurementYear(rec.year, csv.toString('utf8'), codes);
+    if (built.rows.length !== rec.rows) throw new Error(`${rec.year} 年度の行数が、manifest と合わない: ${built.rows.length} / ${rec.rows}`);
     years.push(built);
   }
   return {
