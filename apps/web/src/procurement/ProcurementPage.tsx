@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState, type CSSProperties, type MouseEvent as ReactMouseEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent as ReactMouseEvent } from 'react';
 import {
   INITIAL_PROCUREMENT_FILTERS,
   PROCUREMENT_TEXT_SORT_KEYS,
   filterProcurementRows,
   procurementIndex,
+  procurementTrend,
   sortProcurementRows,
   type LifecycleSortDir,
   type ProcurementFilters,
@@ -20,6 +21,7 @@ import { SourceNote } from '../components/SourceNote.tsx';
 import { YearSelect } from '../components/YearSelect.tsx';
 import { usePaneKeys } from '../components/useListKeys.ts';
 import { usePersistedState } from '../usePersistedState.ts';
+import { ProcurementAggregateDetail } from './ProcurementAggregateDetail.tsx';
 import { ProcurementDetailPane } from './ProcurementDetailPane.tsx';
 import { ProcurementFilterPane } from './ProcurementFilterPane.tsx';
 import { ProcurementListPane } from './ProcurementListPane.tsx';
@@ -27,8 +29,8 @@ import { ProcurementListPane } from './ProcurementListPane.tsx';
 /**
  * 調達を観る（調達ポータルの落札実績）。仕様: docs/guides/procurement.md
  *
- * 左にフィルタ、中に選んだ年度の落札実績の一覧、右に選んだ行の原本の値と、同じ案件番号・同じ落札者の行。
- * データは `npm run build:data` が作る静的ファイル（目録 `procurement/meta.json.gz`、年度ごとの `procurement/{年度}.json.gz`）をブラウザが直接読む。年度のファイルは、選んだときに読む。
+ * 左にフィルタ、中に選んだ年度の落札実績の一覧、右に選んだ行の原本の値と、同じ案件番号・同じ落札者の行。中ペインの集計行を選ぶと、右ペインに、今のフィルタを全年度に掛けた年度推移（グラフと表）。
+ * データは `npm run build:data` が作る静的ファイル（目録 `procurement/meta.json.gz`、年度ごとの `procurement/{年度}.json.gz`）をブラウザが直接読む。年度のファイルは、選んだときに読む（集計行を選んだときは、足りない年度をすべて読む）。
  * 載っているのは、落札が決まった案件だけ。公告中・不調の案件、少額の一部（個人事業主）は載っていない。
  */
 
@@ -75,8 +77,12 @@ export function ProcurementPage() {
   const [filterWidth, setFilterWidth] = usePersistedState('procurement:filterWidth', FILTER_WIDTH.def);
   const [detailWidth, setDetailWidth] = usePersistedState('procurement:detailWidth', DETAIL_WIDTH.def);
   const [columnWidths, setColumnWidths] = usePersistedState<Record<string, number>>('procurement:columnWidths', {});
-  const [loaded, setLoaded] = useState<{ year: number; data: ProcurementYearData } | null>(null);
-  const [yearFailed, setYearFailed] = useState<{ year: number; message: string } | null>(null);
+  // 読み込んだ年度（年度 → 一覧の行と引き表）と、読み込みに失敗した年度（年度 → 理由）
+  const [loaded, setLoaded] = useState<ReadonlyMap<number, ProcurementIndex>>(new Map());
+  const [failed, setFailed] = useState<ReadonlyMap<number, string>>(new Map());
+  const requested = useRef(new Set<number>());
+  // 集計行を選んでいるか（選ぶと、右ペインに一覧全体の年度推移）。保存しない（再読み込みで、全年度を読み込み始めないため）
+  const [summarySelected, setSummarySelected] = useState(false);
   usePaneKeys();
 
   useEffect(() => {
@@ -90,19 +96,21 @@ export function ProcurementPage() {
   const years = useMemo(() => (meta ? meta.years.map(y => y.year) : []), [meta]);
   const activeYear = meta ? (year !== null && years.includes(year) ? year : years[years.length - 1] ?? null) : null;
 
-  useEffect(() => {
-    if (activeYear === null) return;
-    let alive = true;
-    loadGzJson<ProcurementYearData>(`procurement/${activeYear}.json.gz`)
-      .then(d => { if (alive) setLoaded({ year: activeYear, data: d }); })
-      .catch((e: unknown) => { if (alive) setYearFailed({ year: activeYear, message: e instanceof Error ? e.message : String(e) }); });
-    return () => { alive = false; };
-  }, [activeYear]);
+  /** 年度のファイルを読む（読み込み中・読み込み済み・失敗した年度は、読み直さない） */
+  const ensureYear = useCallback((y: number) => {
+    if (!meta || requested.current.has(y)) return;
+    requested.current.add(y);
+    loadGzJson<ProcurementYearData>(`procurement/${y}.json.gz`)
+      .then(d => setLoaded(prev => new Map(prev).set(y, procurementIndex(d, meta))))
+      .catch((e: unknown) => setFailed(prev => new Map(prev).set(y, e instanceof Error ? e.message : String(e))));
+  }, [meta]);
+  useEffect(() => { if (activeYear !== null) ensureYear(activeYear); }, [activeYear, ensureYear]);
+  useEffect(() => { if (summarySelected) years.forEach(ensureYear); }, [summarySelected, years, ensureYear]);
 
-  // 読み込みの失敗は、その年度のものだけ表示する（別の年度を選べば、失敗の表示は消える）
-  const yearError = yearFailed && yearFailed.year === activeYear ? yearFailed.message : null;
-  const index = useMemo<ProcurementIndex | null>(() => (meta && loaded && loaded.year === activeYear ? procurementIndex(loaded.data, meta) : null), [meta, loaded, activeYear]);
+  const yearError = activeYear !== null ? failed.get(activeYear) ?? null : null;
+  const index = activeYear !== null ? loaded.get(activeYear) ?? null : null;
   const rows = useMemo(() => (index ? sortProcurementRows(filterProcurementRows(index.rows, filters, NONE_SELECTED), sortKey, sortDir) : []), [index, filters, sortKey, sortDir]);
+  const trend = useMemo(() => (summarySelected ? procurementTrend(years, y => loaded.get(y)?.rows, filters, NONE_SELECTED) : []), [summarySelected, years, loaded, filters]);
   const selectedRow: ProcurementListRow | null = index && selected && selected.year === activeYear ? index.rows[selected.i] ?? null : null;
 
   if (error) return message(<>データの読み込みに失敗しました: {error}（<code>npm run build:data</code> で作る）</>, true);
@@ -112,7 +120,7 @@ export function ProcurementPage() {
     if (k === sortKey) setSortDir(d => (d === 1 ? -1 : 1));
     else { setSortKey(k); setSortDir(PROCUREMENT_TEXT_SORT_KEYS.includes(k) ? 1 : -1); }
   };
-  const select = (i: number) => setSelected({ year: activeYear, i });
+  const select = (i: number) => { setSummarySelected(false); setSelected({ year: activeYear, i }); };
   const info = meta.years.find(y => y.year === activeYear)!;
 
   return (
@@ -138,12 +146,14 @@ export function ProcurementPage() {
           {yearError
             ? <p className="p-4 text-xs text-red-700">FY{activeYear} の読み込みに失敗しました: {yearError}（<code>npm run build:data</code> で作る）</p>
             : index
-              ? <ProcurementListPane items={rows} sortKey={sortKey} sortDir={sortDir} onSort={onSort} selected={selectedRow?.i ?? null} onSelect={r => select(r.i)} widths={columnWidths} onWidthsChange={setColumnWidths} />
+              ? <ProcurementListPane items={rows} sortKey={sortKey} sortDir={sortDir} onSort={onSort} selected={summarySelected ? null : selectedRow?.i ?? null} onSelect={r => select(r.i)} summarySelected={summarySelected} onSelectSummary={() => setSummarySelected(true)} widths={columnWidths} onWidthsChange={setColumnWidths} />
               : <p className="p-4 text-xs text-neutral-500">FY{activeYear} を読み込み中…（{info.rows.toLocaleString()} 行）</p>}
         </section>
         <Splitter label="詳細の幅" width={detailWidth} limits={DETAIL_WIDTH} dir={-1} onChange={setDetailWidth} />
         <section aria-label="詳細" className={`${pane} overflow-auto lg:col-span-2 xl:col-span-1 xl:w-[var(--dw)] xl:shrink-0`} style={{ '--dw': `${detailWidth}px` } as CSSProperties}>
-          {index ? <ProcurementDetailPane index={index} row={selectedRow} year={activeYear} onSelect={select} /> : null}
+          {summarySelected
+            ? <ProcurementAggregateDetail trend={trend} failed={failed} year={activeYear} onYear={setYear} />
+            : index ? <ProcurementDetailPane index={index} row={selectedRow} year={activeYear} onSelect={select} /> : null}
         </section>
       </main>
       <SourceNote procurement />

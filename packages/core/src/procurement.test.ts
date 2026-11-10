@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { INITIAL_PROCUREMENT_FILTERS, filterProcurementRows, parseYenInput, procurementIndex, procurementTotals, sortProcurementRows, vendorKeyOf, yenText, type ProcurementYearData } from './procurement.ts';
+import { INITIAL_PROCUREMENT_FILTERS, filterProcurementRows, parseYenInput, procurementIndex, procurementTotals, procurementTrend, sortProcurementRows, vendorKeyOf, yenText, type ProcurementYearData } from './procurement.ts';
 
 const NONE = '__none__';
 const meta = {
@@ -92,5 +92,24 @@ describe('procurementTotals / yenText', () => {
     expect(yenText(31389000)).toBe('31,389,000 円');
     expect(yenText(29.8)).toBe('29.8 円');
     expect(yenText(100.5)).toBe('100.5 円');
+  });
+});
+
+describe('procurementTrend', () => {
+  const other = procurementIndex({ year: 2025, vendors: [['Ｃ社', '2222222222222']], rows: [['0000000000000000009', '清掃', '2025-06-01', 500, 'N1', '8002010', 0]] }, meta);
+  const rowsOf = (y: number) => (y === 2026 ? index.rows : y === 2025 ? other.rows : undefined);
+  it('applies the same filters to each year, in the order given, and marks a year that is not loaded', () => {
+    const t = procurementTrend([2025, 2026, 2024], rowsOf, { ...INITIAL_PROCUREMENT_FILTERS, ministries: ['N1'] }, NONE);
+    expect(t.map(x => x.year)).toEqual([2025, 2026, 2024]);
+    expect(t[0]!.totals).toEqual({ rows: 1, yen: 500, vendors: 1, cases: 1, ministries: 1 });
+    expect(t[1]!.totals).toEqual({ rows: 2, yen: 2029.8, vendors: 1, cases: 2, ministries: 1 });
+    expect(t[2]!.totals).toBeNull();
+  });
+  it('gives the same totals as the list footer for a year (so that the selected year agrees with the list)', () => {
+    const f = { ...INITIAL_PROCUREMENT_FILTERS, name: 'システム' };
+    expect(procurementTrend([2026], rowsOf, f, NONE)[0]!.totals).toEqual(procurementTotals(filterProcurementRows(index.rows, f, NONE)));
+  });
+  it('gives 0 rows (not null) for a loaded year where nothing matches', () => {
+    expect(procurementTrend([2025], rowsOf, { ...INITIAL_PROCUREMENT_FILTERS, name: '該当なし' }, NONE)[0]!.totals).toEqual({ rows: 0, yen: 0, vendors: 0, cases: 0, ministries: 0 });
   });
 });

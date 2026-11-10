@@ -3,6 +3,7 @@ import { PROCUREMENT_SUM_NOTE, formatSen, procurementTotals, yenText, type Lifec
 import { Icon } from '../components/Icon.tsx';
 import { scrollRowIntoView } from '../components/scrollRowIntoView.ts';
 import { useListKeys } from '../components/useListKeys.ts';
+import { ListFoot, type FootCell } from '../lifecycle/ListFoot.tsx';
 
 /** ドラッグ中のカーソル（イベントの外から body を変えるので、関数にまとめる） */
 function setBodyCursor(value: string): void {
@@ -23,7 +24,7 @@ const COLS: { key: ProcurementSortKey; label: string; left?: boolean; title?: st
 ];
 
 /** 落札実績の一覧（中ペイン）。絞り込み・並べ替え済みの全行の集計を、見出しの下に固定する */
-export function ProcurementListPane({ items, sortKey, sortDir, onSort, selected, onSelect, widths, onWidthsChange }: {
+export function ProcurementListPane({ items, sortKey, sortDir, onSort, selected, onSelect, summarySelected, onSelectSummary, widths, onWidthsChange }: {
   items: readonly ProcurementListRow[];
   sortKey: ProcurementSortKey;
   sortDir: LifecycleSortDir;
@@ -31,6 +32,9 @@ export function ProcurementListPane({ items, sortKey, sortDir, onSort, selected,
   /** 選んだ行（年度のファイルの行の添字）。選んでいなければ null */
   selected: number | null;
   onSelect: (row: ProcurementListRow) => void;
+  /** 集計行を選んでいるか。選ぶと、右ペインに一覧全体の年度推移 */
+  summarySelected: boolean;
+  onSelectSummary: () => void;
   widths: Record<string, number>;
   onWidthsChange: (updater: (prev: Record<string, number>) => Record<string, number>) => void;
 }) {
@@ -58,7 +62,7 @@ export function ProcurementListPane({ items, sortKey, sortDir, onSort, selected,
   }
 
   const t = procurementTotals(items);
-  const foot: Partial<Record<ProcurementSortKey, { text: string; title?: string }>> = {
+  const foot: Partial<Record<ProcurementSortKey, FootCell>> = {
     date: { text: `${t.rows.toLocaleString()}行`, title: '絞り込んだ全行（表示の上限を超えた分も含む）' },
     ministry: { text: `${t.ministries}府省` },
     name: { text: `${t.cases.toLocaleString()}案件`, title: '調達案件番号の種類。同じ案件番号に複数の行があることがある' },
@@ -87,13 +91,7 @@ export function ProcurementListPane({ items, sortKey, sortDir, onSort, selected,
                 </th>
               ))}
             </tr>
-            {items.length > 0 && (
-              <tr>
-                {COLS.map(c => (
-                  <td key={c.key} title={foot[c.key]?.title} className={`overflow-hidden whitespace-nowrap border-b border-neutral-300 bg-neutral-100 px-2 py-1.5 font-semibold tabular-nums text-neutral-700 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 ${c.left ? 'text-left' : 'text-right'}`}>{foot[c.key]?.text}</td>
-                ))}
-              </tr>
-            )}
+            {items.length > 0 && <ListFoot cols={COLS} cells={foot} selected={summarySelected} onSelect={onSelectSummary} />}
           </thead>
           <tbody>
             {shown.map(r => {

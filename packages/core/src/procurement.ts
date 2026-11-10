@@ -164,6 +164,23 @@ export function procurementTotals(rows: readonly ProcurementListRow[]): Procurem
   return { rows: rows.length, yen: cents / 100, vendors: vendors.size, cases: cases.size, ministries: ministries.size };
 }
 
+/** 年度ごとの集計（一覧全体の年度推移）。`totals` が null の年度は、まだ読み込んでいない（0 行とは別） */
+export interface ProcurementTrendYear {
+  year: number;
+  totals: ProcurementTotals | null;
+}
+
+/**
+ * 今の絞り込みを、全年度の行にそのまま掛けた集計。`rowsOf` は年度の行（読み込み済みなら）。年度の並びは `years` のまま。
+ * 一覧の集計行（`procurementTotals`）と同じ足し方なので、選んだ年度の値は、一覧の集計行と一致する。
+ */
+export function procurementTrend(years: readonly number[], rowsOf: (year: number) => readonly ProcurementListRow[] | undefined, f: ProcurementFilters, noneSelected: string): ProcurementTrendYear[] {
+  return years.map(year => {
+    const rows = rowsOf(year);
+    return { year, totals: rows ? procurementTotals(filterProcurementRows(rows, f, noneSelected)) : null };
+  });
+}
+
 /** 落札価格の表示。原本は小数 2 桁（全 316,281 行）で、円未満が 0 でない行がある（1,831 行）ので、小数は 2 桁まで出す */
 export const yenText = (yen: number): string => `${yen.toLocaleString('ja-JP', { maximumFractionDigits: 2 })} 円`;
 
