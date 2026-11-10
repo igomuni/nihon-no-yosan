@@ -114,4 +114,29 @@ export const DATA_COLUMNS: Record<string, Record<string, DataColumn[]>> = {
       col('yen', 'number | null', '予算額（歳出予算項目ごと）', { unit: '円' }),
     ],
   },
+  'procurement/meta.json.gz': {
+    ministries: [
+      col('code', 'string', '府省コード（原本の 2 桁）'),
+      col('name', 'string', '名称（仕様書 3.1 の表）'),
+    ],
+    methods: [
+      col('code', 'string', '入札方式コード（原本の 7 桁）'),
+      col('name', 'string', '名称（仕様書 3.2 の表）'),
+    ],
+  },
+  'procurement/{年度}.json.gz': {
+    vendors: [
+      col('name', 'string', '商号又は名称（原本のまま）'),
+      col('corp', 'string', '法人番号（13 桁の数字。原本が空なら空文字）'),
+    ],
+    rows: [
+      col('caseNo', 'string', '調達案件番号（19 桁の数字）。同じ案件番号に複数の行があることがある'),
+      col('name', 'string', '調達案件名称'),
+      col('date', 'string', '落札決定日（YYYY-MM-DD。ファイルの年度の 4 月〜翌 3 月）'),
+      col('yen', 'number', '落札価格（原本のまま。小数 2 桁まで）。単価契約の単価など、総額でない値も含みうる', { unit: '円' }),
+      col('ministry', 'string', '府省コード（名前は procurement/meta.json.gz の ministries）'),
+      col('method', 'string', '入札方式コード（名前は procurement/meta.json.gz の methods）'),
+      col('vendor', 'number', '落札者の添字（vendors の配列の位置）'),
+    ],
+  },
 };

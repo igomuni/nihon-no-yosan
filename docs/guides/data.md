@@ -23,6 +23,10 @@
 
 FY2017〜FY2022 の項・目の CSV は、基準データ（`reference-v0`）とは別のデータセット `mof-history-v0`（`data/dataset/mof-history-v0/`、git に入れない）に置く。入力の zip の記録と出力の SHA-256 は `datasets/mof-history-v0/`。作り方・確かめたこと・限界は `docs/guides/mof-history.md`。Releases の `dataset-mof-history-v0` に置いて、公開サイトにも出す（`docs/guides/web-publish.md`）。
 
+## 調達ポータルの落札実績（別のデータセット）
+
+画面「調達を観る」のデータ。調達ポータルの落札実績オープンデータ（全件データ）の zip を、`data/download/p-portal/` に原本のまま置き（git に入れない）、URL と SHA-256 を `manifest.json` に書く。画面用の JSON は `npm run build:data` が作る。作り方・検査・限界は `docs/guides/procurement.md`。利用条件は `datasets/terms.json` の `p-portal.go.jp`（`gov-terms-2.0`）。公開サイトには、まだ載せていない。
+
 ## 公開の関門
 
 データセットは、各出典（行政事業レビューシステム、財務省、各府省、国会・裁判所）の利用条件と出典表記を確かめるまで公開しない（下の「出典の利用条件」）。原本そのもの（PDF・zip）は再配布しない。
@@ -75,7 +79,7 @@ node packages/pipeline/src/migrate/verify.ts data/dataset/reference-v0 datasets/
 | `diet-courts` | 5（衆議院・参議院・裁判所・裁判官弾劾裁判所・裁判官訴追委員会。ページ本文を読んだ 4、サーバーが応答せず検索結果の説明だけ 1: 裁判官訴追委員会） | 著作権法で認められる利用（私的使用・引用など）に限り、出所を明示して転載・複製できる。無断の改変はできない。規約の上では再配布は認められていない。名前・コード・額・頁の表（0004）と plain text（0005）は、著作物でない、または創作的な部分が小さいと判断して入れる |
 | `unconfirmed` | 0 | 利用条件を確かめられていない。公開しない |
 
-- **公開の関門:** 公開できるのは、`pdl1.0` と `diet-courts` のドメインの分。`basis` が `search-summary` のもの（会計検査院 `jbaudit.go.jp` の 5 本と、裁判官訴追委員会 `sotsui.go.jp` の 5 本）は、ページ本文を読んでから公開する（2026-10-23 に開こうとしたが、どちらのサーバーも応答しなかった）。`unconfirmed` の分は、確かめるまで公開しない（今は無い）。
+- **公開の関門:** 公開できるのは、`pdl1.0`・`gov-terms-2.0`（調達ポータル）・`diet-courts` のドメインの分。`basis` が `search-summary` のもの（会計検査院 `jbaudit.go.jp` の 5 本と、裁判官訴追委員会 `sotsui.go.jp` の 5 本）は、ページ本文を読んでから公開する（2026-10-23 に開こうとしたが、どちらのサーバーも応答しなかった）。`unconfirmed` の分は、確かめるまで公開しない（今は無い）。
 - PDL1.0 は「数値データ、簡単な表・グラフ等は著作権による保護の対象ではありません」としている。国会・裁判所の書から作った表と plain text は、この解釈と 0004・0005 の判断で入れる。法律の専門家には確かめていない。
 - 予算書の CSV・XML の出どころは、財務省の予算書・決算書データベース（`www.bb.mof.go.jp`）。このデータベースは自身の利用規約（`https://www.bb.mof.go.jp/terms/`）に PDL1.0 と出典の書き方を持つ。`www.mof.go.jp` の規約が及ぶとは書かれていない。
 - 行政事業レビュー見える化サイト（RS システム、`rssystem.go.jp`）の利用規約（`https://rssystem.go.jp/terms`、2026-10-28 に本文を読んだ）は、PDL1.0 に準拠した利用条件。出典は「出典：行政事業レビュー見える化サイト（https://rssystem.go.jp）」、編集・加工したときはそのことも書く（国が作ったように見せない）。法人番号（国税庁）と根拠法令名（e-Gov）は、それぞれの提供元の条件に従う。
