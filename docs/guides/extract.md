@@ -56,6 +56,19 @@ node packages/pipeline/src/extract/toc-cli.ts   data/dataset/reference-v0 <年�
 
 比べ方は `packages/pipeline/src/migrate/compare-plain-text.ts` と `compare-extract-csv.ts`。
 
+## 追補（FY2027 の厚生労働省の 4 書、2026-11-11）
+
+凍結の後で、厚生労働省の令和９年度歳出概算要求書 4 本（`27syokan/dl/05-{1,2,3,4}b-01.pdf`。2026-11-09 公開）を足した（`docs/guides/data.md`）。凍結記録に 4 件を足し、FY2027 を、この手順で作り直した（136 書、7,919 頁。poppler 26.09.0）。
+
+| 比べたもの | 結果 |
+|---|---|
+| 既存の 132 書の plain text | 作り直した出力と、全件バイト一致。`plain-text-manifest.json` の既存の 132 書の記録も同一（違うのは、凍結記録の参照と、書・頁の件数だけ） |
+| 既存の総表（62）・明細表（124）・表紙（62）・目次（58）の CSV | 全ファイルがバイト一致。明細表の `unresolved.csv` だけ、4 書の行（2,544 行）が増える（4,858 → 7,402 行） |
+| 新しい 4 書 | 総表 CSV 350・99・73・43 行、明細表 CSV 7,364・2,418・382・291 行、表紙 13・6・6・6 行、目次 336・98・72・43 行（見出しを含む）。総表の読めなかった行 22、明細表の 2,544（理由は `UNKNOWN_HEADER_ZONE_LINE` が 2,522）。FY2026 の同じ 4 書は、明細表の読めなかった行 2,514（`UNKNOWN_HEADER_ZONE_LINE` が 2,491）で、同じ水準 |
+
+- 追補分は、前のリポジトリの出力との比較（`datasets/reference-v0/*-comparison.json`）の対象外（この比較は、凍結の時点のもの）。
+- 実行は、`add-request-sources.ts`（`data.md`）が、既存の書の出力が 1 バイトも変わらないことを確かめてから足す。
+
 ## 限界
 
 - 手元の PDF は、公式サイトから取り直して比べていない（`docs/guides/data.md`）。PDF から出力への一致は「記録の SHA-256 の PDF からなら同じ出力」まで。
