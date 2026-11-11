@@ -80,7 +80,7 @@ node packages/pipeline/src/migrate/verify.ts <基準データ> datasets/referenc
 
 - **2026-11-11:** FY2027 の厚生労働省の歳出概算要求書 4 書（`mhlw.go.jp`、`27syokan`）を足した。書は 681 → 685、ファイルは 2,298 → 2,318（4 書 × 5 種類）。PDF は、厚生労働省の資料ページ（`https://www.mhlw.go.jp/wp/yosan/yosan/27syokan/05.html`、2026-11-09 公開）から、2026-11-11 に正規の URL で取得した（サイズは、サーバーの Content-Length と一致。取得の方法は `pipeline-fetch`）。凍結記録は、132 → 136 件（`targetIndex` は、`localPdfPath` の順に振り直した）。抽出と検算は `extract.md`。
 - 追補した書の `evidence` は、初版と同じ形（`pdfLocalHashMatchesRecord` は、足した凍結記録との一致。`pdfComparedWithOfficialSite` は false）。**公式サイトから、もう一度取り直して比べてはいない**。
-- **公開（Releases）は、まだ更新していない。** 公開サイトは、公開分の基準データ（Releases の `reference-v0.tar.gz`、`published-manifest.json`）から作るので、公開サイトの FY2027 に、厚生労働省の項が入るのは、Releases を出し直してから（新しいタグ。`web-publish.md`）。手元の `npm run build:data` では、すでに入る。
+- **公開（Releases）は、2026-11-11 に更新した**（新しいタグ `dataset-reference-v0-r2`。675 書、2,268 ファイル、43.0 MB。追加 20 ファイル、変更 3 ファイル、削除 0。`web-publish.md`）。公開サイトは、`release.json` が指すタグから作るので、公開サイトの FY2027 に厚生労働省の項が入るのは、この `release.json` を `main` に入れたあと。公開分から作った画面用データでも、FY2027 に厚生労働省 118・労働保険 44・年金 30 の項が入ることを、手元で CI と同じ手順で確かめた（FY2027 の項は 1,087。手元の全体の 1,090 より 3 少ないのは、会計検査院・裁判官訴追委員会の分）。
 
 ## 出典の利用条件
 
@@ -103,7 +103,7 @@ node packages/pipeline/src/migrate/verify.ts <基準データ> datasets/referenc
 
 ## 公開
 
-公開できる分（利用条件の本文を確かめた書）だけを `reference-v0.tar.gz` にして、GitHub Releases（タグ `dataset-reference-v0`）に置く。作り方、入れない書、CI での照合は `docs/guides/web-publish.md`。公開分の manifest は `datasets/reference-v0/published-manifest.json`、tar.gz の SHA-256 は `datasets/reference-v0/release.json`。
+公開できる分（利用条件の本文を確かめた書）だけを `reference-v0.tar.gz` にして、GitHub Releases（タグ `dataset-reference-v0-r2`。初版の公開は `dataset-reference-v0`）に置く。作り方、入れない書、CI での照合は `docs/guides/web-publish.md`。公開分の manifest は `datasets/reference-v0/published-manifest.json`、tar.gz の SHA-256 は `datasets/reference-v0/release.json`。
 
 ## 未確認
 

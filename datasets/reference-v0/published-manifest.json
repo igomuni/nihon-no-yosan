@@ -5,7 +5,15 @@
  "origin": {
   "repository": "igomuni/marumie-rssystem",
   "commit": "3aef2de9d0f08a438c94efd32a3c0bc2ae33af19",
-  "note": "fixtures は git archive、plain text は作業ツリー（git の外）から、バイト同一でコピーした。"
+  "note": "fixtures は git archive、plain text は作業ツリー（git の外）から、バイト同一でコピーした。",
+  "additions": [
+   {
+    "date": "2026-11-11",
+    "year": "2027",
+    "sources": 4,
+    "note": "厚生労働省の令和９年度歳出概算要求書 4 書（厚生労働省の資料ページから、2026-11-11 に正規の URL で取得して足した。概算要求書の抽出は、この追補のときの手順（extract.md）で作り直し、既存の書の出力は、1 バイトも変わらない）"
+   }
+  ]
  },
  "termsFile": {
   "path": "datasets/terms.json",
@@ -16,7 +24,7 @@
   "acquisition": "manual の PDF は、前のリポジトリの記録の上で、原本とのバイト同一性を照合できない。"
  },
  "summary": {
-  "pdfSources": 671,
+  "pdfSources": 675,
   "mofArchiveFiles": 52,
   "mofArchiveTerms": {
    "domain": "bb.mof.go.jp",
@@ -25,10 +33,10 @@
   },
   "sourcesByTerms": {
    "diet-courts/page-read": 20,
-   "pdl1.0/page-read": 651
+   "pdl1.0/page-read": 655
   },
-  "files": 2248,
-  "bytes": 281711935
+  "files": 2268,
+  "bytes": 298173416
  },
  "excluded": {
   "cover/summary.json": 5,
@@ -55,7 +63,7 @@
  },
  "published": {
   "note": "公開できる分（利用条件を本文で確かめた書）だけ。入れない書の CSV・plain text と、unresolved.csv のその書の行は含まない。pdf-corpus-freeze.json と plain-text-manifest.json は全 PDF の記録（URL・SHA-256）のまま",
-  "basedOnManifestSha256": "99797aacef28584f35b9155034f8a2cab303b8180396315e8adb62076f7d8016",
+  "basedOnManifestSha256": "58adc689c085e9d92534f426ba0757317c61d3f039d517e033fd53e8192719dd",
   "excludedSources": [
    {
     "year": "2023",
@@ -166,8 +174,8 @@
     "after": 9408
    },
    "budget-request/2027/detail-table/unresolved.csv": {
-    "before": 4858,
-    "after": 4834
+    "before": 7402,
+    "after": 7378
    }
   }
  },
@@ -1972,6 +1980,10 @@
   "budget-request/2027/cover/sources/meti.go.jp__main__yosangaisan__fy2027__pdf__tokkyo_o.csv": {"sha256":"0beefa3087424ec0ec95468d5017e6fe61657a4634f17b55663dfbf28ca0f8af","bytes":387},
   "budget-request/2027/cover/sources/mext.go.jp__content__20260907_mxt_kaikesou01-000051991_1.csv": {"sha256":"4f5a8f9e0802414d7a7b14d1d496aa085ee3ebf0de35e33a4435428ea2621d1d","bytes":561},
   "budget-request/2027/cover/sources/mext.go.jp__content__20260907_mxt_kaikesou01-000051991_8.csv": {"sha256":"2453dfa87d13e515aff6141939fa8525708ca8650407dc0a203327e600339ccf","bytes":493},
+  "budget-request/2027/cover/sources/mhlw.go.jp__wp__yosan__yosan__27syokan__dl__05-1b-01.csv": {"sha256":"bd79ba2df729e8f965b222071f3b4f8a65416e7e8c1606b4b1baf5476411e735","bytes":871},
+  "budget-request/2027/cover/sources/mhlw.go.jp__wp__yosan__yosan__27syokan__dl__05-2b-01.csv": {"sha256":"cf88895690c9e7709bd5a3951208cf663ce9bade24d931fe9c06c1ef557e9b2e","bytes":379},
+  "budget-request/2027/cover/sources/mhlw.go.jp__wp__yosan__yosan__27syokan__dl__05-3b-01.csv": {"sha256":"ad0d59f7a4370f02b496788b1cf180d4dd30b074ad9c5046f230011919dbb126","bytes":367},
+  "budget-request/2027/cover/sources/mhlw.go.jp__wp__yosan__yosan__27syokan__dl__05-4b-01.csv": {"sha256":"2ed34b6b3b24f7dd2ebb98fdb64e10fe4f1aaa05163b31b7dd2e6bba040caaf8","bytes":409},
   "budget-request/2027/cover/sources/mlit.go.jp__page__content__002021868.csv": {"sha256":"d14071fc296e8897304c8b0c7d055444d87ff557f72738ebe3dddb0e8f8c5058","bytes":1030},
   "budget-request/2027/cover/sources/mlit.go.jp__page__content__002021873.csv": {"sha256":"85d1e8af021c1e4cbfad49d8f4ed1f89d0dffdc2fa6da9ac2be12cdab8489af2","bytes":385},
   "budget-request/2027/cover/sources/mlit.go.jp__page__content__002021874.csv": {"sha256":"89cde830f4a6581fc4257562e8ba90eb6a99e32e78e46a34b7cd64776e9260d1","bytes":424},
@@ -2095,6 +2107,10 @@
   "budget-request/2027/detail-table/sources/meti.go.jp__main__yosangaisan__fy2027__pdf__tokkyo_o.csv": {"sha256":"52027e37cbc3b61730f07a2b08973ecbadfd04eec514bfbcab31877c7994514a","bytes":19466},
   "budget-request/2027/detail-table/sources/mext.go.jp__content__20260907_mxt_kaikesou01-000051991_3.csv": {"sha256":"fbd90dbab9d48786ec5d68874de573ed5e4a6dc425b48b42a7345e836eeb72fd","bytes":406183},
   "budget-request/2027/detail-table/sources/mext.go.jp__content__20260907_mxt_kaikesou01-000051991_8.csv": {"sha256":"6debc8a53a9949c045a2640fe502e3b1fbe7d06940422fd0f6d05cf2745b5b62","bytes":31274},
+  "budget-request/2027/detail-table/sources/mhlw.go.jp__wp__yosan__yosan__27syokan__dl__05-1b-01.csv": {"sha256":"ea51697fe8e3f9690d435ab3d3b8246db923331873cb05791cc4adb9af410a96","bytes":835030},
+  "budget-request/2027/detail-table/sources/mhlw.go.jp__wp__yosan__yosan__27syokan__dl__05-2b-01.csv": {"sha256":"bdaec9e0b352d78ca5f30df23cf03d4222f5a097e50166415c67198824f57032","bytes":280911},
+  "budget-request/2027/detail-table/sources/mhlw.go.jp__wp__yosan__yosan__27syokan__dl__05-3b-01.csv": {"sha256":"6a2954767b3a4d19e05efcee0528c0ba9b3bf47f217ea50873048bc71468a17d","bytes":41641},
+  "budget-request/2027/detail-table/sources/mhlw.go.jp__wp__yosan__yosan__27syokan__dl__05-4b-01.csv": {"sha256":"0a33dc998d14f18ae24905440fec12dee5aecb634a2e11b8aa63514f841248c7","bytes":31851},
   "budget-request/2027/detail-table/sources/mlit.go.jp__page__content__002021868.csv": {"sha256":"00a2c6d4ac9fe33032811a8e2d4b1f70492d8820a126af4187912784dd244e91","bytes":1078058},
   "budget-request/2027/detail-table/sources/mlit.go.jp__page__content__002021873.csv": {"sha256":"595ffe84a55eba13a24a3df5ebfa5c9e91e69d591f6666583e1431fec66edd8a","bytes":101763},
   "budget-request/2027/detail-table/sources/mlit.go.jp__page__content__002021874.csv": {"sha256":"e15d4426d36d3676f7f49529b7a7039f1cf1ffccb88cf17c57e2a592fd8b73da","bytes":6201},
@@ -2118,9 +2134,9 @@
   "budget-request/2027/detail-table/sources/shugiin.go.jp__internet__itdb_annai.nsf__html__statics__osirase__kaikei-saishutsugaisan9.pdf__%24File__kaikei-saishutsugaisan9.csv": {"sha256":"f82c3a1c18a7b712fe03a92f841cf69f51e9aff671540a8382a4da38a93a8420","bytes":13871},
   "budget-request/2027/detail-table/sources/soumu.go.jp__main_content__001091979.csv": {"sha256":"41f72367fbb28aad1d334ef34cf2f94859d17e841113047724e1a6d33ac6e30c","bytes":302325},
   "budget-request/2027/detail-table/sources/soumu.go.jp__main_content__001091981.csv": {"sha256":"0d6fb7405ccd9da019bad69eb167b347105593051d30855f2868275fcb0d5b75","bytes":6045},
-  "budget-request/2027/detail-table/unresolved.csv": {"sha256":"435763a3bdc305f88ba1510f56cd110c884dd72d173b64b17be8937045a7ef97","bytes":1250299},
-  "budget-request/2027/pdf-corpus-freeze.json": {"sha256":"ab1bc9b376f33332da49ebd30e7281fee616af519178db67af3d608c2dcfbaad","bytes":76507},
-  "budget-request/2027/plain-text-manifest.json": {"sha256":"eaa8e9b4ee3020b6b222ac4746070efc3dae1f007f14e8d96868414189176d10","bytes":464100},
+  "budget-request/2027/detail-table/unresolved.csv": {"sha256":"c3993f63d9c6f02a0b7cc7ffdf2347869350466ee691f684619bb8301023357b","bytes":1810160},
+  "budget-request/2027/pdf-corpus-freeze.json": {"sha256":"e1b23ad59b2417464c5e29400194e7cf806d090bdde3be7223069146eb188edc","bytes":79372},
+  "budget-request/2027/plain-text-manifest.json": {"sha256":"0d3f92779ddd1e70ca845bf6313020dfd577df1aff9b47688dee9cafff72e5fb","bytes":660857},
   "budget-request/2027/plain-text/aoc.go.jp__files__documents__2026-09__令和９年度概算要求書（一般会計）_0.txt": {"sha256":"cae0d62986298c48fa06a0290058731aafc6661bac311b9854eb2028a107707d","bytes":30819},
   "budget-request/2027/plain-text/caa.go.jp__policies__budget__assets__caa_cms_205_260911_01.txt": {"sha256":"e47168edb0b12185ec0c07104fef06eacbb9e509e32776b76a38c1f8142cddae","bytes":616855},
   "budget-request/2027/plain-text/caa.go.jp__policies__budget__assets__caa_cms_205_260911_02.txt": {"sha256":"b1e88456e33a20795fe13b37baff246b480e39c7fa8c71a6901c73fb3842936e","bytes":13499},
@@ -2227,6 +2243,10 @@
   "budget-request/2027/plain-text/mext.go.jp__content__20260907_mxt_kaikesou01-000051991_2.txt": {"sha256":"4d68fad7b08905e7ee2addae7d076e4bcaf6218bbc4e7bf758fb25e770e30176","bytes":52786},
   "budget-request/2027/plain-text/mext.go.jp__content__20260907_mxt_kaikesou01-000051991_3.txt": {"sha256":"5a322e175bed56c9d9dddecaee034d8d234e7234160a2d23aca303e40da343f1","bytes":2142138},
   "budget-request/2027/plain-text/mext.go.jp__content__20260907_mxt_kaikesou01-000051991_8.txt": {"sha256":"d1fc54c9058223fdfbbf003ab6246d375f6f51046da1a894d8edea748fd110fc","bytes":129053},
+  "budget-request/2027/plain-text/mhlw.go.jp__wp__yosan__yosan__27syokan__dl__05-1b-01.txt": {"sha256":"aacd6e4116367d4e08c2b3e8bbd0b61069bd92a6e20f61b6e8f35bb0ddd628b2","bytes":9452325},
+  "budget-request/2027/plain-text/mhlw.go.jp__wp__yosan__yosan__27syokan__dl__05-2b-01.txt": {"sha256":"1273dcbe01230b38de7b8e5d9a8917a3b0753e4d054277a30ffa2bc87cd652c9","bytes":4602998},
+  "budget-request/2027/plain-text/mhlw.go.jp__wp__yosan__yosan__27syokan__dl__05-3b-01.txt": {"sha256":"6c0c93466f8e481ee65c50747fff431186fd095a1a2706f9008482b441fe41bd","bytes":95796},
+  "budget-request/2027/plain-text/mhlw.go.jp__wp__yosan__yosan__27syokan__dl__05-4b-01.txt": {"sha256":"e319521dde31ab7df8e104bb0bf0e947010e2760437d3572749c48c5c8bfde5c","bytes":209421},
   "budget-request/2027/plain-text/mlit.go.jp__page__content__002021868.txt": {"sha256":"ecb8219abc3c5b8c2214bed17a94447a675bd04c06a0444c679f50f9a249c83e","bytes":4579377},
   "budget-request/2027/plain-text/mlit.go.jp__page__content__002021873.txt": {"sha256":"9222bdc38696c272d8e14508ec1309216245bab50f16a0d828333f29c5993dc0","bytes":208199},
   "budget-request/2027/plain-text/mlit.go.jp__page__content__002021874.txt": {"sha256":"c2c8221185b0680c12774dce7d3f90670e1c40dd61135359a26caa0d9a9f193b","bytes":19135},
@@ -2283,6 +2303,10 @@
   "budget-request/2027/toc/sources/meti.go.jp__main__yosangaisan__fy2027__pdf__tokkyo_o.csv": {"sha256":"e4734177bf91c3b16181e452862f8454d1f6c41238538f95e00953a37463b77f","bytes":661},
   "budget-request/2027/toc/sources/mext.go.jp__content__20260907_mxt_kaikesou01-000051991_1.csv": {"sha256":"0fa8db8588f4375680527a40f38ae55123819bf7b68d08da2688c4a63ebee428","bytes":12619},
   "budget-request/2027/toc/sources/mext.go.jp__content__20260907_mxt_kaikesou01-000051991_8.csv": {"sha256":"9149630b56d1016e74af6a7cb8fb3e6e7b3c57e43eabce60d2f7da37d295d1ae","bytes":2044},
+  "budget-request/2027/toc/sources/mhlw.go.jp__wp__yosan__yosan__27syokan__dl__05-1b-01.csv": {"sha256":"c74cd7c3a9859645c459c80084ce1613b7145fb9741919d0cb91c61bbff41f0b","bytes":22525},
+  "budget-request/2027/toc/sources/mhlw.go.jp__wp__yosan__yosan__27syokan__dl__05-2b-01.csv": {"sha256":"8560b1e9ee6a34ad566471b9b261647e42d23a8c9d2964ce54532c23548a190b","bytes":5968},
+  "budget-request/2027/toc/sources/mhlw.go.jp__wp__yosan__yosan__27syokan__dl__05-3b-01.csv": {"sha256":"35e3eeb33c5da082626fa3537c3de4d3b5698e858ed9449e971e7409b97c71c5","bytes":3860},
+  "budget-request/2027/toc/sources/mhlw.go.jp__wp__yosan__yosan__27syokan__dl__05-4b-01.csv": {"sha256":"c58c66f873a9239d3f409f7218feecc2013d9df86a4c0dcec9ccac405265c828","bytes":2541},
   "budget-request/2027/toc/sources/mlit.go.jp__page__content__002021868.csv": {"sha256":"d1877cb1a767d21751419b04f712b0637739369b9092ae5445dfd65d3d410355","bytes":29390},
   "budget-request/2027/toc/sources/mlit.go.jp__page__content__002021873.csv": {"sha256":"31685ffeb7d5687d133b6f1624c16f46004c03d30b867fdeec7a0dd376f32e7a","bytes":4042},
   "budget-request/2027/toc/sources/mlit.go.jp__page__content__002021874.csv": {"sha256":"9f04979652d834bf8920e6451cf6b5c813aea1abc9371b6fafe7be0f2f8186c9","bytes":1191},
@@ -2343,6 +2367,10 @@
   "budget-request/2027/total-table/sources/meti.go.jp__main__yosangaisan__fy2027__pdf__tokkyo_o.csv": {"sha256":"7e1267889b607a81649a252bdec6c47252617c1e575f46df5db94333c91b0a21","bytes":2590},
   "budget-request/2027/total-table/sources/mext.go.jp__content__20260907_mxt_kaikesou01-000051991_2.csv": {"sha256":"c8efc2fcd183551b56c13984064f77a6feb622f60190843160aa3d1864b4f9e1","bytes":40341},
   "budget-request/2027/total-table/sources/mext.go.jp__content__20260907_mxt_kaikesou01-000051991_8.csv": {"sha256":"ace951f9d0aa9639b0833c6605d659fd75e2dc807bd2bc064c3a4137ebc22802","bytes":6487},
+  "budget-request/2027/total-table/sources/mhlw.go.jp__wp__yosan__yosan__27syokan__dl__05-1b-01.csv": {"sha256":"205c75de13e05bf3173b915bdebb90c073960f5f54c6c39179fed0746c4bf7ba","bytes":70847},
+  "budget-request/2027/total-table/sources/mhlw.go.jp__wp__yosan__yosan__27syokan__dl__05-2b-01.csv": {"sha256":"0dbb5c6c913be9f183501ee8c20640ae301d2ee99548de29ce4a14642ad2d5e5","bytes":20501},
+  "budget-request/2027/total-table/sources/mhlw.go.jp__wp__yosan__yosan__27syokan__dl__05-3b-01.csv": {"sha256":"9b9c4f6b6272804d493fff04674945c404502eec5d6e9f9376881c9a60cb74c8","bytes":14773},
+  "budget-request/2027/total-table/sources/mhlw.go.jp__wp__yosan__yosan__27syokan__dl__05-4b-01.csv": {"sha256":"aeef97b0902f15becbc7120bb3a846e2eb83dcd21075cb5d49e0d9be7630f22d","bytes":8984},
   "budget-request/2027/total-table/sources/mlit.go.jp__page__content__002021868.csv": {"sha256":"90fdad1ab2d9a289108a9541467e2d87432c8a630a3ff8b58d9e8e698ca9b51e","bytes":89655},
   "budget-request/2027/total-table/sources/mlit.go.jp__page__content__002021873.csv": {"sha256":"2b7949edb7b07a8a689ce2e88dab58148e0e609150fdf2b8cdd462829bc2f260","bytes":12469},
   "budget-request/2027/total-table/sources/mlit.go.jp__page__content__002021874.csv": {"sha256":"b3e3d0478df2738b644142a761f4c18fb69db6098ace2dcb6cbbaaad0ec1e36e","bytes":3392},
@@ -3069,6 +3097,10 @@
   {"year":"2027","slug":"mext.go.jp__content__20260907_mxt_kaikesou01-000051991_2","domain":"mext.go.jp","authority":"文部科学省","sourceUrl":"https://www.mext.go.jp/content/20260907_mxt_kaikesou01-000051991_2.pdf","pdf":{"sha256":"a3b46296878662442ea7a558e7df3eed3cdfa1248cf365de3ff10b01aecf5734","bytes":31051,"pageCount":7,"acquisition":"pipeline-fetch"},"evidence":{"pdfLocalHashMatchesRecord":true,"pdfComparedWithOfficialSite":false,"plainTextMatchesRecord":true,"csvLinkedToPdfBy":"file-name"},"terms":{"status":"pdl1.0","basis":"page-read"},"files":{"plain-text":"budget-request/2027/plain-text/mext.go.jp__content__20260907_mxt_kaikesou01-000051991_2.txt","total-table":"budget-request/2027/total-table/sources/mext.go.jp__content__20260907_mxt_kaikesou01-000051991_2.csv"}},
   {"year":"2027","slug":"mext.go.jp__content__20260907_mxt_kaikesou01-000051991_3","domain":"mext.go.jp","authority":"文部科学省","sourceUrl":"https://www.mext.go.jp/content/20260907_mxt_kaikesou01-000051991_3.pdf","pdf":{"sha256":"cd62ada7d3d838e3d7bd241ec73a5957d1502bf33bade534cc09930fdb32c81e","bytes":913233,"pageCount":410,"acquisition":"pipeline-fetch"},"evidence":{"pdfLocalHashMatchesRecord":true,"pdfComparedWithOfficialSite":false,"plainTextMatchesRecord":true,"csvLinkedToPdfBy":"file-name"},"terms":{"status":"pdl1.0","basis":"page-read"},"files":{"detail-table":"budget-request/2027/detail-table/sources/mext.go.jp__content__20260907_mxt_kaikesou01-000051991_3.csv","plain-text":"budget-request/2027/plain-text/mext.go.jp__content__20260907_mxt_kaikesou01-000051991_3.txt"}},
   {"year":"2027","slug":"mext.go.jp__content__20260907_mxt_kaikesou01-000051991_8","domain":"mext.go.jp","authority":"文部科学省","sourceUrl":"https://www.mext.go.jp/content/20260907_mxt_kaikesou01-000051991_8.pdf","pdf":{"sha256":"279afa58c52a7c29fbfe000ceb12f446b363a632684e9fbbd78e18f7422e57f6","bytes":237730,"pageCount":28,"acquisition":"pipeline-fetch"},"evidence":{"pdfLocalHashMatchesRecord":true,"pdfComparedWithOfficialSite":false,"plainTextMatchesRecord":true,"csvLinkedToPdfBy":"file-name"},"terms":{"status":"pdl1.0","basis":"page-read"},"files":{"cover":"budget-request/2027/cover/sources/mext.go.jp__content__20260907_mxt_kaikesou01-000051991_8.csv","detail-table":"budget-request/2027/detail-table/sources/mext.go.jp__content__20260907_mxt_kaikesou01-000051991_8.csv","plain-text":"budget-request/2027/plain-text/mext.go.jp__content__20260907_mxt_kaikesou01-000051991_8.txt","toc":"budget-request/2027/toc/sources/mext.go.jp__content__20260907_mxt_kaikesou01-000051991_8.csv","total-table":"budget-request/2027/total-table/sources/mext.go.jp__content__20260907_mxt_kaikesou01-000051991_8.csv"}},
+  {"year":"2027","slug":"mhlw.go.jp__wp__yosan__yosan__27syokan__dl__05-1b-01","domain":"mhlw.go.jp","authority":"厚生労働省","sourceUrl":"https://www.mhlw.go.jp/wp/yosan/yosan/27syokan/dl/05-1b-01.pdf","pdf":{"sha256":"e4749c6a9bbc2f2d293984615538e982fe1f9299daf25c24c671b897b31f34e8","bytes":5402552,"pageCount":1732,"acquisition":"pipeline-fetch"},"evidence":{"pdfLocalHashMatchesRecord":true,"pdfComparedWithOfficialSite":false,"plainTextMatchesRecord":true,"csvLinkedToPdfBy":"file-name"},"terms":{"status":"pdl1.0","basis":"page-read"},"files":{"cover":"budget-request/2027/cover/sources/mhlw.go.jp__wp__yosan__yosan__27syokan__dl__05-1b-01.csv","detail-table":"budget-request/2027/detail-table/sources/mhlw.go.jp__wp__yosan__yosan__27syokan__dl__05-1b-01.csv","plain-text":"budget-request/2027/plain-text/mhlw.go.jp__wp__yosan__yosan__27syokan__dl__05-1b-01.txt","toc":"budget-request/2027/toc/sources/mhlw.go.jp__wp__yosan__yosan__27syokan__dl__05-1b-01.csv","total-table":"budget-request/2027/total-table/sources/mhlw.go.jp__wp__yosan__yosan__27syokan__dl__05-1b-01.csv"},"addition":{"date":"2026-11-11","note":"厚生労働省の令和９年度歳出概算要求書 4 書（厚生労働省の資料ページから、2026-11-11 に正規の URL で取得して足した。概算要求書の抽出は、この追補のときの手順（extract.md）で作り直し、既存の書の出力は、1 バイトも変わらない）"}},
+  {"year":"2027","slug":"mhlw.go.jp__wp__yosan__yosan__27syokan__dl__05-2b-01","domain":"mhlw.go.jp","authority":"厚生労働省","sourceUrl":"https://www.mhlw.go.jp/wp/yosan/yosan/27syokan/dl/05-2b-01.pdf","pdf":{"sha256":"f3cc60b999663ba2b5813c9c4ad3b3934a909cbce50c9195b45ba7b8d7047419","bytes":2597774,"pageCount":761,"acquisition":"pipeline-fetch"},"evidence":{"pdfLocalHashMatchesRecord":true,"pdfComparedWithOfficialSite":false,"plainTextMatchesRecord":true,"csvLinkedToPdfBy":"file-name"},"terms":{"status":"pdl1.0","basis":"page-read"},"files":{"cover":"budget-request/2027/cover/sources/mhlw.go.jp__wp__yosan__yosan__27syokan__dl__05-2b-01.csv","detail-table":"budget-request/2027/detail-table/sources/mhlw.go.jp__wp__yosan__yosan__27syokan__dl__05-2b-01.csv","plain-text":"budget-request/2027/plain-text/mhlw.go.jp__wp__yosan__yosan__27syokan__dl__05-2b-01.txt","toc":"budget-request/2027/toc/sources/mhlw.go.jp__wp__yosan__yosan__27syokan__dl__05-2b-01.csv","total-table":"budget-request/2027/total-table/sources/mhlw.go.jp__wp__yosan__yosan__27syokan__dl__05-2b-01.csv"},"addition":{"date":"2026-11-11","note":"厚生労働省の令和９年度歳出概算要求書 4 書（厚生労働省の資料ページから、2026-11-11 に正規の URL で取得して足した。概算要求書の抽出は、この追補のときの手順（extract.md）で作り直し、既存の書の出力は、1 バイトも変わらない）"}},
+  {"year":"2027","slug":"mhlw.go.jp__wp__yosan__yosan__27syokan__dl__05-3b-01","domain":"mhlw.go.jp","authority":"厚生労働省","sourceUrl":"https://www.mhlw.go.jp/wp/yosan/yosan/27syokan/dl/05-3b-01.pdf","pdf":{"sha256":"194f34bf328657142965f681dbb12f31867cccc61c310a1ac7b32c60bbdf1c35","bytes":209103,"pageCount":28,"acquisition":"pipeline-fetch"},"evidence":{"pdfLocalHashMatchesRecord":true,"pdfComparedWithOfficialSite":false,"plainTextMatchesRecord":true,"csvLinkedToPdfBy":"file-name"},"terms":{"status":"pdl1.0","basis":"page-read"},"files":{"cover":"budget-request/2027/cover/sources/mhlw.go.jp__wp__yosan__yosan__27syokan__dl__05-3b-01.csv","detail-table":"budget-request/2027/detail-table/sources/mhlw.go.jp__wp__yosan__yosan__27syokan__dl__05-3b-01.csv","plain-text":"budget-request/2027/plain-text/mhlw.go.jp__wp__yosan__yosan__27syokan__dl__05-3b-01.txt","toc":"budget-request/2027/toc/sources/mhlw.go.jp__wp__yosan__yosan__27syokan__dl__05-3b-01.csv","total-table":"budget-request/2027/total-table/sources/mhlw.go.jp__wp__yosan__yosan__27syokan__dl__05-3b-01.csv"},"addition":{"date":"2026-11-11","note":"厚生労働省の令和９年度歳出概算要求書 4 書（厚生労働省の資料ページから、2026-11-11 に正規の URL で取得して足した。概算要求書の抽出は、この追補のときの手順（extract.md）で作り直し、既存の書の出力は、1 バイトも変わらない）"}},
+  {"year":"2027","slug":"mhlw.go.jp__wp__yosan__yosan__27syokan__dl__05-4b-01","domain":"mhlw.go.jp","authority":"厚生労働省","sourceUrl":"https://www.mhlw.go.jp/wp/yosan/yosan/27syokan/dl/05-4b-01.pdf","pdf":{"sha256":"b13d05b68722983cfd1cc04a8369ff268e8b7da6b9b183379be8cc07b33cb11b","bytes":313363,"pageCount":45,"acquisition":"pipeline-fetch"},"evidence":{"pdfLocalHashMatchesRecord":true,"pdfComparedWithOfficialSite":false,"plainTextMatchesRecord":true,"csvLinkedToPdfBy":"file-name"},"terms":{"status":"pdl1.0","basis":"page-read"},"files":{"cover":"budget-request/2027/cover/sources/mhlw.go.jp__wp__yosan__yosan__27syokan__dl__05-4b-01.csv","detail-table":"budget-request/2027/detail-table/sources/mhlw.go.jp__wp__yosan__yosan__27syokan__dl__05-4b-01.csv","plain-text":"budget-request/2027/plain-text/mhlw.go.jp__wp__yosan__yosan__27syokan__dl__05-4b-01.txt","toc":"budget-request/2027/toc/sources/mhlw.go.jp__wp__yosan__yosan__27syokan__dl__05-4b-01.csv","total-table":"budget-request/2027/total-table/sources/mhlw.go.jp__wp__yosan__yosan__27syokan__dl__05-4b-01.csv"},"addition":{"date":"2026-11-11","note":"厚生労働省の令和９年度歳出概算要求書 4 書（厚生労働省の資料ページから、2026-11-11 に正規の URL で取得して足した。概算要求書の抽出は、この追補のときの手順（extract.md）で作り直し、既存の書の出力は、1 バイトも変わらない）"}},
   {"year":"2027","slug":"mlit.go.jp__page__content__002021868","domain":"mlit.go.jp","authority":"国土交通省","sourceUrl":"https://www.mlit.go.jp/page/content/002021868.pdf","pdf":{"sha256":"ad58227f55c844fe90f9a4b95dd8f86e14c04fec7741ab1325de132cbb772041","bytes":1618865,"pageCount":911,"acquisition":"pipeline-fetch"},"evidence":{"pdfLocalHashMatchesRecord":true,"pdfComparedWithOfficialSite":false,"plainTextMatchesRecord":true,"csvLinkedToPdfBy":"file-name"},"terms":{"status":"pdl1.0","basis":"page-read"},"files":{"cover":"budget-request/2027/cover/sources/mlit.go.jp__page__content__002021868.csv","detail-table":"budget-request/2027/detail-table/sources/mlit.go.jp__page__content__002021868.csv","plain-text":"budget-request/2027/plain-text/mlit.go.jp__page__content__002021868.txt","toc":"budget-request/2027/toc/sources/mlit.go.jp__page__content__002021868.csv","total-table":"budget-request/2027/total-table/sources/mlit.go.jp__page__content__002021868.csv"}},
   {"year":"2027","slug":"mlit.go.jp__page__content__002021873","domain":"mlit.go.jp","authority":"国土交通省","sourceUrl":"https://www.mlit.go.jp/page/content/002021873.pdf","pdf":{"sha256":"4d9f77c73d08ee3b2199a748433d9fd96163a2a2fd55675ec711a8e734604038","bytes":92113,"pageCount":52,"acquisition":"pipeline-fetch"},"evidence":{"pdfLocalHashMatchesRecord":true,"pdfComparedWithOfficialSite":false,"plainTextMatchesRecord":true,"csvLinkedToPdfBy":"file-name"},"terms":{"status":"pdl1.0","basis":"page-read"},"files":{"cover":"budget-request/2027/cover/sources/mlit.go.jp__page__content__002021873.csv","detail-table":"budget-request/2027/detail-table/sources/mlit.go.jp__page__content__002021873.csv","plain-text":"budget-request/2027/plain-text/mlit.go.jp__page__content__002021873.txt","toc":"budget-request/2027/toc/sources/mlit.go.jp__page__content__002021873.csv","total-table":"budget-request/2027/total-table/sources/mlit.go.jp__page__content__002021873.csv"}},
   {"year":"2027","slug":"mlit.go.jp__page__content__002021874","domain":"mlit.go.jp","authority":"国土交通省","sourceUrl":"https://www.mlit.go.jp/page/content/002021874.pdf","pdf":{"sha256":"b4438cff0c5f481f2e19ed613aefe672de21de57f59276430162a9ef4699429e","bytes":10912,"pageCount":9,"acquisition":"pipeline-fetch"},"evidence":{"pdfLocalHashMatchesRecord":true,"pdfComparedWithOfficialSite":false,"plainTextMatchesRecord":true,"csvLinkedToPdfBy":"file-name"},"terms":{"status":"pdl1.0","basis":"page-read"},"files":{"cover":"budget-request/2027/cover/sources/mlit.go.jp__page__content__002021874.csv","detail-table":"budget-request/2027/detail-table/sources/mlit.go.jp__page__content__002021874.csv","plain-text":"budget-request/2027/plain-text/mlit.go.jp__page__content__002021874.txt","toc":"budget-request/2027/toc/sources/mlit.go.jp__page__content__002021874.csv","total-table":"budget-request/2027/total-table/sources/mlit.go.jp__page__content__002021874.csv"}},

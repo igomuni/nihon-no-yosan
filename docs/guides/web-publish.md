@@ -7,7 +7,7 @@
 ## 流れ
 
 ```text
-Releases (dataset-reference-v0)          リポジトリ                       CI（.github/workflows/pages.yml）
+Releases (dataset-reference-v0-r2)       リポジトリ                       CI（.github/workflows/pages.yml）
   reference-v0.tar.gz  ──ダウンロード──▶  datasets/reference-v0/             ① SHA-256 を release.json と照合
   （公開分の基準データ）                    release.json                      ② 展開して published-manifest.json と全ファイル照合
                                            published-manifest.json          ③ npm run build:data（JSON と about.json）
@@ -70,17 +70,18 @@ RS の支出先の CSV（5-1〜5-4）を、個人名の可能性がある名前�
 `packages/pipeline/src/migrate/package.ts` が、基準データ（`data/dataset/reference-v0/`、手元の全体）から、公開できる分だけの `reference-v0.tar.gz` を作る。
 
 ```bash
-node packages/pipeline/src/migrate/package.ts data/dataset/reference-v0 datasets/reference-v0/manifest.json <出力ディレクトリ>
-gh release create dataset-reference-v0 <出力ディレクトリ>/reference-v0.tar.gz --title ... --notes-file ...
+node packages/pipeline/src/migrate/package.ts data/dataset/reference-v0 datasets/reference-v0/manifest.json <出力ディレクトリ> dataset-reference-v0-r2
+gh release create dataset-reference-v0-r2 <出力ディレクトリ>/reference-v0.tar.gz --title ... --notes-file ... --latest=false
 cp <出力ディレクトリ>/manifest.json datasets/reference-v0/published-manifest.json
 cp <出力ディレクトリ>/release.json datasets/reference-v0/release.json
 ```
 
-- **入れる書:** `datasets/terms.json` で、利用条件の本文を読んだ（`basis` = `page-read`）書で、`status` が `unconfirmed` でないもの。今は 671 書（`pdl1.0` 651、`diet-courts` 20）。
+- **入れる書:** `datasets/terms.json` で、利用条件の本文を読んだ（`basis` = `page-read`）書で、`status` が `unconfirmed` でないもの。今は 675 書（`pdl1.0` 655、`diet-courts` 20）。
 - **入れない書:** 会計検査院と裁判官訴追委員会の 10 書（規約のサイトが応答せず、本文が未読）。CSV と plain text を入れず、`unresolved.csv` からその書の行を除く。`pdf-corpus-freeze.json` と `plain-text-manifest.json` は全 PDF の記録（URL・SHA-256）のままで、その 10 書の内容は含まない。manifest の `published.excludedSources` に、入れなかった書を残す。
-- **PDF は入れない。** CSV と plain text、予算書の CSV だけ（40.7 MB、2,248 ファイル）。
+- **タグの履歴:** `dataset-reference-v0`（671 書、2026-10-23）→ `dataset-reference-v0-r2`（675 書、2026-11-11。厚生労働省の FY2027 の 4 書を追補した。既存の書のファイルは変わらない。追加 20 ファイル、変更 3 ファイル）。中身を足して出し直すときは、タグを変える（同じタグの差し替えは、`main` の CI が SHA-256 の不一致で失敗する）。**順序:** Releases に置いてから、`release.json` と `published-manifest.json` をコミットした変更を `main` に入れる（置く前に入れると、`main` の CI が、ダウンロードに失敗する）。
+- **PDF は入れない。** CSV と plain text、予算書の CSV だけ（43.0 MB、2,268 ファイル）。
 - **照合:** tar.gz の中身は `verify.ts` で公開分の manifest と全件一致する。tar.gz 自体の SHA-256 は `release.json` に固定する（tar の並びは決まっているが、tar.gz のバイト列は作るたびに変わりうるので、リリースに置いたものを正とする）。
-- 出力は公開分の基準データだけで作るので、手元の全体から作る JSON より、会計検査院・裁判官訴追委員会の項が少ない（FY2023〜FY2027 の年度推移で 1,239 → 1,236 行、概算要求書の URL 474 → 464）。
+- 出力は公開分の基準データだけで作るので、手元の全体から作る JSON より、会計検査院・裁判官訴追委員会の項が少ない（FY2023〜FY2027 の年度推移で 1,242 → 1,239 行、概算要求書の URL 478 → 468）。
 
 ## 出典と利用条件の表示
 
