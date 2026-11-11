@@ -69,6 +69,19 @@ node packages/pipeline/src/migrate/verify.ts data/dataset/reference-v0 datasets/
 - 13 本の PDF は、CSV が 1 つも無い（plain text だけ、または文字層が無い）。
 - `unresolved.csv` は、年度ごとに全機関の行が 1 ファイルに混ざっている。機関ごとに分けて公開するときは、行を `source_file` で分ける必要がある（まだ分けていない）。
 
+## 基準データへの追補（凍結の後で見つかった書）
+
+初版（`reference-v0`）の凍結の後で見つかった概算要求書は、`add-request-sources.ts` で足す。足すのは、凍結記録（`pdf-corpus-freeze.json`）に足した書だけで、既存の書の CSV・plain text は変えない（抽出の出力が、既存のファイルと 1 バイトでも違えば止まる）。manifest には、`origin.additions` と、足した書の `addition`（日付・説明）が付く。
+
+```bash
+node packages/pipeline/src/migrate/add-request-sources.ts <基準データ> datasets/reference-v0/manifest.json datasets/terms.json <年度> <抽出の出力> <日付> <説明>
+node packages/pipeline/src/migrate/verify.ts <基準データ> datasets/reference-v0/manifest.json
+```
+
+- **2026-11-11:** FY2027 の厚生労働省の歳出概算要求書 4 書（`mhlw.go.jp`、`27syokan`）を足した。書は 681 → 685、ファイルは 2,298 → 2,318（4 書 × 5 種類）。PDF は、厚生労働省の資料ページ（`https://www.mhlw.go.jp/wp/yosan/yosan/27syokan/05.html`、2026-11-09 公開）から、2026-11-11 に正規の URL で取得した（サイズは、サーバーの Content-Length と一致。取得の方法は `pipeline-fetch`）。凍結記録は、132 → 136 件（`targetIndex` は、`localPdfPath` の順に振り直した）。抽出と検算は `extract.md`。
+- 追補した書の `evidence` は、初版と同じ形（`pdfLocalHashMatchesRecord` は、足した凍結記録との一致。`pdfComparedWithOfficialSite` は false）。**公式サイトから、もう一度取り直して比べてはいない**。
+- **公開（Releases）は、まだ更新していない。** 公開サイトは、公開分の基準データ（Releases の `reference-v0.tar.gz`、`published-manifest.json`）から作るので、公開サイトの FY2027 に、厚生労働省の項が入るのは、Releases を出し直してから（新しいタグ。`web-publish.md`）。手元の `npm run build:data` では、すでに入る。
+
 ## 出典の利用条件
 
 ドメインごとの状態は `datasets/terms.json`（機械で読める記録。確認日 2026-10-22。2026-10-23 に、未確認と検索結果の説明だけだった分を読み直し、ドメインごとの `checkedOn` を付けた）。manifest の書ごとに、その状態を写している。規約は変わることがあるので、公開の前に確かめ直す。
